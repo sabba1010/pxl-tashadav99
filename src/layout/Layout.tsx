@@ -8,7 +8,7 @@ const Layout = () => {
   const navigation = useNavigation();
   const isNavigation = navigation.state === "loading";
   return (
-    <div>
+    <div className="min-h-screen flex flex-col">
       {isNavigation ? (
         <div className="flex justify-center items-center h-screen bg-gray-50">
           <Loading />
@@ -16,9 +16,9 @@ const Layout = () => {
       ) : (
         <>
           <Navbar />
-          <div className="min-h-[calc(100vh-220px)]">
+          <main className="flex-1">
             <Outlet />
-          </div>
+          </main>
           <Footer />
         </>
       )}

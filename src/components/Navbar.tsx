@@ -134,6 +134,115 @@ export default function Navbar() {
                     </button>
                   </div>
 
+                  <ul className="flex flex-col gap-1 px-2">
+                    <li>
+                      <NavLink
+                        to="/referral"
+                        className="flex items-center gap-3 px-3 py-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-4 w-4 text-gray-600 dark:text-gray-300"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M13 7l5 5m0 0l-5 5m5-5H6"
+                          />
+                        </svg>
+                        <span className="text-sm text-gray-700 dark:text-gray-200">
+                          Referral
+                        </span>
+                      </NavLink>
+                    </li>
+
+                    <li>
+                      <NavLink
+                        to="/account"
+                        className="flex items-center gap-3 px-3 py-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-4 w-4 text-gray-600 dark:text-gray-300"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 8v4l3 3"
+                          />
+                        </svg>
+                        <span className="text-sm text-gray-700 dark:text-gray-200">
+                          Account settings
+                        </span>
+                      </NavLink>
+                    </li>
+
+                    <li>
+                      <button className="w-full text-left flex items-center gap-3 px-3 py-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-4 w-4 text-gray-600 dark:text-gray-300"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M17 16l4-4m0 0l-4-4m4 4H7"
+                          />
+                        </svg>
+                        <span className="text-sm text-gray-700 dark:text-gray-200">
+                          Log out
+                        </span>
+                      </button>
+                    </li>
+
+                    <li className="px-3 py-2">
+                      <label className="flex items-center gap-3 cursor-pointer">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-4 w-4 text-gray-600 dark:text-gray-300"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 3v1m0 16v1m8.66-11H20M3.34 12H4m13.02 6.36l-.7.7M6.36 6.34l-.7.7m12.02 6.02l-.7-.7M6.36 17.66l-.7-.7"
+                          />
+                        </svg>
+                        <span className="text-sm text-gray-700 dark:text-gray-200">
+                          Light Mode
+                        </span>
+                        <input
+                          type="checkbox"
+                          checked={!dark}
+                          onChange={() => setDark((d) => !d)}
+                          className="ml-auto"
+                        />
+                      </label>
+                    </li>
+                    <li>
+                      <NavLink
+                        className="flex items-center gap-3 px-3 py-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700"
+                        to={"/admin-dashboard"}
+                      >
+                        Admin Dashboard
+                      </NavLink>
+                    </li>
+                  </ul>
                   <div className="px-5 py-3 border-t border-gray-200 dark:border-gray-700">
                     <label className="flex items-center justify-between cursor-pointer">
                       <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Dark Mode</span>
