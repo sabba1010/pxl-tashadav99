@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from "react";
+// src/pages/Marketplace.tsx
+import React, { useState, useMemo, useEffect, useRef } from "react";
 
 interface Item {
   id: number;
@@ -18,23 +19,28 @@ const Marketplace: React.FC = () => {
   const [priceRange, setPriceRange] = useState(1000);
   const [showBanner, setShowBanner] = useState(true);
 
+  // Mobile drawer state
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const drawerRef = useRef<HTMLDivElement | null>(null);
+
   const allItems: Item[] = [
-    { id: 1, title: "USA WhatsApp number", desc: "USA WhatsApp number for sale, it's a one time verification number. Code will be available after purchase", price: 4.49, seller: "AS Digitals", delivery: "Delivers in: 5 mins", icon: "WhatsApp", category: "Social Media" },
-    { id: 2, title: "USA WhatsApp number", desc: "USA WhatsApp number for sale, it's a one time verification number. Code will be available after purchase", price: 4.49, seller: "AS Digitals", delivery: "Delivers in: 5 mins", icon: "WhatsApp", category: "Social Media" },
-    { id: 3, title: "USA WhatsApp number", desc: "USA WhatsApp number for sale, it's a one time verification number. Code will be available after purchase", price: 4.49, seller: "AS Digitals", delivery: "Delivers in: 5 mins", icon: "WhatsApp", category: "Social Media" },
-    { id: 4, title: "1 year Active Pia VPN", desc: "1 year pia vpn works with either ios/android, just 1 device.", price: 2.98, seller: "lavidamide Logs", delivery: "Delivers Instantly", icon: "VPN", category: "VPN & PROXYs" },
-    { id: 5, title: "Gmail PVA Aged 2020", price: 1.99, seller: "MailKing", delivery: "Delivers in: 3 mins", icon: "Gmail", category: "Emails & Messaging Service" },
-    { id: 6, title: "Netflix Premium 4K", price: 7.99, seller: "StreamZone", delivery: "Delivers Instantly", icon: "Netflix", category: "Accounts & Subscriptions" },
-    { id: 7, title: "$50 Amazon Gift Card US", price: 46.50, seller: "GiftPro", delivery: "Delivers in: 1 min", icon: "Amazon", category: "Giftcards" },
-    { id: 8, title: "Instagram 100K+ Followers", price: 95.00, seller: "InstaBoost", delivery: "Delivers in: 2 hours", icon: "Instagram", category: "Social Media" },
-    // Add more items if you want
+    { id: 1, title: "USA WhatsApp number", desc: "USA WhatsApp number for sale, it's a one time verification number. Code will be available after purchase", price: 4.49, seller: "AS Digitals", delivery: "Delivers in: 5 mins", icon: "📱", category: "Social Media" },
+    { id: 2, title: "USA WhatsApp number", desc: "USA WhatsApp number for sale, it's a one time verification number. Code will be available after purchase", price: 4.49, seller: "AS Digitals", delivery: "Delivers in: 5 mins", icon: "📱", category: "Social Media" },
+    { id: 3, title: "USA WhatsApp number", desc: "USA WhatsApp number for sale, it's a one time verification number. Code will be available after purchase", price: 4.49, seller: "AS Digitals", delivery: "Delivers in: 5 mins", icon: "📱", category: "Social Media" },
+    { id: 4, title: "1 year Active Pia VPN", desc: "1 year pia vpn works with either ios/android, just 1 device.", price: 2.98, seller: "lavidamide Logs", delivery: "Delivers Instantly", icon: "🔒", category: "VPN & PROXYs" },
+    { id: 5, title: "Gmail PVA Aged 2020", price: 1.99, seller: "MailKing", delivery: "Delivers in: 3 mins", icon: "✉️", category: "Emails & Messaging Service" },
+    { id: 6, title: "Netflix Premium 4K", price: 7.99, seller: "StreamZone", delivery: "Delivers Instantly", icon: "🎬", category: "Accounts & Subscriptions" },
+    { id: 7, title: "$50 Amazon Gift Card US", price: 46.50, seller: "GiftPro", delivery: "Delivers in: 1 min", icon: "🎁", category: "Giftcards" },
+    { id: 8, title: "Instagram 100K+ Followers", price: 95.00, seller: "InstaBoost", delivery: "Delivers in: 2 hours", icon: "📸", category: "Social Media" },
   ];
 
   const filteredItems = useMemo(() => {
     return allItems.filter((item) => {
+      const q = searchQuery.trim().toLowerCase();
       const matchesSearch =
-        item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (item.desc?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false);
+        q.length === 0 ||
+        item.title.toLowerCase().includes(q) ||
+        (item.desc?.toLowerCase().includes(q) ?? false);
       const matchesCategory = selectedCategories.length === 0 || selectedCategories.includes(item.category);
       const matchesPrice = item.price <= priceRange;
       return matchesSearch && matchesCategory && matchesPrice;
@@ -53,18 +59,52 @@ const Marketplace: React.FC = () => {
     "Others",
   ];
 
+  // Close drawer on Escape
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setDrawerOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  // Prevent body scroll when drawer open
+  useEffect(() => {
+    if (drawerOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+  }, [drawerOpen]);
+
+  // Close drawer when clicking outside (for safety, but click on backdrop already closes)
+  useEffect(() => {
+    const onClickOutside = (e: MouseEvent) => {
+      if (!drawerOpen) return;
+      if (drawerRef.current && !drawerRef.current.contains(e.target as Node)) {
+        setDrawerOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", onClickOutside);
+    return () => document.removeEventListener("mousedown", onClickOutside);
+  }, [drawerOpen]);
+
   return (
     <>
       {/* Black Friday Banner – Closeable */}
       {showBanner && (
-        <div className="bg-orange-50 border-l-4 border-orange-500 text-orange-900 px-6 py-3 flex items-center justify-between text-sm font-medium">
+        <div className="bg-orange-50 border-l-4 border-orange-500 text-orange-900 px-4 py-3 flex items-center justify-between text-sm font-medium">
           <div className="flex items-center gap-2">
-            <span>Fire</span>
-            Black Friday is live on AcctBazaar! Every price you’re seeing right now is a special Black Friday discount, all from verified sellers with fast delivery and safe escrow.
+            <span className="font-bold">🔥</span>
+            <span>
+              Black Friday is live on AcctBazaar! Every price you’re seeing right now is a special Black Friday
+              discount.
+            </span>
           </div>
           <button
             onClick={() => setShowBanner(false)}
-            className="text-orange-900 hover:text-orange-700 text-2xl font-bold"
+            className="text-orange-900 hover:text-orange-700 text-2xl font-bold leading-none"
+            aria-label="Close banner"
           >
             ×
           </button>
@@ -74,21 +114,37 @@ const Marketplace: React.FC = () => {
       <div className="min-h-screen bg-gray-100">
         <div className="max-w-screen-2xl mx-auto px-4 py-6">
 
-          {/* Header */}
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-6">
-            <h1 className="text-3xl font-bold text-gray-900">Marketplace</h1>
+          {/* Header - mobile shows hamburger + search */}
+          <div className="flex items-center justify-between mb-6 gap-4">
+            <div className="flex items-center gap-3">
+              {/* Mobile: Drawer toggle */}
+              <button
+                onClick={() => setDrawerOpen(true)}
+                className="p-2 rounded-md lg:hidden bg-white border border-gray-200"
+                aria-label="Open filters"
+                aria-haspopup="true"
+                aria-expanded={drawerOpen}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
 
-            <div className="flex items-center gap-4">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Marketplace</h1>
+            </div>
+
+            {/* Desktop controls */}
+            <div className="hidden md:flex items-center gap-4">
               <div className="flex border border-gray-300 rounded-lg overflow-hidden">
                 <button
                   onClick={() => setViewMode("list")}
-                  className={`px-6 py-3 ${viewMode === "list" ? "bg-orange-500 text-white" : "bg-white"} transition`}
+                  className={`px-4 py-2 ${viewMode === "list" ? "bg-orange-500 text-white" : "bg-white"} transition`}
                 >
                   List
                 </button>
                 <button
                   onClick={() => setViewMode("grid")}
-                  className={`px-6 py-3 ${viewMode === "grid" ? "bg-orange-500 text-white" : "bg-white"} transition`}
+                  className={`px-4 py-2 ${viewMode === "grid" ? "bg-orange-500 text-white" : "bg-white"} transition`}
                 >
                   Grid
                 </button>
@@ -99,14 +155,30 @@ const Marketplace: React.FC = () => {
                 placeholder="Search by name or description"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="px-5 py-3 border border-gray-300 rounded-lg w-96 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                className="px-4 py-2 border border-gray-300 rounded-lg w-80 focus:outline-none focus:ring-2 focus:ring-orange-500"
               />
+            </div>
+
+            {/* Mobile: small search icon that focuses input in drawer (we keep search visible as icon) */}
+            <div className="md:hidden flex items-center gap-2">
+              <button
+                onClick={() => {
+                  // open drawer which contains search & filters
+                  setDrawerOpen(true);
+                }}
+                className="p-2 rounded-md bg-white border border-gray-200"
+                aria-label="Open filters and search"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z" />
+                </svg>
+              </button>
             </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            {/* LEFT SIDEBAR – WIDER & CLEAN */}
-            <aside className="lg:col-span-3 lg:sticky lg:top-6 h-fit">
+            {/* LEFT SIDEBAR – Desktop only */}
+            <aside className="hidden lg:block lg:col-span-3 lg:sticky lg:top-6 h-fit">
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                 <h3 className="text-lg font-bold mb-6">Filter</h3>
 
@@ -148,8 +220,47 @@ const Marketplace: React.FC = () => {
             {/* MAIN CONTENT */}
             <main className="lg:col-span-9">
               <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-                <div className="px-6 py-4 border-b">
-                  <h2 className="text-xl font-bold">Latest account</h2>
+                {/* Top toolbar for mobile & small screens */}
+                <div className="px-4 py-4 border-b flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="hidden sm:flex items-center gap-3">
+                      <div className="text-sm text-gray-600">View:</div>
+                      <div className="flex border border-gray-300 rounded-lg overflow-hidden">
+                        <button
+                          onClick={() => setViewMode("list")}
+                          className={`px-3 py-1 ${viewMode === "list" ? "bg-orange-500 text-white" : "bg-white"} transition`}
+                        >
+                          List
+                        </button>
+                        <button
+                          onClick={() => setViewMode("grid")}
+                          className={`px-3 py-1 ${viewMode === "grid" ? "bg-orange-500 text-white" : "bg-white"} transition`}
+                        >
+                          Grid
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Mobile search shown on toolbar */}
+                  <div className="flex-1 px-4 sm:px-0">
+                    <div className="sm:hidden">
+                      <input
+                        type="text"
+                        placeholder="Search marketplace..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      />
+                    </div>
+                    <div className="hidden sm:block">
+                      <div className="text-sm text-gray-500">{filteredItems.length} results</div>
+                    </div>
+                  </div>
+
+                  <div className="hidden sm:flex items-center gap-3">
+                    <div className="text-sm text-gray-500">{filteredItems.length} results</div>
+                  </div>
                 </div>
 
                 {/* LIST VIEW */}
@@ -181,10 +292,11 @@ const Marketplace: React.FC = () => {
                         </div>
                       </div>
                     ))}
+                    {filteredItems.length === 0 && <div className="p-6 text-center text-gray-500">No items found.</div>}
                   </div>
                 )}
 
-                {/* GRID VIEW – Perfect Size */}
+                {/* GRID VIEW */}
                 {viewMode === "grid" && (
                   <div className="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7">
                     {filteredItems.map((item) => (
@@ -200,12 +312,13 @@ const Marketplace: React.FC = () => {
                         </div>
                         <div className="mt-5 flex items-center justify-between">
                           <div className="text-2xl font-bold">${item.price.toFixed(2)}</div>
-                          <button className="bg-orange-500 text-white px-6 py-3 rounded-lg hover:bg-orange-600 transition font-medium">
+                          <button className="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition font-medium">
                             Buy Now
                           </button>
                         </div>
                       </div>
                     ))}
+                    {filteredItems.length === 0 && <div className="col-span-full p-6 text-center text-gray-500">No items found.</div>}
                   </div>
                 )}
               </div>
@@ -213,6 +326,115 @@ const Marketplace: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* MOBILE DRAWER / SLIDING FILTER */}
+      {/* Backdrop */}
+      <div
+        className={`fixed inset-0 z-40 transition-opacity ${drawerOpen ? "opacity-60 pointer-events-auto" : "opacity-0 pointer-events-none"}`}
+        style={{ backgroundColor: "rgba(0,0,0,0.6)" }}
+        onClick={() => setDrawerOpen(false)}
+        aria-hidden={!drawerOpen}
+      />
+
+      {/* Drawer panel */}
+      <aside
+        ref={drawerRef}
+        className={`fixed top-0 left-0 z-50 h-full w-80 max-w-full bg-white shadow-xl transform transition-transform ${drawerOpen ? "translate-x-0" : "-translate-x-full"}`}
+        role="dialog"
+        aria-modal="true"
+        aria-hidden={!drawerOpen}
+      >
+        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+          <h3 className="text-lg font-bold">Filters & Search</h3>
+          <button
+            onClick={() => setDrawerOpen(false)}
+            className="p-2 rounded-md text-gray-600 hover:bg-gray-100"
+            aria-label="Close filters"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <div className="p-4 overflow-auto h-full">
+          {/* Search */}
+          <div className="mb-4">
+            <input
+              type="text"
+              placeholder="Search by name or description"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+            />
+          </div>
+
+          {/* Categories */}
+          <div className="mb-4">
+            <div className="text-sm font-medium text-gray-700 mb-2">Account Category</div>
+            <div className="space-y-3">
+              {categories.map((cat) => (
+                <label key={cat} className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={selectedCategories.includes(cat)}
+                    onChange={() => {
+                      setSelectedCategories((prev) =>
+                        prev.includes(cat) ? prev.filter((c) => c !== cat) : [...prev, cat]
+                      );
+                    }}
+                    className="w-4 h-4 text-orange-500 rounded focus:ring-orange-500"
+                  />
+                  <span className="text-sm text-gray-600">{cat}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* Price range */}
+          <div className="mb-6">
+            <div className="text-sm font-medium text-gray-700 mb-2">Price range</div>
+            <input
+              type="range"
+              min="0"
+              max="1000"
+              value={priceRange}
+              onChange={(e) => setPriceRange(Number(e.target.value))}
+              className="w-full h-2 bg-gray-200 rounded-lg accent-orange-500"
+            />
+            <div className="flex justify-between text-xs text-gray-500 mt-2">
+              <span>$0</span>
+              <span>${priceRange}</span>
+            </div>
+          </div>
+
+          {/* Quick actions */}
+          <div className="flex gap-3">
+            <button
+              onClick={() => {
+                // apply & close
+                setDrawerOpen(false);
+              }}
+              className="flex-1 bg-orange-500 text-white px-4 py-2 rounded-lg font-medium"
+            >
+              Apply
+            </button>
+            <button
+              onClick={() => {
+                setSelectedCategories([]);
+                setPriceRange(1000);
+                setSearchQuery("");
+              }}
+              className="flex-1 border border-gray-300 px-4 py-2 rounded-lg"
+            >
+              Reset
+            </button>
+          </div>
+
+          {/* spacing bottom so content can scroll above sticky footer on small screens */}
+          <div className="h-24" />
+        </div>
+      </aside>
     </>
   );
 };
