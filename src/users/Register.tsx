@@ -17,7 +17,6 @@ const countries = [
 
 const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [agreed, setAgreed] = useState(false);
   const [isCountryOpen, setIsCountryOpen] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState(countries[0]);
@@ -27,13 +26,13 @@ const Register = () => {
     email: '',
     phone: '',
     password: '',
-    confirmPassword: '',
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (formData.password !== formData.confirmPassword) {
-      alert('Passwords do not match!');
+    // Basic password length validation (confirm password removed)
+    if (formData.password.length < 8 || formData.password.length > 30) {
+      alert('Password must be between 8 and 30 characters');
       return;
     }
     console.log('Register:', { ...formData, countryCode: selectedCountry.code });
@@ -280,27 +279,7 @@ const Register = () => {
                   </p>
                 </div>
 
-                {/* Confirm Password */}
-                <div>
-                  <label className="text-sm font-medium text-gray-300">Confirm password</label>
-                  <div className="relative mt-2">
-                    <Lock className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-orange-400" />
-                    <input
-                      type={showConfirmPassword ? 'text' : 'password'}
-                      required
-                      value={formData.confirmPassword}
-                      onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                      className="w-full pl-14 pr-14 py-4 bg-gray-900/60 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/30 transition"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
-                    >
-                      {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                    </button>
-                  </div>
-                </div>
+
 
                
 

@@ -51,10 +51,9 @@ export default function Navbar() {
             <NavLink
               to="/marketplace"
               className={({ isActive }) =>
-                `font-medium transition ${
-                  isActive
-                    ? "text-orange-500"
-                    : "text-gray-700 hover:text-orange-500"
+                `font-medium transition ${isActive
+                  ? "text-orange-500"
+                  : "text-gray-700 hover:text-orange-500"
                 }`
               }
             >
@@ -63,10 +62,9 @@ export default function Navbar() {
             <NavLink
               to="/purchases"
               className={({ isActive }) =>
-                `font-medium transition ${
-                  isActive
-                    ? "text-orange-500"
-                    : "text-gray-700 hover:text-orange-500"
+                `font-medium transition ${isActive
+                  ? "text-orange-500"
+                  : "text-gray-700 hover:text-orange-500"
                 }`
               }
             >
@@ -75,10 +73,9 @@ export default function Navbar() {
             <NavLink
               to="/wallet"
               className={({ isActive }) =>
-                `font-medium transition ${
-                  isActive
-                    ? "text-orange-500"
-                    : "text-gray-700 hover:text-orange-500"
+                `font-medium transition ${isActive
+                  ? "text-orange-500"
+                  : "text-gray-700 hover:text-orange-500"
                 }`
               }
             >
@@ -87,14 +84,24 @@ export default function Navbar() {
             <NavLink
               to="/buyer-dashboard"
               className={({ isActive }) =>
-                `font-medium transition ${
-                  isActive
-                    ? "text-orange-500"
-                    : "text-gray-700 hover:text-orange-500"
+                `font-medium transition ${isActive
+                  ? "text-orange-500"
+                  : "text-gray-700 hover:text-orange-500"
                 }`
               }
             >
               Buyer Dashboard
+            </NavLink>
+             <NavLink
+              to="/mysells"
+              className={({ isActive }) =>
+                `font-medium transition ${isActive
+                  ? "text-orange-500"
+                  : "text-gray-700 hover:text-orange-500"
+                }`
+              }
+            >
+              My Sells
             </NavLink>
             <NavLink
               to="/add-product"
