@@ -6,6 +6,7 @@ import Home from "../pages/home/Home";
 import Layout from "../layout/Layout";
 import Login from "../users/Login";
 import Register from "../users/Register";
+import BuyerAddProduct from "../dashboard/buyer-dahboard/BuyerAddProduct";
 
 const Routes = createBrowserRouter([
   {
@@ -14,7 +15,7 @@ const Routes = createBrowserRouter([
     errorElement: <ErrorPage />,
     children: [
       {
-        path: "",
+        path: "/",
         element: <Home />,
       },
 
@@ -26,6 +27,10 @@ const Routes = createBrowserRouter([
         path: "/register",
         element: <Register />,
       },
+      {
+        path: "add-product",
+        element: <BuyerAddProduct/>,
+      }
     ],
   },
   {
@@ -33,7 +38,6 @@ const Routes = createBrowserRouter([
     element: <Dashboard />,
     children: [
       // admin routes can be added here
-
     ],
   },
 ]);
