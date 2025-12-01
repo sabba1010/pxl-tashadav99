@@ -7,6 +7,7 @@ import Layout from "../layout/Layout";
 import Login from "../users/Login";
 import Register from "../users/Register";
 import BuyerAddProduct from "../dashboard/buyer-dahboard/BuyerAddProduct";
+import Marketplace from "../Marketplace/Marketplace";
 
 const Routes = createBrowserRouter([
   {
@@ -17,6 +18,10 @@ const Routes = createBrowserRouter([
       {
         path: "/",
         element: <Home />,
+      },
+      {
+    path:"/marketplace",
+    element: <Marketplace/>,
       },
 
       {
