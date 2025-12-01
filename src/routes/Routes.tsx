@@ -24,7 +24,6 @@ import Buyer from "../dashboard/buyer-dahboard/Buyer";
 import Mypurchase from "../Mypurchase/Mypurchase";
 import Report from "../Mypurchase/Report";
 
-
 const Routes = createBrowserRouter([
   {
     path: "/",
@@ -36,8 +35,8 @@ const Routes = createBrowserRouter([
         element: <Home />,
       },
       {
-    path:"/marketplace",
-    element: <Marketplace/>,
+        path: "/marketplace",
+        element: <Marketplace />,
       },
 
       {
@@ -45,12 +44,12 @@ const Routes = createBrowserRouter([
         element: <Login />,
       },
       {
-            path:"/purchases",
-          element: <Mypurchase/>
+        path: "/purchases",
+        element: <Mypurchase />,
       },
-          {
-            path:"/report",
-          element: <Report/>
+      {
+        path: "/report",
+        element: <Report />,
       },
       {
         path: "/register",
@@ -58,52 +57,50 @@ const Routes = createBrowserRouter([
       },
       {
         path: "add-product",
-        element: <BuyerAddProduct/>,
+        element: <BuyerAddProduct />,
       },
       {
         path: "buyer-dashboard",
-        element: <Buyer/>,
-      }
+        element: <Buyer />,
+      },
     ],
   },
 
-
+  {
+    path: "admin-dashboard",
+    element: <AdminAdmins />,
+    children: [
       {
-        path: "admin-dashboard",
-        element: <AdminAdmins />,
-        children: [
-          {
-            index: true,
-            element: <DashboardOverview />,
-          },
-          {
-            path: "users",
-            element: <AllUsers />,
-          },
-          {
-            path: "transactions",
-            element: <AllTransactions />,
-          },
-          {
-            path: "deposits",
-            element: <DepositRequests />,
-          },
-          {
-            path: "withdrawals",
-            element: <WithdrawalRequests />,
-          },
-          {
-            path: "profile",
-            element: <Profile />,
-          },
-          {
-            path: "listings",
-            element: <TotalListings />,
-          },
-        ],
+        index: true,
+        element: <DashboardOverview />,
       },
-      // admin routes can be added here for admin route
+      {
+        path: "users",
+        element: <AllUsers />,
+      },
+      {
+        path: "transactions",
+        element: <AllTransactions />,
+      },
+      {
+        path: "deposits",
+        element: <DepositRequests />,
+      },
+      {
+        path: "withdrawals",
+        element: <WithdrawalRequests />,
+      },
+      {
+        path: "profile",
+        element: <Profile />,
+      },
+      {
+        path: "listings",
+        element: <TotalListings />,
+      },
     ],
-  );
+  },
+  // admin routes can be added here for admin route
+]);
 
 export default Routes;
