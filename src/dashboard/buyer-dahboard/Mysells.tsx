@@ -144,11 +144,13 @@ const Mysells = () => {
   ]);
 
   const [editingSale, setEditingSale] = useState<Sale | null>(null);
+  const [modalMessage, setModalMessage] = useState<string>("");
 
   const totalPending = sales.reduce((sum, s) => sum + s.price, 0);
 
   const openEditModal = (sale: Sale) => {
     setEditingSale(sale);
+    setModalMessage("");
   };
 
   // (saveChanges & editedData removed - not needed anymore)
@@ -274,42 +276,45 @@ const Mysells = () => {
                 </div>
               </div>
 
-              {/* Delivery action + message (two-step) */}
-              <div className="flex items-center gap-4">
-                {editingSale.status === "Pending" && (
+              {/* Delivery box: message + deliver action */}
+              <div className="space-y-3">
+                <label className="block text-sm font-medium text-gray-600">Message</label>
+                <textarea
+                  rows={4}
+                  value={modalMessage}
+                  onChange={(e) => setModalMessage(e.target.value)}
+                  placeholder="Write  the information needed for delivery."
+                  className="w-full px-4 py-3 border rounded-lg resize-none focus:ring-2 focus:ring-orange-500 focus:outline-none"
+                />
+
+                <div className="flex items-center gap-3">
                   <button
+                    disabled={modalMessage.trim() === ""}
                     onClick={() => {
                       if (!editingSale) return;
-                      // mark in-progress and keep modal open
-                      setSales((prev) => prev.map((s) => (s.id === editingSale.id ? { ...s, status: "Delivery in Progress" } : s)));
-                      setEditingSale((prev) => (prev ? { ...prev, status: "Delivery in Progress" } : prev));
+                      if (modalMessage.trim() === "") return; // guard - shouldn't be possible when disabled
+                      // mark delivered, optionally log message, and close modal
+                      setSales((prev) => prev.map((s) => (s.id === editingSale.id ? { ...s, status: "Delivered" } : s)));
+                      // for now we just console.log the message (could send to API later)
+                      console.log(`Delivery message for ${editingSale.id}:`, modalMessage.trim());
+                      setEditingSale(null);
                     }}
-                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-semibold"
+                    aria-disabled={modalMessage.trim() === ""}
+                    className={`px-4 py-2 rounded-lg font-semibold transition-colors ${
+                      modalMessage.trim() === "" ? "bg-gray-300 text-gray-700 cursor-not-allowed" : "bg-green-600 text-white hover:bg-green-700"
+                    }`}
                   >
-                    Send Delivery
+                    Deliver
                   </button>
-                )}
 
-                {editingSale.status === "Delivery in Progress" && (
-                  <>
-                    <button
-                      onClick={() => {
-                        if (!editingSale) return;
-                        // mark delivered and close modal
-                        setSales((prev) => prev.map((s) => (s.id === editingSale.id ? { ...s, status: "Delivered" } : s)));
-                        setEditingSale(null);
-                      }}
-                      className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 font-semibold"
-                    >
-                      Deliver
-                    </button>
+                  {editingSale.status === "Delivery in Progress" && (
                     <div className="text-sm text-blue-700 font-medium">Delivery is progressing...</div>
-                  </>
-                )}
+                  )}
 
-                {editingSale.status === "Delivered" && (
-                  <div className="text-sm text-green-700 font-medium">Delivery completed</div>
-                )}
+                  {editingSale.status === "Delivered" && (
+                    <div className="text-sm text-green-700 font-medium">Delivery completed</div>
+                  )}
+                </div>
               </div>
 
               {/* removed the edit form and save/cancel actions - Delivery updates status and closes modal */}
