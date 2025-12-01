@@ -26,7 +26,7 @@ interface Sale {
   Icon: React.FC<any>;
   color: string;
   category: string;
-  status: "Pending";
+  status: "Pending" | "Delivery in Progress" | "Delivered";
 }
 
 const Mysells = () => {
@@ -144,32 +144,14 @@ const Mysells = () => {
   ]);
 
   const [editingSale, setEditingSale] = useState<Sale | null>(null);
-  const [editedData, setEditedData] = useState<Partial<Sale>>({});
 
   const totalPending = sales.reduce((sum, s) => sum + s.price, 0);
 
   const openEditModal = (sale: Sale) => {
     setEditingSale(sale);
-    setEditedData({
-      title: sale.title,
-      desc: sale.desc,
-      price: sale.price,
-      delivery: sale.delivery,
-    });
   };
 
-  const saveChanges = () => {
-    if (!editingSale) return;
-    setSales((prev) =>
-      prev.map((s) =>
-        s.id === editingSale.id
-          ? { ...s, ...editedData, price: Number(editedData.price || 0) }
-          : s
-      )
-    );
-    setEditingSale(null);
-    setEditedData({});
-  };
+  // (saveChanges & editedData removed - not needed anymore)
 
   return (
     <>
@@ -218,10 +200,11 @@ const Mysells = () => {
               {sales.map((sale) => (
                 <div
                   key={sale.id}
-                  className="p-6 flex items-start gap-6 hover:bg-gray-50 transition group"
+                  className="p-6 flex flex-col sm:flex-row items-start gap-6 hover:bg-gray-50 transition group"
                 >
-                  <div className={`text-3xl ${sale.color}`}>
-                    <sale.Icon className="w-8 h-8" />
+                  {/* icon */}
+                  <div className={`text-3xl ${sale.color} flex-none` }>
+                    <sale.Icon className="w-10 h-10 sm:w-8 sm:h-8" />
                   </div>
                   <div className="flex-1">
                     <h3 className="font-semibold text-lg text-gray-900">{sale.title}</h3>
@@ -234,19 +217,27 @@ const Mysells = () => {
                       <span>•</span>
                       <span className="text-green-600 font-medium">{sale.delivery}</span>
                       <span>•</span>
-                      <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-medium">
-                        Pending
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-medium ${
+                          sale.status === "Pending"
+                            ? "bg-orange-100 text-orange-700"
+                            : sale.status === "Delivery in Progress"
+                            ? "bg-blue-100 text-blue-700"
+                            : "bg-green-100 text-green-700"
+                        }`}
+                      >
+                        {sale.status}
                       </span>
                     </div>
                   </div>
-                  <div className="text-right">
+                  <div className="w-full sm:w-auto flex items-center sm:flex-col sm:items-end justify-between mt-3 sm:mt-0">
                     <div className="text-2xl font-bold text-gray-900">${sale.price.toFixed(2)}</div>
                     <button
                       onClick={() => openEditModal(sale)}
-                      className="mt-4 inline-flex items-center gap-2 text-orange-600 font-medium hover:text-orange-700 transition opacity-0 group-hover:opacity-100"
+                      className="mt-4 inline-flex items-center gap-2 text-orange-600 font-medium hover:text-orange-700 transition w-full sm:w-auto justify-center sm:justify-start"
                     >
                       <Edit2 className="w-4 h-4" />
-                      Edit Sale
+                      Delivery
                     </button>
                   </div>
                 </div>
@@ -267,51 +258,61 @@ const Mysells = () => {
               </button>
             </div>
             <div className="p-6 space-y-6">
-              <input
-                type="text"
-                value={editedData.title || ""}
-                onChange={(e) => setEditedData({ ...editedData, title: e.target.value })}
-                className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500"
-                placeholder="Product Title"
-              />
-              <textarea
-                rows={4}
-                value={editedData.desc || ""}
-                onChange={(e) => setEditedData({ ...editedData, desc: e.target.value })}
-                className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500"
-                placeholder="Description"
-              />
-              <div className="grid grid-cols-2 gap-4">
-                <input
-                  type="number"
-                  step="0.01"
-                  value={editedData.price || ""}
-                  onChange={(e) => setEditedData({ ...editedData, price: Number(e.target.value) })}
-                  className="px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500"
-                  placeholder="Price"
-                />
-                <input
-                  type="text"
-                  value={editedData.delivery || ""}
-                  onChange={(e) => setEditedData({ ...editedData, delivery: e.target.value })}
-                  className="px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500"
-                  placeholder="Delivery Time"
-                />
+              {/* Product preview */}
+              <div className="flex items-center gap-4">
+                <div className={`p-3 rounded-2xl bg-gray-100 flex items-center justify-center ${editingSale.color}`}>
+                  <editingSale.Icon className="w-10 h-10 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-gray-900">{editingSale.title}</h3>
+                  <p className="text-sm text-gray-600 mt-1">{editingSale.desc}</p>
+                  <div className="mt-3 flex items-center gap-3 text-sm">
+                    <div className="text-2xl font-bold text-gray-900">${editingSale.price.toFixed(2)}</div>
+                    <div className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-medium">{editingSale.category}</div>
+                    <div className="px-3 py-1 rounded-full text-xs font-medium border text-gray-600">{editingSale.status}</div>
+                  </div>
+                </div>
               </div>
-              <div className="flex gap-4">
-                <button
-                  onClick={saveChanges}
-                  className="flex-1 bg-orange-500 text-white py-4 rounded-xl hover:bg-orange-600 font-bold"
-                >
-                  Save Changes
-                </button>
-                <button
-                  onClick={() => setEditingSale(null)}
-                  className="flex-1 border py-4 rounded-xl hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
+
+              {/* Delivery action + message (two-step) */}
+              <div className="flex items-center gap-4">
+                {editingSale.status === "Pending" && (
+                  <button
+                    onClick={() => {
+                      if (!editingSale) return;
+                      // mark in-progress and keep modal open
+                      setSales((prev) => prev.map((s) => (s.id === editingSale.id ? { ...s, status: "Delivery in Progress" } : s)));
+                      setEditingSale((prev) => (prev ? { ...prev, status: "Delivery in Progress" } : prev));
+                    }}
+                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-semibold"
+                  >
+                    Send Delivery
+                  </button>
+                )}
+
+                {editingSale.status === "Delivery in Progress" && (
+                  <>
+                    <button
+                      onClick={() => {
+                        if (!editingSale) return;
+                        // mark delivered and close modal
+                        setSales((prev) => prev.map((s) => (s.id === editingSale.id ? { ...s, status: "Delivered" } : s)));
+                        setEditingSale(null);
+                      }}
+                      className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 font-semibold"
+                    >
+                      Deliver
+                    </button>
+                    <div className="text-sm text-blue-700 font-medium">Delivery is progressing...</div>
+                  </>
+                )}
+
+                {editingSale.status === "Delivered" && (
+                  <div className="text-sm text-green-700 font-medium">Delivery completed</div>
+                )}
               </div>
+
+              {/* removed the edit form and save/cancel actions - Delivery updates status and closes modal */}
             </div>
           </div>
         </div>
