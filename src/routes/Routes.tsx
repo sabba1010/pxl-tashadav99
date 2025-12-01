@@ -4,7 +4,7 @@ import Profile from "../dashboard/user-dashboard/Profile";
 import Dashboard from "../layout/Dashboard";
 import Home from "../pages/home/Home";
 // import OnlineStore from "../pages/onile-store/OnlineStore";
-import RastrearPage from "../pages/rastrear-page/RastrearPage";
+
 import Login from "../users/Login";
 import Register from "../users/Register";
 import Layout from "../layout/Layout";
@@ -24,14 +24,7 @@ const Routes = createBrowserRouter([
       },
     
       
-      {
-        path: "/rasterear",
-        element: <RastrearPage />,
-      },
-      //   {
-      //     path: "/tienda",
-      //     element: <OnlineStore />,
-      //   },
+   
 
      
       {
