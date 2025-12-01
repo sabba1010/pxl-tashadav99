@@ -3,8 +3,8 @@ import React, { useState, useRef, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 
 export default function Navbar() {
-  const [open, setOpen] = useState(false);           // Avatar dropdown
-  const [dark, setDark] = useState(false);           // Dark mode
+  const [open, setOpen] = useState(false); // Avatar dropdown
+  const [dark, setDark] = useState(false); // Dark mode
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false); // Mobile menu
 
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -12,7 +12,10 @@ export default function Navbar() {
   // Close avatar dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setOpen(false);
       }
     };
@@ -28,16 +31,17 @@ export default function Navbar() {
   // }, [dark]);
 
   return (
-    <header className={`w-full bg-white dark:bg-gray-900 shadow-sm sticky top-0 z-50 border-b border-gray-200 dark:border-gray-800`}>
+    <header
+      className={`w-full bg-white dark:bg-gray-900 shadow-sm sticky top-0 z-50 border-b border-gray-200 dark:border-gray-800`}
+    >
       <nav className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-
           {/* Logo */}
           <div className="flex items-center">
             <NavLink to="/" className="flex items-center gap-3">
               <img src="/logo.png" alt="AcctBazaar" className="h-9 w-auto" />
               <span className="hidden sm:inline font-bold text-xl text-orange-600">
-               Tashadav99
+                Tashadav99
               </span>
             </NavLink>
           </div>
@@ -47,7 +51,11 @@ export default function Navbar() {
             <NavLink
               to="/marketplace"
               className={({ isActive }) =>
-                `font-medium transition ${isActive ? "text-orange-500" : "text-gray-700 hover:text-orange-500"}`
+                `font-medium transition ${
+                  isActive
+                    ? "text-orange-500"
+                    : "text-gray-700 hover:text-orange-500"
+                }`
               }
             >
               Marketplace
@@ -55,7 +63,11 @@ export default function Navbar() {
             <NavLink
               to="/purchases"
               className={({ isActive }) =>
-                `font-medium transition ${isActive ? "text-orange-500" : "text-gray-700 hover:text-orange-500"}`
+                `font-medium transition ${
+                  isActive
+                    ? "text-orange-500"
+                    : "text-gray-700 hover:text-orange-500"
+                }`
               }
             >
               My Purchases
@@ -63,10 +75,26 @@ export default function Navbar() {
             <NavLink
               to="/wallet"
               className={({ isActive }) =>
-                `font-medium transition ${isActive ? "text-orange-500" : "text-gray-700 hover:text-orange-500"}`
+                `font-medium transition ${
+                  isActive
+                    ? "text-orange-500"
+                    : "text-gray-700 hover:text-orange-500"
+                }`
               }
             >
               Wallet
+            </NavLink>
+            <NavLink
+              to="/buyer-dashboard"
+              className={({ isActive }) =>
+                `font-medium transition ${
+                  isActive
+                    ? "text-orange-500"
+                    : "text-gray-700 hover:text-orange-500"
+                }`
+              }
+            >
+              Buyer Dashboard
             </NavLink>
             <NavLink
               to="/add-product"
@@ -78,20 +106,37 @@ export default function Navbar() {
 
           {/* Right Side: Icons + Avatar */}
           <div className="flex items-center gap-4">
-
             {/* Notification Bell */}
             <button className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition">
-              <svg className="w-5 h-5 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                  d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h11z" />
+              <svg
+                className="w-5 h-5 text-gray-600 dark:text-gray-300"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h11z"
+                />
               </svg>
             </button>
 
             {/* Cart */}
             <button className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition">
-              <svg className="w-5 h-5 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                  d="M3 3h2l.4 2M7.48 7h9.02l1.5 9H5.98l1.5-9zM7 13l-2 5h13l-2-5" />
+              <svg
+                className="w-5 h-5 text-gray-600 dark:text-gray-300"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M3 3h2l.4 2M7.48 7h9.02l1.5 9H5.98l1.5-9zM7 13l-2 5h13l-2-5"
+                />
               </svg>
             </button>
 
@@ -110,8 +155,12 @@ export default function Navbar() {
               {open && (
                 <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden z-50">
                   <div className="px-5 py-4 border-b border-gray-200 dark:border-gray-700">
-                    <div className="font-bold text-gray-900 dark:text-white">John Doe</div>
-                    <div className="text-sm text-gray-500">john@example.com</div>
+                    <div className="font-bold text-gray-900 dark:text-white">
+                      John Doe
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      john@example.com
+                    </div>
                   </div>
 
                   <div className="py-2">
@@ -245,7 +294,9 @@ export default function Navbar() {
                   </ul>
                   <div className="px-5 py-3 border-t border-gray-200 dark:border-gray-700">
                     <label className="flex items-center justify-between cursor-pointer">
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Dark Mode</span>
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Dark Mode
+                      </span>
                       <input
                         type="checkbox"
                         checked={dark}
@@ -264,12 +315,32 @@ export default function Navbar() {
               className="lg:hidden p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition"
             >
               {mobileMenuOpen ? (
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               ) : (
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 6h16M4 12h16M4 18h16"
+                  />
                 </svg>
               )}
             </button>
