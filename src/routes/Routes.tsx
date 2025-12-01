@@ -1,15 +1,12 @@
 import { createBrowserRouter } from "react-router-dom";
 import ErrorPage from "../components/ErrorPage";
-import Profile from "../dashboard/user-dashboard/Profile";
 import Dashboard from "../layout/Dashboard";
 import Home from "../pages/home/Home";
 // import OnlineStore from "../pages/onile-store/OnlineStore";
+import Layout from "../layout/Layout";
 import Login from "../users/Login";
 import Register from "../users/Register";
-import Layout from "../layout/Layout";
-import AdminAdmins from "../dashboard/admin-dashboard/AdminAdmins";
-
-import DashbordUser from "../dashboard/user-dashboard/DashbordUser";
+import BuyerAddProduct from "../dashboard/buyer-dahboard/BuyerAddProduct";
 
 const Routes = createBrowserRouter([
   {
@@ -18,14 +15,10 @@ const Routes = createBrowserRouter([
     errorElement: <ErrorPage />,
     children: [
       {
-        path: "",
+        path: "/",
         element: <Home />,
       },
-    
-      
-   
 
-     
       {
         path: "/login",
         element: <Login />,
@@ -34,34 +27,17 @@ const Routes = createBrowserRouter([
         path: "/register",
         element: <Register />,
       },
-     
+      {
+        path: "add-product",
+        element: <BuyerAddProduct/>,
+      }
     ],
   },
   {
     path: "dashboard",
     element: <Dashboard />,
     children: [
-
-  
-      {
-        path: "user-dashboard",
-        element: <DashbordUser />,
-      },
-     
-     
-     
-     
-      {
-        path: "profile",
-        element: <Profile />,
-      },
-
       // admin routes can be added here
-      {
-        path: "admin",
-        element: <AdminAdmins />,
-      },
-    
     ],
   },
 ]);
