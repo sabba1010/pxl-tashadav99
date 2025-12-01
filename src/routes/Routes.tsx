@@ -6,6 +6,7 @@ import Home from "../pages/home/Home";
 import Layout from "../layout/Layout";
 import Login from "../users/Login";
 import Register from "../users/Register";
+
 import AdminAdmins from "../dashboard/admin-dashboard/AdminAdmins";
 import DashboardOverview from "../dashboard/admin-dashboard/DashboardOverview";
 import AllUsers from "../dashboard/admin-dashboard/AllUsers";
@@ -15,6 +16,10 @@ import WithdrawalRequests from "../dashboard/admin-dashboard/WithdrawalRequests"
 import Profile from "../dashboard/admin-dashboard/Profile";
 import TotalListings from "../dashboard/admin-dashboard/TotalListings";
 
+import BuyerAddProduct from "../dashboard/buyer-dahboard/BuyerAddProduct";
+import path from "path";
+import Buyer from "../dashboard/buyer-dahboard/Buyer";
+
 const Routes = createBrowserRouter([
   {
     path: "/",
@@ -22,7 +27,7 @@ const Routes = createBrowserRouter([
     errorElement: <ErrorPage />,
     children: [
       {
-        path: "",
+        path: "/",
         element: <Home />,
       },
 
@@ -34,12 +39,21 @@ const Routes = createBrowserRouter([
         path: "/register",
         element: <Register />,
       },
+      {
+        path: "add-product",
+        element: <BuyerAddProduct/>,
+      },
+      {
+        path: "buyer-dashboard",
+        element: <Buyer/>,
+      }
     ],
   },
   {
     path: "dashboard",
     element: <Dashboard />,
     children: [
+
       {
         path: "admin-dashboard",
         element: <AdminAdmins />,
@@ -74,6 +88,7 @@ const Routes = createBrowserRouter([
           },
         ],
       },
+      // admin routes can be added here
     ],
   },
 ]);
