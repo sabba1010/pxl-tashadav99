@@ -12,18 +12,18 @@ interface NavItem {
 // 💥 CORRECTED PATHS 💥
 const navItems: NavItem[] = [
   // The path for the Dashboard Overview (index route of the admin-dashboard segment)
-  { name: "Dashboard Overview", path: "/dashboard/admin-dashboard" },
-  { name: "All Users", path: "/dashboard/admin-dashboard/users" },
-  { name: "All Transactions", path: "/dashboard/admin-dashboard/transactions" },
-  { name: "Total Listings", path: "/dashboard/admin-dashboard/listings" },
+  { name: "Dashboard Overview", path: "/admin-dashboard" },
+  { name: "All Users", path: "/admin-dashboard/users" },
+  { name: "All Transactions", path: "/admin-dashboard/transactions" },
+  { name: "Total Listings", path: "/admin-dashboard/listings" },
   // Action/Request Routes
-  { name: "Deposit Requests", path: "/dashboard/admin-dashboard/deposits" },
+  { name: "Deposit Requests", path: "/admin-dashboard/deposits" },
   {
     name: "Withdrawal Requests",
-    path: "/dashboard/admin-dashboard/withdrawals",
+    path: "/admin-dashboard/withdrawals",
   },
   // Administrative/Personal Route
-  { name: "My Profile", path: "/dashboard/admin-dashboard/profile" },
+  { name: "My Profile", path: "/admin-dashboard/profile" },
 ];
 
 const AdminAdmins: React.FC = () => {
@@ -56,9 +56,9 @@ const AdminAdmins: React.FC = () => {
       {/* 🧭 Sidebar (Fixed Width) */}
       <aside className="w-64 bg-gray-800 text-white flex flex-col shadow-2xl">
         <div className="p-6 border-b border-gray-700">
-          <h1 className="text-xl font-extrabold text-indigo-400">
+          <Link to={"/"} className="text-xl font-extrabold text-indigo-400">
             Admin Panel
-          </h1>
+          </Link>
         </div>
         <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
           {navItems.map((item) => (

@@ -270,6 +270,14 @@ export default function Navbar() {
                         />
                       </label>
                     </li>
+                    <li>
+                      <NavLink
+                        className="flex items-center gap-3 px-3 py-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700"
+                        to={"/admin-dashboard"}
+                      >
+                        Admin Dashboard
+                      </NavLink>
+                    </li>
                   </ul>
                 </div>
               )}

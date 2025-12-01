@@ -57,10 +57,7 @@ const Routes = createBrowserRouter([
       }
     ],
   },
-  {
-    path: "dashboard",
-    element: <Dashboard />,
-    children: [
+
 
       {
         path: "admin-dashboard",
@@ -98,7 +95,6 @@ const Routes = createBrowserRouter([
       },
       // admin routes can be added here for admin route
     ],
-  },
-]);
+  );
 
 export default Routes;
