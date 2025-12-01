@@ -1,492 +1,261 @@
-// import React, { useState } from "react";
-// import { Helmet } from "react-helmet";
-// import { FaBox, FaFacebookF, FaGoogle } from "react-icons/fa";
-// import { MdSecurity, MdTrackChanges } from "react-icons/md";
-// import { useAuth } from "../context/AuthContext";
-// import Cookies from "js-cookie";
-// import { useNavigate } from "react-router-dom";
-// import { toast } from "sonner";
+import React, { useState } from 'react';
+import { motion } from 'framer-motion';
+import { Eye, EyeOff, LogIn, Mail, Lock } from 'lucide-react';
 
-// const Login: React.FC = () => {
-//   const { users } = useAuth();
-//   const [email, setEmail] = useState("");
-//   const [password, setPassword] = useState("");
-//   const [error, setError] = useState("");
-//   const navigate = useNavigate();
+const Login = () => {
+  const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
-//   const handleLogin = () => {
-//     setError("");
-
-//     const user = users.find(
-//       (u) => u.email === email && u.password === password
-//     );
-
-//     if (!user) {
-//       setError("Invalid email or password!");
-//       return;
-//     }
-
-//     Cookies.set("currentUser", JSON.stringify(user), { expires: 1 });
-
-//       toast.success(`Welcome back, ${user.name}!`, {
-//     duration: 1800,
-//   });
-
-//     navigate("/dashboard/"); // Redirect to home
-//   };
-
-//   return (
-//     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-[#046838]/20 to-gray-900 relative overflow-hidden">
-//       <Helmet>
-//         <title>Login | Logistics Dashboard</title>
-//         <meta
-//           name="description"
-//           content="Log in to manage shipments and track logistics"
-//         />
-//       </Helmet>
-
-//       <div className="absolute inset-0 overflow-hidden">
-//         <div className="absolute -top-40 -left-40 w-96 h-96 bg-[#046838] rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
-//         <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-[#FA921D] rounded-full mix-blend-multiply filter blur-3xl opacity-25 animate-blob animation-delay-2000"></div>
-//         <div className="absolute top-32 left-1/3 w-80 h-80 bg-[#046838]/60 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
-//       </div>
-
-//       <div className="relative z-10 w-full max-w-6xl mx-auto px-6">
-//         <div className="grid lg:grid-cols-2 gap-0 shadow-2xl rounded-3xl overflow-hidden backdrop-blur-xl bg-white/10 border border-white/20">
-//           {/* Left Side - Login Form */}
-//           <div className="p-10 lg:p-16 flex flex-col justify-center bg-gradient-to-br from-white/95 via-white/90 to-white/85 backdrop-blur-2xl">
-//             <div className="max-w-md mx-auto w-full">
-//               {/* Logo */}
-//               <div className="flex justify-center mb-10">
-//                 <img
-//                   className="w-64 object-contain"
-//                   src="https://i.ibb.co/7xjs7YjB/Expresur-02-1-removebg-preview.webp"
-//                   alt="Expresur Logo"
-//                 />
-//               </div>
-
-//               <h2 className="text-4xl font-bold text-[#046838] mb-3">
-//                 Welcome Back!
-//               </h2>
-//               <p className="text-gray-600 mb-10">
-//                 Log in to track shipments, manage logistics, and stay ahead.
-//               </p>
-
-//               <form
-//                 className="space-y-6"
-//                 onSubmit={(e) => {
-//                   e.preventDefault();
-//                   handleLogin();
-//                 }}
-//               >
-//                 <input
-//                   type="email"
-//                   placeholder="you@company.com"
-//                   value={email}
-//                   onChange={(e) => setEmail(e.target.value)}
-//                   className="w-full px-5 py-4 bg-gray-50 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#046838] focus:border-[#046838] transition-all duration-300 placeholder-gray-400 text-gray-800 font-medium"
-//                   required
-//                 />
-
-//                 <input
-//                   type="password"
-//                   placeholder="••••••••"
-//                   value={password}
-//                   onChange={(e) => setPassword(e.target.value)}
-//                   className="w-full px-5 py-4 bg-gray-50 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#046838] focus:border-[#046838] transition-all duration-300 placeholder-gray-400 text-gray-800 font-medium"
-//                   required
-//                 />
-
-//                 {/* Gradient button */}
-//                 <button
-//                   type="submit"
-//                   className="w-full bg-gradient-to-r from-[#046838] to-[#035230] hover:from-[#035230] hover:to-[#024025] text-white font-bold py-4 rounded-xl transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
-//                 >
-//                   Sign In Securely
-//                 </button>
-
-//                 {/* Error message */}
-//                 {error && <p className="text-red-500 mt-2">{error}</p>}
-//               </form>
-
-//               <div className="mt-8">
-//                 <div className="relative">
-//                   <div className="absolute inset-0 flex items-center">
-//                     <div className="w-full border-t border-gray-300"></div>
-//                   </div>
-//                   <div className="relative flex justify-center text-sm">
-//                     <span className="px-4 bg-white text-gray-500 font-medium">
-//                       Or continue with
-//                     </span>
-//                   </div>
-//                 </div>
-
-//                 <div className="mt-6 grid grid-cols-2 gap-4">
-//                   <button
-//                     type="button"
-//                     className="flex items-center justify-center gap-3 px-4 py-3 bg-white border border-gray-200 rounded-xl hover:shadow transition text-gray-800"
-//                     onClick={() => alert("Continue with Google (implement)")}
-//                   >
-//                     {React.createElement(FaGoogle as any, {
-//                       className: "text-xl text-red-500",
-//                     })}
-//                     <span className="font-medium">Google</span>
-//                   </button>
-
-//                   <button
-//                     type="button"
-//                     className="flex items-center justify-center gap-3 px-4 py-3 bg-white border border-gray-200 rounded-xl hover:shadow transition text-gray-800"
-//                     onClick={() => alert("Continue with Facebook (implement)")}
-//                   >
-//                     {React.createElement(FaFacebookF as any, {
-//                       className: "text-xl text-blue-600",
-//                     })}
-//                     <span className="font-medium">Facebook</span>
-//                   </button>
-//                 </div>
-//               </div>
-
-//               <p className="mt-8 text-center text-gray-600">
-//                 New here?{" "}
-//                 <a
-//                   href="/register"
-//                   className="font-bold text-[#FA921D] hover:text-[#e07f00] transition"
-//                 >
-//                   Create an account
-//                 </a>
-//               </p>
-//             </div>
-//           </div>
-
-//           {/* Right Side - Hero Section */}
-//           <div className="hidden lg:flex relative bg-gradient-to-br from-[#046838] via-[#046838] to-[#035230] p-16 flex-col justify-center items-start text-white">
-//             <div className="max-w-lg">
-//               <h1 className="text-5xl font-bold mb-6 leading-tight">
-//                 Real-Time Logistics,
-//                 <br />
-//                 <span className="text-[#FA921D]">Reimagined</span>
-//               </h1>
-//               <p className="text-xl text-green-100 mb-10 leading-relaxed">
-//                 Track every package, optimize routes, and deliver faster than
-//                 ever with Bangladesh’s most trusted logistics platform.
-//               </p>
-
-//               <div className="space-y-6">
-//                 <div className="flex items-center gap-4">
-//                   <div className="p-4 bg-[#FA921D]/20 backdrop-blur-md rounded-2xl">
-//                     {React.createElement(MdTrackChanges as any, {
-//                       className: "text-3xl text-[#FA921D]",
-//                     })}
-//                   </div>
-//                   <div>
-//                     <h3 className="text-xl font-semibold">
-//                       Live Tracking Dashboard
-//                     </h3>
-//                     <p className="text-green-100">
-//                       See every shipment in real-time
-//                     </p>
-//                   </div>
-//                 </div>
-
-//                 <div className="flex items-center gap-4">
-//                   <div className="p-4 bg-[#FA921D]/20 backdrop-blur-md rounded-2xl">
-//                     {React.createElement(MdSecurity as any, {
-//                       className: "text-3xl text-[#FA921D]",
-//                     })}
-//                   </div>
-//                   <div>
-//                     <h3 className="text-xl font-semibold">
-//                       100% Secure Platform
-//                     </h3>
-//                     <p className="text-green-100">
-//                       Bank-level encryption & protection
-//                     </p>
-//                   </div>
-//                 </div>
-//               </div>
-//             </div>
-
-//             {/* Floating Elements */}
-//             <div className="absolute top-10 right-10 opacity-20">
-//               {React.createElement(FaBox as any, {
-//                 className: "text-9xl animate-float",
-//               })}
-//             </div>
-//           </div>
-//         </div>
-//       </div>
-
-//       {/* Animation Styles */}
-//       <style>{`
-//         @keyframes blob {
-//           0% { transform: translate(0px, 0px) scale(1); }
-//           33% { transform: translate(30px, -50px) scale(1.1); }
-//           66% { transform: translate(-20px, 20px) scale(0.9); }
-//           100% { transform: translate(0px, 0px) scale(1); }
-//         }
-//         .animate-blob { animation: blob 18s infinite; }
-//         .animation-delay-2000 { animation-delay: 2s; }
-//         .animation-delay-4000 { animation-delay: 4s; }
-//         @keyframes float {
-//           0%, 100% { transform: translateY(0); }
-//           50% { transform: translateY(-20px); }
-//         }
-//         .animate-float { animation: float 6s ease-in-out infinite; }
-//       `}</style>
-//     </div>
-//   );
-// };
-
-// export default Login;
-
-// src/pages/Login.tsx
-import React, { useState } from "react";
-import { Helmet } from "react-helmet";
-import { FaBox, FaFacebookF, FaGoogle } from "react-icons/fa";
-import { MdSecurity, MdTrackChanges } from "react-icons/md";
-import { useAuth } from "../context/AuthContext";
-import Cookies from "js-cookie";
-import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
-import Logo from "../assets/Grupo 1.png";
-
-
-const Login: React.FC = () => {
-  const { users } = useAuth();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const navigate = useNavigate();
-
-  const handleLogin = () => {
-    setError("");
-
-    const user = users.find(
-      (u: any) => u.email === email && u.password === password
-    );
-
-    if (!user) {
-      setError("Invalid email or password!");
-      return;
-    }
-
-    // Save current user in cookie (1 day)
-    Cookies.set("currentUser", JSON.stringify(user), { expires: 1 });
-
-    toast.success(`Welcome back, ${user.name}!`, {
-      duration: 1800,
-    });
-
-    // Role based redirect
-    if (user.role === "admin") {
-      navigate("/dashboard/admin");
-    } else if (user.role === "user") {
-      // Send normal users to the required dashboard route
-      navigate("/dashboard/user-dashboard");
-    } else {
-      // fallback
-      navigate("/dashboard");
-    }
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log('Login attempt:', { email, password });
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-[#046838]/20 to-gray-900 relative overflow-hidden">
-      <Helmet>
-        <title>Login | Logistics Dashboard</title>
-        <meta
-          name="description"
-          content="Log in to manage shipments and track logistics"
+    <div className="min-h-screen flex bg-black text-white overflow-hidden">
+      {/* Animated Background Gradient Orbs */}
+      <div className="fixed inset-0 -z-10">
+        <motion.div
+          animate={{
+            x: [0, 100, 0],
+            y: [0, -100, 0],
+          }}
+          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+          className="absolute top-20 left-20 w-96 h-96 bg-red-600 rounded-full blur-3xl opacity-20"
         />
-      </Helmet>
-
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -left-40 w-96 h-96 bg-[#046838] rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
-        <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-[#FA921D] rounded-full mix-blend-multiply filter blur-3xl opacity-25 animate-blob animation-delay-2000"></div>
-        <div className="absolute top-32 left-1/3 w-80 h-80 bg-[#046838]/60 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
+        <motion.div
+          animate={{
+            x: [0, -150, 0],
+            y: [0, 150, 0],
+          }}
+          transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+          className="absolute bottom-20 right-20 w-96 h-96 bg-red-800 rounded-full blur-3xl opacity-20"
+        />
       </div>
 
-      <div className="relative z-10 w-full max-w-6xl mx-auto px-6">
-        <div className="grid lg:grid-cols-2 gap-0 shadow-2xl rounded-3xl overflow-hidden backdrop-blur-xl bg-white/10 border border-white/20">
-          {/* Left Side - Login Form */}
-          <div className="p-10 lg:p-16 flex flex-col justify-center bg-gradient-to-br from-white/95 via-white/90 to-white/85 backdrop-blur-2xl">
-            <div className="max-w-md mx-auto w-full">
-              {/* Logo */}
-              <div className="flex justify-center mb-10">
-                <img
-                  className="w-64 object-contain"
-                  src={Logo}
-                  alt="Expresur Logo"
-                />
+      {/* Left Side - Hero Section */}
+      <motion.div
+        initial={{ opacity: 0, x: -100 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+        className="hidden lg:flex lg:w-1/2 relative bg-gradient-to-br from-gray-900 via-black to-gray-900 overflow-hidden"
+      >
+        <div className="absolute inset-0 bg-black/40 backdrop-blur-3xl" />
+
+        {/* Animated Network Lines */}
+        <motion.svg
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 0.15 }}
+          transition={{ delay: 0.5, duration: 2 }}
+          className="absolute inset-0 w-full h-full"
+          viewBox="0 0 800 800"
+        >
+          {[0, 1, 2, 3].map((i) => (
+            <motion.circle
+              key={`circle-${i}`}
+              cx={[200, 600, 400, 700][i]}
+              cy={[200, 150, 500, 600][i]}
+              r="8"
+              fill="#ef4444"
+              initial={{ scale: 0 }}
+              animate={{ scale: [0, 1.5, 1] }}
+              transition={{ delay: i * 0.2, duration: 1.5 }}
+            />
+          ))}
+          <motion.g stroke="#ef4444" strokeWidth="1.5">
+            {[
+              [200, 200, 600, 150],
+              [600, 150, 700, 600],
+              [200, 200, 400, 500],
+              [400, 500, 700, 600],
+            ].map((line, i) => (
+              <motion.line
+                key={`line-${i}`}
+                x1={line[0]}
+                y1={line[1]}
+                x2={line[2]}
+                y2={line[3]}
+                initial={{ pathLength: 0 }}
+                animate={{ pathLength: 1 }}
+                transition={{ delay: 0.8 + i * 0.2, duration: 1.5, ease: "easeInOut" }}
+              />
+            ))}
+          </motion.g>
+        </motion.svg>
+
+        <div className="relative z-10 flex flex-col justify-between h-full p-12">
+          <motion.div
+            initial={{ y: -50, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            className="flex items-center space-x-4"
+          >
+            <div className="w-14 h-14 bg-red-600 rounded-2xl flex items-center justify-center shadow-2xl shadow-red-500/20">
+              <svg className="w-9 h-9 text-white" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M3 3h18v18H3V3zm16 16V5H5v14h14zM7 7h10v2H7V7zm0 4h10v2H7v-2zm0 4h7v2H7v-2z"/>
+              </svg>
+            </div>
+            <span className="text-4xl font-black tracking-tighter">cctbazaar</span>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.8, duration: 1 }}
+          >
+            <h1 className="text-6xl font-black leading-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-red-500">
+              Connect. Trade.
+              <br />
+              <span className="text-5xl">Transform Influence</span>
+            </h1>
+            <p className="mt-6 text-lg text-gray-300 max-w-md">
+              The future of creator commerce starts here. Unlock your influence with real-time trading.
+            </p>
+          </motion.div>
+
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.2 }}
+            className="text-sm text-gray-500"
+          >
+            © 2025 cctbazaar. All rights reserved.
+          </motion.p>
+        </div>
+      </motion.div>
+
+      {/* Right Side - Login Form */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center px-6 py-12">
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, ease: "easeOut" }}
+          className="w-full max-w-md"
+        >
+          {/* Mobile Logo */}
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="flex lg:hidden justify-center mb-10"
+          >
+            <div className="flex items-center space-x-3">
+              <div className="w-12 h-12 bg-red-600 rounded-xl flex items-center justify-center shadow-lg shadow-red-500/50">
+                <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M3 3h18v18H3V3zm16 16V5H5v14h14zM7 7h10v2H7V7zm0 4h10v2H7v-2zm0 4h7v2H7v-2z"/>
+                </svg>
               </div>
+              <span className="text-3xl font-bold">cctbazaar</span>
+            </div>
+          </motion.div>
 
-              <h2 className="text-4xl font-bold text-[#046838] mb-3">
-                Welcome Back!
-              </h2>
-              <p className="text-gray-600 mb-10">
-                Log in to track shipments, manage logistics, and stay ahead.
-              </p>
+          <motion.h2
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.4 }}
+            className="text-4xl font-extrabold text-center mb-3 bg-clip-text text-transparent bg-gradient-to-r from-white to-red-500"
+          >
+            Welcome Back
+          </motion.h2>
+          <motion.p
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.5 }}
+            className="text-center text-gray-400 mb-10"
+          >
+            Don't have an account?{' '}
+            <a href="#" className="text-red-500 font-semibold hover:text-red-400 transition">
+              Sign up free
+            </a>
+          </motion.p>
 
-              <form
-                className="space-y-6"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handleLogin();
-                }}
-              >
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Email Field */}
+            <motion.div
+              initial={{ x: -50, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ delay: 0.6 }}
+            >
+              <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
+                Email Address
+              </label>
+              <div className="relative">
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                 <input
+                  id="email"
                   type="email"
-                  placeholder="you@company.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-5 py-4 bg-gray-50 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#046838] focus:border-[#046838] transition-all duration-300 placeholder-gray-400 text-gray-800 font-medium"
                   required
+                  className="w-full pl-12 pr-4 py-4 bg-gray-900/50 backdrop-blur-md border border-gray-800 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-300 shadow-xl"
+                  placeholder="you@example.com"
                 />
+              </div>
+            </motion.div>
 
+            {/* Password Field */}
+            <motion.div
+              initial={{ x: -50, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ delay: 0.7 }}
+            >
+              <div className="flex justify-between items-center mb-2">
+                <label htmlFor="password" className="text-sm font-medium text-gray-300">
+                  Password
+                </label>
+                <a href="#" className="text-sm text-red-500 hover:text-red-400 transition">
+                  Forgot?
+                </a>
+              </div>
+              <div className="relative">
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                 <input
-                  type="password"
-                  placeholder="••••••••"
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-5 py-4 bg-gray-50 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#046838] focus:border-[#046838] transition-all duration-300 placeholder-gray-400 text-gray-800 font-medium"
                   required
+                  className="w-full pl-12 pr-12 py-4 bg-gray-900/50 backdrop-blur-md border border-gray-800 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-300 shadow-xl"
+                  placeholder="••••••••"
                 />
-
-                {/* Gradient button */}
                 <button
-                  type="submit"
-                  className="w-full bg-gradient-to-r from-[#046838] to-[#035230] hover:from-[#035230] hover:to-[#024025] text-white font-bold py-4 rounded-xl transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition"
                 >
-                  Sign In Securely
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
-
-                {/* Error message */}
-                {error && <p className="text-red-500 mt-2">{error}</p>}
-              </form>
-
-              <div className="mt-8">
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-gray-300"></div>
-                  </div>
-                  <div className="relative flex justify-center text-sm">
-                    <span className="px-4 bg-white text-gray-500 font-medium">
-                      Or continue with
-                    </span>
-                  </div>
-                </div>
-
-                <div className="mt-6 grid grid-cols-2 gap-4">
-                  <button
-                    type="button"
-                    className="flex items-center justify-center gap-3 px-4 py-3 bg-white border border-gray-200 rounded-xl hover:shadow transition text-gray-800"
-                    onClick={() => alert("Continue with Google (implement)")}
-                  >
-                    {React.createElement(FaGoogle as any, {
-                      className: "text-xl text-red-500",
-                    })}
-                    <span className="font-medium">Google</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    className="flex items-center justify-center gap-3 px-4 py-3 bg-white border border-gray-200 rounded-xl hover:shadow transition text-gray-800"
-                    onClick={() => alert("Continue with Facebook (implement)")}
-                  >
-                    {React.createElement(FaFacebookF as any, {
-                      className: "text-xl text-blue-600",
-                    })}
-                    <span className="font-medium">Facebook</span>
-                  </button>
-                </div>
               </div>
+            </motion.div>
 
-              <p className="mt-8 text-center text-gray-600">
-                New here?{" "}
-                <a
-                  href="/register"
-                  className="font-bold text-[#FA921D] hover:text-[#e07f00] transition"
-                >
-                  Create an account
-                </a>
-              </p>
-            </div>
-          </div>
-
-          {/* Right Side - Hero Section */}
-          <div className="hidden lg:flex relative bg-gradient-to-br from-[#046838] via-[#046838] to-[#035230] p-16 flex-col justify-center items-start text-white">
-            <div className="max-w-lg">
-              <h1 className="text-5xl font-bold mb-6 leading-tight">
-                Real-Time Logistics,
-                <br />
-                <span className="text-[#FA921D]">Reimagined</span>
-              </h1>
-              <p className="text-xl text-green-100 mb-10 leading-relaxed">
-                Track every package, optimize routes, and deliver faster than
-                ever with Bangladesh’s most trusted logistics platform.
-              </p>
-
-              <div className="space-y-6">
-                <div className="flex items-center gap-4">
-                  <div className="p-4 bg-[#FA921D]/20 backdrop-blur-md rounded-2xl">
-                    {React.createElement(MdTrackChanges as any, {
-                      className: "text-3xl text-[#FA921D]",
-                    })}
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-semibold">
-                      Live Tracking Dashboard
-                    </h3>
-                    <p className="text-green-100">
-                      See every shipment in real-time
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-4">
-                  <div className="p-4 bg-[#FA921D]/20 backdrop-blur-md rounded-2xl">
-                    {React.createElement(MdSecurity as any, {
-                      className: "text-3xl text-[#FA921D]",
-                    })}
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-semibold">
-                      100% Secure Platform
-                    </h3>
-                    <p className="text-green-100">
-                      Bank-level encryption & protection
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Floating Elements */}
-            <div className="absolute top-10 right-10 opacity-20">
-              {React.createElement(FaBox as any, {
-                className: "text-9xl animate-float",
-              })}
-            </div>
-          </div>
-        </div>
+            {/* Submit Button */}
+            <motion.div
+              initial={{ y: 30, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.9 }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <button
+                type="submit"
+                className="w-full relative group bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white font-bold py-5 rounded-2xl transition-all duration-300 shadow-2xl shadow-red-500/30 flex items-center justify-center space-x-3 overflow-hidden"
+              >
+                <span className="relative z-10 flex items-center space-x-2">
+                  <LogIn className="w-5 h-5" />
+                  <span className="text-lg">Login to Dashboard</span>
+                </span>
+                <motion.div
+                  className="absolute inset-0 bg-white/20"
+                  initial={{ x: "-100%" }}
+                  whileHover={{ x: "100%" }}
+                  transition={{ duration: 0.6 }}
+                />
+              </button>
+            </motion.div>
+          </form>
+        </motion.div>
       </div>
-
-      {/* Animation Styles */}
-      <style>{`
-        @keyframes blob {
-          0% { transform: translate(0px, 0px) scale(1); }
-          33% { transform: translate(30px, -50px) scale(1.1); }
-          66% { transform: translate(-20px, 20px) scale(0.9); }
-          100% { transform: translate(0px, 0px) scale(1); }
-        }
-        .animate-blob { animation: blob 18s infinite; }
-        .animation-delay-2000 { animation-delay: 2s; }
-        .animation-delay-4000 { animation-delay: 4s; }
-        @keyframes float {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-20px); }
-        }
-        .animate-float { animation: float 6s ease-in-out infinite; }
-      `}</style>
     </div>
   );
 };
