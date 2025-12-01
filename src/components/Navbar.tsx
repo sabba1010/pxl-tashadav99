@@ -39,7 +39,7 @@ export default function Navbar() {
           {/* Logo */}
           <div className="flex items-center">
             <NavLink to="/" className="flex items-center gap-3">
-              <img src="/logo.png" alt="AcctBazaar" className="h-9 w-auto" />
+              <img src="/logo.png" alt="Logo" className="h-9 w-auto" />
               <span className="hidden sm:inline font-bold text-xl text-orange-600">
                 Tashadav99
               </span>
