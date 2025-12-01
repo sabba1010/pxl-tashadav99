@@ -30,9 +30,9 @@ const MyPurchase = () => {
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">My Purchase</h1>
               <p className="text-sm text-gray-600 mt-1">All of your product purchase shows here</p>
             </div>
-            <button className="bg-red-500 text-white px-6 py-2.5 rounded-full font-medium hover:bg-red-600 transition shadow-sm">
+          <Link reportto="/report">
               Report Product
-            </button>
+          </Link>
           </div>
 
           {/* Yellow Warning Banner */}
