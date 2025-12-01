@@ -21,6 +21,7 @@ import Marketplace from "../Marketplace/Marketplace";
 
 // import path from "path";
 import Buyer from "../dashboard/buyer-dahboard/Buyer";
+import Mypurchase from "../Mypurchase/Mypurchase";
 
 
 const Routes = createBrowserRouter([
@@ -41,6 +42,10 @@ const Routes = createBrowserRouter([
       {
         path: "/login",
         element: <Login />,
+      },
+      {
+            path:"/purchases",
+          element: <Mypurchase/>
       },
       {
         path: "/register",
