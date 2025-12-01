@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, LogIn, Mail, Lock, Sparkles } from 'lucide-react';
 
@@ -137,9 +138,9 @@ const Login = () => {
 
               <p className="text-center text-gray-500 mt-3 mb-10">
                 No account?{' '}
-                <a href="#" className="font-semibold text-orange-400 hover:text-orange-300 transition">
+                <Link to="/register" className="font-semibold text-orange-400 hover:text-orange-300 transition">
                   Sign up free
-                </a>
+                </Link>
               </p>
 
               <form onSubmit={handleSubmit} className="space-y-6">

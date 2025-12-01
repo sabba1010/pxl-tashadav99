@@ -1,290 +1,336 @@
-// src/pages/Register.tsx
-import React, { useState, useEffect } from "react";
-import { Helmet } from "react-helmet";
-import {
-  FaCheckCircle,
-  FaShieldAlt,
-  FaTachometerAlt,
-  FaUpload,
-  FaTimes,
-} from "react-icons/fa";
-import Box from "@mui/material/Box";
-import TextField from "@mui/material/TextField";
-import CircularProgress from "@mui/material/CircularProgress";
-import { toast } from "sonner";
+import React, { useState } from 'react';
+import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
+import { Eye, EyeOff, Mail, Lock, User, Phone, Sparkles, ChevronDown } from 'lucide-react';
 
-const Icon = React.memo(
-  ({ icon: IconComponent, className }: { icon: any; className?: string }) => (
-    <IconComponent className={className} />
-  )
-);
+// Country list with real flag emojis
+const countries = [
+  { code: '+234', flag: 'NG', label: 'Nigeria' },
+  { code: '+1',   flag: 'US', label: 'United States' },
+  { code: '+44',  flag: 'GB', label: 'United Kingdom' },
+  { code: '+91',  flag: 'IN', label: 'India' },
+  { code: '+254', flag: 'KE', label: 'Kenya' },
+  { code: '+233', flag: 'GH', label: 'Ghana' },
+  { code: '+27',  flag: 'ZA', label: 'South Africa' },
+  { code: '+234', flag: 'NG', label: 'Nigeria (Default)' },
+];
 
-const Register: React.FC = () => {
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+const Register = () => {
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [agreed, setAgreed] = useState(false);
+  const [isCountryOpen, setIsCountryOpen] = useState(false);
+  const [selectedCountry, setSelectedCountry] = useState(countries[0]);
 
-  useEffect(() => {
-    return () => {
-      if (photoPreview?.startsWith("blob:")) {
-        URL.revokeObjectURL(photoPreview);
-      }
-    };
-  }, [photoPreview]);
-
-  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const url = URL.createObjectURL(file);
-      setPhotoPreview(url);
-    }
-  };
-
-  const removePhoto = () => {
-    if (photoPreview?.startsWith("blob:")) URL.revokeObjectURL(photoPreview);
-    setPhotoPreview(null);
-
-    const input = document.getElementById("profilePhotoInput") as HTMLInputElement;
-    if (input) input.value = "";
-  };
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-
-    const form = e.currentTarget; // prevents null issue
-    const elements = form.elements;
-
-    const firstName = (elements.namedItem("firstName") as HTMLInputElement).value.trim();
-    const lastName = (elements.namedItem("lastName") as HTMLInputElement).value.trim();
-    const email = (elements.namedItem("email") as HTMLInputElement).value.trim();
-    const phone = (elements.namedItem("phone") as HTMLInputElement).value.trim();
-    const username = (elements.namedItem("username") as HTMLInputElement).value.trim() || null;
-    const password = (elements.namedItem("password") as HTMLInputElement).value;
-    const confirmPassword = (elements.namedItem("confirmPassword") as HTMLInputElement).value;
-
-    const country = (elements.namedItem("country") as HTMLInputElement).value.trim();
-    const state = (elements.namedItem("state") as HTMLInputElement).value.trim();
-    const city = (elements.namedItem("city") as HTMLInputElement).value.trim();
-    const address = (elements.namedItem("address") as HTMLInputElement).value.trim();
-    const postalCode = (elements.namedItem("postalCode") as HTMLInputElement).value.trim();
-
-    // Validation
-    if (!email.includes("@")) {
-      alert("Please enter a valid email");
-      setIsSubmitting(false);
-      return;
-    }
-    if (password.length < 8) {
-      alert("Password must be at least 8 characters");
-      setIsSubmitting(false);
-      return;
-    }
-    if (password !== confirmPassword) {
-      alert("Passwords do not match");
-      setIsSubmitting(false);
-      return;
-    }
-
-    // Photo file
-    const photoInput = document.getElementById("profilePhotoInput") as HTMLInputElement;
-    const profilePhoto = photoInput?.files?.[0] || null;
-
-    // Separate delivery address object
-    const deliveryAddress = {
-      country,
-      state,
-      city,
-      address,
-      postalCode,
-    };
-
-    const formData = {
-      firstName,
-      lastName,
-      email,
-      phone,
-      username,
-      password,
-      userEmail: email,
-      profilePhoto: profilePhoto ? profilePhoto.name : "None",
-      deliveryAddress,
-      role: "user",
-    };
-
-    console.log("REGISTRATION SUBMITTED:", formData);
-
-    setTimeout(() => {
-       toast.success(`Welcome back, ${formData.firstName}!`, {
-    duration: 1800,
+  const [formData, setFormData] = useState({
+    fullName: '',
+    email: '',
+    phone: '',
+    password: '',
+    confirmPassword: '',
   });
-      form.reset(); // safe reset
-      removePhoto();
-      setIsSubmitting(false);
-    }, 1000);
-  };
 
-  const features = [
-    { icon: FaTachometerAlt, title: "42% Faster Delivery", desc: "AI-powered route optimization" },
-    { icon: FaShieldAlt, title: "100% Secure Platform", desc: "Bank-grade encryption & compliance" },
-  ];
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (formData.password !== formData.confirmPassword) {
+      alert('Passwords do not match!');
+      return;
+    }
+    console.log('Register:', { ...formData, countryCode: selectedCountry.code });
+  };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-white to-gray-100 relative overflow-hidden">
-      <Helmet>
-        <title>Register | Expresur Logistics</title>
-      </Helmet>
+    <div className="min-h-screen w-full bg-[#111827] relative overflow-hidden">
 
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -left-40 w-96 h-96 bg-[#046838]/10 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-[#FA921D]/10 rounded-full blur-3xl animate-pulse delay-1000" />
+      {/* Animated Background Network */}
+      <div className="fixed inset-0 -z-10 opacity-10 pointer-events-none">
+        <svg className="w-full h-full" viewBox="0 0 1200 800">
+          <motion.line
+            x1="100" y1="200" x2="500" y2="600"
+            stroke="#f97316"
+            strokeWidth="1.5"
+            initial={{ pathLength: 0 }}
+            animate={{ pathLength: 1, opacity: [0.3, 0.8, 0.3] }}
+            transition={{ duration: 8, repeat: Infinity }}
+          />
+          <motion.line
+            x1="800" y1="100" x2="300" y2="500"
+            stroke="#ec4899"
+            strokeWidth="1.5"
+            initial={{ pathLength: 0 }}
+            animate={{ pathLength: 1, opacity: [0.3, 0.7, 0.3] }}
+            transition={{ duration: 10, repeat: Infinity, delay: 1 }}
+          />
+          {[...Array(8)].map((_, i) => (
+            <motion.circle
+              key={i}
+              cx={100 + i * 140}
+              cy={200 + (i % 3) * 150}
+              r="4"
+              fill="#f97316"
+              animate={{
+                scale: [1, 1.6, 1],
+                opacity: [0.4, 1, 0.4],
+              }}
+              transition={{
+                duration: 4 + i * 0.5,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+            />
+          ))}
+        </svg>
       </div>
 
-      <div className="relative z-10 w-full max-w-7xl mx-auto px-6 py-12">
-        <div className="grid lg:grid-cols-2 gap-0 bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl ring-1 ring-black/5 overflow-hidden">
+      <div className="flex max-w-7xl mx-auto px-6 min-h-screen items-center justify-center">
+        <div className="grid lg:grid-cols-2 gap-20 items-center w-full">
 
-          {/* LEFT SIDE (FORM) */}
-          <div className="p-8 lg:p-16 flex flex-col justify-center">
-            <div className="max-w-lg mx-auto w-full">
-
-              <img
-                src="https://i.ibb.co/7xjs7YjB/Expresur-02-1-removebg-preview.webp"
-                alt="Logo"
-                className="h-12 lg:h-16 object-contain mb-10"
-              />
-
-              <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
-                Welcome to the Future of Logistics
-              </h2>
-
-              <p className="text-lg text-gray-600 mb-10">
-                Join thousands of businesses delivering smarter and faster.
-              </p>
-
-              <Box component="form" onSubmit={handleSubmit} noValidate autoComplete="off">
-                <div className="space-y-6">
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <TextField label="First Name" name="firstName" required fullWidth />
-                    <TextField label="Last Name" name="lastName" required fullWidth />
-                  </div>
-
-                  <TextField label="Business Email" name="email" type="email" required fullWidth />
-                  <TextField label="Phone Number" name="phone" type="tel" required fullWidth />
-                  <TextField label="Username (Optional)" name="username" fullWidth />
-
-                  {/* PHOTO UPLOAD */}
-                  <div className="flex items-center gap-6">
-                    {photoPreview ? (
-                      <div className="relative group">
-                        <img
-                          src={photoPreview}
-                          alt="Preview"
-                          className="w-20 h-26 rounded-full object-cover ring-4 ring-[#046838]/10 shadow-lg"
-                        />
-                        <button
-                          type="button"
-                          onClick={removePhoto}
-                          className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition"
-                        >
-                          <Icon icon={FaTimes} className="w-3 h-3" />
-                        </button>
-                      </div>
-                    ) : (
-                      <label
-                        htmlFor="profilePhotoInput"
-                        className="w-20 h-16 rounded-full bg-gray-200 border-2 border-dashed border-gray-400 flex items-center justify-center cursor-pointer"
-                      >
-                        <Icon icon={FaUpload} className="text-gray-400 text-2xl" />
-                      </label>
-                    )}
-
-                    <input
-                      id="profilePhotoInput"
-                      type="file"
-                      accept="image/*"
-                      onChange={handlePhotoChange}
-                      className="block w-full text-sm text-gray-600 file:mr-4 file:py-3 file:px-6 file:rounded-xl file:border-0 file:text-sm file:font-medium file:bg-[#046838] file:text-white hover:file:bg-[#035230]"
-                    />
-                  </div>
-
-                  {/* DELIVERY ADDRESS */}
-                  <div className="pt-6 border-t border-gray-200">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-5">Delivery Address</h3>
-
-                    <TextField label="Country" name="country" required fullWidth sx={{ mb: 3 }} />
-                    <TextField label="State" name="state" required fullWidth sx={{ mb: 3 }} />
-                    <TextField label="City" name="city" required fullWidth sx={{ mb: 3 }} />
-                    <TextField label="Address" name="address" required fullWidth sx={{ mb: 3 }} />
-                    <TextField label="Postal Code" name="postalCode" required fullWidth sx={{ mb: 3 }} />
-                  </div>
-
-                  <TextField label="Create Password" name="password" type="password" required fullWidth />
-                  <TextField label="Confirm Password" name="confirmPassword" type="password" required fullWidth />
-
-                  <div className="flex items-center gap-3">
-                    <input type="checkbox" id="terms" required className="w-5 h-5" />
-                    <label htmlFor="terms" className="text-sm text-gray-600">
-                      I agree to the <span className="text-[#046838] font-medium">Terms</span> and{" "}
-                      <span className="text-[#046838] font-medium">Privacy Policy</span>.
-                    </label>
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="w-full bg-[#046838] hover:bg-[#035230] disabled:bg-gray-400 text-white font-bold py-5 rounded-2xl transition-all duration-300 flex items-center justify-center gap-3 shadow-lg hover:shadow-xl"
-                  >
-                    {isSubmitting ? (
-                      <CircularProgress size={24} color="inherit" />
-                    ) : (
-                      <>
-                        <Icon icon={FaCheckCircle} className="text-xl" />
-                        Create Your Free Account
-                      </>
-                    )}
-                  </button>
+          {/* Left Hero */}
+          <motion.div
+            initial={{ opacity: 0, x: -80 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 1 }}
+            className="hidden lg:block"
+          >
+            <div className="relative">
+              <motion.div
+                initial={{ y: -40, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.3 }}
+                className="flex items-center gap-4 mb-12"
+              >
+                <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-pink-600 rounded-2xl flex items-center justify-center shadow-2xl shadow-orange-500/50">
+                  <Sparkles className="w-9 h-9 text-white" />
                 </div>
-              </Box>
+                <span className="text-5xl font-black text-white">cctbazaar</span>
+              </motion.div>
 
-              <p className="mt-8 text-center text-gray-600">
-                Already have an account?{" "}
-                <a href="/login" className="font-bold text-[#046838] hover:text-[#FA921D]">
-                  Log In
-                </a>
-              </p>
+              <motion.h1
+                initial={{ opacity: 0, y: 40 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 }}
+                className="text-7xl font-black leading-tight text-white"
+              >
+                Connect. Trade.<br />
+                <span className="text-orange-500">Transform</span><br />
+                Your Influence
+              </motion.h1>
+
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.9 }}
+                className="mt-8 text-xl text-gray-400"
+              >
+                Join the future of creator commerce. Trade your social reach like never before.
+              </motion.p>
             </div>
-          </div>
+          </motion.div>
 
-          {/* RIGHT SIDE */}
-          <div className="hidden lg:block relative bg-gradient-to-br from-[#046838] to-[#035230] p-16 text-white overflow-hidden">
-            <div className="absolute inset-0 bg-black/10" />
-            <div className="relative z-10 max-w-lg">
+          {/* Register Form */}
+          <motion.div
+            initial={{ opacity: 0, y: 60 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.9 }}
+            className="w-full max-w-lg mx-auto"
+          >
+            <div className="bg-black/40 backdrop-blur-xl border border-gray-700/50 rounded-3xl p-10 shadow-2xl">
 
-              <h1 className="text-5xl lg:text-6xl font-extrabold mb-6 leading-tight">
-                Join Thousands of <span className="text-[#FA921D]">Smart Businesses</span>
-              </h1>
-
-              <p className="text-xl text-green-100 mb-12">
-                Real-time tracking, AI-optimized routes, and unbreakable security — all in one platform.
-              </p>
-
-              <div className="space-y-10">
-                {features.map((item, i) => (
-                  <div key={i} className="flex items-start gap-6 group">
-                    <div className="p-4 bg-[#FA921D]/20 backdrop-blur-sm rounded-2xl group-hover:bg-[#FA921D]/30 transition">
-                      <Icon icon={item.icon} className="text-3xl text-[#FA921D]" />
-                    </div>
-                    <div>
-                      <h3 className="text-2xl font-bold">{item.title}</h3>
-                      <p className="text-green-100">{item.desc}</p>
-                    </div>
+              {/* Mobile Logo */}
+              <div className="flex lg:hidden justify-center mb-8">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 bg-gradient-to-br from-orange-500 to-pink-600 rounded-2xl flex items-center justify-center shadow-xl">
+                    <Sparkles className="w-8 h-8 text-white" />
                   </div>
-                ))}
+                  <span className="text-3xl font-bold text-white">cctbazaar</span>
+                </div>
               </div>
 
-            </div>
-          </div>
+              <motion.h2
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.3 }}
+                className="text-4xl font-black text-center text-white mb-2 flex items-center justify-center gap-3"
+              >
+                Welcome to cctbazaar
+                <motion.span
+                  animate={{ rotate: [0, 20, -10, 15, 0] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                  className="text-4xl"
+                >
+                  
+                </motion.span>
+              </motion.h2>
 
+              <p className="text-center text-gray-400 mb-8">
+                Already have an account?{' '}
+                <Link to="/login" className="text-orange-500 font-semibold hover:text-orange-400">
+                  Login
+                </Link>
+              </p>
+
+              <form onSubmit={handleSubmit} className="space-y-5">
+
+                {/* Full Name */}
+                <div>
+                  <label className="text-sm font-medium text-gray-300">Full Name</label>
+                  <div className="relative mt-2">
+                    <User className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-orange-400" />
+                    <input
+                      type="text"
+                      required
+                      value={formData.fullName}
+                      onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                      className="w-full pl-14 pr-5 py-4 bg-gray-900/60 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/30 transition"
+                      placeholder="John Doe"
+                    />
+                  </div>
+                </div>
+
+                {/* Email */}
+                <div>
+                  <label className="text-sm font-medium text-gray-300">Email address</label>
+                  <div className="relative mt-2">
+                    <Mail className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-orange-400" />
+                    <input
+                      type="email"
+                      required
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      className="w-full pl-14 pr-5 py-4 bg-gray-900/60 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/30 transition"
+                      placeholder="you@example.com"
+                    />
+                  </div>
+                </div>
+
+                {/* Phone Number with Real Flag Dropdown */}
+                <div>
+                  <label className="text-sm font-medium text-gray-300">Phone Number</label>
+                  <div className="relative mt-2">
+                    {/* Country Selector Button */}
+                    <button
+                      type="button"
+                      onClick={() => setIsCountryOpen(!isCountryOpen)}
+                      className="absolute left-3 top-1/2 -translate-y-1/2 z-10 flex items-center gap-2 bg-gray-900/80 px-3 py-2 rounded-lg hover:bg-gray-800 transition"
+                    >
+                      <span className="text-2xl">{selectedCountry.flag}</span>
+                      <span className="text-sm text-gray-300">{selectedCountry.code}</span>
+                      <ChevronDown className={`w-4 h-4 text-gray-400 transition ${isCountryOpen ? 'rotate-180' : ''}`} />
+                    </button>
+
+                    {/* Dropdown */}
+                    {isCountryOpen && (
+                      <div className="absolute left-0 top-full mt-2 w-full bg-gray-900 border border-gray-700 rounded-xl shadow-2xl z-20 max-h-64 overflow-y-auto">
+                        {countries.map((country) => (
+                          <div
+                            key={country.code}
+                            onClick={() => {
+                              setSelectedCountry(country);
+                              setIsCountryOpen(false);
+                            }}
+                            className="flex items-center gap-3 px-4 py-3 hover:bg-gray-800 cursor-pointer transition"
+                          >
+                            <span className="text-2xl">{country.flag}</span>
+                            <span className="text-gray-300 text-sm">{country.label}</span>
+                            <span className="ml-auto text-gray-500 text-sm">{country.code}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Phone Icon */}
+                    <Phone className="absolute left-40 top-1/2 -translate-y-1/2 w-5 h-5 text-orange-400 z-10" />
+
+                    {/* Phone Input */}
+                    <input
+                      type="tel"
+                      required
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      className="w-full pl-52 pr-5 py-4 bg-gray-900/60 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/30 transition"
+                      placeholder="801 234 5678"
+                    />
+                  </div>
+                </div>
+
+                {/* Password */}
+                <div>
+                  <label className="text-sm font-medium text-gray-300">Password</label>
+                  <div className="relative mt-2">
+                    <Lock className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-orange-400" />
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      required
+                      value={formData.password}
+                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                      className="w-full pl-14 pr-14 py-4 bg-gray-900/60 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/30 transition"
+                      placeholder="Create a strong password"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+                    >
+                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    </button>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2 text-xs">
+                    Minimum length of 8-30 characters<br />
+                    Only lowercase, numeric and symbols allowed
+                  </p>
+                </div>
+
+                {/* Confirm Password */}
+                <div>
+                  <label className="text-sm font-medium text-gray-300">Confirm password</label>
+                  <div className="relative mt-2">
+                    <Lock className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-orange-400" />
+                    <input
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      required
+                      value={formData.confirmPassword}
+                      onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                      className="w-full pl-14 pr-14 py-4 bg-gray-900/60 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/30 transition"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+                    >
+                      {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    </button>
+                  </div>
+                </div>
+
+               
+
+                {/* Terms Checkbox */}
+                <div className="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    id="terms"
+                    checked={agreed}
+                    onChange={(e) => setAgreed(e.target.checked)}
+                    className="w-5 h-5 text-orange-500 rounded focus:ring-orange-500 bg-gray-800 border-gray-600"
+                  />
+                  <label htmlFor="terms" className="text-sm text-gray-400">
+                    By clicking on this, I give consent to cctbazaar Privacy Policy and Terms of Use
+                  </label>
+                </div>
+
+                {/* Sign Up Button */}
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  type="submit"
+                  disabled={!agreed}
+                  className="w-full bg-orange-500 hover:bg-orange-600 disabled:bg-gray-700 disabled:cursor-not-allowed text-white font-bold text-lg py-5 rounded-2xl shadow-xl shadow-orange-500/30 transition-all mt-8"
+                >
+                  Sign up
+                </motion.button>
+              </form>
+            </div>
+          </motion.div>
         </div>
       </div>
     </div>
