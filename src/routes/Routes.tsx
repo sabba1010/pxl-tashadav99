@@ -23,6 +23,7 @@ import Marketplace from "../Marketplace/Marketplace";
 import Buyer from "../dashboard/buyer-dahboard/Buyer";
 import Mypurchase from "../Mypurchase/Mypurchase";
 import Report from "../Mypurchase/Report";
+import Walet from "../Walte/Walet";
 
 const Routes = createBrowserRouter([
   {
@@ -46,6 +47,10 @@ const Routes = createBrowserRouter([
       {
         path: "/purchases",
         element: <Mypurchase />,
+      },
+      {
+        path: "/wallet",
+        element: <Walet/>,
       },
       {
         path: "/report",
