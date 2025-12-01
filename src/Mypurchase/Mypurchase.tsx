@@ -30,7 +30,7 @@ const MyPurchase = () => {
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">My Purchase</h1>
               <p className="text-sm text-gray-600 mt-1">All of your product purchase shows here</p>
             </div>
-          <Link to="/report">
+          <Link to="/report" className="mt-6 bg-orange-500 text-white px-8 py-3 rounded-full font-medium hover:bg-orange-600 transition shadow-lg">
               Report Product
           </Link>
           </div>

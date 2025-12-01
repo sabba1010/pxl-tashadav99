@@ -141,7 +141,7 @@ export default function Report(): React.ReactElement {
                 type="text"
                 value={form.name}
                 onChange={handleChange("name")}
-                placeholder="Ataur Rahman"
+                placeholder="Your Name"
                 className={`w-full rounded-lg border px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-orange-400 ${errors.name ? "border-red-300" : "border-gray-200"}`}
                 aria-invalid={!!errors.name}
                 aria-describedby={errors.name ? "err-name" : undefined}
