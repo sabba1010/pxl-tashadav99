@@ -6,6 +6,14 @@ import Home from "../pages/home/Home";
 import Layout from "../layout/Layout";
 import Login from "../users/Login";
 import Register from "../users/Register";
+import AdminAdmins from "../dashboard/admin-dashboard/AdminAdmins";
+import DashboardOverview from "../dashboard/admin-dashboard/DashboardOverview";
+import AllUsers from "../dashboard/admin-dashboard/AllUsers";
+import AllTransactions from "../dashboard/admin-dashboard/AllTransactions";
+import DepositRequests from "../dashboard/admin-dashboard/DepositRequests";
+import WithdrawalRequests from "../dashboard/admin-dashboard/WithdrawalRequests";
+import Profile from "../dashboard/admin-dashboard/Profile";
+import TotalListings from "../dashboard/admin-dashboard/TotalListings";
 
 const Routes = createBrowserRouter([
   {
@@ -32,8 +40,40 @@ const Routes = createBrowserRouter([
     path: "dashboard",
     element: <Dashboard />,
     children: [
-      // admin routes can be added here
-
+      {
+        path: "admin-dashboard",
+        element: <AdminAdmins />,
+        children: [
+          {
+            index: true,
+            element: <DashboardOverview />,
+          },
+          {
+            path: "users",
+            element: <AllUsers />,
+          },
+          {
+            path: "transactions",
+            element: <AllTransactions />,
+          },
+          {
+            path: "deposits",
+            element: <DepositRequests />,
+          },
+          {
+            path: "withdrawals",
+            element: <WithdrawalRequests />,
+          },
+          {
+            path: "profile",
+            element: <Profile />,
+          },
+          {
+            path: "listings",
+            element: <TotalListings />,
+          },
+        ],
+      },
     ],
   },
 ]);
