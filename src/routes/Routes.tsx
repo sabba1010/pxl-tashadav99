@@ -88,7 +88,7 @@ const Routes = createBrowserRouter([
           },
         ],
       },
-      // admin routes can be added here
+      // admin routes can be added here for admin route
     ],
   },
 ]);
