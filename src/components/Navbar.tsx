@@ -1,174 +1,138 @@
+// src/components/Navbar.tsx
 import React, { useState, useRef, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 
 export default function Navbar() {
-  const [open, setOpen] = useState<boolean>(false);
-  const [dark, setDark] = useState<boolean>(false);
+  const [open, setOpen] = useState(false);           // Avatar dropdown
+  const [dark, setDark] = useState(false);           // Dark mode
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false); // Mobile menu
 
-  // typed ref so TypeScript knows .contains() exists
-  const ddRef = useRef<HTMLDivElement | null>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
+  // Close avatar dropdown when clicking outside
   useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      const target = e.target as Node;
-      if (ddRef.current && !ddRef.current.contains(target)) {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setOpen(false);
       }
-    }
-
-    function handleKey(e: KeyboardEvent) {
-      if (e.key === "Escape") setOpen(false);
-    }
-
-    document.addEventListener("mousedown", handleClick);
-    document.addEventListener("keydown", handleKey);
-    return () => {
-      document.removeEventListener("mousedown", handleClick);
-      document.removeEventListener("keydown", handleKey);
     };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Optional: Apply dark mode to body (uncomment if you want global dark mode)
+  // useEffect(() => {
+  //   if (dark) document.documentElement.classList.add("dark");
+  //   else document.documentElement.classList.remove("dark");
+  // }, [dark]);
+
   return (
-    <header
-      className={`w-full bg-white ${dark ? "dark bg-gray-900" : ""} shadow-sm`}
-    >
-      <nav className="w-full px-4 sm:px-6 lg:px-8">
+    <header className={`w-full bg-white dark:bg-gray-900 shadow-sm sticky top-0 z-50 border-b border-gray-200 dark:border-gray-800`}>
+      <nav className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          {/* Left: logo */}
-          <div className="flex items-center gap-4">
-            <NavLink to="/" className="flex items-center gap-2">
-              <img src="/logo.png" alt="logoa" className="h-8 w-auto" />
-              <span className="hidden sm:inline font-semibold text-gray-800 dark:text-gray-100">
-                Webite Name
+
+          {/* Logo */}
+          <div className="flex items-center">
+            <NavLink to="/" className="flex items-center gap-3">
+              <img src="/logo.png" alt="AcctBazaar" className="h-9 w-auto" />
+              <span className="hidden sm:inline font-bold text-xl text-orange-600">
+               Tashadav99
               </span>
             </NavLink>
           </div>
 
-          {/* Center: links */}
-          <div className="hidden md:flex items-center gap-6">
+          {/* Desktop Navigation */}
+          <div className="hidden lg:flex items-center gap-8">
             <NavLink
               to="/marketplace"
               className={({ isActive }) =>
-                isActive
-                  ? "text-orange-500 font-medium"
-                  : "text-gray-700 hover:text-gray-900"
+                `font-medium transition ${isActive ? "text-orange-500" : "text-gray-700 hover:text-orange-500"}`
               }
             >
               Marketplace
             </NavLink>
-
             <NavLink
               to="/purchases"
               className={({ isActive }) =>
-                isActive
-                  ? "text-orange-500 font-medium"
-                  : "text-gray-700 hover:text-gray-900"
+                `font-medium transition ${isActive ? "text-orange-500" : "text-gray-700 hover:text-orange-500"}`
               }
             >
-              My Purchase
+              My Purchases
             </NavLink>
-
             <NavLink
               to="/wallet"
               className={({ isActive }) =>
-                isActive
-                  ? "text-orange-500 font-medium"
-                  : "text-gray-700 hover:text-gray-900"
+                `font-medium transition ${isActive ? "text-orange-500" : "text-gray-700 hover:text-orange-500"}`
               }
             >
               Wallet
             </NavLink>
             <NavLink
               to="/add-product"
-              className={({ isActive }) =>
-                isActive
-                  ? "text-orange-500 font-medium"
-                  : "text-gray-700 hover:text-gray-900"
-              }
+              className="bg-orange-500 text-white px-6 py-2.5 rounded-lg font-medium hover:bg-orange-600 transition shadow-sm"
             >
-              Add Product
-            </NavLink>
-            <NavLink
-              to="/buyer-dashboard"
-              className={({ isActive }) =>
-                isActive
-                  ? "text-orange-500 font-medium"
-                  : "text-gray-700 hover:text-gray-900"
-              }
-            >
-              Buyer Dashboard
+              Sell Product
             </NavLink>
           </div>
 
-          {/* Right: actions */}
-          <div className="flex items-center gap-3">
-            <button className="hidden sm:inline-block bg-orange-500 text-white px-4 py-2 rounded-lg font-medium shadow-sm hover:opacity-95">
-              Sell Product
-            </button>
+          {/* Right Side: Icons + Avatar */}
+          <div className="flex items-center gap-4">
 
-            <button
-              aria-label="notifications"
-              className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 text-gray-600 dark:text-gray-300"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h11z"
-                />
+            {/* Notification Bell */}
+            <button className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition">
+              <svg className="w-5 h-5 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                  d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h11z" />
               </svg>
             </button>
 
-            <button
-              aria-label="cart"
-              className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 text-gray-600 dark:text-gray-300"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2 5h13"
-                />
+            {/* Cart */}
+            <button className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition">
+              <svg className="w-5 h-5 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                  d="M3 3h2l.4 2M7.48 7h9.02l1.5 9H5.98l1.5-9zM7 13l-2 5h13l-2-5" />
               </svg>
             </button>
 
-            {/* avatar + dropdown */}
-            <div className="relative" ref={ddRef}>
+            {/* Avatar Dropdown */}
+            <div className="relative" ref={dropdownRef}>
               <button
-                onClick={() => setOpen((s) => !s)}
-                aria-haspopup="true"
-                aria-expanded={open}
-                className="flex items-center gap-2 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
+                onClick={() => setOpen(!open)}
+                className="flex items-center gap-2 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition"
               >
-                <div className="h-8 w-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-sm font-medium text-gray-700 dark:text-gray-200">
+                <div className="h-9 w-9 rounded-full bg-gradient-to-r from-orange-400 to-pink-500 flex items-center justify-center text-white font-bold text-sm">
                   A
                 </div>
               </button>
 
+              {/* Dropdown Menu */}
               {open && (
-                <div className="absolute right-0 mt-3 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 py-3 z-50">
-                  <div className="px-4 pb-2">
-                    <div className="font-semibold text-gray-800 dark:text-gray-100">
-                      User
-                    </div>
-                    <div className="text-xs text-gray-500">abc@gmail.com</div>
+                <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden z-50">
+                  <div className="px-5 py-4 border-b border-gray-200 dark:border-gray-700">
+                    <div className="font-bold text-gray-900 dark:text-white">John Doe</div>
+                    <div className="text-sm text-gray-500">john@example.com</div>
                   </div>
 
-                  <hr className="my-2 border-gray-100 dark:border-gray-700" />
+                  <div className="py-2">
+                    <NavLink
+                      to="/account"
+                      onClick={() => setOpen(false)}
+                      className="block px-5 py-3 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+                    >
+                      Account Settings
+                    </NavLink>
+                    <NavLink
+                      to="/referral"
+                      onClick={() => setOpen(false)}
+                      className="block px-5 py-3 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+                    >
+                      Referral Program
+                    </NavLink>
+                    <button className="w-full text-left px-5 py-3 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition">
+                      Log out
+                    </button>
+                  </div>
 
                   <ul className="flex flex-col gap-1 px-2">
                     <li>
@@ -279,11 +243,74 @@ export default function Navbar() {
                       </NavLink>
                     </li>
                   </ul>
+                  <div className="px-5 py-3 border-t border-gray-200 dark:border-gray-700">
+                    <label className="flex items-center justify-between cursor-pointer">
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Dark Mode</span>
+                      <input
+                        type="checkbox"
+                        checked={dark}
+                        onChange={() => setDark(!dark)}
+                        className="w-5 h-5 text-orange-500 rounded focus:ring-orange-500 cursor-pointer"
+                      />
+                    </label>
+                  </div>
                 </div>
               )}
             </div>
+
+            {/* Mobile Menu Toggle */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="lg:hidden p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+            >
+              {mobileMenuOpen ? (
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              ) : (
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              )}
+            </button>
           </div>
         </div>
+
+        {/* Mobile Menu */}
+        {mobileMenuOpen && (
+          <div className="lg:hidden border-t border-gray-200 dark:border-gray-700 py-4">
+            <div className="flex flex-col gap-2 px-4">
+              <NavLink
+                to="/marketplace"
+                onClick={() => setMobileMenuOpen(false)}
+                className="py-3 px-4 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 font-medium text-left"
+              >
+                Marketplace
+              </NavLink>
+              <NavLink
+                to="/purchases"
+                onClick={() => setMobileMenuOpen(false)}
+                className="py-3 px-4 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 font-medium text-left"
+              >
+                My Purchases
+              </NavLink>
+              <NavLink
+                to="/wallet"
+                onClick={() => setMobileMenuOpen(false)}
+                className="py-3 px-4 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 font-medium text-left"
+              >
+                Wallet
+              </NavLink>
+              <NavLink
+                to="/add-product"
+                onClick={() => setMobileMenuOpen(false)}
+                className="py-3 px-4 bg-orange-500 text-white rounded-lg font-medium text-center hover:bg-orange-600 transition"
+              >
+                Sell Product
+              </NavLink>
+            </div>
+          </div>
+        )}
       </nav>
     </header>
   );
