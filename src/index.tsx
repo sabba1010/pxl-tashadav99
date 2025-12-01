@@ -32,7 +32,7 @@ import reportWebVitals from "./reportWebVitals";
 import Routes from "./routes/Routes";
 import { AuthContextProvider } from "./context/AuthContext";
 import { Toaster } from "sonner";
-import { LanguageProvider } from "./i18n/LanguageContext"; // <-- নিশ্চিত করো path ঠিক
+import { LanguageProvider } from "./i18n/LanguageContext"; //
 
 const root = ReactDOM.createRoot(document.getElementById("root") as HTMLElement);
 
