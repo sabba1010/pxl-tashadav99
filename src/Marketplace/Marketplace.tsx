@@ -91,9 +91,10 @@ const Marketplace: React.FC = () => {
 
   return (
     <>
-      {/* Black Friday Banner – Closeable */}
+      {/* Brand Banner – Closeable */}
       {showBanner && (
-        <div className="bg-orange-50 border-l-4 border-orange-500 text-orange-900 px-4 py-3 flex items-center justify-between text-sm font-medium">
+        <div className="px-4 py-3 flex items-center justify-between text-sm font-medium"
+             style={{ backgroundColor: "#D4A643", borderLeft: "4px solid #0A1A3A", color: "#111111" }}>
           <div className="flex items-center gap-2">
             <span className="font-bold">🔥</span>
             <span>
@@ -103,8 +104,9 @@ const Marketplace: React.FC = () => {
           </div>
           <button
             onClick={() => setShowBanner(false)}
-            className="text-orange-900 hover:text-orange-700 text-2xl font-bold leading-none"
+            className="text-2xl font-bold leading-none"
             aria-label="Close banner"
+            style={{ color: "#111111" }}
           >
             ×
           </button>
@@ -130,7 +132,7 @@ const Marketplace: React.FC = () => {
                 </svg>
               </button>
 
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Marketplace</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold" style={{ color: "#0A1A3A" }}>Marketplace</h1>
             </div>
 
             {/* Desktop controls */}
@@ -138,13 +140,15 @@ const Marketplace: React.FC = () => {
               <div className="flex border border-gray-300 rounded-lg overflow-hidden">
                 <button
                   onClick={() => setViewMode("list")}
-                  className={`px-4 py-2 ${viewMode === "list" ? "bg-orange-500 text-white" : "bg-white"} transition`}
+                  className={`px-4 py-2 ${viewMode === "list" ? "text-white" : "bg-white"} transition`}
+                  style={viewMode === "list" ? { backgroundColor: "#0A1A3A" } : undefined}
                 >
                   List
                 </button>
                 <button
                   onClick={() => setViewMode("grid")}
-                  className={`px-4 py-2 ${viewMode === "grid" ? "bg-orange-500 text-white" : "bg-white"} transition`}
+                  className={`px-4 py-2 ${viewMode === "grid" ? "text-white" : "bg-white"} transition`}
+                  style={viewMode === "grid" ? { backgroundColor: "#0A1A3A" } : undefined}
                 >
                   Grid
                 </button>
@@ -155,7 +159,11 @@ const Marketplace: React.FC = () => {
                 placeholder="Search by name or description"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-lg w-80 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                className="px-4 py-2 border border-gray-300 rounded-lg w-80 focus:outline-none"
+                style={{ boxShadow: "none" }}
+                // custom focus ring using inline style fallback for consistent brand color
+                onFocus={(e) => (e.currentTarget.style.boxShadow = "0 0 0 3px rgba(10,26,58,0.12)")}
+                onBlur={(e) => (e.currentTarget.style.boxShadow = "none")}
               />
             </div>
 
@@ -182,7 +190,7 @@ const Marketplace: React.FC = () => {
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                 <h3 className="text-lg font-bold mb-6">Filter</h3>
 
-                <div className="text-sm font-medium text-gray-700 mb-3">Account Category</div>
+                <div className="text-sm font-medium" style={{ color: "#0A1A3A" }}>Account Category</div>
                 <div className="space-y-3 mb-8">
                   {categories.map((cat) => (
                     <label key={cat} className="flex items-center gap-3 cursor-pointer">
@@ -194,23 +202,26 @@ const Marketplace: React.FC = () => {
                             prev.includes(cat) ? prev.filter((c) => c !== cat) : [...prev, cat]
                           );
                         }}
-                        className="w-4 h-4 text-orange-500 rounded focus:ring-orange-500"
+                        className="w-4 h-4 rounded focus:ring"
+                        // accent color style (Royal Gold)
+                        style={{ accentColor: "#D4A643" }}
                       />
-                      <span className="text-sm text-gray-600">{cat}</span>
+                      <span className="text-sm" style={{ color: "#111111" }}>{cat}</span>
                     </label>
                   ))}
                 </div>
 
-                <div className="text-sm font-medium text-gray-700 mb-3">Price range</div>
+                <div className="text-sm font-medium" style={{ color: "#0A1A3A" }}>Price range</div>
                 <input
                   type="range"
                   min="0"
                   max="1000"
                   value={priceRange}
                   onChange={(e) => setPriceRange(Number(e.target.value))}
-                  className="w-full h-2 bg-gray-200 rounded-lg accent-orange-500"
+                  className="w-full h-2 rounded-lg"
+                  style={{ backgroundColor: "#EDE7DA", accentColor: "#D4A643" }}
                 />
-                <div className="flex justify-between text-xs text-gray-500 mt-2">
+                <div className="flex justify-between text-xs" style={{ color: "#6B7280", marginTop: 8 }}>
                   <span>$0</span>
                   <span>${priceRange}</span>
                 </div>
@@ -224,17 +235,19 @@ const Marketplace: React.FC = () => {
                 <div className="px-4 py-4 border-b flex items-center justify-between gap-3">
                   <div className="flex items-center gap-3">
                     <div className="hidden sm:flex items-center gap-3">
-                      <div className="text-sm text-gray-600">View:</div>
+                      <div className="text-sm" style={{ color: "#6B7280" }}>View:</div>
                       <div className="flex border border-gray-300 rounded-lg overflow-hidden">
                         <button
                           onClick={() => setViewMode("list")}
-                          className={`px-3 py-1 ${viewMode === "list" ? "bg-orange-500 text-white" : "bg-white"} transition`}
+                          className={`px-3 py-1 ${viewMode === "list" ? "text-white" : "bg-white"} transition`}
+                          style={viewMode === "list" ? { backgroundColor: "#0A1A3A" } : undefined}
                         >
                           List
                         </button>
                         <button
                           onClick={() => setViewMode("grid")}
-                          className={`px-3 py-1 ${viewMode === "grid" ? "bg-orange-500 text-white" : "bg-white"} transition`}
+                          className={`px-3 py-1 ${viewMode === "grid" ? "text-white" : "bg-white"} transition`}
+                          style={viewMode === "grid" ? { backgroundColor: "#0A1A3A" } : undefined}
                         >
                           Grid
                         </button>
@@ -250,16 +263,19 @@ const Marketplace: React.FC = () => {
                         placeholder="Search marketplace..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                        style={{ boxShadow: "none" }}
+                        onFocus={(e) => (e.currentTarget.style.boxShadow = "0 0 0 3px rgba(10,26,58,0.12)")}
+                        onBlur={(e) => (e.currentTarget.style.boxShadow = "none")}
                       />
                     </div>
                     <div className="hidden sm:block">
-                      <div className="text-sm text-gray-500">{filteredItems.length} results</div>
+                      <div className="text-sm" style={{ color: "#6B7280" }}>{filteredItems.length} results</div>
                     </div>
                   </div>
 
                   <div className="hidden sm:flex items-center gap-3">
-                    <div className="text-sm text-gray-500">{filteredItems.length} results</div>
+                    <div className="text-sm" style={{ color: "#6B7280" }}>{filteredItems.length} results</div>
                   </div>
                 </div>
 
@@ -270,29 +286,29 @@ const Marketplace: React.FC = () => {
                       <div key={item.id} className="p-6 flex items-start gap-6 hover:bg-gray-50 transition">
                         <div className="text-4xl">{item.icon}</div>
                         <div className="flex-1">
-                          <h3 className="font-semibold text-lg">{item.title}</h3>
-                          <p className="text-sm text-gray-600 mt-1">
+                          <h3 className="font-semibold text-lg" style={{ color: "#0A1A3A" }}>{item.title}</h3>
+                          <p className="text-sm mt-1" style={{ color: "#6B7280" }}>
                             {item.desc || "High-quality account • Instant delivery • Full warranty"}
                           </p>
-                          <div className="flex items-center gap-4 mt-4 text-xs text-gray-500">
+                          <div className="flex items-center gap-4 mt-4 text-xs" style={{ color: "#6B7280" }}>
                             <span className="flex items-center gap-1">
                               <span className="w-2 h-2 bg-gray-400 rounded-full"></span>
                               {item.seller}
                             </span>
                             <span>•</span>
-                            <span className="text-green-600 font-medium">{item.delivery}</span>
+                            <span className="font-medium" style={{ color: "#1BC47D" }}>{item.delivery}</span>
                           </div>
                         </div>
                         <div className="text-right">
-                          <div className="text-2xl font-bold">${item.price.toFixed(2)}</div>
+                          <div className="text-2xl font-bold" style={{ color: "#0A1A3A" }}>${item.price.toFixed(2)}</div>
                           <div className="mt-4 flex gap-4">
-                            <button className="text-orange-600 font-medium">Add to cart</button>
+                            <button className="font-medium" style={{ color: "#D4A643" }}>Add to cart</button>
                             <button className="text-gray-500">View</button>
                           </div>
                         </div>
                       </div>
                     ))}
-                    {filteredItems.length === 0 && <div className="p-6 text-center text-gray-500">No items found.</div>}
+                    {filteredItems.length === 0 && <div className="p-6 text-center" style={{ color: "#6B7280" }}>No items found.</div>}
                   </div>
                 )}
 
@@ -302,23 +318,28 @@ const Marketplace: React.FC = () => {
                     {filteredItems.map((item) => (
                       <div key={item.id} className="border border-gray-200 rounded-xl p-6 hover:shadow-xl transition-shadow">
                         <div className="text-6xl text-center mb-5">{item.icon}</div>
-                        <h3 className="font-bold text-lg text-gray-900">{item.title}</h3>
-                        <p className="text-sm text-gray-600 mt-2 line-clamp-3">
+                        <h3 className="font-bold text-lg" style={{ color: "#0A1A3A" }}>{item.title}</h3>
+                        <p className="text-sm mt-2 line-clamp-3" style={{ color: "#6B7280" }}>
                           {item.desc || "Premium account • Instant delivery"}
                         </p>
-                        <div className="mt-5 text-sm text-gray-500">
+                        <div className="mt-5 text-sm" style={{ color: "#6B7280" }}>
                           <div>{item.seller}</div>
-                          <div className="text-green-600">{item.delivery}</div>
+                          <div style={{ color: "#1BC47D" }}>{item.delivery}</div>
                         </div>
                         <div className="mt-5 flex items-center justify-between">
-                          <div className="text-2xl font-bold">${item.price.toFixed(2)}</div>
-                          <button className="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition font-medium">
+                          <div className="text-2xl font-bold" style={{ color: "#0A1A3A" }}>${item.price.toFixed(2)}</div>
+                          <button
+                            className="px-4 py-2 rounded-lg transition font-medium"
+                            style={{ backgroundColor: "#D4A643", color: "#111111" }}
+                            onMouseEnter={(e) => (e.currentTarget.style.background = "#1BC47D")}
+                            onMouseLeave={(e) => (e.currentTarget.style.background = "#D4A643")}
+                          >
                             Buy Now
                           </button>
                         </div>
                       </div>
                     ))}
-                    {filteredItems.length === 0 && <div className="col-span-full p-6 text-center text-gray-500">No items found.</div>}
+                    {filteredItems.length === 0 && <div className="col-span-full p-6 text-center" style={{ color: "#6B7280" }}>No items found.</div>}
                   </div>
                 )}
               </div>
@@ -345,11 +366,12 @@ const Marketplace: React.FC = () => {
         aria-hidden={!drawerOpen}
       >
         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
-          <h3 className="text-lg font-bold">Filters & Search</h3>
+          <h3 className="text-lg font-bold" style={{ color: "#0A1A3A" }}>Filters & Search</h3>
           <button
             onClick={() => setDrawerOpen(false)}
-            className="p-2 rounded-md text-gray-600 hover:bg-gray-100"
+            className="p-2 rounded-md"
             aria-label="Close filters"
+            style={{ color: "#6B7280" }}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -365,13 +387,15 @@ const Marketplace: React.FC = () => {
               placeholder="Search by name or description"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+              onFocus={(e) => (e.currentTarget.style.boxShadow = "0 0 0 3px rgba(10,26,58,0.12)")}
+              onBlur={(e) => (e.currentTarget.style.boxShadow = "none")}
             />
           </div>
 
           {/* Categories */}
           <div className="mb-4">
-            <div className="text-sm font-medium text-gray-700 mb-2">Account Category</div>
+            <div className="text-sm font-medium" style={{ color: "#0A1A3A" }}>Account Category</div>
             <div className="space-y-3">
               {categories.map((cat) => (
                 <label key={cat} className="flex items-center gap-3 cursor-pointer">
@@ -383,9 +407,10 @@ const Marketplace: React.FC = () => {
                         prev.includes(cat) ? prev.filter((c) => c !== cat) : [...prev, cat]
                       );
                     }}
-                    className="w-4 h-4 text-orange-500 rounded focus:ring-orange-500"
+                    className="w-4 h-4 rounded focus:ring"
+                    style={{ accentColor: "#D4A643" }}
                   />
-                  <span className="text-sm text-gray-600">{cat}</span>
+                  <span className="text-sm" style={{ color: "#111111" }}>{cat}</span>
                 </label>
               ))}
             </div>
@@ -393,16 +418,17 @@ const Marketplace: React.FC = () => {
 
           {/* Price range */}
           <div className="mb-6">
-            <div className="text-sm font-medium text-gray-700 mb-2">Price range</div>
+            <div className="text-sm font-medium" style={{ color: "#0A1A3A" }}>Price range</div>
             <input
               type="range"
               min="0"
               max="1000"
               value={priceRange}
               onChange={(e) => setPriceRange(Number(e.target.value))}
-              className="w-full h-2 bg-gray-200 rounded-lg accent-orange-500"
+              className="w-full h-2 rounded-lg"
+              style={{ backgroundColor: "#EDE7DA", accentColor: "#D4A643" }}
             />
-            <div className="flex justify-between text-xs text-gray-500 mt-2">
+            <div className="flex justify-between text-xs" style={{ color: "#6B7280", marginTop: 8 }}>
               <span>$0</span>
               <span>${priceRange}</span>
             </div>
@@ -415,7 +441,10 @@ const Marketplace: React.FC = () => {
                 // apply & close
                 setDrawerOpen(false);
               }}
-              className="flex-1 bg-orange-500 text-white px-4 py-2 rounded-lg font-medium"
+              className="flex-1 px-4 py-2 rounded-lg font-medium"
+              style={{ backgroundColor: "#D4A643", color: "#111111" }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = "#1BC47D")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "#D4A643")}
             >
               Apply
             </button>
@@ -425,7 +454,8 @@ const Marketplace: React.FC = () => {
                 setPriceRange(1000);
                 setSearchQuery("");
               }}
-              className="flex-1 border border-gray-300 px-4 py-2 rounded-lg"
+              className="flex-1 border px-4 py-2 rounded-lg"
+              style={{ borderColor: "#E5E7EB", color: "#111111" }}
             >
               Reset
             </button>

@@ -30,9 +30,17 @@ export default function Navbar() {
   //   else document.documentElement.classList.remove("dark");
   // }, [dark]);
 
+  // Brand colors
+  const EMPIRE_BLUE = "#0A1A3A";
+  const ROYAL_GOLD = "#D4A643";
+  const CHARCOAL = "#111111";
+  const EMERALD = "#1BC47D";
+  const CLEAN_WHITE = "#FFFFFF";
+
   return (
     <header
       className={`w-full bg-white dark:bg-gray-900 shadow-sm sticky top-0 z-50 border-b border-gray-200 dark:border-gray-800`}
+      style={{ backgroundColor: CLEAN_WHITE }}
     >
       <nav className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
@@ -40,7 +48,10 @@ export default function Navbar() {
           <div className="flex items-center">
             <NavLink to="/" className="flex items-center gap-3">
               <img src="/logo.png" alt="Logo" className="h-9 w-auto" />
-              <span className="hidden sm:inline font-bold text-xl text-orange-600">
+              <span
+                className="hidden sm:inline font-bold text-xl"
+                style={{ color: EMPIRE_BLUE }}
+              >
                 Tashadav99
               </span>
             </NavLink>
@@ -53,10 +64,13 @@ export default function Navbar() {
               className={({ isActive }) =>
                 `font-medium transition ${
                   isActive
-                    ? "text-orange-500"
-                    : "text-gray-700 hover:text-orange-500"
+                    ? ""
+                    : ""
                 }`
               }
+              style={({ isActive }) => ({
+                color: isActive ? ROYAL_GOLD : CHARCOAL,
+              })}
             >
               Marketplace
             </NavLink>
@@ -65,10 +79,13 @@ export default function Navbar() {
               className={({ isActive }) =>
                 `font-medium transition ${
                   isActive
-                    ? "text-orange-500"
-                    : "text-gray-700 hover:text-orange-500"
+                    ? ""
+                    : ""
                 }`
               }
+              style={({ isActive }) => ({
+                color: isActive ? ROYAL_GOLD : CHARCOAL,
+              })}
             >
               My Purchases
             </NavLink>
@@ -77,10 +94,13 @@ export default function Navbar() {
               className={({ isActive }) =>
                 `font-medium transition ${
                   isActive
-                    ? "text-orange-500"
-                    : "text-gray-700 hover:text-orange-500"
+                    ? ""
+                    : ""
                 }`
               }
+              style={({ isActive }) => ({
+                color: isActive ? ROYAL_GOLD : CHARCOAL,
+              })}
             >
               Wallet
             </NavLink>
@@ -89,16 +109,23 @@ export default function Navbar() {
               className={({ isActive }) =>
                 `font-medium transition ${
                   isActive
-                    ? "text-orange-500"
-                    : "text-gray-700 hover:text-orange-500"
+                    ? ""
+                    : ""
                 }`
               }
+              style={({ isActive }) => ({
+                color: isActive ? ROYAL_GOLD : CHARCOAL,
+              })}
             >
               Buyer Dashboard
             </NavLink>
             <NavLink
               to="/add-product"
-              className="bg-orange-500 text-white px-6 py-2.5 rounded-lg font-medium hover:bg-orange-600 transition shadow-sm"
+              className="px-6 py-2.5 rounded-lg font-medium transition shadow-sm"
+              style={{
+                backgroundColor: ROYAL_GOLD,
+                color: CHARCOAL,
+              }}
             >
               Sell Product
             </NavLink>
@@ -107,12 +134,18 @@ export default function Navbar() {
           {/* Right Side: Icons + Avatar */}
           <div className="flex items-center gap-4">
             {/* Notification Bell */}
-            <button className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition">
+            <button
+              className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+              aria-label="Notifications"
+              title="Notifications"
+              style={{ color: CHARCOAL }}
+            >
               <svg
-                className="w-5 h-5 text-gray-600 dark:text-gray-300"
+                className="w-5 h-5"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
+                style={{ color: EMPIRE_BLUE }}
               >
                 <path
                   strokeLinecap="round"
@@ -124,12 +157,18 @@ export default function Navbar() {
             </button>
 
             {/* Cart */}
-            <button className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition">
+            <button
+              className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+              aria-label="Cart"
+              title="Cart"
+              style={{ color: CHARCOAL }}
+            >
               <svg
-                className="w-5 h-5 text-gray-600 dark:text-gray-300"
+                className="w-5 h-5"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
+                style={{ color: EMPIRE_BLUE }}
               >
                 <path
                   strokeLinecap="round"
@@ -146,19 +185,28 @@ export default function Navbar() {
                 onClick={() => setOpen(!open)}
                 className="flex items-center gap-2 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition"
               >
-                <div className="h-9 w-9 rounded-full bg-gradient-to-r from-orange-400 to-pink-500 flex items-center justify-center text-white font-bold text-sm">
+                <div
+                  className="h-9 w-9 rounded-full flex items-center justify-center text-white font-bold text-sm"
+                  style={{
+                    background: `linear-gradient(90deg, ${EMPIRE_BLUE} 0%, ${ROYAL_GOLD} 100%)`,
+                    color: CLEAN_WHITE,
+                  }}
+                >
                   A
                 </div>
               </button>
 
               {/* Dropdown Menu */}
               {open && (
-                <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden z-50">
+                <div
+                  className="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden z-50"
+                  style={{ backgroundColor: CLEAN_WHITE, color: CHARCOAL }}
+                >
                   <div className="px-5 py-4 border-b border-gray-200 dark:border-gray-700">
-                    <div className="font-bold text-gray-900 dark:text-white">
+                    <div className="font-bold" style={{ color: EMPIRE_BLUE }}>
                       John Doe
                     </div>
-                    <div className="text-sm text-gray-500">
+                    <div className="text-sm" style={{ color: "#6B7280" }}>
                       john@example.com
                     </div>
                   </div>
@@ -168,6 +216,7 @@ export default function Navbar() {
                       to="/account"
                       onClick={() => setOpen(false)}
                       className="block px-5 py-3 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+                      style={{ color: CHARCOAL }}
                     >
                       Account Settings
                     </NavLink>
@@ -175,10 +224,14 @@ export default function Navbar() {
                       to="/referral"
                       onClick={() => setOpen(false)}
                       className="block px-5 py-3 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+                      style={{ color: CHARCOAL }}
                     >
                       Referral Program
                     </NavLink>
-                    <button className="w-full text-left px-5 py-3 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition">
+                    <button
+                      className="w-full text-left px-5 py-3 text-sm hover:bg-red-50 dark:hover:bg-red-900/20 transition"
+                      style={{ color: "#DC2626" }}
+                    >
                       Log out
                     </button>
                   </div>
@@ -188,13 +241,15 @@ export default function Navbar() {
                       <NavLink
                         to="/referral"
                         className="flex items-center gap-3 px-3 py-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700"
+                        style={{ color: CHARCOAL }}
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
-                          className="h-4 w-4 text-gray-600 dark:text-gray-300"
+                          className="h-4 w-4"
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke="currentColor"
+                          style={{ color: EMPIRE_BLUE }}
                         >
                           <path
                             strokeLinecap="round"
@@ -203,9 +258,7 @@ export default function Navbar() {
                             d="M13 7l5 5m0 0l-5 5m5-5H6"
                           />
                         </svg>
-                        <span className="text-sm text-gray-700 dark:text-gray-200">
-                          Referral
-                        </span>
+                        <span className="text-sm">Referral</span>
                       </NavLink>
                     </li>
 
@@ -213,13 +266,15 @@ export default function Navbar() {
                       <NavLink
                         to="/account"
                         className="flex items-center gap-3 px-3 py-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700"
+                        style={{ color: CHARCOAL }}
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
-                          className="h-4 w-4 text-gray-600 dark:text-gray-300"
+                          className="h-4 w-4"
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke="currentColor"
+                          style={{ color: EMPIRE_BLUE }}
                         >
                           <path
                             strokeLinecap="round"
@@ -228,20 +283,19 @@ export default function Navbar() {
                             d="M12 8v4l3 3"
                           />
                         </svg>
-                        <span className="text-sm text-gray-700 dark:text-gray-200">
-                          Account settings
-                        </span>
+                        <span className="text-sm">Account settings</span>
                       </NavLink>
                     </li>
 
                     <li>
-                      <button className="w-full text-left flex items-center gap-3 px-3 py-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700">
+                      <button className="w-full text-left flex items-center gap-3 px-3 py-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700" style={{ color: CHARCOAL }}>
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
-                          className="h-4 w-4 text-gray-600 dark:text-gray-300"
+                          className="h-4 w-4"
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke="currentColor"
+                          style={{ color: EMPIRE_BLUE }}
                         >
                           <path
                             strokeLinecap="round"
@@ -250,9 +304,7 @@ export default function Navbar() {
                             d="M17 16l4-4m0 0l-4-4m4 4H7"
                           />
                         </svg>
-                        <span className="text-sm text-gray-700 dark:text-gray-200">
-                          Log out
-                        </span>
+                        <span className="text-sm">Log out</span>
                       </button>
                     </li>
 
@@ -260,10 +312,11 @@ export default function Navbar() {
                       <label className="flex items-center gap-3 cursor-pointer">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
-                          className="h-4 w-4 text-gray-600 dark:text-gray-300"
+                          className="h-4 w-4"
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke="currentColor"
+                          style={{ color: EMPIRE_BLUE }}
                         >
                           <path
                             strokeLinecap="round"
@@ -272,14 +325,13 @@ export default function Navbar() {
                             d="M12 3v1m0 16v1m8.66-11H20M3.34 12H4m13.02 6.36l-.7.7M6.36 6.34l-.7.7m12.02 6.02l-.7-.7M6.36 17.66l-.7-.7"
                           />
                         </svg>
-                        <span className="text-sm text-gray-700 dark:text-gray-200">
-                          Light Mode
-                        </span>
+                        <span className="text-sm">Light Mode</span>
                         <input
                           type="checkbox"
                           checked={!dark}
                           onChange={() => setDark((d) => !d)}
                           className="ml-auto"
+                          style={{ accentColor: ROYAL_GOLD }}
                         />
                       </label>
                     </li>
@@ -287,6 +339,7 @@ export default function Navbar() {
                       <NavLink
                         className="flex items-center gap-3 px-3 py-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700"
                         to={"/admin-dashboard"}
+                        style={{ color: CHARCOAL }}
                       >
                         Admin Dashboard
                       </NavLink>
@@ -294,14 +347,15 @@ export default function Navbar() {
                   </ul>
                   <div className="px-5 py-3 border-t border-gray-200 dark:border-gray-700">
                     <label className="flex items-center justify-between cursor-pointer">
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      <span className="text-sm font-medium" style={{ color: CHARCOAL }}>
                         Dark Mode
                       </span>
                       <input
                         type="checkbox"
                         checked={dark}
                         onChange={() => setDark(!dark)}
-                        className="w-5 h-5 text-orange-500 rounded focus:ring-orange-500 cursor-pointer"
+                        className="w-5 h-5 rounded focus:ring cursor-pointer"
+                        style={{ accentColor: ROYAL_GOLD }}
                       />
                     </label>
                   </div>
@@ -320,6 +374,7 @@ export default function Navbar() {
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
+                  style={{ color: EMPIRE_BLUE }}
                 >
                   <path
                     strokeLinecap="round"
@@ -334,6 +389,7 @@ export default function Navbar() {
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
+                  style={{ color: EMPIRE_BLUE }}
                 >
                   <path
                     strokeLinecap="round"
@@ -349,12 +405,13 @@ export default function Navbar() {
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="lg:hidden border-t border-gray-200 dark:border-gray-700 py-4">
+          <div className="lg:hidden border-t border-gray-200 dark:border-gray-700 py-4" style={{ backgroundColor: CLEAN_WHITE }}>
             <div className="flex flex-col gap-2 px-4">
               <NavLink
                 to="/marketplace"
                 onClick={() => setMobileMenuOpen(false)}
                 className="py-3 px-4 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 font-medium text-left"
+                style={{ color: CHARCOAL }}
               >
                 Marketplace
               </NavLink>
@@ -362,6 +419,7 @@ export default function Navbar() {
                 to="/purchases"
                 onClick={() => setMobileMenuOpen(false)}
                 className="py-3 px-4 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 font-medium text-left"
+                style={{ color: CHARCOAL }}
               >
                 My Purchases
               </NavLink>
@@ -369,13 +427,15 @@ export default function Navbar() {
                 to="/wallet"
                 onClick={() => setMobileMenuOpen(false)}
                 className="py-3 px-4 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 font-medium text-left"
+                style={{ color: CHARCOAL }}
               >
                 Wallet
               </NavLink>
               <NavLink
                 to="/add-product"
                 onClick={() => setMobileMenuOpen(false)}
-                className="py-3 px-4 bg-orange-500 text-white rounded-lg font-medium text-center hover:bg-orange-600 transition"
+                className="py-3 px-4 rounded-lg font-medium text-center transition"
+                style={{ backgroundColor: ROYAL_GOLD, color: CHARCOAL }}
               >
                 Sell Product
               </NavLink>
