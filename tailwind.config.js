@@ -8,6 +8,8 @@ module.exports = {
     extend: {
       colors: {
         primary: '#046838',
+        accent: '#daab4c',
+        brand: '#d4a643',
       },
       keyframes: {
         scrollX: {
