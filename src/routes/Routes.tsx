@@ -24,6 +24,7 @@ import Buyer from "../dashboard/buyer-dahboard/Buyer";
 import Mypurchase from "../Mypurchase/Mypurchase";
 import Report from "../Mypurchase/Report";
 import Walet from "../Walte/Walet";
+import Mysells from "../dashboard/buyer-dahboard/Mysells";
 
 const Routes = createBrowserRouter([
   {
@@ -59,6 +60,10 @@ const Routes = createBrowserRouter([
       {
         path: "/register",
         element: <Register />,
+      },
+       {
+        path: "/mysells",
+        element: <Mysells />,
       },
       {
         path: "add-product",
