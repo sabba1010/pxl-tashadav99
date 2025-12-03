@@ -72,7 +72,7 @@ const MetricCard: React.FC<MetricCardProps> = ({
       </h3>
       <div
         className={`text-4xl font-extrabold ${
-          isProfit ? "text-green-600" : "text-gray-900"
+          isProfit ? "text-[#D1A148]" : "text-gray-900"
         }`}
       >
         {value}
@@ -84,7 +84,7 @@ const MetricCard: React.FC<MetricCardProps> = ({
     {linkTo && (
       <Link
         to={linkTo}
-        className="mt-4 text-indigo-600 hover:text-indigo-800 text-sm font-semibold transition duration-150 flex items-center"
+        className="mt-4 text-[#D1A148] hover:text-[#e2bb73] text-sm font-semibold transition duration-150 flex items-center"
       >
         View Details &rarr;
       </Link>
