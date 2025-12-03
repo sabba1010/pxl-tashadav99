@@ -35,9 +35,9 @@ const AdminAdmins: React.FC = () => {
     const isActive = location.pathname === path;
     const baseClasses =
       "flex items-center p-3 text-sm font-medium rounded-lg transition duration-150";
-    const activeClasses = "bg-indigo-700 text-white shadow-md";
+    const activeClasses = "bg-[#D1A148] text-white shadow-md";
     const inactiveClasses =
-      "text-gray-300 hover:bg-indigo-600 hover:text-white";
+      "text-gray-300 hover:bg-[#D1A148] hover:text-white";
 
     return (
       <Link
@@ -54,9 +54,9 @@ const AdminAdmins: React.FC = () => {
   return (
     <div className="flex h-screen bg-gray-100">
       {/* 🧭 Sidebar (Fixed Width) */}
-      <aside className="w-64 bg-gray-800 text-white flex flex-col shadow-2xl">
+      <aside className="w-64 bg-[#00183C] text-white flex flex-col shadow-2xl">
         <div className="p-6 border-b border-gray-700">
-          <Link to={"/"} className="text-xl font-extrabold text-indigo-400">
+          <Link to={"/"} className="text-xl font-extrabold text-[#D1A148]">
             Admin Panel
           </Link>
         </div>

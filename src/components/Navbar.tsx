@@ -107,7 +107,7 @@ export default function Navbar() {
             <NavLink
               to="/buyer-dashboard"
               className={({ isActive }) =>
-                `font-medium transition ${
+                `font-medium transition hidden ${
                   isActive
                     ? ""
                     : ""
