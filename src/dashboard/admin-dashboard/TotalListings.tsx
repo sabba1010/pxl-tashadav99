@@ -568,13 +568,13 @@ const TotalListings: React.FC = () => {
                   <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium space-x-2">
                     <button
                       onClick={() => openModal(l, "view")}
-                      className="text-white bg-blue-500 hover:bg-blue-600 px-3 py-1 rounded-lg text-xs font-medium transition duration-150 shadow-md"
+                      className="text-white bg-[#00183C] hover:bg-[#D1A148] px-3 py-1 rounded-lg text-xs font-medium transition duration-150 shadow-md"
                     >
                       View
                     </button>
                     <button
                       onClick={() => openModal(l, "edit")}
-                      className="text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-1 rounded-lg text-xs font-medium transition duration-150 shadow-md"
+                      className="text-white bg-[#D1A148] hover:bg-[#00183C] px-3 py-1 rounded-lg text-xs font-medium transition duration-150 shadow-md"
                     >
                       Edit
                     </button>
@@ -629,7 +629,7 @@ const TotalListings: React.FC = () => {
                 className={`px-3 py-1 text-sm font-medium rounded-lg transition duration-150 
                         ${
                           currentPage === index + 1
-                            ? "bg-indigo-600 text-white"
+                            ? "bg-[#D1A148] text-white"
                             : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                         }`}
               >
