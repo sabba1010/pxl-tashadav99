@@ -2,7 +2,7 @@ import React from "react";
 import images from "../../assets/social media (1).png";
 const HeroBannerSection = () => {
   return (
-    <section className="relative bg-gradient-to-br from-[#00183b] via-[#002a5c] to-[#003d80] text-white py-32 px-6 md:px-12 lg:px-20 overflow-hidden">
+    <section className="relative bg-gradient-to-br from-[#00183b] via-[#002a5c] to-[#003d80] text-white py-16 md:py-32 px-6 md:px-12 lg:px-20 overflow-hidden">
       <div className="absolute inset-0 bg-black opacity-30"></div>
       <div className="absolute top-20 -right-20 w-96 h-96 bg-[#daab4c] opacity-10 rounded-full blur-3xl"></div>
       <div className="absolute bottom-0 -left-32 w-80 h-80 bg-[#d4a643] opacity-20 rounded-full blur-3xl"></div>
