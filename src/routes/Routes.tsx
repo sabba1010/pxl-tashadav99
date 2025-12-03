@@ -34,7 +34,7 @@ const Routes = createBrowserRouter([
     children: [
       {
         path: "/",
-        element: <Marketplace/>,
+        element: <Home/>,
       },
       {
         path: "/marketplace",
