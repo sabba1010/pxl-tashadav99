@@ -10,23 +10,15 @@ const Home = () => {
   return (
     <div className="bg-gray-50 text-gray-900 overflow-hidden">
       {/* Hero Banner Section - Modern Gradient + Glassmorphism */}
-        <HeroBannerSection />
+      <HeroBannerSection />
       {/* Standout Accounts Section - Modern Cards */}
       <StandoutAccounts />
-
-     
-
-    
-
-       {/* Explore by Category - Glass Cards */}
-     <ExplorebyCategory />
-
-       {/* Why Choose Us + Features - Combined Modern Grid */}
+      {/* Explore by Category - Glass Cards */}
+      <ExplorebyCategory />
+      {/* Why Choose Us + Features - Combined Modern Grid */}
       <WhyChooseUs />
-
       {/* How It Works - Modern Flow */}
-   
-    <HowItWorks />
+      <HowItWorks />
     </div>
   );
 };
