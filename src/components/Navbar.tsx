@@ -335,7 +335,7 @@ export default function Navbar() {
                         />
                       </label>
                     </li>
-                    <li>
+                    {/* <li>
                       <NavLink
                         className="flex items-center gap-3 px-3 py-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700"
                         to={"/admin-dashboard"}
@@ -343,7 +343,7 @@ export default function Navbar() {
                       >
                         Admin Dashboard
                       </NavLink>
-                    </li>
+                    </li> */}
                   </ul>
                   <div className="px-5 py-3 border-t border-gray-200 dark:border-gray-700">
                     <label className="flex items-center justify-between cursor-pointer">

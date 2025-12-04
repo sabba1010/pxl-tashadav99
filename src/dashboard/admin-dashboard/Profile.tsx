@@ -125,7 +125,7 @@ const Profile: React.FC = () => {
           {!isEditing ? (
             <button
               onClick={() => setIsEditing(true)}
-              className="px-4 py-2 text-sm font-medium text-indigo-700 bg-indigo-100 rounded-lg hover:bg-indigo-200 transition duration-150"
+              className="px-4 py-2 text-sm font-medium text-[#00183C] bg-indigo-100 rounded-lg hover:bg-indigo-200 transition duration-150"
             >
               Edit
             </button>
@@ -208,7 +208,7 @@ const Profile: React.FC = () => {
             </span>
             <button
               onClick={handleChangePassword}
-              className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition duration-150 shadow-md"
+              className="px-4 py-2 text-sm font-medium text-white bg-[#D1A148] rounded-lg hover:bg-[#755823] transition duration-150 shadow-md"
             >
               Update Password
             </button>
@@ -234,8 +234,8 @@ const Profile: React.FC = () => {
               onClick={handleToggle2FA}
               className={`px-4 py-2 text-sm font-medium text-white rounded-lg transition duration-150 shadow-md ${
                 profile.isTwoFactorEnabled
-                  ? "bg-red-500 hover:bg-red-600"
-                  : "bg-green-500 hover:bg-green-600"
+                  ? "bg-[#D1A148] hover:bg-[#755823]"
+                  : "bg-[#D1A148] hover:bg-[#755823]"
               }`}
             >
               {profile.isTwoFactorEnabled ? "Disable" : "Enable"}
@@ -271,7 +271,7 @@ const Profile: React.FC = () => {
                     }
                     className="sr-only peer"
                   />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#D1A148]"></div>
                 </label>
               </div>
             )
