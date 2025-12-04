@@ -25,6 +25,7 @@ import Mypurchase from "../Mypurchase/Mypurchase";
 import Report from "../Mypurchase/Report";
 import Walet from "../Walte/Walet";
 import Mysells from "../dashboard/buyer-dahboard/Mysells";
+import Payment from "../components/Payment";
 
 const Routes = createBrowserRouter([
   {
@@ -73,6 +74,10 @@ const Routes = createBrowserRouter([
         path: "buyer-dashboard",
         element: <Buyer />,
       },
+      {
+        path: '/payment',
+        element:<Payment/>,
+      }
     ],
   },
 
