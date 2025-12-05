@@ -102,7 +102,7 @@ const MyAds = () => {
                   display: 'flex',
                 }}
               >
-                <div style={{ width: 18, height: 18, borderRadius: 999, background: '#FF6B2D', marginLeft: 'auto' }}></div>
+                <div style={{ width: 18, height: 18, borderRadius: 999, background: '#d4a643', marginLeft: 'auto' }}></div>
               </div>
               <div style={{ color: '#6B7280' }}>Turn Ads Off</div>
             </div>
@@ -123,8 +123,8 @@ const MyAds = () => {
                     cursor: 'pointer',
                     paddingBottom: 8,
                     fontSize: 14,
-                    color: activeTab === t ? '#FF6B2D' : '#6B7280',
-                    borderBottom: activeTab === t ? '2px solid #FF6B2D' : '2px solid transparent',
+                    color: activeTab === t ? '#d4a643' : '#6B7280',
+                    borderBottom: activeTab === t ? '2px solid #d4a643' : '2px solid transparent',
                   }}
                 >
                   {t}
@@ -142,7 +142,7 @@ const MyAds = () => {
                 </div>
                 <h3 style={{ fontSize: 22, color: '#0A1A3A', margin: 0 }}>No Ads</h3>
                 <p style={{ marginTop: 8 }}>Add products for customers to buy from you</p>
-                <button style={{ marginTop: 18, padding: '10px 18px', borderRadius: 8, background: '#FF6B2D', color: '#fff', border: 'none', cursor: 'pointer' }}>Start selling</button>
+                <button style={{ marginTop: 18, padding: '10px 18px', borderRadius: 8, background: '#d4a643', color: '#fff', border: 'none', cursor: 'pointer' }}>Start selling</button>
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -189,7 +189,7 @@ const MyAds = () => {
                               <button
                                 onClick={() => handleRestore(item.id)}
                                 style={{
-                                  background: '#FF6B2D',
+                                  background: '#d4a643',
                                   color: '#fff',
                                   padding: '8px 12px',
                                   borderRadius: 8,
@@ -246,7 +246,7 @@ const MyAds = () => {
           width: 56,
           height: 56,
           borderRadius: '50%',
-          background: '#FF6B2D',
+          background: '#d4a643',
           color: '#fff',
           border: 'none',
           boxShadow: '0 6px 18px rgba(10,26,58,0.12)',

@@ -400,7 +400,7 @@ const Marketplace: React.FC = () => {
         width: 56,
         height: 56,
         borderRadius: 999,
-        background: "#FF6B2D",
+        background: "#d4a643",
         color: "#fff",
         border: "none",
         boxShadow: "0 6px 18px rgba(10,26,58,0.12)",

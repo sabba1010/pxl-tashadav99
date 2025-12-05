@@ -120,7 +120,7 @@ const MyPurchase: React.FC = () => {
 
             <Link
               to="/report"
-              className="mt-6 bg-[#FF6B2D] text-white px-6 py-2 rounded-full font-medium hover:opacity-95 transition-shadow shadow"
+              className="mt-6 bg-[#d4a643] text-white px-6 py-2 rounded-full font-medium hover:opacity-95 transition-shadow shadow"
             >
               Report Product
             </Link>
@@ -138,7 +138,7 @@ const MyPurchase: React.FC = () => {
                   <button
                     key={t}
                     onClick={() => setActiveTab(t)}
-                    className={`pb-2 text-sm ${activeTab === t ? "text-[#FF6B2D] border-b-2 border-[#FF6B2D]" : "text-gray-500"}`}
+                    className={`pb-2 text-sm ${activeTab === t ? "text-[#d4a643] border-b-2 border-[#d4a643]" : "text-gray-500"}`}
                   >
                     {t}
                   </button>
@@ -204,7 +204,7 @@ const MyPurchase: React.FC = () => {
                               <div className="text-xl font-bold text-[#0A1A3A]">${p.price}</div>
 
                               <div className="flex items-center gap-2 mt-2">
-                                <button className="px-3 py-1 rounded-md bg-[#FF6B2D] text-white text-sm">See Trade</button>
+                                <button className="px-3 py-1 rounded-md bg-[#d4a643] text-white text-sm">See Trade</button>
                                 <button className="p-2 rounded-md bg-white border border-gray-100 shadow-sm" title="Chat">
                                   <svg className="w-4 h-4 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
                                 </button>
@@ -225,7 +225,7 @@ const MyPurchase: React.FC = () => {
       {/* Floating + button (mobile-only is optional via lg:hidden) */}
       <Link
         to="/add-product"
-        className="fixed bottom-6 right-6 bg-[#FF6B2D] text-white w-14 h-14 rounded-full shadow-2xl flex items-center justify-center text-3xl font-light hover:opacity-95 transition z-40 lg:hidden"
+        className="fixed bottom-6 right-6 bg-[#d4a643] text-white w-14 h-14 rounded-full shadow-2xl flex items-center justify-center text-3xl font-light hover:opacity-95 transition z-40 lg:hidden"
       >
         +
       </Link>

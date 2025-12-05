@@ -153,8 +153,8 @@ const MyOrder: React.FC = () => {
                   border: "none",
                   cursor: "pointer",
                   paddingBottom: 8,
-                  color: activeTab === t ? "#FF6B2D" : "#6B7280",
-                  borderBottom: activeTab === t ? "2px solid #FF6B2D" : "2px solid transparent",
+                  color: activeTab === t ? "#d4a643" : "#6B7280",
+                  borderBottom: activeTab === t ? "2px solid #d4a643" : "2px solid transparent",
                 }}
               >
                 {t}
@@ -194,7 +194,7 @@ const MyOrder: React.FC = () => {
 
                 {/* Content */}
                 <div style={{ flex: 1 }}>
-                  <div style={{ color: "#FF6B2D", fontWeight: 600, fontSize: 13 }}>
+                  <div style={{ color: "#d4a643", fontWeight: 600, fontSize: 13 }}>
                     Sell <span style={{ color: "#6B7280", marginLeft: 8 }}>{o.platform}</span>
                   </div>
 
@@ -246,7 +246,7 @@ const MyOrder: React.FC = () => {
                   <button
                     style={{
                       marginTop: 12,
-                      background: "#FF6B2D",
+                      background: "#d4a643",
                       color: "#fff",
                       padding: "8px 14px",
                       borderRadius: 8,
@@ -271,7 +271,7 @@ const MyOrder: React.FC = () => {
             position: "fixed",
             bottom: 30,
             right: 30,
-            background: "#FF6B2D",
+            background: "#d4a643",
             width: 54,
             height: 54,
             borderRadius: "50%",
