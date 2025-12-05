@@ -1,5 +1,14 @@
-// src/pages/Marketplace.tsx
+// src/Marketplace/Marketplace.tsx
 import React, { useState, useMemo, useEffect, useRef } from "react";
+import type { IconType } from "react-icons";
+import { FaWhatsapp, FaLock, FaEnvelope, FaInstagram, FaFacebook } from "react-icons/fa";
+import { SiNetflix, SiAmazon } from "react-icons/si";
+
+/**
+ * Marketplace with nested category -> subcategory dropdown.
+ * - Colors (hex) unchanged from your original design.
+ * - TypeScript-safe.
+ */
 
 interface Item {
   id: number;
@@ -8,58 +17,197 @@ interface Item {
   price: number;
   seller: string;
   delivery: string;
-  icon: string;
-  category: string;
+  icon: IconType | string;
+  category: string; // main category, e.g. "Social Media"
+  subcategory?: string; // e.g. "Instagram", "Facebook"
 }
+
+/** Structure of categories with their subcategories */
+const CATEGORY_MAP: Record<string, string[]> = {
+  "Social Media": ["Instagram", "Facebook", "WhatsApp", "Twitter"],
+  "Emails & Messaging Service": ["Gmail", "Outlook", "ProtonMail"],
+  "Giftcards": ["Amazon", "Steam", "Google Play"],
+  "VPN & PROXYs": ["PIA", "NordVPN", "ExpressVPN"],
+  "Accounts & Subscriptions": ["Netflix", "Spotify", "Disney+"],
+  "Websites": ["WordPress", "Shopify"],
+  "E-commerce Platforms": ["Shopify", "WooCommerce"],
+  "Gaming": ["Steam", "Epic Games"],
+  "Others": ["Misc"],
+};
+
+type SubcatState = Record<string, string[]>; // mainCategory -> array of selected subcats
+
+type CategorySelectorProps = {
+  categoryMap: Record<string, string[]>;
+  selectedSubcats: SubcatState;
+  setSelectedSubcats: React.Dispatch<React.SetStateAction<SubcatState>>;
+};
+
+/**
+ * CategorySelector
+ * - shows main categories; each can be expanded to show subcategory checkboxes
+ * - updates selectedSubcats (mainCategory -> selected subcategories[])
+ */
+const CategorySelector: React.FC<CategorySelectorProps> = ({ categoryMap, selectedSubcats, setSelectedSubcats }) => {
+  const [openMain, setOpenMain] = useState<Record<string, boolean>>({});
+  const ref = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const onDocClick = (e: MouseEvent) => {
+      if (!ref.current) return;
+      if (!ref.current.contains(e.target as Node)) {
+        // close all
+        setOpenMain({});
+      }
+    };
+    const onEsc = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpenMain({});
+    };
+    document.addEventListener("mousedown", onDocClick);
+    document.addEventListener("keydown", onEsc);
+    return () => {
+      document.removeEventListener("mousedown", onDocClick);
+      document.removeEventListener("keydown", onEsc);
+    };
+  }, []);
+
+  const toggleMain = (main: string) => {
+    setOpenMain((prev) => ({ ...prev, [main]: !prev[main] }));
+  };
+
+  const toggleSubcat = (main: string, sub: string) => {
+    setSelectedSubcats((prev) => {
+      const prevArr = prev[main] ?? [];
+      if (prevArr.includes(sub)) {
+        const next = prevArr.filter((s) => s !== sub);
+        // remove key if empty to indicate "none selected"
+        if (next.length === 0) {
+          const { [main]: _, ...rest } = prev;
+          return rest;
+        }
+        return { ...prev, [main]: next };
+      } else {
+        return { ...prev, [main]: [...prevArr, sub] };
+      }
+    });
+  };
+
+  const clearAll = () => setSelectedSubcats({});
+
+  return (
+    <div ref={ref}>
+      <div className="flex items-center justify-between mb-3">
+        <div className="text-sm font-medium" style={{ color: "#0A1A3A" }}>Account Category</div>
+        <button onClick={clearAll} className="text-xs" style={{ color: "#0A1A3A" }}>Clear</button>
+      </div>
+
+      <div className="bg-white border rounded-lg p-2" style={{ borderColor: "#E5E7EB" }}>
+        {Object.keys(categoryMap).map((main) => {
+          const selectedForMain = selectedSubcats[main] ?? [];
+          return (
+            <div key={main} className="border-b last:border-b-0" style={{ borderColor: "#F3F4F6" }}>
+              <button
+                type="button"
+                onClick={() => toggleMain(main)}
+                className="w-full flex items-center justify-between px-3 py-2 text-sm"
+                style={{ color: "#111111" }}
+                aria-expanded={!!openMain[main]}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="text-sm font-medium">{main}</div>
+                  {selectedForMain.length > 0 && (
+                    <div className="text-xs rounded px-2 py-0.5" style={{ backgroundColor: "#F8F9FA", color: "#6B7280" }}>
+                      {selectedForMain.length} selected
+                    </div>
+                  )}
+                </div>
+
+                <svg className={`w-4 h-4 transform transition-transform ${openMain[main] ? "rotate-180" : ""}`} viewBox="0 0 20 20" fill="currentColor" aria-hidden>
+                  <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clipRule="evenodd" />
+                </svg>
+              </button>
+
+              {openMain[main] && (
+                <div className="px-3 pb-3 pt-1">
+                  <div className="space-y-2 max-h-40 overflow-auto">
+                    {categoryMap[main].map((sub) => (
+                      <label key={sub} className="flex items-center gap-3 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={(selectedSubcats[main] ?? []).includes(sub)}
+                          onChange={() => toggleSubcat(main, sub)}
+                          className="w-4 h-4 rounded focus:ring"
+                          style={{ accentColor: "#D4A643" }}
+                        />
+                        <div className="text-sm" style={{ color: "#111111" }}>{sub}</div>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
 
 const Marketplace: React.FC = () => {
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  // selectedSubcats: mainCategory -> selected subcategory array
+  const [selectedSubcats, setSelectedSubcats] = useState<SubcatState>({});
   const [priceRange, setPriceRange] = useState(1000);
   const [showBanner, setShowBanner] = useState(true);
 
-  // Mobile drawer state
+  // Mobile drawer
   const [drawerOpen, setDrawerOpen] = useState(false);
   const drawerRef = useRef<HTMLDivElement | null>(null);
 
   const allItems: Item[] = [
-    { id: 1, title: "USA WhatsApp number", desc: "USA WhatsApp number for sale, it's a one time verification number. Code will be available after purchase", price: 4.49, seller: "AS Digitals", delivery: "Delivers in: 5 mins", icon: "📱", category: "Social Media" },
-    { id: 2, title: "USA WhatsApp number", desc: "USA WhatsApp number for sale, it's a one time verification number. Code will be available after purchase", price: 4.49, seller: "AS Digitals", delivery: "Delivers in: 5 mins", icon: "📱", category: "Social Media" },
-    { id: 3, title: "USA WhatsApp number", desc: "USA WhatsApp number for sale, it's a one time verification number. Code will be available after purchase", price: 4.49, seller: "AS Digitals", delivery: "Delivers in: 5 mins", icon: "📱", category: "Social Media" },
-    { id: 4, title: "1 year Active Pia VPN", desc: "1 year pia vpn works with either ios/android, just 1 device.", price: 2.98, seller: "lavidamide Logs", delivery: "Delivers Instantly", icon: "🔒", category: "VPN & PROXYs" },
-    { id: 5, title: "Gmail PVA Aged 2020", price: 1.99, seller: "MailKing", delivery: "Delivers in: 3 mins", icon: "✉️", category: "Emails & Messaging Service" },
-    { id: 6, title: "Netflix Premium 4K", price: 7.99, seller: "StreamZone", delivery: "Delivers Instantly", icon: "🎬", category: "Accounts & Subscriptions" },
-    { id: 7, title: "$50 Amazon Gift Card US", price: 46.50, seller: "GiftPro", delivery: "Delivers in: 1 min", icon: "🎁", category: "Giftcards" },
-    { id: 8, title: "Instagram 100K+ Followers", price: 95.00, seller: "InstaBoost", delivery: "Delivers in: 2 hours", icon: "📸", category: "Social Media" },
+    { id: 1, title: "USA WhatsApp number", desc: "USA WhatsApp number for one-time verification", price: 4.49, seller: "AS Digitals", delivery: "Delivers in: 5 mins", icon: FaWhatsapp, category: "Social Media", subcategory: "WhatsApp" },
+    { id: 2, title: "Facebook Page Setup", desc: "Verified FB page", price: 12.0, seller: "PagePros", delivery: "Delivers in: 10 mins", icon: FaFacebook, category: "Social Media", subcategory: "Facebook" },
+    { id: 3, title: "Instagram 10K Followers", desc: "Real-looking followers", price: 25.0, seller: "InstaBoost", delivery: "Delivers in: 2 hours", icon: FaInstagram, category: "Social Media", subcategory: "Instagram" },
+    { id: 4, title: "1 year Active PIA VPN", desc: "1 device", price: 2.98, seller: "lavidamide Logs", delivery: "Delivers Instantly", icon: FaLock, category: "VPN & PROXYs", subcategory: "PIA" },
+    { id: 5, title: "Gmail PVA Aged 2020", price: 1.99, seller: "MailKing", delivery: "Delivers in: 3 mins", icon: FaEnvelope, category: "Emails & Messaging Service", subcategory: "Gmail" },
+    { id: 6, title: "Netflix Premium 4K", price: 7.99, seller: "StreamZone", delivery: "Delivers Instantly", icon: SiNetflix, category: "Accounts & Subscriptions", subcategory: "Netflix" },
+    { id: 7, title: "$50 Amazon Gift Card US", price: 46.5, seller: "GiftPro", delivery: "Delivers in: 1 min", icon: SiAmazon, category: "Giftcards", subcategory: "Amazon" },
+    { id: 8, title: "Twitter Verified Helper", price: 49.0, seller: "SocialWorks", delivery: "Delivers in: 1 day", icon: FaWhatsapp, category: "Social Media", subcategory: "Twitter" },
   ];
 
+  // Filtering logic:
+  // - If selectedSubcats is empty => no category filter (all categories)
+  // - If selectedSubcats has entries: for an item to pass, the item.category must be a key in selectedSubcats;
+  //   and if selectedSubcats[item.category] has length>0 then item.subcategory must be one of them.
   const filteredItems = useMemo(() => {
     return allItems.filter((item) => {
       const q = searchQuery.trim().toLowerCase();
-      const matchesSearch =
-        q.length === 0 ||
-        item.title.toLowerCase().includes(q) ||
-        (item.desc?.toLowerCase().includes(q) ?? false);
-      const matchesCategory = selectedCategories.length === 0 || selectedCategories.includes(item.category);
+      const matchesSearch = q.length === 0 || item.title.toLowerCase().includes(q) || (item.desc?.toLowerCase().includes(q) ?? false);
       const matchesPrice = item.price <= priceRange;
-      return matchesSearch && matchesCategory && matchesPrice;
+
+      const mainFilters = Object.keys(selectedSubcats);
+      if (mainFilters.length === 0) {
+        return matchesSearch && matchesPrice;
+      }
+
+      // If item.category is not among selected mains, reject
+      if (!mainFilters.includes(item.category)) return false;
+
+      const selectedSubsForMain = selectedSubcats[item.category] ?? [];
+      // if no specific sub selected for this main, then any sub under that main is allowed
+      if (selectedSubsForMain.length === 0) {
+        return matchesSearch && matchesPrice;
+      }
+      // else require item's subcategory to be in selected subs
+      return matchesSearch && matchesPrice && !!item.subcategory && selectedSubsForMain.includes(item.subcategory);
     });
-  }, [searchQuery, selectedCategories, priceRange]);
+  }, [searchQuery, selectedSubcats, priceRange]);
 
-  const categories = [
-    "Social Media",
-    "Emails & Messaging Service",
-    "Giftcards",
-    "VPN & PROXYs",
-    "Websites",
-    "E-commerce Platforms",
-    "Gaming",
-    "Accounts & Subscriptions",
-    "Others",
-  ];
+  const categories = Object.keys(CATEGORY_MAP);
 
-  // Close drawer on Escape
+  // drawer accessibility & body lock
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") setDrawerOpen(false);
@@ -68,206 +216,103 @@ const Marketplace: React.FC = () => {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  // Prevent body scroll when drawer open
   useEffect(() => {
-    if (drawerOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
+    if (drawerOpen) document.body.style.overflow = "hidden";
+    else document.body.style.overflow = "";
   }, [drawerOpen]);
 
-  // Close drawer when clicking outside (for safety, but click on backdrop already closes)
   useEffect(() => {
     const onClickOutside = (e: MouseEvent) => {
       if (!drawerOpen) return;
-      if (drawerRef.current && !drawerRef.current.contains(e.target as Node)) {
-        setDrawerOpen(false);
-      }
+      if (drawerRef.current && !drawerRef.current.contains(e.target as Node)) setDrawerOpen(false);
     };
     document.addEventListener("mousedown", onClickOutside);
     return () => document.removeEventListener("mousedown", onClickOutside);
   }, [drawerOpen]);
 
+  const handlePurchase = (item: Item) => {
+    alert(`Purchasing: ${item.title} — $${item.price.toFixed(2)}`);
+  };
+
+  const renderIcon = (icon: Item["icon"], size = 28) => {
+    if (typeof icon === "string") return <span>{icon}</span>;
+    const IconComponent = icon as React.ComponentType<any>;
+    return <IconComponent size={size} aria-hidden />;
+  };
+
   return (
     <>
-      {/* Brand Banner – Closeable */}
+      {/* Banner */}
       {showBanner && (
         <div className="px-4 py-3 flex items-center justify-between text-sm font-medium"
              style={{ backgroundColor: "#D4A643", borderLeft: "4px solid #0A1A3A", color: "#111111" }}>
           <div className="flex items-center gap-2">
             <span className="font-bold">🔥</span>
-            <span>
-              Black Friday is live on AcctBazaar! Every price you’re seeing right now is a special Black Friday
-              discount.
-            </span>
+            <span>Black Friday is live on AcctBazaar! Every price you’re seeing right now is a special Black Friday discount.</span>
           </div>
-          <button
-            onClick={() => setShowBanner(false)}
-            className="text-2xl font-bold leading-none"
-            aria-label="Close banner"
-            style={{ color: "#111111" }}
-          >
-            ×
-          </button>
+          <button onClick={() => setShowBanner(false)} className="text-2xl font-bold leading-none" aria-label="Close banner" style={{ color: "#111111" }}>×</button>
         </div>
       )}
 
       <div className="min-h-screen bg-gray-100">
         <div className="max-w-screen-2xl mx-auto px-4 py-6">
-
-          {/* Header - mobile shows hamburger + search */}
+          {/* Header */}
           <div className="flex items-center justify-between mb-6 gap-4">
             <div className="flex items-center gap-3">
-              {/* Mobile: Drawer toggle */}
-              <button
-                onClick={() => setDrawerOpen(true)}
-                className="p-2 rounded-md lg:hidden bg-white border border-gray-200"
-                aria-label="Open filters"
-                aria-haspopup="true"
-                aria-expanded={drawerOpen}
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
+              <button onClick={() => setDrawerOpen(true)} className="p-2 rounded-md lg:hidden bg-white border border-gray-200" aria-label="Open filters">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
               </button>
-
               <h1 className="text-2xl sm:text-3xl font-bold" style={{ color: "#0A1A3A" }}>Marketplace</h1>
             </div>
 
-            {/* Desktop controls */}
             <div className="hidden md:flex items-center gap-4">
               <div className="flex border border-gray-300 rounded-lg overflow-hidden">
-                <button
-                  onClick={() => setViewMode("list")}
-                  className={`px-4 py-2 ${viewMode === "list" ? "text-white" : "bg-white"} transition`}
-                  style={viewMode === "list" ? { backgroundColor: "#0A1A3A" } : undefined}
-                >
-                  List
-                </button>
-                <button
-                  onClick={() => setViewMode("grid")}
-                  className={`px-4 py-2 ${viewMode === "grid" ? "text-white" : "bg-white"} transition`}
-                  style={viewMode === "grid" ? { backgroundColor: "#0A1A3A" } : undefined}
-                >
-                  Grid
-                </button>
+                <button onClick={() => setViewMode("list")} className={`px-4 py-2 ${viewMode === "list" ? "text-white" : "bg-white"} transition`} style={viewMode === "list" ? { backgroundColor: "#0A1A3A" } : undefined}>List</button>
+                <button onClick={() => setViewMode("grid")} className={`px-4 py-2 ${viewMode === "grid" ? "text-white" : "bg-white"} transition`} style={viewMode === "grid" ? { backgroundColor: "#0A1A3A" } : undefined}>Grid</button>
               </div>
 
-              <input
-                type="text"
-                placeholder="Search by name or description"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-lg w-80 focus:outline-none"
-                style={{ boxShadow: "none" }}
-                // custom focus ring using inline style fallback for consistent brand color
-                onFocus={(e) => (e.currentTarget.style.boxShadow = "0 0 0 3px rgba(10,26,58,0.12)")}
-                onBlur={(e) => (e.currentTarget.style.boxShadow = "none")}
-              />
+              <input type="text" placeholder="Search by name or description" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="px-4 py-2 border border-gray-300 rounded-lg w-80 focus:outline-none" style={{ boxShadow: "none" }} onFocus={(e) => (e.currentTarget.style.boxShadow = "0 0 0 3px rgba(10,26,58,0.12)")} onBlur={(e) => (e.currentTarget.style.boxShadow = "none")} />
             </div>
 
-            {/* Mobile: small search icon that focuses input in drawer (we keep search visible as icon) */}
             <div className="md:hidden flex items-center gap-2">
-              <button
-                onClick={() => {
-                  // open drawer which contains search & filters
-                  setDrawerOpen(true);
-                }}
-                className="p-2 rounded-md bg-white border border-gray-200"
-                aria-label="Open filters and search"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z" />
-                </svg>
+              <button onClick={() => setDrawerOpen(true)} className="p-2 rounded-md bg-white border border-gray-200" aria-label="Open filters and search">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z" /></svg>
               </button>
             </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            {/* LEFT SIDEBAR – Desktop only */}
+            {/* Sidebar */}
             <aside className="hidden lg:block lg:col-span-3 lg:sticky lg:top-6 h-fit">
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                 <h3 className="text-lg font-bold mb-6">Filter</h3>
 
-                <div className="text-sm font-medium" style={{ color: "#0A1A3A" }}>Account Category</div>
-                <div className="space-y-3 mb-8">
-                  {categories.map((cat) => (
-                    <label key={cat} className="flex items-center gap-3 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={selectedCategories.includes(cat)}
-                        onChange={() => {
-                          setSelectedCategories((prev) =>
-                            prev.includes(cat) ? prev.filter((c) => c !== cat) : [...prev, cat]
-                          );
-                        }}
-                        className="w-4 h-4 rounded focus:ring"
-                        // accent color style (Royal Gold)
-                        style={{ accentColor: "#D4A643" }}
-                      />
-                      <span className="text-sm" style={{ color: "#111111" }}>{cat}</span>
-                    </label>
-                  ))}
-                </div>
+                <CategorySelector categoryMap={CATEGORY_MAP} selectedSubcats={selectedSubcats} setSelectedSubcats={setSelectedSubcats} />
 
-                <div className="text-sm font-medium" style={{ color: "#0A1A3A" }}>Price range</div>
-                <input
-                  type="range"
-                  min="0"
-                  max="1000"
-                  value={priceRange}
-                  onChange={(e) => setPriceRange(Number(e.target.value))}
-                  className="w-full h-2 rounded-lg"
-                  style={{ backgroundColor: "#EDE7DA", accentColor: "#D4A643" }}
-                />
-                <div className="flex justify-between text-xs" style={{ color: "#6B7280", marginTop: 8 }}>
-                  <span>$0</span>
-                  <span>${priceRange}</span>
-                </div>
+                <div className="mt-6 text-sm font-medium" style={{ color: "#0A1A3A" }}>Price range</div>
+                <input type="range" min={0} max={1000} value={priceRange} onChange={(e) => setPriceRange(Number(e.target.value))} className="w-full h-2 rounded-lg" style={{ backgroundColor: "#EDE7DA", accentColor: "#D4A643" }} />
+                <div className="flex justify-between text-xs" style={{ color: "#6B7280", marginTop: 8 }}><span>$0</span><span>${priceRange}</span></div>
               </div>
             </aside>
 
-            {/* MAIN CONTENT */}
+            {/* Main */}
             <main className="lg:col-span-9">
               <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-                {/* Top toolbar for mobile & small screens */}
+                {/* toolbar */}
                 <div className="px-4 py-4 border-b flex items-center justify-between gap-3">
                   <div className="flex items-center gap-3">
                     <div className="hidden sm:flex items-center gap-3">
                       <div className="text-sm" style={{ color: "#6B7280" }}>View:</div>
                       <div className="flex border border-gray-300 rounded-lg overflow-hidden">
-                        <button
-                          onClick={() => setViewMode("list")}
-                          className={`px-3 py-1 ${viewMode === "list" ? "text-white" : "bg-white"} transition`}
-                          style={viewMode === "list" ? { backgroundColor: "#0A1A3A" } : undefined}
-                        >
-                          List
-                        </button>
-                        <button
-                          onClick={() => setViewMode("grid")}
-                          className={`px-3 py-1 ${viewMode === "grid" ? "text-white" : "bg-white"} transition`}
-                          style={viewMode === "grid" ? { backgroundColor: "#0A1A3A" } : undefined}
-                        >
-                          Grid
-                        </button>
+                        <button onClick={() => setViewMode("list")} className={`px-3 py-1 ${viewMode === "list" ? "text-white" : "bg-white"} transition`} style={viewMode === "list" ? { backgroundColor: "#0A1A3A" } : undefined}>List</button>
+                        <button onClick={() => setViewMode("grid")} className={`px-3 py-1 ${viewMode === "grid" ? "text-white" : "bg-white"} transition`} style={viewMode === "grid" ? { backgroundColor: "#0A1A3A" } : undefined}>Grid</button>
                       </div>
                     </div>
                   </div>
 
-                  {/* Mobile search shown on toolbar */}
                   <div className="flex-1 px-4 sm:px-0">
                     <div className="sm:hidden">
-                      <input
-                        type="text"
-                        placeholder="Search marketplace..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                        style={{ boxShadow: "none" }}
-                        onFocus={(e) => (e.currentTarget.style.boxShadow = "0 0 0 3px rgba(10,26,58,0.12)")}
-                        onBlur={(e) => (e.currentTarget.style.boxShadow = "none")}
-                      />
+                      <input type="text" placeholder="Search marketplace..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg" style={{ boxShadow: "none" }} onFocus={(e) => (e.currentTarget.style.boxShadow = "0 0 0 3px rgba(10,26,58,0.12)")} onBlur={(e) => (e.currentTarget.style.boxShadow = "none")} />
                     </div>
                     <div className="hidden sm:block">
                       <div className="text-sm" style={{ color: "#6B7280" }}>{filteredItems.length} results</div>
@@ -283,26 +328,24 @@ const Marketplace: React.FC = () => {
                 {viewMode === "list" && (
                   <div className="divide-y">
                     {filteredItems.map((item) => (
-                      <div key={item.id} className="p-6 flex items-start gap-6 hover:bg-gray-50 transition">
-                        <div className="text-4xl">{item.icon}</div>
+                      <div key={item.id} className="p-4 flex items-start gap-4 hover:bg-gray-50 transition">
+                        <div className="text-2xl" style={{ lineHeight: 1 }}>{renderIcon(item.icon, 28)}</div>
                         <div className="flex-1">
-                          <h3 className="font-semibold text-lg" style={{ color: "#0A1A3A" }}>{item.title}</h3>
-                          <p className="text-sm mt-1" style={{ color: "#6B7280" }}>
-                            {item.desc || "High-quality account • Instant delivery • Full warranty"}
-                          </p>
-                          <div className="flex items-center gap-4 mt-4 text-xs" style={{ color: "#6B7280" }}>
-                            <span className="flex items-center gap-1">
-                              <span className="w-2 h-2 bg-gray-400 rounded-full"></span>
-                              {item.seller}
-                            </span>
+                          <h3 className="font-semibold text-base" style={{ color: "#0A1A3A" }}>{item.title}</h3>
+                          <p className="text-sm mt-1" style={{ color: "#6B7280" }}>{item.desc || "High-quality account • Instant delivery • Full warranty"}</p>
+                          <div className="flex items-center gap-3 mt-3 text-xs" style={{ color: "#6B7280" }}>
+                            <span className="flex items-center gap-1"><span className="w-2 h-2 bg-gray-400 rounded-full"></span>{item.seller}</span>
                             <span>•</span>
                             <span className="font-medium" style={{ color: "#1BC47D" }}>{item.delivery}</span>
+                            {item.subcategory && <span className="ml-2 text-xs rounded px-2 py-0.5" style={{ backgroundColor: "#F8F9FA", color: "#6B7280" }}>{item.subcategory}</span>}
                           </div>
+                          <div className="mt-3 text-xs p-2 bg-gray-50 rounded" style={{ color: "#6B7280" }}>Buyer note: Check seller rating & delivery time before purchase.</div>
                         </div>
                         <div className="text-right">
-                          <div className="text-2xl font-bold" style={{ color: "#0A1A3A" }}>${item.price.toFixed(2)}</div>
-                          <div className="mt-4 flex gap-4">
+                          <div className="text-xl font-bold" style={{ color: "#0A1A3A" }}>${item.price.toFixed(2)}</div>
+                          <div className="mt-3 flex gap-3 justify-end">
                             <button className="font-medium" style={{ color: "#D4A643" }}>Add to cart</button>
+                            <button className="font-medium" onClick={() => handlePurchase(item)} style={{ color: "#0A1A3A", border: "1px solid #E5E7EB", padding: "6px 10px", borderRadius: 8 }}>Purchase</button>
                             <button className="text-gray-500">View</button>
                           </div>
                         </div>
@@ -316,26 +359,21 @@ const Marketplace: React.FC = () => {
                 {viewMode === "grid" && (
                   <div className="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7">
                     {filteredItems.map((item) => (
-                      <div key={item.id} className="border border-gray-200 rounded-xl p-6 hover:shadow-xl transition-shadow">
-                        <div className="text-6xl text-center mb-5">{item.icon}</div>
-                        <h3 className="font-bold text-lg" style={{ color: "#0A1A3A" }}>{item.title}</h3>
-                        <p className="text-sm mt-2 line-clamp-3" style={{ color: "#6B7280" }}>
-                          {item.desc || "Premium account • Instant delivery"}
-                        </p>
-                        <div className="mt-5 text-sm" style={{ color: "#6B7280" }}>
+                      <div key={item.id} className="border border-gray-200 rounded-xl p-4 hover:shadow-xl transition-shadow">
+                        <div className="text-4xl text-center mb-3" style={{ lineHeight: 1 }}>{renderIcon(item.icon, 40)}</div>
+                        <h3 className="font-semibold text-base" style={{ color: "#0A1A3A" }}>{item.title}</h3>
+                        <p className="text-sm mt-1 line-clamp-2" style={{ color: "#6B7280" }}>{item.desc || "Premium account • Instant delivery"}</p>
+                        <div className="mt-3 text-sm" style={{ color: "#6B7280" }}>
                           <div>{item.seller}</div>
                           <div style={{ color: "#1BC47D" }}>{item.delivery}</div>
+                          {item.subcategory && <div className="text-xs mt-1 rounded px-2 py-0.5" style={{ backgroundColor: "#F8F9FA", color: "#6B7280" }}>{item.subcategory}</div>}
                         </div>
-                        <div className="mt-5 flex items-center justify-between">
-                          <div className="text-2xl font-bold" style={{ color: "#0A1A3A" }}>${item.price.toFixed(2)}</div>
-                          <button
-                            className="px-4 py-2 rounded-lg transition font-medium"
-                            style={{ backgroundColor: "#D4A643", color: "#111111" }}
-                            onMouseEnter={(e) => (e.currentTarget.style.background = "#1BC47D")}
-                            onMouseLeave={(e) => (e.currentTarget.style.background = "#D4A643")}
-                          >
-                            Buy Now
-                          </button>
+                        <div className="mt-4 flex items-center justify-between">
+                          <div className="text-xl font-bold" style={{ color: "#0A1A3A" }}>${item.price.toFixed(2)}</div>
+                          <div className="flex gap-2">
+                            <button className="px-3 py-1 rounded-lg font-medium" style={{ backgroundColor: "#D4A643", color: "#111111" }} onClick={() => handlePurchase(item)} onMouseEnter={(e) => (e.currentTarget.style.background = "#1BC47D")} onMouseLeave={(e) => (e.currentTarget.style.background = "#D4A643")}>Buy Now</button>
+                            <button className="px-3 py-1 rounded-lg border font-medium" style={{ borderColor: "#E5E7EB", color: "#0A1A3A" }} onClick={() => alert(`Purchase: ${item.title}`)}>Purchase</button>
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -348,120 +386,38 @@ const Marketplace: React.FC = () => {
         </div>
       </div>
 
-      {/* MOBILE DRAWER / SLIDING FILTER */}
-      {/* Backdrop */}
-      <div
-        className={`fixed inset-0 z-40 transition-opacity ${drawerOpen ? "opacity-60 pointer-events-auto" : "opacity-0 pointer-events-none"}`}
-        style={{ backgroundColor: "rgba(0,0,0,0.6)" }}
-        onClick={() => setDrawerOpen(false)}
-        aria-hidden={!drawerOpen}
-      />
+      {/* Mobile Drawer Backdrop */}
+      <div className={`fixed inset-0 z-40 transition-opacity ${drawerOpen ? "opacity-60 pointer-events-auto" : "opacity-0 pointer-events-none"}`} style={{ backgroundColor: "rgba(0,0,0,0.6)" }} onClick={() => setDrawerOpen(false)} aria-hidden={!drawerOpen} />
 
-      {/* Drawer panel */}
-      <aside
-        ref={drawerRef}
-        className={`fixed top-0 left-0 z-50 h-full w-80 max-w-full bg-white shadow-xl transform transition-transform ${drawerOpen ? "translate-x-0" : "-translate-x-full"}`}
-        role="dialog"
-        aria-modal="true"
-        aria-hidden={!drawerOpen}
-      >
+      {/* Mobile Drawer */}
+      <aside ref={drawerRef} className={`fixed top-0 left-0 z-50 h-full w-80 max-w-full bg-white shadow-xl transform transition-transform ${drawerOpen ? "translate-x-0" : "-translate-x-full"}`} role="dialog" aria-modal="true" aria-hidden={!drawerOpen}>
         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
           <h3 className="text-lg font-bold" style={{ color: "#0A1A3A" }}>Filters & Search</h3>
-          <button
-            onClick={() => setDrawerOpen(false)}
-            className="p-2 rounded-md"
-            aria-label="Close filters"
-            style={{ color: "#6B7280" }}
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
+          <button onClick={() => setDrawerOpen(false)} className="p-2 rounded-md" aria-label="Close filters" style={{ color: "#6B7280" }}>
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
         </div>
 
         <div className="p-4 overflow-auto h-full">
-          {/* Search */}
           <div className="mb-4">
-            <input
-              type="text"
-              placeholder="Search by name or description"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-              onFocus={(e) => (e.currentTarget.style.boxShadow = "0 0 0 3px rgba(10,26,58,0.12)")}
-              onBlur={(e) => (e.currentTarget.style.boxShadow = "none")}
-            />
+            <input type="text" placeholder="Search by name or description" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg" onFocus={(e) => (e.currentTarget.style.boxShadow = "0 0 0 3px rgba(10,26,58,0.12)")} onBlur={(e) => (e.currentTarget.style.boxShadow = "none")} />
           </div>
 
-          {/* Categories */}
           <div className="mb-4">
-            <div className="text-sm font-medium" style={{ color: "#0A1A3A" }}>Account Category</div>
-            <div className="space-y-3">
-              {categories.map((cat) => (
-                <label key={cat} className="flex items-center gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={selectedCategories.includes(cat)}
-                    onChange={() => {
-                      setSelectedCategories((prev) =>
-                        prev.includes(cat) ? prev.filter((c) => c !== cat) : [...prev, cat]
-                      );
-                    }}
-                    className="w-4 h-4 rounded focus:ring"
-                    style={{ accentColor: "#D4A643" }}
-                  />
-                  <span className="text-sm" style={{ color: "#111111" }}>{cat}</span>
-                </label>
-              ))}
-            </div>
+            <CategorySelector categoryMap={CATEGORY_MAP} selectedSubcats={selectedSubcats} setSelectedSubcats={setSelectedSubcats} />
           </div>
 
-          {/* Price range */}
           <div className="mb-6">
             <div className="text-sm font-medium" style={{ color: "#0A1A3A" }}>Price range</div>
-            <input
-              type="range"
-              min="0"
-              max="1000"
-              value={priceRange}
-              onChange={(e) => setPriceRange(Number(e.target.value))}
-              className="w-full h-2 rounded-lg"
-              style={{ backgroundColor: "#EDE7DA", accentColor: "#D4A643" }}
-            />
-            <div className="flex justify-between text-xs" style={{ color: "#6B7280", marginTop: 8 }}>
-              <span>$0</span>
-              <span>${priceRange}</span>
-            </div>
+            <input type="range" min={0} max={1000} value={priceRange} onChange={(e) => setPriceRange(Number(e.target.value))} className="w-full h-2 rounded-lg" style={{ backgroundColor: "#EDE7DA", accentColor: "#D4A643" }} />
+            <div className="flex justify-between text-xs" style={{ color: "#6B7280", marginTop: 8 }}><span>$0</span><span>${priceRange}</span></div>
           </div>
 
-          {/* Quick actions */}
           <div className="flex gap-3">
-            <button
-              onClick={() => {
-                // apply & close
-                setDrawerOpen(false);
-              }}
-              className="flex-1 px-4 py-2 rounded-lg font-medium"
-              style={{ backgroundColor: "#D4A643", color: "#111111" }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = "#1BC47D")}
-              onMouseLeave={(e) => (e.currentTarget.style.background = "#D4A643")}
-            >
-              Apply
-            </button>
-            <button
-              onClick={() => {
-                setSelectedCategories([]);
-                setPriceRange(1000);
-                setSearchQuery("");
-              }}
-              className="flex-1 border px-4 py-2 rounded-lg"
-              style={{ borderColor: "#E5E7EB", color: "#111111" }}
-            >
-              Reset
-            </button>
+            <button onClick={() => setDrawerOpen(false)} className="flex-1 px-4 py-2 rounded-lg font-medium" style={{ backgroundColor: "#D4A643", color: "#111111" }} onMouseEnter={(e) => (e.currentTarget.style.background = "#1BC47D")} onMouseLeave={(e) => (e.currentTarget.style.background = "#D4A643")}>Apply</button>
+            <button onClick={() => { setSelectedSubcats({}); setPriceRange(1000); setSearchQuery(""); }} className="flex-1 border px-4 py-2 rounded-lg" style={{ borderColor: "#E5E7EB", color: "#111111" }}>Reset</button>
           </div>
 
-          {/* spacing bottom so content can scroll above sticky footer on small screens */}
           <div className="h-24" />
         </div>
       </aside>
