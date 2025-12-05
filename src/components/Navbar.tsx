@@ -308,7 +308,7 @@ export default function Navbar() {
                       </button>
                     </li>
 
-                    <li className="px-3 py-2">
+                    {/* <li className="px-3 py-2">
                       <label className="flex items-center gap-3 cursor-pointer">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -334,7 +334,7 @@ export default function Navbar() {
                           style={{ accentColor: ROYAL_GOLD }}
                         />
                       </label>
-                    </li>
+                    </li> */}
                     {/* <li>
                       <NavLink
                         className="flex items-center gap-3 px-3 py-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700"
@@ -347,9 +347,9 @@ export default function Navbar() {
                   </ul>
                   <div className="px-5 py-3 border-t border-gray-200 dark:border-gray-700">
                     <label className="flex items-center justify-between cursor-pointer">
-                      <span className="text-sm font-medium" style={{ color: CHARCOAL }}>
+                      {/* <span className="text-sm font-medium" style={{ color: CHARCOAL }}>
                         Dark Mode
-                      </span>
+                      </span> */}
                       <input
                         type="checkbox"
                         checked={dark}
