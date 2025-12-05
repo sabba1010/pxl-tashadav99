@@ -162,7 +162,7 @@ export default function Wallet(): React.ReactElement {
   };
 
   return (
-    <div className="min-h-[85vh] p-8" style={{ backgroundColor: "#F7F7F8" }}>
+    <div className="min-h-[85vh] p-8" style={{ backgroundColor: "#f3efee" }}>
       <div className="max-w-7xl mx-auto bg-white rounded-md p-6 shadow-sm">
         <h2 className="text-3xl font-bold mb-6" style={{ color: EMPIRE_BLUE }}>Wallet</h2>
         <div className="grid grid-cols-12 gap-6">
