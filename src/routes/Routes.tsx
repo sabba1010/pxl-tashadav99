@@ -27,6 +27,7 @@ import Walet from "../Walte/Walet";
 import Mysells from "../dashboard/buyer-dahboard/Mysells";
 import Payment from "../components/Payment";
 import MyAds from "../components/HomeComponents/MY Ads/MyAds";
+import MyOrder from "../My Order/MyOrder";
 
 const Routes = createBrowserRouter([
   {
@@ -50,6 +51,10 @@ const Routes = createBrowserRouter([
       {
         path: "/purchases",
         element: <Mypurchase />,
+      },
+      {
+         path: "/my-order",
+         element:<MyOrder/>,
       },
       {
           path: "/my-ads",
