@@ -74,6 +74,41 @@ export default function Navbar() {
             >
               Marketplace
             </NavLink>
+
+
+           <NavLink
+              to="/orders"
+              className={({ isActive }) =>
+                `font-medium transition ${
+                  isActive
+                    ? ""
+                    : ""
+                }`
+              }
+              style={({ isActive }) => ({
+                color: isActive ? ROYAL_GOLD : CHARCOAL,
+              })}
+            >
+              Orders
+            </NavLink>
+
+          <NavLink
+              to="/my-ads"
+              className={({ isActive }) =>
+                `font-medium transition ${
+                  isActive
+                    ? ""
+                    : ""
+                }`
+              }
+              style={({ isActive }) => ({
+                color: isActive ? ROYAL_GOLD : CHARCOAL,
+              })}
+            >
+              My Ads
+            </NavLink>
+
+
             <NavLink
               to="/purchases"
               className={({ isActive }) =>
