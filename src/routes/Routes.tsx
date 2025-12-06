@@ -27,7 +27,7 @@ import Walet from "../Walte/Walet";
 import Mysells from "../dashboard/buyer-dahboard/Mysells";
 import Payment from "../components/Payment";
 //import MyAds from "../components/HomeComponents/MYAd";
-import MyOrder from "../My Order/MyOrder";
+import MyOrder from "../My/Order/MyOrder";
 import Plan from "../pages/plan/Plan";
 import MyAds from "../components/HomeComponents/MYAds/MyAds";
 
