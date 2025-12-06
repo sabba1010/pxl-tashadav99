@@ -3,13 +3,6 @@ import type { IconType } from "react-icons";
 import { FaWhatsapp, FaEnvelope, FaPlus, FaBullhorn, FaFacebookF, FaInstagram, FaTwitter, FaLock, FaShoppingCart } from "react-icons/fa";
 import { SiNetflix, SiAmazon, SiSteam, SiGoogle } from "react-icons/si";
 
-/**
- * Marketplace.tsx
- * - Many items added (colorful)
- * - Icon badge color derived from known brand/icon colors (ICON_COLOR_MAP)
- * - If brand color unknown, uses deterministic vibrant gradient
- */
-
 interface Item {
   id: number;
   title: string;
@@ -37,11 +30,10 @@ const CATEGORY_MAP: Record<string, string[]> = {
 type SubcatState = Record<string, string[]>;
 
 const ICON_COLOR_MAP: Record<string, string> = {
-  // react-icons displayName or component name guesses
   FaWhatsapp: "#25D366",
   SiNetflix: "#E50914",
   SiAmazon: "#FF9900",
-  FaEnvelope: "#D44638", // Gmail-ish red
+  FaEnvelope: "#D44638",
   FaFacebookF: "#1877F2",
   FaInstagram: "#E1306C",
   FaTwitter: "#1DA1F2",
@@ -54,12 +46,11 @@ const ICON_COLOR_MAP: Record<string, string> = {
 };
 
 const gradientFromHex = (hex: string) => {
-  // simple lighten: convert to rgb and mix with white
   const h = hex.replace("#", "");
   const r = parseInt(h.substring(0, 2), 16);
   const g = parseInt(h.substring(2, 4), 16);
   const b = parseInt(h.substring(4, 6), 16);
-  const mix = (c: number) => Math.round(c + (255 - c) * 0.28); // 28% toward white
+  const mix = (c: number) => Math.round(c + (255 - c) * 0.28);
   const r2 = mix(r);
   const g2 = mix(g);
   const b2 = mix(b);
@@ -124,10 +115,8 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({ categoryMap, select
   return (
     <div ref={ref}>
       <div className="flex items-center justify-between mb-3">
-        <div style={{ color: "#0A1A3A", fontSize: 14, fontWeight: 600 }}>Account Category</div>
-        <button onClick={clearAll} style={{ color: "#0A1A3A", fontSize: 12 }}>
-          Clear
-        </button>
+        <div className="text-sm font-semibold text-[#0A1A3A]">Account Category</div>
+        <button onClick={clearAll} className="text-xs text-[#0A1A3A]">Clear</button>
       </div>
 
       <div className="bg-white border rounded-lg p-2" style={{ borderColor: "#E5E7EB" }}>
@@ -140,14 +129,11 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({ categoryMap, select
                 onClick={() => toggleMain(main)}
                 className="w-full flex items-center justify-between px-3 py-2"
                 aria-expanded={!!openMain[main]}
-                style={{ color: "#111827", fontSize: 14 }}
               >
                 <div className="flex items-center gap-3">
-                  <div style={{ fontWeight: 600 }}>{main}</div>
+                  <div className="font-semibold text-[#111827]">{main}</div>
                   {selectedForMain.length > 0 && (
-                    <div style={{ backgroundColor: "#F8F9FA", color: "#6B7280", fontSize: 12 }} className="text-xs rounded px-2 py-0.5">
-                      {selectedForMain.length} selected
-                    </div>
+                    <div className="text-xs rounded px-2 py-0.5 bg-[#F8F9FA] text-[#6B7280]">{selectedForMain.length} selected</div>
                   )}
                 </div>
 
@@ -168,7 +154,7 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({ categoryMap, select
                           className="w-4 h-4 rounded focus:ring"
                           style={{ accentColor: "#D4A643" }}
                         />
-                        <div style={{ fontSize: 14, color: "#111827" }}>{sub}</div>
+                        <div className="text-sm text-[#111827]">{sub}</div>
                       </label>
                     ))}
                   </div>
@@ -191,7 +177,6 @@ const Marketplace: React.FC = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const drawerRef = useRef<HTMLDivElement | null>(null);
 
-  // many colorful items added
   const allItems: Item[] = [
     { id: 1, title: "USA GMAIL NUMBER", desc: "Valid +1 for gmail", price: 2.5, seller: "Senior man", delivery: "2 mins", icon: FaEnvelope, category: "Emails & Messaging Service", subcategory: "Gmail" },
     { id: 2, title: "Aged Gmail (14y)", desc: "Strong aged gmail", price: 4.0, seller: "MailKing", delivery: "1 min", icon: FaEnvelope, category: "Emails & Messaging Service", subcategory: "Gmail" },
@@ -250,15 +235,12 @@ const Marketplace: React.FC = () => {
     alert(`Purchasing: ${item.title} — $${item.price.toFixed(2)}`);
   };
 
-  // Determine icon "key" for ICON_COLOR_MAP
   const getIconKey = (icon: Item["icon"]) => {
     if (typeof icon === "string") return String(icon);
-    // react-icons components usually have 'displayName' or 'name'
     const anyIcon = icon as any;
     return anyIcon.displayName || anyIcon.name || String(anyIcon);
   };
 
-  // Moogo-style badge using icon brand color when available
   const renderIcon = (icon: Item["icon"], size = 36) => {
     const badgeSize = Math.max(40, size + 8);
     const key = getIconKey(icon);
@@ -327,12 +309,12 @@ const Marketplace: React.FC = () => {
   return (
     <>
       {showBanner && (
-        <div className="px-4 py-3 flex items-center justify-between text-sm font-medium" style={{ backgroundColor: "#D4A643", borderLeft: "4px solid #0A1A3A", color: "#111111" }}>
+        <div className="px-4 py-3 flex items-center justify-between text-sm font-medium" style={{ backgroundColor: "#33ac6f", borderLeft: "4px solid #0A1A3A", color: "#ffffff" }}>
           <div className="flex items-center gap-2">
-            <span style={{ fontWeight: 700 }}>🔥</span>
-            <span style={{ fontSize: 14 }}>Black Friday is live on AcctBazaar! Every price you’re seeing right now is a special Black Friday discount.</span>
+            <span className="font-bold">🔥</span>
+            <span className="text-sm">Black Friday is live on AcctBazaar! Every price you’re seeing right now is a special Black Friday discount.</span>
           </div>
-          <button onClick={() => setShowBanner(false)} aria-label="Close banner" style={{ color: "#111111", fontSize: 20, fontWeight: 700 }}>×</button>
+          <button onClick={() => setShowBanner(false)} aria-label="Close banner" className="text-2xl font-bold">×</button>
         </div>
       )}
 
@@ -344,8 +326,8 @@ const Marketplace: React.FC = () => {
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
               </button>
               <div>
-                <h1 style={{ color: "#0A1A3A", fontSize: 28, margin: 0, fontWeight: 700 }}>Marketplace</h1>
-                <div style={{ color: "#6B7280", fontSize: 13 }}>Access all products on the marketplace by our verified sellers</div>
+                <h1 className="text-2xl lg:text-3xl font-bold text-[#0A1A3A]">Marketplace</h1>
+                <div className="text-xs lg:text-sm text-[#6B7280]">Access all products on the marketplace by our verified sellers</div>
               </div>
             </div>
 
@@ -360,7 +342,7 @@ const Marketplace: React.FC = () => {
                 placeholder="Search by name or description"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-lg w-80 focus:outline-none"
+                className="px-4 py-2 border border-gray-300 rounded-lg w-64 focus:outline-none"
                 style={{ boxShadow: "none", fontSize: 14 }}
                 onFocus={(e) => (e.currentTarget.style.boxShadow = "0 0 0 3px rgba(10,26,58,0.12)")}
                 onBlur={(e) => (e.currentTarget.style.boxShadow = "none")}
@@ -377,22 +359,22 @@ const Marketplace: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             <aside className="hidden lg:block lg:col-span-3 lg:sticky lg:top-6 h-fit">
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <h3 className="text-lg font-bold mb-6" style={{ fontSize: 18 }}>Filter</h3>
+                <h3 className="text-lg font-bold mb-6">Filter</h3>
 
                 <CategorySelector categoryMap={CATEGORY_MAP} selectedSubcats={selectedSubcats} setSelectedSubcats={setSelectedSubcats} />
 
-                <div className="mt-6" style={{ color: "#0A1A3A", fontSize: 14, fontWeight: 600 }}>Price range</div>
+                <div className="mt-6 text-sm font-semibold text-[#0A1A3A]">Price range</div>
                 <input type="range" min={0} max={1000} value={priceRange} onChange={(e) => setPriceRange(Number(e.target.value))} className="w-full h-2 rounded-lg mt-2" style={{ backgroundColor: "#EDE7DA", accentColor: "#33ac6f" }} />
-                <div className="flex justify-between text-xs" style={{ color: "#6B7280", marginTop: 8 }}><span>$0</span><span>${priceRange}</span></div>
+                <div className="flex justify-between text-xs text-[#6B7280] mt-2"><span>$0</span><span>${priceRange}</span></div>
               </div>
             </aside>
 
             <main className="lg:col-span-9">
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                 <div className="px-4 py-4 border-b flex items-center justify-between gap-3">
                   <div className="flex items-center gap-3">
                     <div className="hidden sm:flex items-center gap-3">
-                      <div style={{ color: "#6B7280", fontSize: 14 }}>View:</div>
+                      <div className="text-sm text-[#6B7280]">View:</div>
                       <div className="flex border border-gray-300 rounded-lg overflow-hidden">
                         <button onClick={() => setViewMode("list")} className={`px-3 py-1 ${viewMode === "list" ? "text-white" : "bg-white"} transition`} style={viewMode === "list" ? { backgroundColor: "#0A1A3A" } : undefined}>List</button>
                         <button onClick={() => setViewMode("grid")} className={`px-3 py-1 ${viewMode === "grid" ? "text-white" : "bg-white"} transition`} style={viewMode === "grid" ? { backgroundColor: "#0A1A3A" } : undefined}>Grid</button>
@@ -405,12 +387,12 @@ const Marketplace: React.FC = () => {
                       <input type="text" placeholder="Search marketplace..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg" style={{ boxShadow: "none", fontSize: 14 }} onFocus={(e) => (e.currentTarget.style.boxShadow = "0 0 0 3px rgba(10,26,58,0.12)")} onBlur={(e) => (e.currentTarget.style.boxShadow = "none")} />
                     </div>
                     <div className="hidden sm:block">
-                      <div className="text-sm" style={{ color: "#6B7280" }}>{filteredItems.length} results</div>
+                      <div className="text-sm text-[#6B7280]">{filteredItems.length} results</div>
                     </div>
                   </div>
 
                   <div className="hidden sm:flex items-center gap-3">
-                    <div className="text-sm" style={{ color: "#6B7280" }}>{filteredItems.length} results</div>
+                    <div className="text-sm text-[#6B7280]">{filteredItems.length} results</div>
                   </div>
                 </div>
 
@@ -418,34 +400,34 @@ const Marketplace: React.FC = () => {
                 {viewMode === "list" && (
                   <div className="divide-y">
                     {filteredItems.map((item) => (
-                      <div key={item.id} className="p-4 flex items-start gap-4 hover:bg-gray-50 transition">
-                        <div style={{ lineHeight: 1, minWidth: 56 }}>{renderIcon(item.icon, 36)}</div>
+                      <div key={item.id} className="p-4 flex items-start gap-4 hover:bg-gray-50 transition flex-col sm:flex-row">
+                        <div className="flex-shrink-0" style={{ lineHeight: 1, minWidth: 56 }}>{renderIcon(item.icon, 36)}</div>
 
-                        <div className="flex-1">
-                          <h3 style={{ color: "#0A1A3A", fontSize: 16, fontWeight: 600, margin: 0 }}>{item.title}</h3>
-                          <p style={{ color: "#6B7280", fontSize: 14, marginTop: 6 }}>{item.desc || "High-quality account • Instant delivery • Full warranty"}</p>
+                        <div className="flex-1 w-full">
+                          <h3 className="text-base sm:text-lg font-semibold text-[#0A1A3A]">{item.title}</h3>
+                          <p className="text-sm text-[#6B7280] mt-1">{item.desc || "High-quality account • Instant delivery • Full warranty"}</p>
 
-                          <div className="flex items-center gap-3 mt-3" style={{ color: "#6B7280", fontSize: 13 }}>
-                            <span className="flex items-center gap-2"><span style={{ width: 8, height: 8, background: "#9CA3AF", borderRadius: 999 }}></span>{item.seller}</span>
+                          <div className="flex items-center gap-3 mt-3 text-sm text-[#6B7280] flex-wrap">
+                            <span className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-gray-400 inline-block" />{item.seller}</span>
                             <span>•</span>
-                            <span style={{ color: "#1BC47D", fontSize: 13 }}>{item.delivery}</span>
-                            {item.subcategory && <span className="ml-2 text-xs rounded px-2 py-0.5" style={{ backgroundColor: "#F8F9FA", color: "#6B7280", fontSize: 12 }}>{item.subcategory}</span>}
+                            <span className="text-[#1BC47D]">{item.delivery}</span>
+                            {item.subcategory && <span className="ml-2 text-xs rounded px-2 py-0.5 bg-[#F8F9FA] text-[#6B7280]">{item.subcategory}</span>}
                           </div>
 
-                          <div className="mt-3 text-xs p-2 bg-gray-50 rounded" style={{ color: "#6B7280", fontSize: 13 }}>Buyer note: Check seller rating & delivery time before purchase.</div>
+                          <div className="mt-3 text-xs p-2 bg-gray-50 rounded text-[#6B7280]">Buyer note: Check seller rating & delivery time before purchase.</div>
                         </div>
 
-                        <div style={{ textAlign: "right", minWidth: 160 }}>
-                          <div style={{ color: "#0A1A3A", fontSize: 18, fontWeight: 700 }}>${item.price.toFixed(2)}</div>
+                        <div className="mt-3 sm:mt-0 sm:text-right flex-shrink-0" style={{ minWidth: 160 }}>
+                          <div className="text-lg sm:text-xl font-bold text-[#0A1A3A]">${item.price.toFixed(2)}</div>
                           <div className="mt-3 flex gap-3 justify-end">
-                            <button className="font-medium" style={{ color: "#D4A643", fontSize: 14 }}>Add to cart</button>
-                            <button className="font-medium" onClick={() => handlePurchase(item)} style={{ color: "#0A1A3A", border: "1px solid #E5E7EB", padding: "6px 10px", borderRadius: 8, fontSize: 14 }}>Purchase</button>
-                            <button className="text-gray-500" style={{ fontSize: 14 }}>View</button>
+                            <button className="font-medium text-[#D4A643]">Add to cart</button>
+                            <button className="font-medium border rounded px-3 py-1" onClick={() => handlePurchase(item)} style={{ border: "1px solid #E5E7EB", color: "#0A1A3A" }}>Purchase</button>
+                            <button className="text-gray-500">View</button>
                           </div>
                         </div>
                       </div>
                     ))}
-                    {filteredItems.length === 0 && <div className="p-6 text-center" style={{ color: "#6B7280", fontSize: 14 }}>No items found.</div>}
+                    {filteredItems.length === 0 && <div className="p-6 text-center text-[#6B7280]">No items found.</div>}
                   </div>
                 )}
 
@@ -453,25 +435,25 @@ const Marketplace: React.FC = () => {
                 {viewMode === "grid" && (
                   <div className="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7">
                     {filteredItems.map((item) => (
-                      <div key={item.id} className="border border-gray-200 rounded-xl p-4 hover:shadow-xl transition-shadow">
+                      <div key={item.id} className="border border-gray-200 rounded-xl p-4 hover:shadow-xl transition-shadow flex flex-col">
                         <div className="text-center mb-3" style={{ lineHeight: 1 }}>{renderIcon(item.icon, 48)}</div>
-                        <h3 style={{ color: "#0A1A3A", fontSize: 16, fontWeight: 600 }}>{item.title}</h3>
-                        <p style={{ color: "#6B7280", fontSize: 14, marginTop: 6 }}>{item.desc || "Premium account • Instant delivery"}</p>
-                        <div className="mt-3 text-sm" style={{ color: "#6B7280", fontSize: 13 }}>
+                        <h3 className="text-base font-semibold text-[#0A1A3A]">{item.title}</h3>
+                        <p className="text-sm text-[#6B7280] mt-2">{item.desc || "Premium account • Instant delivery"}</p>
+                        <div className="mt-3 text-sm text-[#6B7280]">
                           <div>{item.seller}</div>
-                          <div style={{ color: "#1BC47D" }}>{item.delivery}</div>
-                          {item.subcategory && <div className="text-xs mt-1 rounded px-2 py-0.5" style={{ backgroundColor: "#F8F9FA", color: "#6B7280", fontSize: 12 }}>{item.subcategory}</div>}
+                          <div className="text-[#1BC47D]">{item.delivery}</div>
+                          {item.subcategory && <div className="text-xs mt-1 rounded px-2 py-0.5 bg-[#F8F9FA] text-[#6B7280]">{item.subcategory}</div>}
                         </div>
-                        <div className="mt-4 flex items-center justify-between">
-                          <div style={{ color: "#0A1A3A", fontSize: 18, fontWeight: 700 }}>${item.price.toFixed(2)}</div>
+                        <div className="mt-4 flex items-center justify-between mt-auto">
+                          <div className="text-lg font-bold text-[#0A1A3A]">${item.price.toFixed(2)}</div>
                           <div className="flex gap-2">
-                            <button className="px-3 py-1 rounded-lg font-medium" style={{ backgroundColor: "#D4A643", color: "#111111", fontSize: 14 }} onClick={() => handlePurchase(item)} onMouseEnter={(e) => (e.currentTarget.style.background = "#1BC47D")} onMouseLeave={(e) => (e.currentTarget.style.background = "#D4A643")}>Buy Now</button>
-                            <button className="px-3 py-1 rounded-lg border font-medium" style={{ borderColor: "#E5E7EB", color: "#0A1A3A", fontSize: 14 }} onClick={() => alert(`Purchase: ${item.title}`)}>Purchase</button>
+                            <button className="px-3 py-1 rounded-lg font-medium" style={{ backgroundColor: "#D4A643", color: "#111111" }} onClick={() => handlePurchase(item)} onMouseEnter={(e) => (e.currentTarget.style.background = "#1BC47D")} onMouseLeave={(e) => (e.currentTarget.style.background = "#D4A643")}>Buy Now</button>
+                            <button className="px-3 py-1 rounded-lg border font-medium" style={{ borderColor: "#E5E7EB", color: "#0A1A3A" }} onClick={() => alert(`Purchase: ${item.title}`)}>Purchase</button>
                           </div>
                         </div>
                       </div>
                     ))}
-                    {filteredItems.length === 0 && <div className="col-span-full p-6 text-center" style={{ color: "#6B7280", fontSize: 14 }}>No items found.</div>}
+                    {filteredItems.length === 0 && <div className="col-span-full p-6 text-center text-[#6B7280]">No items found.</div>}
                   </div>
                 )}
               </div>
@@ -484,10 +466,10 @@ const Marketplace: React.FC = () => {
       <div className={`fixed inset-0 z-40 transition-opacity ${drawerOpen ? "opacity-60 pointer-events-auto" : "opacity-0 pointer-events-none"}`} style={{ backgroundColor: "rgba(0,0,0,0.6)" }} onClick={() => setDrawerOpen(false)} aria-hidden={!drawerOpen} />
 
       {/* Mobile drawer */}
-      <aside ref={drawerRef} className={`fixed top-0 left-0 z-50 h-full w-80 max-w-full bg-white shadow-xl transform transition-transform ${drawerOpen ? "translate-x-0" : "-translate-x-full"}`} role="dialog" aria-modal="true" aria-hidden={!drawerOpen}>
+      <aside ref={drawerRef} className={`fixed top-0 left-0 z-50 h-full w-80 sm:w-96 max-w-full bg-white shadow-xl transform transition-transform ${drawerOpen ? "translate-x-0" : "-translate-x-full"}`} role="dialog" aria-modal="true" aria-hidden={!drawerOpen}>
         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
-          <h3 style={{ color: "#0A1A3A", fontSize: 18 }}>Filters & Search</h3>
-          <button onClick={() => setDrawerOpen(false)} className="p-2 rounded-md" aria-label="Close filters" style={{ color: "#6B7280" }}>×</button>
+          <h3 className="text-lg font-semibold text-[#0A1A3A]">Filters & Search</h3>
+          <button onClick={() => setDrawerOpen(false)} className="p-2 rounded-md text-[#6B7280]" aria-label="Close filters">×</button>
         </div>
 
         <div className="p-4 overflow-auto h-full">
@@ -500,13 +482,13 @@ const Marketplace: React.FC = () => {
           </div>
 
           <div className="mb-6">
-            <div style={{ color: "#0A1A3A", fontSize: 14, fontWeight: 600 }}>Price range</div>
+            <div className="text-sm font-semibold text-[#0A1A3A]">Price range</div>
             <input type="range" min={0} max={1000} value={priceRange} onChange={(e) => setPriceRange(Number(e.target.value))} className="w-full h-2 rounded-lg mt-2" style={{ backgroundColor: "#EDE7DA", accentColor: "#D4A643" }} />
-            <div className="flex justify-between text-xs" style={{ color: "#6B7280", marginTop: 8 }}><span>$0</span><span>${priceRange}</span></div>
+            <div className="flex justify-between text-xs text-[#6B7280] mt-2"><span>$0</span><span>${priceRange}</span></div>
           </div>
 
           <div className="flex gap-3">
-            <button onClick={() => setDrawerOpen(false)} className="flex-1 px-4 py-2 rounded-lg font-medium" style={{ backgroundColor: "#D4A643", color: "#111111" }} onMouseEnter={(e) => (e.currentTarget.style.background = "#1BC47D")} onMouseLeave={(e) => (e.currentTarget.style.background = "#D4A643")}>Apply</button>
+            <button onClick={() => setDrawerOpen(false)} className="flex-1 px-4 py-2 rounded-lg font-medium text-white" style={{ backgroundColor: "#D4A643" }} onMouseEnter={(e) => (e.currentTarget.style.background = "#1BC47D")} onMouseLeave={(e) => (e.currentTarget.style.background = "#D4A643")}>Apply</button>
             <button onClick={() => { setSelectedSubcats({}); setPriceRange(1000); setSearchQuery(""); }} className="flex-1 border px-4 py-2 rounded-lg" style={{ borderColor: "#E5E7EB", color: "#111111" }}>Reset</button>
           </div>
 
@@ -515,22 +497,7 @@ const Marketplace: React.FC = () => {
       </aside>
 
       {/* Floating add button */}
-      <button style={{
-        position: "fixed",
-        right: 28,
-        bottom: 28,
-        width: 56,
-        height: 56,
-        borderRadius: 999,
-        background: "linear-gradient(135deg,#FF6B6B 0%,#FFD166 100%)",
-        color: "#fff",
-        border: "none",
-        boxShadow: "0 10px 28px rgba(16,24,40,0.18)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        zIndex: 60
-      }} aria-label="Add">
+      <button className="fixed right-7 bottom-7 w-14 h-14 rounded-full z-60 flex items-center justify-center" style={{ background: "linear-gradient(135deg,#FF6B6B 0%,#FFD166 100%)", color: "#fff", boxShadow: "0 10px 28px rgba(16,24,40,0.18)" }} aria-label="Add">
         {renderIcon(FaPlus, 18)}
       </button>
     </>
