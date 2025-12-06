@@ -4,6 +4,95 @@ import { Link } from "react-router-dom";
 import type { IconType } from "react-icons";
 import { FaInstagram, FaFacebookF, FaTwitter, FaWhatsapp } from "react-icons/fa";
 
+/* ---------------------------------------------
+   Brand color map & gradients (Marketplace style)
+---------------------------------------------- */
+const ICON_COLOR_MAP: Record<string, string> = {
+  FaInstagram: "#E1306C",
+  FaFacebookF: "#1877F2",
+  FaTwitter: "#1DA1F2",
+  FaWhatsapp: "#25D366",
+};
+
+const vibrantGradients = [
+  "linear-gradient(135deg,#FF9A9E 0%,#FAD0C4 100%)",
+  "linear-gradient(135deg,#A18CD1 0%,#FBC2EB 100%)",
+  "linear-gradient(135deg,#FDCB6E 0%,#FF6B6B 100%)",
+  "linear-gradient(135deg,#84fab0 0%,#8fd3f4 100%)",
+  "linear-gradient(135deg,#FCCF31 0%,#F55555 100%)",
+  "linear-gradient(135deg,#9BE15D 0%,#00E3AE 100%)",
+];
+
+const gradientFromHex = (hex: string) => {
+  const h = hex.replace("#", "");
+  const r = parseInt(h.substring(0, 2), 16);
+  const g = parseInt(h.substring(2, 4), 16);
+  const b = parseInt(h.substring(4, 6), 16);
+  const mix = (c: number) => Math.round(c + (255 - c) * 0.28);
+  const r2 = mix(r);
+  const g2 = mix(g);
+  const b2 = mix(b);
+  const toHex = (n: number) => n.toString(16).padStart(2, "0");
+  return `linear-gradient(135deg, ${hex} 0%, #${toHex(r2)}${toHex(g2)}${toHex(b2)} 100%)`;
+};
+
+/* ---------------------------------------------
+   Utility: stable key for react-icons
+---------------------------------------------- */
+const getIconKey = (Icon: IconType) => {
+  const anyI = Icon as any;
+  return anyI.displayName || anyI.name || "Icon";
+};
+
+/* ---------------------------------------------
+   Render round badge (marketplace style)
+   badgeSize uses size param for inner icon scale
+---------------------------------------------- */
+const renderBadge = (Icon: IconType, size = 36) => {
+  const badgeSize = Math.max(50, size + 14);
+  const key = getIconKey(Icon);
+  const hex = ICON_COLOR_MAP[key];
+  const bg = hex ? gradientFromHex(hex) : vibrantGradients[key.length % vibrantGradients.length];
+
+  const C = Icon as React.ComponentType<any>;
+
+  return (
+    <div
+      aria-hidden
+      style={{
+        width: badgeSize,
+        height: badgeSize,
+        minWidth: badgeSize,
+        borderRadius: "50%",
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: bg,
+        boxShadow: "0 10px 28px rgba(16,24,40,0.12)",
+        transition: "transform .18s ease, box-shadow .18s ease",
+      }}
+      onMouseEnter={(e) => {
+        const el = e.currentTarget as HTMLDivElement;
+        el.style.transform = "translateY(-6px) scale(1.02)";
+        el.style.boxShadow = "0 18px 44px rgba(16,24,40,0.18)";
+      }}
+      onMouseLeave={(e) => {
+        const el = e.currentTarget as HTMLDivElement;
+        el.style.transform = "translateY(0)";
+        el.style.boxShadow = "0 10px 28px rgba(16,24,40,0.12)";
+      }}
+    >
+      <C
+        size={Math.round(size * 0.75)}
+        style={{ color: "#fff", filter: "drop-shadow(0 1px 1px rgba(0,0,0,0.12))" }}
+      />
+    </div>
+  );
+};
+
+/* ---------------------------------------------
+   Data types & mock purchases
+---------------------------------------------- */
 type PurchaseStatus = "Pending" | "Completed" | "Cancelled";
 
 interface Purchase {
@@ -83,21 +172,24 @@ const MOCK_PURCHASES: Purchase[] = [
 const TABS = ["All", "Pending", "Completed", "Cancelled"] as const;
 type Tab = (typeof TABS)[number];
 
-/** Render a react-icon safely in TSX by casting to a component */
-const renderIcon = (Icon: IconType, size = 24, style?: React.CSSProperties) => {
-  const C = Icon as React.ComponentType<any>;
-  return <C size={size} style={style} aria-hidden />;
-};
-
+/* ---------------------------------------------
+   PlatformIcon: use renderBadge (no white box)
+---------------------------------------------- */
 function PlatformIcon({ platform }: { platform: Purchase["platform"] }) {
   const size = 44;
-  if (platform === "instagram") return renderIcon(FaInstagram, size, { color: "#E1306C" });
-  if (platform === "facebook") return renderIcon(FaFacebookF, size, { color: "#1877F2" });
-  if (platform === "twitter") return renderIcon(FaTwitter, size, { color: "#111827" });
-  if (platform === "whatsapp") return renderIcon(FaWhatsapp, size, { color: "#25D366" });
-  return <div style={{ width: size, height: size, borderRadius: 10, background: "#eee" }} />;
+  if (platform === "instagram") return renderBadge(FaInstagram, size);
+  if (platform === "facebook") return renderBadge(FaFacebookF, size);
+  if (platform === "twitter") return renderBadge(FaTwitter, size);
+  if (platform === "whatsapp") return renderBadge(FaWhatsapp, size);
+  // fallback neutral badge
+  return (
+    <div style={{ width: size, height: size, borderRadius: "50%", background: "#E5E7EB" }} />
+  );
 }
 
+/* ---------------------------------------------
+   Component
+---------------------------------------------- */
 const MyPurchase: React.FC = () => {
   const [activeTab, setActiveTab] = useState<Tab>("All");
   const purchases = MOCK_PURCHASES;
@@ -125,9 +217,6 @@ const MyPurchase: React.FC = () => {
               Report Product
             </Link>
           </div>
-
-          {/* Gold warning */}
-         
 
           {/* Card */}
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
@@ -166,10 +255,10 @@ const MyPurchase: React.FC = () => {
                   <div className="space-y-6">
                     {filtered.map((p) => (
                       <div key={p.id} className="bg-[#F8FAFB] rounded-lg p-6 flex items-start gap-6 border border-[rgba(0,0,0,0.03)]">
-                        {/* left icon */}
+                        {/* left icon (marketplace-style badge, NO white square) */}
                         <div className="flex-shrink-0">
-                          <div className="w-16 h-16 rounded-lg bg-white flex items-center justify-center shadow-sm">
-                            <PlatformIcon platform={p.platform} />
+                          <div className="w-16 h-16 flex items-center justify-center">
+                            {PlatformIcon({ platform: p.platform })}
                           </div>
                         </div>
 
