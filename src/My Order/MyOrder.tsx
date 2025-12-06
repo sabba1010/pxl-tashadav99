@@ -1,5 +1,5 @@
 // src/components/MyOrder/MyOrder.tsx
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import type { IconType } from "react-icons";
 import {
   FaInstagram,
@@ -7,7 +7,15 @@ import {
   FaTwitter,
   FaPlus,
   FaRegCommentDots,
+  FaEnvelope,
+  FaLock,
 } from "react-icons/fa";
+
+/**
+ * MyOrder.tsx (fixed)
+ * - "Moogo"-style colourful icon badges
+ * - Fix TS2786 by using React.createElement for a couple inline icons
+ */
 
 type OrderStatus = "Pending" | "Completed" | "Cancelled";
 
@@ -24,8 +32,39 @@ interface Order {
   icon: IconType;
 }
 
+const ICON_COLOR_MAP: Record<string, string> = {
+  FaInstagram: "#E1306C",
+  FaFacebookF: "#1877F2",
+  FaTwitter: "#1DA1F2",
+  FaEnvelope: "#D44638",
+  FaLock: "#0A1A3A",
+  FaRegCommentDots: "#6B46C1",
+  FaPlus: "#111827",
+};
+
+const gradientFromHex = (hex: string) => {
+  const h = hex.replace("#", "");
+  const r = parseInt(h.substring(0, 2), 16);
+  const g = parseInt(h.substring(2, 4), 16);
+  const b = parseInt(h.substring(4, 6), 16);
+  const mix = (c: number) => Math.round(c + (255 - c) * 0.32);
+  const r2 = mix(r);
+  const g2 = mix(g);
+  const b2 = mix(b);
+  const toHex = (n: number) => n.toString(16).padStart(2, "0");
+  return `linear-gradient(135deg, ${hex} 0%, #${toHex(r2)}${toHex(g2)}${toHex(b2)} 100%)`;
+};
+
+const vibrantGradients = [
+  "linear-gradient(135deg,#FF9A9E 0%,#FAD0C4 100%)",
+  "linear-gradient(135deg,#A18CD1 0%,#FBC2EB 100%)",
+  "linear-gradient(135deg,#FDCB6E 0%,#FF6B6B 100%)",
+  "linear-gradient(135deg,#84fab0 0%,#8fd3f4 100%)",
+  "linear-gradient(135deg,#FCCF31 0%,#F55555 100%)",
+  "linear-gradient(135deg,#9BE15D 0%,#00E3AE 100%)",
+];
+
 const MOCK_ORDERS: Order[] = [
-  // ---------------- Completed ----------------
   {
     id: "1",
     platform: "Instagram",
@@ -62,8 +101,6 @@ const MOCK_ORDERS: Order[] = [
     status: "Completed",
     icon: FaTwitter,
   },
-
-  // ---------------- Pending ----------------
   {
     id: "4",
     platform: "Instagram",
@@ -88,8 +125,6 @@ const MOCK_ORDERS: Order[] = [
     status: "Pending",
     icon: FaFacebookF,
   },
-
-  // ---------------- Cancelled ----------------
   {
     id: "6",
     platform: "Twitter",
@@ -116,13 +151,52 @@ const MOCK_ORDERS: Order[] = [
   },
 ];
 
-// tabs
 const tabs = ["All", "Pending", "Completed", "Cancelled"] as const;
 type Tab = (typeof tabs)[number];
 
-const renderIcon = (Icon: IconType, size = 28) => {
+const getIconKey = (Icon: IconType) => {
+  const anyI = Icon as any;
+  return anyI.displayName || anyI.name || String(anyI);
+};
+
+const renderIconBadge = (Icon: IconType, size = 28) => {
+  const badgeSize = Math.max(46, size + 14);
+  const key = getIconKey(Icon);
+  const hex = ICON_COLOR_MAP[key];
+  const bg = hex ? gradientFromHex(hex) : vibrantGradients[key.length % vibrantGradients.length];
+
   const C = Icon as React.ComponentType<any>;
-  return <C size={size} aria-hidden />;
+
+  return (
+    <div
+      aria-hidden
+      style={{
+        width: badgeSize,
+        height: badgeSize,
+        minWidth: badgeSize,
+        borderRadius: 12,
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: bg,
+        boxShadow: "0 8px 22px rgba(10,26,58,0.12)",
+        transition: "transform .16s ease, box-shadow .16s ease",
+        cursor: "default",
+      }}
+      onMouseEnter={(e) => {
+        const el = e.currentTarget as HTMLDivElement;
+        el.style.transform = "translateY(-4px) scale(1.02)";
+        el.style.boxShadow = "0 14px 34px rgba(10,26,58,0.16)";
+      }}
+      onMouseLeave={(e) => {
+        const el = e.currentTarget as HTMLDivElement;
+        el.style.transform = "translateY(0)";
+        el.style.boxShadow = "0 8px 22px rgba(10,26,58,0.12)";
+      }}
+    >
+      <C size={Math.round(size * 0.8)} style={{ color: "#ffffff", filter: "drop-shadow(0 1px 1px rgba(0,0,0,0.12))" }} />
+    </div>
+  );
 };
 
 const MyOrder: React.FC = () => {
@@ -133,13 +207,17 @@ const MyOrder: React.FC = () => {
     return MOCK_ORDERS.filter((o) => o.status === activeTab);
   }, [activeTab]);
 
+  useEffect(() => {
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, []);
+
   return (
     <div style={{ background: "#F3EFEE", minHeight: "100vh", padding: 20 }}>
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
         <h1 style={{ fontSize: 30, margin: 0, color: "#0A1A3A" }}>Orders</h1>
-        <div style={{ color: "#6B7280", marginBottom: 16 }}>
-          All orders placed on your platform
-        </div>
+        <div style={{ color: "#6B7280", marginBottom: 16 }}>All orders placed on your platform</div>
 
         <div style={{ background: "#fff", borderRadius: 16, padding: 20 }}>
           {/* Tabs */}
@@ -155,6 +233,7 @@ const MyOrder: React.FC = () => {
                   paddingBottom: 8,
                   color: activeTab === t ? "#d4a643" : "#6B7280",
                   borderBottom: activeTab === t ? "2px solid #d4a643" : "2px solid transparent",
+                  fontWeight: activeTab === t ? 700 : 500,
                 }}
               >
                 {t}
@@ -162,8 +241,8 @@ const MyOrder: React.FC = () => {
             ))}
           </nav>
 
-          {/* Orders */}
-          <div style={{ marginTop: 18, maxHeight: "70vh", overflowY: "auto" }}>
+          {/* Orders List */}
+          <div style={{ marginTop: 18, maxHeight: "70vh", overflowY: "auto", paddingRight: 6 }}>
             {filtered.map((o) => (
               <div
                 key={o.id}
@@ -174,22 +253,23 @@ const MyOrder: React.FC = () => {
                   display: "flex",
                   gap: 18,
                   marginBottom: 14,
+                  alignItems: "center",
                 }}
               >
-                {/* Icon */}
+                {/* Icon badge */}
                 <div
                   style={{
-                    width: 66,
-                    height: 66,
-                    borderRadius: 12,
-                    background: "#fff",
+                    width: 72,
+                    height: 72,
+                    borderRadius: 14,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
+                    background: "#fff",
                     boxShadow: "0 2px 6px rgba(0,0,0,0.05)",
                   }}
                 >
-                  {renderIcon(o.icon, 40)}
+                  {renderIconBadge(o.icon, 36)}
                 </div>
 
                 {/* Content */}
@@ -199,22 +279,17 @@ const MyOrder: React.FC = () => {
                   </div>
 
                   <div style={{ color: "#6B7280", marginTop: 6 }}>
-                    Order number{" "}
-                    <span style={{ color: "#111", fontWeight: 600 }}>#{o.orderNumber}</span>
+                    Order number <span style={{ color: "#111", fontWeight: 600 }}>#{o.orderNumber}</span>
                   </div>
 
-                  <h3 style={{ margin: "10px 0 4px", color: "#0A1A3A", fontSize: 16 }}>
-                    {o.title}
-                  </h3>
+                  <h3 style={{ margin: "10px 0 4px", color: "#0A1A3A", fontSize: 16 }}>{o.title}</h3>
                   <p style={{ color: "#6B7280", fontSize: 14 }}>{o.desc}</p>
 
-                  <div style={{ marginTop: 10, color: "#6B7280" }}>
-                    • {o.seller}
-                  </div>
+                  <div style={{ marginTop: 10, color: "#6B7280" }}>• {o.seller}</div>
                 </div>
 
-                {/* Right Section */}
-                <div style={{ textAlign: "right", width: 180 }}>
+                {/* Right section */}
+                <div style={{ textAlign: "right", width: 200 }}>
                   <div
                     style={{
                       padding: "6px 12px",
@@ -255,13 +330,22 @@ const MyOrder: React.FC = () => {
                       display: "flex",
                       gap: 8,
                       alignItems: "center",
+                      justifyContent: "center",
                     }}
+                    onClick={() => alert(`Open trade chat for order ${o.orderNumber}`)}
+                    aria-label="See Trade"
                   >
-                    {renderIcon(FaRegCommentDots, 14)} See Trade
+                    {/* use React.createElement to avoid TS2786 */}
+                    {React.createElement(FaRegCommentDots as any, { color: "#fff", size: 14 })}
+                    <span style={{ fontWeight: 600 }}>See Trade</span>
                   </button>
                 </div>
               </div>
             ))}
+
+            {filtered.length === 0 && (
+              <div style={{ padding: 24, color: "#6B7280", textAlign: "center" }}>No orders found.</div>
+            )}
           </div>
         </div>
 
@@ -271,7 +355,7 @@ const MyOrder: React.FC = () => {
             position: "fixed",
             bottom: 30,
             right: 30,
-            background: "#d4a643",
+            background: "linear-gradient(135deg,#FF6B6B 0%,#FFD166 100%)",
             width: 54,
             height: 54,
             borderRadius: "50%",
@@ -280,9 +364,15 @@ const MyOrder: React.FC = () => {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
+            boxShadow: "0 10px 28px rgba(16,24,40,0.16)",
+            cursor: "pointer",
           }}
+          aria-label="Add order"
+          onClick={() => alert("Add new order (placeholder)")}
         >
-          {renderIcon(FaPlus, 22)}
+          <div style={{ width: 34, height: 34, borderRadius: 9, display: "flex", alignItems: "center", justifyContent: "center", background: "#111827" }}>
+            {React.createElement(FaPlus as any, { color: "#fff", size: 16 })}
+          </div>
         </button>
       </div>
     </div>
