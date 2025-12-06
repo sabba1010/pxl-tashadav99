@@ -22,13 +22,13 @@ export default function KoraPayment() {
         email: "rubel@example.com",
       };
 
-      const amount = 500; // NGN (কোরা নাইজেরিয়ান পেমেন্ট গেটওয়ে)
+      const amount = 500; 
 
       const response = await axios.post(
-        "http://localhost:3200/api/korapay/create-payment", // এটাই ঠিক রুট
+        "http://localhost:3200/api/korapay/create-payment", 
         {
-          amount,    // number হিসেবে পাঠাচ্ছি
-          user,      // { name, email }
+          amount,    
+          user,     
         },
         {
           headers: {
