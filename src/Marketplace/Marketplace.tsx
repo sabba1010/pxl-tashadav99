@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import type { IconType } from "react-icons";
 import { FaWhatsapp, FaEnvelope, FaPlus, FaBullhorn, FaFacebookF, FaInstagram, FaTwitter, FaLock, FaShoppingCart } from "react-icons/fa";
 import { SiNetflix, SiAmazon, SiSteam, SiGoogle } from "react-icons/si";
+import { Link } from "react-router-dom";
 
 interface Item {
   id: number;
@@ -497,9 +498,13 @@ const Marketplace: React.FC = () => {
       </aside>
 
       {/* Floating add button */}
-      <button className="fixed right-7 bottom-7 w-14 h-14 rounded-full z-60 flex items-center justify-center" style={{ background: "linear-gradient(135deg,#FF6B6B 0%,#FFD166 100%)", color: "#fff", boxShadow: "0 10px 28px rgba(16,24,40,0.18)" }} aria-label="Add">
-        {renderIcon(FaPlus, 18)}
-      </button>
+       <Link
+        to="/add-product"
+        className="fixed bottom-6 right-6 bg-[#d4a643] text-white w-14 h-14 rounded-full shadow-2xl flex items-center justify-center text-2xl sm:text-3xl font-light hover:opacity-95 transition z-40"
+        aria-label="Add product"
+      >
+        {React.createElement(FaPlus as any, { size: 18 })}
+      </Link>
     </>
   );
 };

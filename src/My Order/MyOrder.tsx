@@ -294,12 +294,12 @@ const MyOrder: React.FC = () => {
       </div>
 
       {/* Floating + button (visible on mobile & desktop) */}
-      <Link
-        to="/add-order"
+       <Link
+        to="/add-product"
         className="fixed bottom-6 right-6 bg-[#d4a643] text-white w-14 h-14 rounded-full shadow-2xl flex items-center justify-center text-2xl sm:text-3xl font-light hover:opacity-95 transition z-40"
-        aria-label="Add order"
+        aria-label="Add product"
       >
-        {React.createElement(FaPlus as any, { size: 18, color: "#fff" })}
+        {React.createElement(FaPlus as any, { size: 18 })}
       </Link>
     </>
   );
