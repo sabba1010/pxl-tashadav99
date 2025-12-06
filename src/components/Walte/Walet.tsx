@@ -1,6 +1,7 @@
 // src/components/Wallet.tsx
 import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { FaPlus } from "react-icons/fa";
 
 
 type Tx = {
@@ -366,8 +367,8 @@ export default function Wallet(): React.ReactElement {
             notice.type === "success"
               ? { backgroundColor: "#ECFDF5", color: EMERALD, border: "1px solid #D1FAE5" }
               : notice.type === "error"
-              ? { backgroundColor: "#FEF2F2", color: "#B91C1C", border: "1px solid #FEE2E2" }
-              : { backgroundColor: "#F3F4F6", color: CHARCOAL, border: "1px solid #E5E7EB" }
+                ? { backgroundColor: "#FEF2F2", color: "#B91C1C", border: "1px solid #FEE2E2" }
+                : { backgroundColor: "#F3F4F6", color: CHARCOAL, border: "1px solid #E5E7EB" }
           }
         >
           {notice.text}
@@ -384,7 +385,16 @@ export default function Wallet(): React.ReactElement {
         {showFloating ? "—" : "+"}
       </button> */}
 
-     
+      {/* Floating + button (visible on mobile & desktop) */}
+      <Link
+        to="/add-product"
+        className="fixed bottom-6 right-6 bg-[#d4a643] text-white w-14 h-14 rounded-full shadow-2xl flex items-center justify-center text-2xl sm:text-3xl font-light hover:opacity-95 transition z-40"
+        aria-label="Add product"
+      >
+        {React.createElement(FaPlus as any, { size: 18 })}
+      </Link>
+
+
     </div>
   );
 }
