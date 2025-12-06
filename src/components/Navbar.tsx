@@ -53,7 +53,7 @@ export default function Navbar() {
               <NavLink to="/" className="flex items-center gap-3">
                 <img src="/logo.png" alt="ActBazaar" className="h-9 w-auto" />
                 <span className="hidden sm:inline font-bold text-xl" style={{ color: EMPIRE_BLUE }}>
-                  ActBazaar
+                 CCTBazaar
                 </span>
               </NavLink>
             </div>
