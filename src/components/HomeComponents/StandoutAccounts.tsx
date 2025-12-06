@@ -215,7 +215,7 @@ const StandoutAccounts: React.FC = () => {
         </div>
 
         {/* Desktop table */}
-        <div className="overflow-x-auto rounded-2xl shadow border border-gray-200">
+        <div className="overflow-x-auto sm:hidden md:block rounded-2xl shadow border border-gray-200">
           <table className="w-full min-w-[720px] bg-white">
             <thead>
               <tr className="bg-gray-50">
