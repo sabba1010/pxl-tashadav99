@@ -65,8 +65,8 @@ const BuyerAddProduct: React.FC = () => {
                   label="Required"
                   size="small"
                   sx={{
-                    backgroundColor: "#D4A643",
-                    color: "#111111",
+                    backgroundColor: "#33ac6f",
+                    color: "#ffffff",
                     fontWeight: "bold",
                   }}
                 />
@@ -198,8 +198,8 @@ const BuyerAddProduct: React.FC = () => {
                 variant="contained"
                 size="large"
                 sx={{
-                  backgroundColor: "#D4A643",
-                  color: "#111111",
+                  backgroundColor: "#33ac6f",
+                  color: "#ffffff",
                   fontWeight: "bold",
                   "&:hover": {
                     backgroundColor: "#0A1A3A",
