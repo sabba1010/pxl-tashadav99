@@ -53,7 +53,7 @@ const HowItWorks = () => {
               },
             ].map((step, i) => (
               <div key={i} className="flex gap-6 group">
-                <div className="text-4xl bg-gradient-to-br from-[#daab4c] to-[#b8860b] text-white w-16 h-16 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition">
+                <div className="text-4xl bg-gradient-to-br from-[#33ac6f] to-[#33ac6f] text-white w-16 h-16 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition">
                   {step.icon}
                 </div>
                 <div>
