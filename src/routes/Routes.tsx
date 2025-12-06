@@ -28,6 +28,7 @@ import Mysells from "../dashboard/buyer-dahboard/Mysells";
 import Payment from "../components/Payment";
 import MyAds from "../components/HomeComponents/MY Ads/MyAds";
 import MyOrder from "../My Order/MyOrder";
+import Plan from "../pages/plan/Plan";
 
 const Routes = createBrowserRouter([
   {
@@ -43,7 +44,10 @@ const Routes = createBrowserRouter([
         path: "/marketplace",
         element: <Marketplace />,
       },
-
+       {
+         path:"/plans",
+         element: <Plan/>
+       },
       {
         path: "/login",
         element: <Login />,
