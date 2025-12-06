@@ -382,7 +382,7 @@ const Marketplace: React.FC = () => {
                 <CategorySelector categoryMap={CATEGORY_MAP} selectedSubcats={selectedSubcats} setSelectedSubcats={setSelectedSubcats} />
 
                 <div className="mt-6" style={{ color: "#0A1A3A", fontSize: 14, fontWeight: 600 }}>Price range</div>
-                <input type="range" min={0} max={1000} value={priceRange} onChange={(e) => setPriceRange(Number(e.target.value))} className="w-full h-2 rounded-lg mt-2" style={{ backgroundColor: "#EDE7DA", accentColor: "#D4A643" }} />
+                <input type="range" min={0} max={1000} value={priceRange} onChange={(e) => setPriceRange(Number(e.target.value))} className="w-full h-2 rounded-lg mt-2" style={{ backgroundColor: "#EDE7DA", accentColor: "#33ac6f" }} />
                 <div className="flex justify-between text-xs" style={{ color: "#6B7280", marginTop: 8 }}><span>$0</span><span>${priceRange}</span></div>
               </div>
             </aside>
