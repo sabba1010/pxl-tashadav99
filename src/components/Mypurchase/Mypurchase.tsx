@@ -5,14 +5,15 @@ import type { IconType } from "react-icons";
 import { FaInstagram, FaFacebookF, FaTwitter, FaWhatsapp, FaPlus } from "react-icons/fa";
 
 /* ---------------------------------------------
-   Brand color map & gradients (Marketplace style)
+   Brand color map & gradients (robust for prod)
+   Use Map keyed by component references to avoid name-mangling
 ---------------------------------------------- */
-const ICON_COLOR_MAP: Record<string, string> = {
-  FaInstagram: "#E1306C",
-  FaFacebookF: "#1877F2",
-  FaTwitter: "#1DA1F2",
-  FaWhatsapp: "#25D366",
-};
+const ICON_COLOR_MAP = new Map<IconType, string>([
+  [FaInstagram, "#E1306C"],
+  [FaFacebookF, "#1877F2"],
+  [FaTwitter, "#1DA1F2"],
+  [FaWhatsapp, "#25D366"],
+]);
 
 const vibrantGradients = [
   "linear-gradient(135deg,#FF9A9E 0%,#FAD0C4 100%)",
@@ -37,21 +38,15 @@ const gradientFromHex = (hex: string) => {
 };
 
 /* ---------------------------------------------
-   Utility: stable key for react-icons
----------------------------------------------- */
-const getIconKey = (Icon: IconType) => {
-  const anyI = Icon as any;
-  return anyI.displayName || anyI.name || "Icon";
-};
-
-/* ---------------------------------------------
    Render round badge (marketplace style)
+   Force white icon color & prevent blend overrides
 ---------------------------------------------- */
 const renderBadge = (Icon: IconType, size = 36) => {
   const badgeSize = Math.max(50, size + 14);
-  const key = getIconKey(Icon);
-  const hex = ICON_COLOR_MAP[key];
-  const bg = hex ? gradientFromHex(hex) : vibrantGradients[key.length % vibrantGradients.length];
+  const brandHex = ICON_COLOR_MAP.get(Icon);
+  const bg = brandHex
+    ? gradientFromHex(brandHex)
+    : vibrantGradients[String(Icon).length % vibrantGradients.length];
 
   const C = Icon as unknown as React.ComponentType<any>;
 
@@ -69,6 +64,8 @@ const renderBadge = (Icon: IconType, size = 36) => {
         background: bg,
         boxShadow: "0 10px 28px rgba(16,24,40,0.12)",
         transition: "transform .18s ease, box-shadow .18s ease",
+        mixBlendMode: "normal",
+        isolation: "isolate",
       }}
       onMouseEnter={(e) => {
         const el = e.currentTarget as HTMLDivElement;
@@ -83,7 +80,9 @@ const renderBadge = (Icon: IconType, size = 36) => {
     >
       {React.createElement(C, {
         size: Math.round(size * 0.75),
-        style: { color: "#fff", filter: "drop-shadow(0 1px 1px rgba(0,0,0,0.12))" },
+        // force both color & fill to prevent inheritance / blend tint in production
+        style: { color: "#fff", fill: "#fff", WebkitTextFillColor: "#fff", filter: "drop-shadow(0 1px 1px rgba(0,0,0,0.12))" },
+        className: "standout-icon",
       })}
     </div>
   );
@@ -239,7 +238,7 @@ const MyPurchase: React.FC = () => {
                   <div className="py-12 sm:py-20 flex flex-col items-center text-center text-gray-500">
                     <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-[#0A1A3A] flex items-center justify-center mb-4">
                       <svg className="w-10 h-10 sm:w-14 sm:h-14 text-white" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 00-3.7-3.7H11.5a.5.5 0 01-.5-.5v-3a.5.5 0 00-.5-.5h-1a.5.5 0 00-.5.5v3a.5.5 0 01-.5.5H5.638a4.006 4.006 0 00-3.7 3.7c-.092 1.209-.138 2.43-.138 3.662 0 1.232.046 2.453.138 3.662a4.006 4.006 0 003.7 3.7H8.5a.5.5 0 01.5.5v3a.5.5 0 00.5.5h1a.5.5 0 00.5-.5v-3a.5.5 0 01.5-.5h4.162a4.006 4.006 0 003.7-3.7c.092-1.209.138-2.43.138-3.662z"/>
+                        <path d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 00-3.7-3.7H11.5a.5.5 0 01-.5-.5v-3a.5.5 0 00-.5-.5h-1a.5.5 0 00-.5.5v3a.5.5 0 01-.5.5H5.638a4.006 4.006 0 00-3.7 3.7c-.092 1.209-.138 2.43-.138 3.662 0 1.232.046 2.453.138 3.662a4.006 4.006 0 003.7 3.7H8.5a.5.5 0 01.5.5v3a.5.5 0 00.5.5h1a.5.5 0 00.5-.5v-3a.5.5 0 01.5-.5h4.162a4.006 4.006 0 003.7-3.7c.092-1.209.138-2.43.138-3.662z" />
                       </svg>
                     </div>
                     <h3 className="text-lg sm:text-xl font-semibold text-[#0A1A3A] mb-2">No Purchases</h3>
@@ -281,7 +280,7 @@ const MyPurchase: React.FC = () => {
                             <div className="flex items-center gap-2">
                               <button className="px-3 py-1 rounded-md bg-[#d4a643] text-white text-xs sm:text-sm">See Trade</button>
                               <button className="p-2 rounded-md bg-white border border-gray-100 shadow-sm" title="Chat">
-                                <svg className="w-4 h-4 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                                <svg className="w-4 h-4 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" /></svg>
                               </button>
                             </div>
 

@@ -1,4 +1,3 @@
-// src/MyOrder/MyOrder.tsx
 import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import type { IconType } from "react-icons";
@@ -6,14 +5,15 @@ import { FaInstagram, FaFacebookF, FaTwitter, FaPlus, FaRegCommentDots } from "r
 
 /* ---------------------------------------------
    Brand color map & gradients (Marketplace style)
+   Use Map keyed by component references to avoid production name mangling
 ---------------------------------------------- */
-const ICON_COLOR_MAP: Record<string, string> = {
-  FaInstagram: "#E1306C",
-  FaFacebookF: "#1877F2",
-  FaTwitter: "#1DA1F2",
-  FaRegCommentDots: "#6B46C1",
-  FaPlus: "#111827",
-};
+const ICON_COLOR_MAP = new Map<IconType, string>([
+  [FaInstagram, "#E1306C"],
+  [FaFacebookF, "#1877F2"],
+  [FaTwitter, "#1DA1F2"],
+  [FaRegCommentDots, "#6B46C1"],
+  [FaPlus, "#111827"],
+]);
 
 const vibrantGradients = [
   "linear-gradient(135deg,#FF9A9E 0%,#FAD0C4 100%)",
@@ -38,17 +38,16 @@ const gradientFromHex = (hex?: string) => {
   return `linear-gradient(135deg, ${hex} 0%, #${toHex(r2)}${toHex(g2)}${toHex(b2)} 100%)`;
 };
 
-const getIconKey = (Icon: IconType | any) => {
-  const anyI = Icon;
-  return anyI.displayName || anyI.name || "Icon";
-};
-
+/* ---------------------------------------------
+   Render round badge (marketplace style)
+   Force white icon color & prevent blend overrides
+---------------------------------------------- */
 const renderBadge = (IconComponent: IconType, size = 44) => {
   const badgeSize = Math.max(56, size + 12);
-  const key = getIconKey(IconComponent);
-  const hex = ICON_COLOR_MAP[key] || null;
-  const bg = hex ? gradientFromHex(hex) : vibrantGradients[key.length % vibrantGradients.length];
-  const C = IconComponent as any;
+  const brandHex = ICON_COLOR_MAP.get(IconComponent);
+  // fallback gradient: use component string length for deterministic pick
+  const bg = brandHex ? gradientFromHex(brandHex) : vibrantGradients[String(IconComponent).length % vibrantGradients.length];
+  const C = IconComponent as unknown as React.ComponentType<any>;
 
   return (
     <div
@@ -64,6 +63,8 @@ const renderBadge = (IconComponent: IconType, size = 44) => {
         background: bg,
         boxShadow: "0 10px 28px rgba(16,24,40,0.12)",
         transition: "transform .18s ease, box-shadow .18s ease",
+        mixBlendMode: "normal",
+        isolation: "isolate",
       }}
       onMouseEnter={(e) => {
         const el = e.currentTarget as HTMLDivElement;
@@ -76,7 +77,11 @@ const renderBadge = (IconComponent: IconType, size = 44) => {
         el.style.boxShadow = "0 10px 28px rgba(16,24,40,0.12)";
       }}
     >
-      {React.createElement(C, { size: Math.round(size * 0.75), style: { color: "#fff", filter: "drop-shadow(0 1px 1px rgba(0,0,0,0.12))" } })}
+      {React.createElement(C, {
+        size: Math.round(size * 0.75),
+        style: { color: "#fff", fill: "#fff", WebkitTextFillColor: "#fff", filter: "drop-shadow(0 1px 1px rgba(0,0,0,0.12))" },
+        className: "standout-icon",
+      })}
     </div>
   );
 };

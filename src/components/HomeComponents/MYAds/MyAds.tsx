@@ -8,15 +8,17 @@ import {
   FaPencilAlt,
   FaTrash,
 } from "react-icons/fa";
+import type { IconType } from "react-icons";
 
 /* ---------------------------------------------
-   Brand color map & gradients (Marketplace style)
+   Brand color map & gradients (robust for production)
+   Use Map keyed by component references to avoid name-mangling
 ---------------------------------------------- */
-const ICON_COLOR_MAP: Record<string, string> = {
-  FaInstagram: "#E1306C",
-  FaSnapchatGhost: "#FFFC00",
-  FaFacebookF: "#1877F2",
-};
+const ICON_COLOR_MAP = new Map<IconType, string>([
+  [FaInstagram, "#E1306C"],
+  [FaSnapchatGhost, "#FFFC00"],
+  [FaFacebookF, "#1877F2"],
+]);
 
 const vibrantGradients = [
   "linear-gradient(135deg,#FF9A9E 0%,#FAD0C4 100%)",
@@ -42,19 +44,16 @@ const gradientFromHex = (hex?: string | null): string => {
 };
 
 /* ---------------------------------------------
-   Helper: render marketplace-style badge (JSX-ready)
+   Helper: render marketplace-style badge
+   Force white icon fill & prevent blend-mode overrides
 ---------------------------------------------- */
-const getIconKey = (IconComponent: React.ComponentType<any>): string => {
-  const anyI = IconComponent as any;
-  return anyI.displayName || anyI.name || "Icon";
-};
-
-const renderBadge = (IconComponent: React.ComponentType<any>, size = 36): React.ReactElement => {
+const renderBadge = (IconComponent: IconType, size = 36): React.ReactElement => {
   const badgeSize = Math.max(48, size + 12);
-  const key = getIconKey(IconComponent);
-  const hex = ICON_COLOR_MAP[key] || null;
-  const bg = hex ? gradientFromHex(hex) : vibrantGradients[key.length % vibrantGradients.length];
-  const C = IconComponent;
+  const brandHex = ICON_COLOR_MAP.get(IconComponent) ?? null;
+  // deterministic fallback index using component function string length
+  const fallback = vibrantGradients[String(IconComponent).length % vibrantGradients.length];
+  const bg = brandHex ? gradientFromHex(brandHex) : fallback;
+  const C = IconComponent as unknown as React.ComponentType<any>;
 
   return (
     <div
@@ -70,6 +69,8 @@ const renderBadge = (IconComponent: React.ComponentType<any>, size = 36): React.
         background: bg,
         boxShadow: "0 10px 28px rgba(16,24,40,0.12)",
         transition: "transform .18s ease, box-shadow .18s ease",
+        mixBlendMode: "normal",
+        isolation: "isolate",
       }}
       onMouseEnter={(e) => {
         const el = e.currentTarget as HTMLDivElement;
@@ -82,7 +83,12 @@ const renderBadge = (IconComponent: React.ComponentType<any>, size = 36): React.
         el.style.boxShadow = "0 10px 28px rgba(16,24,40,0.12)";
       }}
     >
-      {React.createElement(C as any, { size: Math.round(size * 0.75), style: { color: '#fff', filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.12))' } })}
+      {React.createElement(C, {
+        size: Math.round(size * 0.75),
+        // Force white fills to avoid host CSS tinting the SVG
+        style: { color: "#fff", fill: "#fff", WebkitTextFillColor: "#fff", filter: "drop-shadow(0 1px 1px rgba(0,0,0,0.12))" },
+        className: "standout-icon",
+      })}
     </div>
   );
 };
@@ -147,15 +153,14 @@ const TABS: string[] = ["All", "Active", "Pending", "Denied", "Restore"];
 ---------------------------------------------- */
 function PlatformIcon({ p }: { p: Platform }) {
   const size = 36;
-  if (p === "instagram") return renderBadge(FaInstagram as any, size);
-  if (p === "snapchat") return renderBadge(FaSnapchatGhost as any, size);
-  if (p === "facebook") return renderBadge(FaFacebookF as any, size);
+  if (p === "instagram") return renderBadge(FaInstagram as IconType, size);
+  if (p === "snapchat") return renderBadge(FaSnapchatGhost as IconType, size);
+  if (p === "facebook") return renderBadge(FaFacebookF as IconType, size);
   return <div style={{ width: size, height: size, borderRadius: "50%", background: "#E5E7EB" }} />;
 }
 
 /* ---------------------------------------------
    Component (Tailwind look matching MyPurchase/MyOrder)
-   Mobile responsive adjustments added
 ---------------------------------------------- */
 const MyAds: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>("Restore");

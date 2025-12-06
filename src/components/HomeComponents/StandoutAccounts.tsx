@@ -1,4 +1,3 @@
-// src/components/StandoutAccounts.tsx
 import React from "react";
 import type { IconType } from "react-icons";
 import {
@@ -19,20 +18,20 @@ import { SiNetflix, SiAmazon, SiSteam, SiGoogle } from "react-icons/si";
  * - Round badges, brand color gradients, fallback vibrant gradients
  */
 
-const ICON_COLOR_MAP: Record<string, string> = {
-  FaWhatsapp: "#25D366",
-  SiNetflix: "#E50914",
-  SiAmazon: "#FF9900",
-  FaEnvelope: "#D44638",
-  FaFacebookF: "#1877F2",
-  FaInstagram: "#E1306C",
-  FaTwitter: "#1DA1F2",
-  SiSteam: "#171A21",
-  SiGoogle: "#4285F4",
-  FaBullhorn: "#6B46C1",
-  FaLock: "#0A1A3A",
-  FaShoppingCart: "#FF6B6B",
-};
+const ICON_COLOR_MAP = new Map<IconType, string>([
+  [FaWhatsapp, "#25D366"],
+  [SiNetflix, "#E50914"],
+  [SiAmazon, "#FF9900"],
+  [FaEnvelope, "#D44638"],
+  [FaFacebookF, "#1877F2"],
+  [FaInstagram, "#E1306C"],
+  [FaTwitter, "#1DA1F2"],
+  [SiSteam, "#171A21"],
+  [SiGoogle, "#4285F4"],
+  [FaBullhorn, "#6B46C1"],
+  [FaLock, "#0A1A3A"],
+  [FaShoppingCart, "#FF6B6B"],
+]);
 
 const vibrantGradients = [
   "linear-gradient(135deg,#FF9A9E 0%,#FAD0C4 100%)",
@@ -65,21 +64,13 @@ type Product = {
   icon?: IconType;
 };
 
-// Helper to get icon key for ICON_COLOR_MAP
-const getIconKey = (Icon?: IconType) => {
-  if (!Icon) return "";
-  // react-icons components have name property when stringified; fallbacks:
-  // use displayName or name if present, else try constructor name
-  const anyIcon = Icon as any;
-  return anyIcon.displayName || anyIcon.name || Icon.toString().split(" ")[0] || "";
-};
-
 // Reuse Marketplace-style renderIcon (round badge)
 const renderIconBadge = (IconComp: IconType | undefined, size = 28) => {
   const badgeSize = Math.max(48, size + 16);
-  const key = getIconKey(IconComp);
-  const brandHex = ICON_COLOR_MAP[key];
-  const bg = brandHex ? gradientFromHex(brandHex) : vibrantGradients[key.length % vibrantGradients.length];
+  const brandHex = IconComp ? ICON_COLOR_MAP.get(IconComp) : undefined;
+  const bg = brandHex
+    ? gradientFromHex(brandHex)
+    : vibrantGradients[(String(IconComp ?? "").length) % vibrantGradients.length];
 
   if (!IconComp) {
     return (
@@ -95,14 +86,19 @@ const renderIconBadge = (IconComp: IconType | undefined, size = 28) => {
           background: bg,
           boxShadow: "0 10px 28px rgba(10,26,58,0.12)",
           border: "2px solid rgba(255,255,255,0.08)",
+          mixBlendMode: "normal",
+          isolation: "isolate",
         }}
       />
     );
   }
 
+  // Force both color and SVG fill to white so CSS inheritance / blend can't tint it
   const iconEl = React.createElement(IconComp as any, {
     size: Math.round(size * 0.7),
     color: "#fff",
+    style: { color: "#fff", fill: "#fff", WebkitTextFillColor: "#fff" },
+    className: "standout-icon",
   });
 
   return (
@@ -121,6 +117,8 @@ const renderIconBadge = (IconComp: IconType | undefined, size = 28) => {
         transition: "transform .16s ease, box-shadow .16s ease",
         border: "2px solid rgba(255,255,255,0.12)",
         cursor: "default",
+        mixBlendMode: "normal",
+        isolation: "isolate",
       }}
       onMouseEnter={(e) => {
         const el = e.currentTarget as HTMLDivElement;

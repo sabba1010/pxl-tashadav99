@@ -30,20 +30,37 @@ const CATEGORY_MAP: Record<string, string[]> = {
 
 type SubcatState = Record<string, string[]>;
 
-const ICON_COLOR_MAP: Record<string, string> = {
-  FaWhatsapp: "#25D366",
-  SiNetflix: "#E50914",
-  SiAmazon: "#FF9900",
-  FaEnvelope: "#D44638",
-  FaFacebookF: "#1877F2",
-  FaInstagram: "#E1306C",
-  FaTwitter: "#1DA1F2",
-  SiSteam: "#171A21",
-  SiGoogle: "#4285F4",
-  FaBullhorn: "#6B46C1",
-  FaLock: "#0A1A3A",
-  FaShoppingCart: "#FF6B6B",
-  FaPlus: "#111827",
+// Use a Map keyed by the actual Icon component reference (robust in production)
+const ICON_COLOR_MAP = new Map<IconType, string>([
+  [FaWhatsapp, "#25D366"],
+  [SiNetflix, "#E50914"],
+  [SiAmazon, "#FF9900"],
+  [FaEnvelope, "#D44638"],
+  [FaFacebookF, "#1877F2"],
+  [FaInstagram, "#E1306C"],
+  [FaTwitter, "#1DA1F2"],
+  [SiSteam, "#171A21"],
+  [SiGoogle, "#4285F4"],
+  [FaBullhorn, "#6B46C1"],
+  [FaLock, "#0A1A3A"],
+  [FaShoppingCart, "#FF6B6B"],
+  [FaPlus, "#111827"],
+]);
+
+// For string-based icons (if you pass icon as a string), keep a plain lookup
+const STRING_ICON_COLOR_MAP: Record<string, string> = {
+  whatsapp: "#25D366",
+  netflix: "#E50914",
+  amazon: "#FF9900",
+  envelope: "#D44638",
+  facebook: "#1877F2",
+  instagram: "#E1306C",
+  twitter: "#1DA1F2",
+  steam: "#171A21",
+  google: "#4285F4",
+  bullhorn: "#6B46C1",
+  lock: "#0A1A3A",
+  shoppingcart: "#FF6B6B",
 };
 
 const gradientFromHex = (hex: string) => {
@@ -68,13 +85,11 @@ const vibrantGradients = [
   "linear-gradient(135deg,#9BE15D 0%,#00E3AE 100%)",
 ];
 
-type CategorySelectorProps = {
+const CategorySelector: React.FC<{
   categoryMap: Record<string, string[]>;
   selectedSubcats: SubcatState;
   setSelectedSubcats: React.Dispatch<React.SetStateAction<SubcatState>>;
-};
-
-const CategorySelector: React.FC<CategorySelectorProps> = ({ categoryMap, selectedSubcats, setSelectedSubcats }) => {
+}> = ({ categoryMap, selectedSubcats, setSelectedSubcats }) => {
   const [openMain, setOpenMain] = useState<Record<string, boolean>>({});
   const ref = useRef<HTMLDivElement | null>(null);
 
@@ -236,16 +251,18 @@ const Marketplace: React.FC = () => {
     alert(`Purchasing: ${item.title} — $${item.price.toFixed(2)}`);
   };
 
-  const getIconKey = (icon: Item["icon"]) => {
-    if (typeof icon === "string") return String(icon);
-    const anyIcon = icon as any;
-    return anyIcon.displayName || anyIcon.name || String(anyIcon);
+  // Helper: get brand color for icon (works for Icon components and string icons)
+  const getBrandHex = (icon: Item["icon"]) => {
+    if (typeof icon === "string") {
+      const key = icon.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+      return STRING_ICON_COLOR_MAP[key];
+    }
+    return ICON_COLOR_MAP.get(icon as IconType);
   };
 
   const renderIcon = (icon: Item["icon"], size = 36) => {
     const badgeSize = Math.max(40, size + 8);
-    const key = getIconKey(icon);
-    const brandHex = ICON_COLOR_MAP[key];
+    const brandHex = getBrandHex(icon);
     const bg = brandHex ? gradientFromHex(brandHex) : vibrantGradients[String(icon).length % vibrantGradients.length];
 
     if (typeof icon === "string") {
@@ -266,6 +283,8 @@ const Marketplace: React.FC = () => {
             color: "#fff",
             fontWeight: 700,
             fontSize: Math.round(size * 0.6),
+            mixBlendMode: "normal",
+            isolation: "isolate",
           }}
         >
           {icon}
@@ -290,6 +309,8 @@ const Marketplace: React.FC = () => {
           transform: "translateZ(0)",
           transition: "transform .18s ease, box-shadow .18s ease",
           cursor: "default",
+          mixBlendMode: "normal",
+          isolation: "isolate",
         }}
         onMouseEnter={(e: React.MouseEvent<HTMLDivElement>) => {
           const el = e.currentTarget;
@@ -302,7 +323,8 @@ const Marketplace: React.FC = () => {
           el.style.boxShadow = "0 8px 20px rgba(10,26,58,0.10)";
         }}
       >
-        <IconComponent size={Math.round(size * 0.65)} style={{ color: "#fff", filter: "drop-shadow(0 1px 1px rgba(0,0,0,0.15))" }} />
+        {/* Force both color and SVG fill to white so CSS inheritance / blend can't tint it */}
+        <IconComponent size={Math.round(size * 0.65)} style={{ color: "#fff", fill: "#fff", WebkitTextFillColor: "#fff", filter: "drop-shadow(0 1px 1px rgba(0,0,0,0.15))" }} className="standout-icon" />
       </div>
     );
   };
@@ -385,7 +407,7 @@ const Marketplace: React.FC = () => {
 
                   <div className="flex-1 px-4 sm:px-0">
                     <div className="sm:hidden">
-                      <input type="text" placeholder="Search marketplace..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg" style={{ boxShadow: "none", fontSize: 14 }} onFocus={(e) => (e.currentTarget.style.boxShadow = "0 0 0 3px rgba(10,26,58,0.12)")} onBlur={(e) => (e.currentTarget.style.boxShadow = "none")} />
+                      <input type="text" placeholder="Search marketplace..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg" style={{ boxShadow: "none", fontSize: 14 }} onFocus={(e) => (e.currentTarget.style.boxShadow = "0 0 0 3px rgba(10,26,58,0.12)") } onBlur={(e) => (e.currentTarget.style.boxShadow = "none")} />
                     </div>
                     <div className="hidden sm:block">
                       <div className="text-sm text-[#6B7280]">{filteredItems.length} results</div>
@@ -448,7 +470,7 @@ const Marketplace: React.FC = () => {
                         <div className="mt-4 flex items-center justify-between mt-auto">
                           <div className="text-lg font-bold text-[#0A1A3A]">${item.price.toFixed(2)}</div>
                           <div className="flex gap-2">
-                            <button className="px-3 py-1 rounded-lg font-medium" style={{ backgroundColor: "#D4A643", color: "#111111" }} onClick={() => handlePurchase(item)} onMouseEnter={(e) => (e.currentTarget.style.background = "#1BC47D")} onMouseLeave={(e) => (e.currentTarget.style.background = "#D4A643")}>Buy Now</button>
+                            <button className="px-3 py-1 rounded-lg font-medium" style={{ backgroundColor: "#D4A643", color: "#111111" }} onClick={() => handlePurchase(item)} onMouseEnter={(e) => (e.currentTarget.style.background = "#1BC47D")} onMouseLeave={(e) => (e.currentTarget.style.background = "#D4A643")} >Buy Now</button>
                             <button className="px-3 py-1 rounded-lg border font-medium" style={{ borderColor: "#E5E7EB", color: "#0A1A3A" }} onClick={() => alert(`Purchase: ${item.title}`)}>Purchase</button>
                           </div>
                         </div>
@@ -475,7 +497,7 @@ const Marketplace: React.FC = () => {
 
         <div className="p-4 overflow-auto h-full">
           <div className="mb-4">
-            <input type="text" placeholder="Search by name or description" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg" style={{ fontSize: 14 }} onFocus={(e) => (e.currentTarget.style.boxShadow = "0 0 0 3px rgba(10,26,58,0.12)")} onBlur={(e) => (e.currentTarget.style.boxShadow = "none")} />
+            <input type="text" placeholder="Search by name or description" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg" style={{ fontSize: 14 }} onFocus={(e) => (e.currentTarget.style.boxShadow = "0 0 0 3px rgba(10,26,58,0.12)")} onBlur={(e) => (e.currentTarget.style.boxShadow = "none") } />
           </div>
 
           <div className="mb-4">
