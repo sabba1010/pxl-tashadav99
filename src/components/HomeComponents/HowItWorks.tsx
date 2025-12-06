@@ -32,9 +32,7 @@ const HowItWorks = () => {
                 desc: "Explore thousands of verified accounts.",
               },
               {
-                icon: "👁️",
-                title: "Review Details",
-                desc: "Check stats, history, and authenticity proofs.",
+              
               },
               {
                 icon: "💳",
