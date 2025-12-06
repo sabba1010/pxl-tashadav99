@@ -4,7 +4,7 @@ const ExplorebyCategory = () => {
   return (
     <section className="py-24 px-6 md:px-12 lg:px-20 bg-gradient-to-b from-[#00183b] to-[#002a5c]">
       <div className="max-w-7xl mx-auto text-center mb-16">
-        <h2 className="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#daab4c] to-[#f0d084] mb-4">
+        <h2 className="text-6xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#daab4c] to-[#f0d084] mb-4">
           Explore by Category
         </h2>
         <p className="text-gray-300 text-lg">
