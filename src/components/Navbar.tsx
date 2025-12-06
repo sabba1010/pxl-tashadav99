@@ -107,18 +107,43 @@ export default function Navbar() {
             </div>
 
             {/* Right Icons */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-1">
+
+
               <button className="p-2 rounded-full hover:bg-gray-100 transition">
-                <svg className="w-5 h-5" fill="none" stroke={EMPIRE_BLUE} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h11z" />
+                <svg
+                  className="w-7 h-7 mb-1"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 3h2l1.4 2M6.4 5h14l-1.6 9H7.2L5.6 5zM8 18.5a1.5 1.5 0 103 0 1.5 1.5 0 00-3 0zm8 0a1.5 1.5 0 103 0 1.5 1.5 0 00-3 0z"
+                  />
                 </svg>
               </button>
 
               <button className="p-2 rounded-full hover:bg-gray-100 transition">
-                <svg className="w-5 h-5" fill="none" stroke={EMPIRE_BLUE} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                    d="M3 3h2l.4 2M7.48 7h9.02l1.5 9H5.98l1.5-9zM7 13l-2 5h13l-2-5" />
+                <svg
+                  className="w-5 h-5"           // you can even bump to w-6 h-6 if still too small
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke={EMPIRE_BLUE}
+                  strokeWidth={2.2}            // slightly thicker stroke
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  {/* Bigger, fuller bell */}
+                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9z" />
+                  <path d="M10.3 21a1.8 1.8 0 0 0 3.4 0" />
+
+                  {/* Bold notification dot in top-right */}
+                  <circle cx="18.5" cy="6" r="4" fill={EMPIRE_BLUE} />
+                  <circle cx="18.5" cy="6" r="1.8" fill="white" />
                 </svg>
               </button>
 
