@@ -1,12 +1,13 @@
-// src/Marketplace/Marketplace.tsx
-import React, { useState, useMemo, useEffect, useRef } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import type { IconType } from "react-icons";
-import { FaWhatsapp, FaLock, FaEnvelope, FaInstagram, FaFacebookF, FaPlus } from "react-icons/fa";
-import { SiNetflix, SiAmazon } from "react-icons/si";
+import { FaWhatsapp, FaEnvelope, FaPlus, FaBullhorn, FaFacebookF, FaInstagram, FaTwitter, FaLock, FaShoppingCart } from "react-icons/fa";
+import { SiNetflix, SiAmazon, SiSteam, SiGoogle } from "react-icons/si";
 
 /**
- * Marketplace with nested category -> subcategory dropdown.
- * Visual changes: icon sizes and font sizes aligned to the MyAds styles.
+ * Marketplace.tsx
+ * - Many items added (colorful)
+ * - Icon badge color derived from known brand/icon colors (ICON_COLOR_MAP)
+ * - If brand color unknown, uses deterministic vibrant gradient
  */
 
 interface Item {
@@ -35,6 +36,46 @@ const CATEGORY_MAP: Record<string, string[]> = {
 
 type SubcatState = Record<string, string[]>;
 
+const ICON_COLOR_MAP: Record<string, string> = {
+  // react-icons displayName or component name guesses
+  FaWhatsapp: "#25D366",
+  SiNetflix: "#E50914",
+  SiAmazon: "#FF9900",
+  FaEnvelope: "#D44638", // Gmail-ish red
+  FaFacebookF: "#1877F2",
+  FaInstagram: "#E1306C",
+  FaTwitter: "#1DA1F2",
+  SiSteam: "#171A21",
+  SiGoogle: "#4285F4",
+  FaBullhorn: "#6B46C1",
+  FaLock: "#0A1A3A",
+  FaShoppingCart: "#FF6B6B",
+  FaPlus: "#111827",
+};
+
+const gradientFromHex = (hex: string) => {
+  // simple lighten: convert to rgb and mix with white
+  const h = hex.replace("#", "");
+  const r = parseInt(h.substring(0, 2), 16);
+  const g = parseInt(h.substring(2, 4), 16);
+  const b = parseInt(h.substring(4, 6), 16);
+  const mix = (c: number) => Math.round(c + (255 - c) * 0.28); // 28% toward white
+  const r2 = mix(r);
+  const g2 = mix(g);
+  const b2 = mix(b);
+  const hex2 = (n: number) => n.toString(16).padStart(2, "0");
+  return `linear-gradient(135deg, ${hex} 0%, #${hex2(r2)}${hex2(g2)}${hex2(b2)} 100%)`;
+};
+
+const vibrantGradients = [
+  "linear-gradient(135deg,#FF9A9E 0%,#FAD0C4 100%)",
+  "linear-gradient(135deg,#A18CD1 0%,#FBC2EB 100%)",
+  "linear-gradient(135deg,#FDCB6E 0%,#FF6B6B 100%)",
+  "linear-gradient(135deg,#84fab0 0%,#8fd3f4 100%)",
+  "linear-gradient(135deg,#FCCF31 0%,#F55555 100%)",
+  "linear-gradient(135deg,#9BE15D 0%,#00E3AE 100%)",
+];
+
 type CategorySelectorProps = {
   categoryMap: Record<string, string[]>;
   selectedSubcats: SubcatState;
@@ -61,13 +102,13 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({ categoryMap, select
     };
   }, []);
 
-  const toggleMain = (main: string) => setOpenMain(p => ({ ...p, [main]: !p[main] }));
+  const toggleMain = (main: string) => setOpenMain((p) => ({ ...p, [main]: !p[main] }));
 
   const toggleSubcat = (main: string, sub: string) => {
-    setSelectedSubcats(prev => {
+    setSelectedSubcats((prev) => {
       const prevArr = prev[main] ?? [];
       if (prevArr.includes(sub)) {
-        const next = prevArr.filter(s => s !== sub);
+        const next = prevArr.filter((s) => s !== sub);
         if (next.length === 0) {
           const { [main]: _, ...rest } = prev;
           return rest;
@@ -84,11 +125,13 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({ categoryMap, select
     <div ref={ref}>
       <div className="flex items-center justify-between mb-3">
         <div style={{ color: "#0A1A3A", fontSize: 14, fontWeight: 600 }}>Account Category</div>
-        <button onClick={clearAll} style={{ color: "#0A1A3A", fontSize: 12 }}>Clear</button>
+        <button onClick={clearAll} style={{ color: "#0A1A3A", fontSize: 12 }}>
+          Clear
+        </button>
       </div>
 
       <div className="bg-white border rounded-lg p-2" style={{ borderColor: "#E5E7EB" }}>
-        {Object.keys(categoryMap).map(main => {
+        {Object.keys(categoryMap).map((main) => {
           const selectedForMain = selectedSubcats[main] ?? [];
           return (
             <div key={main} className="border-b last:border-b-0" style={{ borderColor: "#F3F4F6" }}>
@@ -116,7 +159,7 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({ categoryMap, select
               {openMain[main] && (
                 <div className="px-3 pb-3 pt-1">
                   <div className="space-y-2 max-h-40 overflow-auto">
-                    {categoryMap[main].map(sub => (
+                    {categoryMap[main].map((sub) => (
                       <label key={sub} className="flex items-center gap-3 cursor-pointer">
                         <input
                           type="checkbox"
@@ -148,16 +191,26 @@ const Marketplace: React.FC = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const drawerRef = useRef<HTMLDivElement | null>(null);
 
+  // many colorful items added
   const allItems: Item[] = [
-    { id: 1, title: "USA us GMAIL NUMBER", desc: "Valid +1 number for gmail verification", price: 2.5, seller: "Senior man", delivery: "Delivers in: 2 mins", icon: FaEnvelope, category: "Emails & Messaging Service", subcategory: "Gmail" },
-    { id: 2, title: "Aged gmail account very strong active to use 14 years account", desc: "Aged gmail account very strong active to use 14 years account Good for multipurpose use login and enjoy", price: 4.0, seller: "MailKing", delivery: "Delivers in: 1 min", icon: FaEnvelope, category: "Emails & Messaging Service", subcategory: "Gmail" },
-    { id: 3, title: "USA WhatsApp number", desc: "One time verification", price: 3.5, seller: "AS Digitals", delivery: "Delivers in: 5 mins", icon: FaWhatsapp, category: "Social Media", subcategory: "WhatsApp" },
-    { id: 4, title: "Netflix Premium 4K", desc: "Family plan", price: 7.99, seller: "StreamZone", delivery: "Delivers Instantly", icon: SiNetflix, category: "Accounts & Subscriptions", subcategory: "Netflix" },
-    { id: 5, title: "$50 Amazon Gift Card US", desc: "Instant code", price: 46.5, seller: "GiftPro", delivery: "Delivers in: 1 min", icon: SiAmazon, category: "Giftcards", subcategory: "Amazon" },
+    { id: 1, title: "USA GMAIL NUMBER", desc: "Valid +1 for gmail", price: 2.5, seller: "Senior man", delivery: "2 mins", icon: FaEnvelope, category: "Emails & Messaging Service", subcategory: "Gmail" },
+    { id: 2, title: "Aged Gmail (14y)", desc: "Strong aged gmail", price: 4.0, seller: "MailKing", delivery: "1 min", icon: FaEnvelope, category: "Emails & Messaging Service", subcategory: "Gmail" },
+    { id: 3, title: "USA WhatsApp number", desc: "One-time verification", price: 3.5, seller: "AS Digitals", delivery: "5 mins", icon: FaWhatsapp, category: "Social Media", subcategory: "WhatsApp" },
+    { id: 4, title: "WhatsApp Business + API", desc: "Business ready", price: 15.0, seller: "BizTools", delivery: "Instant", icon: FaWhatsapp, category: "Social Media", subcategory: "WhatsApp" },
+    { id: 5, title: "Instagram Active Account", desc: "High follower", price: 8.0, seller: "InstaPro", delivery: "Instant", icon: FaInstagram, category: "Social Media", subcategory: "Instagram" },
+    { id: 6, title: "Facebook Page Admin", desc: "Admin access", price: 12.0, seller: "FBDeals", delivery: "Instant", icon: FaFacebookF, category: "Social Media", subcategory: "Facebook" },
+    { id: 7, title: "Twitter Verified-ish (old)", desc: "Old active account", price: 20.0, seller: "TweetMart", delivery: "Instant", icon: FaTwitter, category: "Social Media", subcategory: "Twitter" },
+    { id: 8, title: "Netflix Premium 4K", desc: "Family plan", price: 7.99, seller: "StreamZone", delivery: "Instant", icon: SiNetflix, category: "Accounts & Subscriptions", subcategory: "Netflix" },
+    { id: 9, title: "$50 Amazon Gift Card US", desc: "Instant code", price: 46.5, seller: "GiftPro", delivery: "1 min", icon: SiAmazon, category: "Giftcards", subcategory: "Amazon" },
+    { id: 10, title: "Steam Wallet $20", desc: "Region-free", price: 18.0, seller: "GameKeys", delivery: "Instant", icon: SiSteam, category: "Giftcards", subcategory: "Steam" },
+    { id: 11, title: "Google Play $10", desc: "Instant code", price: 9.0, seller: "AppGifts", delivery: "Instant", icon: SiGoogle, category: "Giftcards", subcategory: "Google Play" },
+    { id: 12, title: "Promoted: Boosted Listing", desc: "Promoted placement (ad)", price: 12.0, seller: "AdSeller", delivery: "Instant", icon: FaBullhorn, category: "Others", subcategory: "Misc" },
+    { id: 13, title: "Secure VPN (Nord)", desc: "Fast VPN", price: 5.5, seller: "SafeNet", delivery: "Instant", icon: FaLock, category: "VPN & PROXYs", subcategory: "NordVPN" },
+    { id: 14, title: "Shopify Store (starter)", desc: "Basic store + themes", price: 35.0, seller: "ShopBuilders", delivery: "2 days", icon: FaShoppingCart, category: "E-commerce Platforms", subcategory: "Shopify" },
   ];
 
   const filteredItems = useMemo(() => {
-    return allItems.filter(item => {
+    return allItems.filter((item) => {
       const q = searchQuery.trim().toLowerCase();
       const matchesSearch = q.length === 0 || item.title.toLowerCase().includes(q) || (item.desc?.toLowerCase().includes(q) ?? false);
       const matchesPrice = item.price <= priceRange;
@@ -173,12 +226,16 @@ const Marketplace: React.FC = () => {
   }, [searchQuery, selectedSubcats, priceRange]);
 
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setDrawerOpen(false); };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setDrawerOpen(false);
+    };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  useEffect(() => { document.body.style.overflow = drawerOpen ? "hidden" : ""; }, [drawerOpen]);
+  useEffect(() => {
+    document.body.style.overflow = drawerOpen ? "hidden" : "";
+  }, [drawerOpen]);
 
   useEffect(() => {
     const onClickOutside = (e: MouseEvent) => {
@@ -193,11 +250,78 @@ const Marketplace: React.FC = () => {
     alert(`Purchasing: ${item.title} — $${item.price.toFixed(2)}`);
   };
 
-  // Larger icon + consistent font-size renderer
+  // Determine icon "key" for ICON_COLOR_MAP
+  const getIconKey = (icon: Item["icon"]) => {
+    if (typeof icon === "string") return String(icon);
+    // react-icons components usually have 'displayName' or 'name'
+    const anyIcon = icon as any;
+    return anyIcon.displayName || anyIcon.name || String(anyIcon);
+  };
+
+  // Moogo-style badge using icon brand color when available
   const renderIcon = (icon: Item["icon"], size = 36) => {
-    if (typeof icon === "string") return <span>{icon}</span>;
+    const badgeSize = Math.max(40, size + 8);
+    const key = getIconKey(icon);
+    const brandHex = ICON_COLOR_MAP[key];
+    const bg = brandHex ? gradientFromHex(brandHex) : vibrantGradients[String(icon).length % vibrantGradients.length];
+
+    if (typeof icon === "string") {
+      return (
+        <div
+          style={{
+            width: badgeSize,
+            height: badgeSize,
+            minWidth: badgeSize,
+            borderRadius: 999,
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            background: bg,
+            boxShadow: "0 8px 20px rgba(10,26,58,0.10)",
+            transform: "translateZ(0)",
+            transition: "transform .18s ease, box-shadow .18s ease",
+            color: "#fff",
+            fontWeight: 700,
+            fontSize: Math.round(size * 0.6),
+          }}
+        >
+          {icon}
+        </div>
+      );
+    }
+
     const IconComponent = icon as React.ComponentType<any>;
-    return <IconComponent size={size} aria-hidden style={{ minWidth: size, minHeight: size }} />;
+    return (
+      <div
+        aria-hidden
+        style={{
+          width: badgeSize,
+          height: badgeSize,
+          minWidth: badgeSize,
+          borderRadius: 999,
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          background: bg,
+          boxShadow: "0 8px 20px rgba(10,26,58,0.10)",
+          transform: "translateZ(0)",
+          transition: "transform .18s ease, box-shadow .18s ease",
+          cursor: "default",
+        }}
+        onMouseEnter={(e: React.MouseEvent<HTMLDivElement>) => {
+          const el = e.currentTarget;
+          el.style.transform = "translateY(-4px) scale(1.02)";
+          el.style.boxShadow = "0 12px 30px rgba(10,26,58,0.16)";
+        }}
+        onMouseLeave={(e: React.MouseEvent<HTMLDivElement>) => {
+          const el = e.currentTarget;
+          el.style.transform = "translateY(0)";
+          el.style.boxShadow = "0 8px 20px rgba(10,26,58,0.10)";
+        }}
+      >
+        <IconComponent size={Math.round(size * 0.65)} style={{ color: "#fff", filter: "drop-shadow(0 1px 1px rgba(0,0,0,0.15))" }} />
+      </div>
+    );
   };
 
   return (
@@ -295,9 +419,7 @@ const Marketplace: React.FC = () => {
                   <div className="divide-y">
                     {filteredItems.map((item) => (
                       <div key={item.id} className="p-4 flex items-start gap-4 hover:bg-gray-50 transition">
-                        <div style={{ lineHeight: 1, minWidth: 56 }}>
-                          {renderIcon(item.icon, 36)}
-                        </div>
+                        <div style={{ lineHeight: 1, minWidth: 56 }}>{renderIcon(item.icon, 36)}</div>
 
                         <div className="flex-1">
                           <h3 style={{ color: "#0A1A3A", fontSize: 16, fontWeight: 600, margin: 0 }}>{item.title}</h3>
@@ -392,7 +514,7 @@ const Marketplace: React.FC = () => {
         </div>
       </aside>
 
-      {/* Floating add button (renderIcon used to prevent TS jsx type issue) */}
+      {/* Floating add button */}
       <button style={{
         position: "fixed",
         right: 28,
@@ -400,16 +522,16 @@ const Marketplace: React.FC = () => {
         width: 56,
         height: 56,
         borderRadius: 999,
-        background: "#d4a643",
+        background: "linear-gradient(135deg,#FF6B6B 0%,#FFD166 100%)",
         color: "#fff",
         border: "none",
-        boxShadow: "0 6px 18px rgba(10,26,58,0.12)",
+        boxShadow: "0 10px 28px rgba(16,24,40,0.18)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         zIndex: 60
-      }}>
-        {renderIcon(FaPlus, 20)}
+      }} aria-label="Add">
+        {renderIcon(FaPlus, 18)}
       </button>
     </>
   );
