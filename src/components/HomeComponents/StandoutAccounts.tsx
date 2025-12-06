@@ -1,36 +1,37 @@
 // src/components/StandoutAccounts.tsx
 import React from "react";
+import type { IconType } from "react-icons";
 import {
-  Phone,
-  Lock,
-  Mail,
-  Film,
-  Gift,
-  Facebook,
-  Instagram,
-  Twitter,
-  Youtube,
-  Music,
-} from "lucide-react";
+  FaWhatsapp,
+  FaEnvelope,
+  FaFacebookF,
+  FaInstagram,
+  FaTwitter,
+  FaLock,
+  FaShoppingCart,
+  FaBullhorn,
+} from "react-icons/fa";
+import { SiNetflix, SiAmazon, SiSteam, SiGoogle } from "react-icons/si";
 
 /**
- * StandoutAccounts.tsx
- * - Colorful "moogo"-style icon badges for lucide icons
- * - Brand color map -> gradient backgrounds
- * - Hover lift + shadow
+ * StandoutAccounts (Marketplace-style badges)
+ * - Uses same badge rendering as Marketplace component
+ * - Round badges, brand color gradients, fallback vibrant gradients
  */
 
-const BRAND_COLOR_MAP: Record<string, string> = {
-  facebook: "#1877F2",
-  instagram: "#E1306C",
-  twitter: "#1DA1F2",
-  tiktok: "#010101", // tiktok brand uses mixed; keep dark fallback
-  youtube: "#FF0000",
-  netflix: "#E50914",
-  whatsapp: "#25D366",
-  amazon: "#FF9900",
-  gmail: "#D44638",
-  steam: "#171A21",
+const ICON_COLOR_MAP: Record<string, string> = {
+  FaWhatsapp: "#25D366",
+  SiNetflix: "#E50914",
+  SiAmazon: "#FF9900",
+  FaEnvelope: "#D44638",
+  FaFacebookF: "#1877F2",
+  FaInstagram: "#E1306C",
+  FaTwitter: "#1DA1F2",
+  SiSteam: "#171A21",
+  SiGoogle: "#4285F4",
+  FaBullhorn: "#6B46C1",
+  FaLock: "#0A1A3A",
+  FaShoppingCart: "#FF6B6B",
 };
 
 const vibrantGradients = [
@@ -55,28 +56,54 @@ const gradientFromHex = (hex: string) => {
   return `linear-gradient(135deg, ${hex} 0%, #${toHex(r2)}${toHex(g2)}${toHex(b2)} 100%)`;
 };
 
-// helper: detect platform from title
-const resolveIcon = (item: any) => {
-  const title = (item.title || "").toLowerCase();
-  if (title.includes("facebook")) return { Icon: Facebook, brandKey: "facebook" };
-  if (title.includes("instagram")) return { Icon: Instagram, brandKey: "instagram" };
-  if (title.includes("twitter") || title.includes("x ")) return { Icon: Twitter, brandKey: "twitter" };
-  if (title.includes("tiktok")) return { Icon: Music, brandKey: "tiktok" };
-  if (title.includes("youtube") || title.includes("netflix")) return { Icon: Youtube, brandKey: "youtube" };
-  if (title.includes("whatsapp")) return { Icon: Phone, brandKey: "whatsapp" };
-  if (title.includes("amazon")) return { Icon: Gift, brandKey: "amazon" };
-  if (title.includes("gmail")) return { Icon: Mail, brandKey: "gmail" };
-  // fallback: use provided Icon or Phone
-  return { Icon: item.Icon || Phone, brandKey: undefined };
+type Product = {
+  title: string;
+  desc: string;
+  vendor: string;
+  delivery: string;
+  price: string;
+  icon?: IconType;
 };
 
-// render colourful badge for a lucide icon component
-const renderIconBadge = (IconComp: React.ComponentType<any>, brandKey?: string, size = 28) => {
-  const badgeSize = Math.max(44, size + 16);
-  const brandHex = brandKey ? BRAND_COLOR_MAP[brandKey] : undefined;
-  const bg = brandHex
-    ? gradientFromHex(brandHex)
-    : vibrantGradients[String(IconComp).length % vibrantGradients.length];
+// Helper to get icon key for ICON_COLOR_MAP
+const getIconKey = (Icon?: IconType) => {
+  if (!Icon) return "";
+  // react-icons components have name property when stringified; fallbacks:
+  // use displayName or name if present, else try constructor name
+  const anyIcon = Icon as any;
+  return anyIcon.displayName || anyIcon.name || Icon.toString().split(" ")[0] || "";
+};
+
+// Reuse Marketplace-style renderIcon (round badge)
+const renderIconBadge = (IconComp: IconType | undefined, size = 28) => {
+  const badgeSize = Math.max(48, size + 16);
+  const key = getIconKey(IconComp);
+  const brandHex = ICON_COLOR_MAP[key];
+  const bg = brandHex ? gradientFromHex(brandHex) : vibrantGradients[key.length % vibrantGradients.length];
+
+  if (!IconComp) {
+    return (
+      <div
+        style={{
+          width: badgeSize,
+          height: badgeSize,
+          minWidth: badgeSize,
+          borderRadius: 9999,
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          background: bg,
+          boxShadow: "0 10px 28px rgba(10,26,58,0.12)",
+          border: "2px solid rgba(255,255,255,0.08)",
+        }}
+      />
+    );
+  }
+
+  const iconEl = React.createElement(IconComp as any, {
+    size: Math.round(size * 0.7),
+    color: "#fff",
+  });
 
   return (
     <div
@@ -85,80 +112,48 @@ const renderIconBadge = (IconComp: React.ComponentType<any>, brandKey?: string, 
         width: badgeSize,
         height: badgeSize,
         minWidth: badgeSize,
-        borderRadius: 12,
+        borderRadius: 9999,
         display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
         background: bg,
-        boxShadow: "0 8px 24px rgba(10,26,58,0.12)",
+        boxShadow: "0 10px 28px rgba(10,26,58,0.12)",
         transition: "transform .16s ease, box-shadow .16s ease",
+        border: "2px solid rgba(255,255,255,0.12)",
         cursor: "default",
       }}
       onMouseEnter={(e) => {
         const el = e.currentTarget as HTMLDivElement;
-        el.style.transform = "translateY(-4px) scale(1.02)";
-        el.style.boxShadow = "0 16px 44px rgba(10,26,58,0.16)";
+        el.style.transform = "translateY(-6px) scale(1.04)";
+        el.style.boxShadow = "0 18px 44px rgba(10,26,58,0.18)";
       }}
       onMouseLeave={(e) => {
         const el = e.currentTarget as HTMLDivElement;
         el.style.transform = "translateY(0)";
-        el.style.boxShadow = "0 8px 24px rgba(10,26,58,0.12)";
+        el.style.boxShadow = "0 10px 28px rgba(10,26,58,0.12)";
       }}
     >
-      <IconComp size={Math.round(size * 0.9)} color="#ffffff" />
+      {iconEl}
     </div>
   );
 };
 
-const data = [
+const DATA: Product[] = [
   {
     title: "USA WhatsApp number",
-    desc:
-      "USA WhatsApp number for sale, it's a one time verification number. Code will be available after purchase",
+    desc: "USA WhatsApp number for sale, one-time verification code after purchase",
     vendor: "AS Digitals",
     delivery: "Delivers in: 5 mins",
     price: "$4.49",
-    Icon: Phone,
+    icon: FaWhatsapp,
   },
   {
     title: "Facebook Aged Account 2015",
-    desc: "Old Facebook account with Marketplace & Ads access. No restrictions. Clean history.",
+    desc: "Old Facebook account with Marketplace & Ads access",
     vendor: "SocialVault",
     delivery: "Delivers in: 5 mins",
     price: "$45.00",
-    Icon: Facebook,
-  },
-  {
-    title: "1 year Active Pia VPN",
-    desc: "1 year pia vpn works with either ios/android, just 1 device.",
-    vendor: "lavidamide Logs",
-    delivery: "Delivers Instantly",
-    price: "$2.98",
-    Icon: Lock,
-  },
-  {
-    title: "Gmail PVA Aged 2020",
-    desc: "High-quality account • Instant delivery • Full warranty",
-    vendor: "MailKing",
-    delivery: "Delivers in: 3 mins",
-    price: "$1.99",
-    Icon: Mail,
-  },
-  {
-    title: "Netflix Premium 4K",
-    desc: "High-quality account • Instant delivery • Full warranty",
-    vendor: "StreamZone",
-    delivery: "Delivers Instantly",
-    price: "$7.99",
-    Icon: Film,
-  },
-  {
-    title: "$50 Amazon Gift Card US",
-    desc: "High-quality account • Instant delivery • Full warranty",
-    vendor: "GiftZone",
-    delivery: "Delivers Instantly",
-    price: "$46.50",
-    Icon: Gift,
+    icon: FaFacebookF,
   },
   {
     title: "Instagram Active Account",
@@ -166,7 +161,7 @@ const data = [
     vendor: "InstaPro",
     delivery: "Instant",
     price: "$39.00",
-    Icon: Instagram,
+    icon: FaInstagram,
   },
   {
     title: "Twitter Old Active Account",
@@ -174,101 +169,118 @@ const data = [
     vendor: "TweetMart",
     delivery: "Instant",
     price: "$55.00",
-    Icon: Twitter,
+    icon: FaTwitter,
+  },
+  {
+    title: "Netflix Premium 4K",
+    desc: "Family plan, stream in 4K",
+    vendor: "StreamZone",
+    delivery: "Instant",
+    price: "$7.99",
+    icon: SiNetflix,
+  },
+  {
+    title: "$50 Amazon Gift Card US",
+    desc: "Instant code after purchase",
+    vendor: "GiftZone",
+    delivery: "Instant",
+    price: "$46.50",
+    icon: SiAmazon,
+  },
+  {
+    title: "Steam Wallet $20",
+    desc: "Region-free Steam wallet code",
+    vendor: "GameKeys",
+    delivery: "Instant",
+    price: "$18.00",
+    icon: SiSteam,
+  },
+  {
+    title: "Gmail PVA Aged 2020",
+    desc: "Phone-verified aged Gmail",
+    vendor: "MailKing",
+    delivery: "Delivers in: 3 mins",
+    price: "$1.99",
+    icon: FaEnvelope,
   },
 ];
 
 const StandoutAccounts: React.FC = () => {
   return (
-    <>
-      <section className="py-24 px-6 md:px-12 lg:px-20 bg-white">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#daab4c] to-[#b8860b] mb-4">
-              Connect With Standout Social Media Influencers
-            </h2>
-            <p className="text-gray-600 text-lg">Premium verified digital assets • Instant delivery available</p>
-          </div>
+    <section className="py-20 px-6 md:px-12 lg:px-20 bg-white">
+      <div className="max-w-6xl mx-auto">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-bold text-[#0A1A3A] mb-3">Standout Accounts</h2>
+          <p className="text-gray-600">Premium verified digital assets • Marketplace-style badges</p>
+        </div>
 
-          <div className="overflow-x-auto rounded-2xl shadow-xl border border-gray-200">
-            <table className="w-full min-w-[800px] bg-white">
-              <thead>
-                <tr className="bg-gradient-to-r from-[#00183b] to-[#002a5c] text-white">
-                  <th className="px-6 py-5 text-left text-sm font-semibold uppercase tracking-wider">Product</th>
-                  <th className="px-6 py-5 text-left text-sm font-semibold uppercase tracking-wider">Description</th>
-                  <th className="px-6 py-5 text-center text-sm font-semibold uppercase tracking-wider">Vendor</th>
-                  <th className="px-6 py-5 text-center text-sm font-semibold uppercase tracking-wider">Delivery</th>
-                  <th className="px-6 py-5 text-center text-sm font-semibold uppercase tracking-wider">Price</th>
+        {/* Desktop table */}
+        <div className="overflow-x-auto rounded-2xl shadow border border-gray-200">
+          <table className="w-full min-w-[720px] bg-white">
+            <thead>
+              <tr className="bg-gray-50">
+                <th className="px-6 py-4 text-left text-sm font-semibold">Product</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold">Description</th>
+                <th className="px-6 py-4 text-center text-sm font-semibold">Vendor</th>
+                <th className="px-6 py-4 text-center text-sm font-semibold">Delivery</th>
+                <th className="px-6 py-4 text-center text-sm font-semibold">Price</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y">
+              {DATA.map((p, i) => (
+                <tr key={i} className="hover:bg-gray-50 transition">
+                  <td className="px-6 py-5 whitespace-nowrap">
+                    <div className="flex items-center gap-4">
+                      <div>{renderIconBadge(p.icon, 26)}</div>
+                      <div className="text-lg font-semibold text-gray-900">{p.title}</div>
+                    </div>
+                  </td>
+
+                  <td className="px-6 py-5 text-sm text-gray-600">{p.desc}</td>
+
+                  <td className="px-6 py-5 text-center">
+                    <span className="text-sm font-medium text-gray-700">{p.vendor}</span>
+                  </td>
+
+                  <td className="px-6 py-5 text-center">
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-800">
+                      {p.delivery}
+                    </span>
+                  </td>
+
+                  <td className="px-6 py-5 text-center">
+                    <span className="text-xl font-bold text-gray-900">{p.price}</span>
+                  </td>
                 </tr>
-              </thead>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
-              <tbody className="divide-y divide-gray-200">
-                {data.map((item, idx) => {
-                  const resolved = resolveIcon(item);
-                  const IconComp = resolved.Icon;
-                  const brandKey = resolved.brandKey as string | undefined;
-
-                  return (
-                    <tr key={idx} className="hover:bg-gray-50 transition-all duration-200 group">
-                      <td className="px-6 py-6 whitespace-nowrap">
-                        <div className="flex items-center gap-4">
-                          <div className="text-3xl">{renderIconBadge(IconComp, brandKey, 24)}</div>
-                          <div className="text-lg font-semibold text-gray-900">{item.title}</div>
-                        </div>
-                      </td>
-
-                      <td className="px-6 py-6 text-sm text-gray-600 max-w-md">{item.desc}</td>
-
-                      <td className="px-6 py-6 text-center">
-                        <span className="text-sm font-medium text-gray-700">{item.vendor}</span>
-                      </td>
-
-                      <td className="px-6 py-6 text-center">
-                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-800">
-                          {item.delivery}
-                        </span>
-                      </td>
-
-                      <td className="px-6 py-6 text-center">
-                        <span className="text-2xl font-bold text-gray-900">{item.price}</span>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Mobile stacked view */}
-          <div className="md:hidden space-y-4 mt-8">
-            {data.map((item, idx) => {
-              const resolved = resolveIcon(item);
-              const IconComp = resolved.Icon;
-              const brandKey = resolved.brandKey as string | undefined;
-
-              return (
-                <div key={idx} className="bg-white border border-gray-200 rounded-xl p-5 shadow-md">
-                  <div className="flex justify-between items-start mb-3">
-                    <div className="flex items-center gap-3">
-                      {renderIconBadge(IconComp, brandKey, 20)}
-                      <h4 className="text-lg font-bold text-gray-900">{item.title}</h4>
-                    </div>
-                    <span className="text-2xl font-bold text-gray-900">{item.price}</span>
-                  </div>
-                  <p className="text-sm text-gray-600 mb-4">{item.desc}</p>
-                  <div className="flex justify-between items-center text-sm">
-                    <div>
-                      <span className="font-medium text-gray-700">{item.vendor}</span>
-                      <span className="ml-3 text-[#daab4c] font-bold">• {item.delivery}</span>
-                    </div>
+        {/* Mobile stacked */}
+        <div className="md:hidden space-y-4 mt-8">
+          {DATA.map((p, i) => (
+            <div key={i} className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-3">
+                  {renderIconBadge(p.icon, 20)}
+                  <div>
+                    <h4 className="text-lg font-bold text-gray-900">{p.title}</h4>
+                    <div className="text-sm text-gray-600">{p.vendor}</div>
                   </div>
                 </div>
-              );
-            })}
-          </div>
+                <div className="text-right">
+                  <div className="text-xl font-bold text-gray-900">{p.price}</div>
+                  <div className="text-xs text-[#6B7280] mt-1">{p.delivery}</div>
+                </div>
+              </div>
+
+              <p className="text-sm text-gray-600 mt-3">{p.desc}</p>
+            </div>
+          ))}
         </div>
-      </section>
-    </>
+      </div>
+    </section>
   );
 };
 
