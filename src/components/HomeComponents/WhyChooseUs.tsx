@@ -6,7 +6,7 @@ const WhyChooseUs = () => {
       <div className="max-w-7xl mx-auto space-y-24">
         {/* Why Choose Us */}
         <div className="text-center">
-          <h2 className="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#daab4c] to-[#b8860b] mb-12">
+          <h2 className="text-5xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#daab4c] to-[#b8860b] mb-12">
             Why Thousands Trust Us
           </h2>
           <div className="grid md:grid-cols-3 gap-10">
@@ -41,7 +41,7 @@ const WhyChooseUs = () => {
 
         {/* Features */}
         <div>
-          <h2 className="text-4xl md:text-5xl font-bold text-center text-transparent bg-clip-text bg-gradient-to-r from-[#daab4c] to-[#b8860b] mb-12">
+          <h2 className="text-6xl md:text-5xl font-bold text-center text-transparent bg-clip-text bg-gradient-to-r from-[#daab4c] to-[#b8860b] mb-12">
             Powerful Features for Buyers & Sellers
           </h2>
           <div className="grid md:grid-cols-3 gap-8">

@@ -1,5 +1,6 @@
 // src/components/HomeComponents/MY Ads/MyAds.jsx
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import {
   FaInstagram,
   FaSnapchatGhost,
@@ -9,9 +10,9 @@ import {
   FaTrash,
 } from "react-icons/fa";
 
-/* ---------------------------
-   Brand color map & gradients
-   --------------------------- */
+/* ---------------------------------------------
+   Brand color map & gradients (Marketplace style)
+---------------------------------------------- */
 const ICON_COLOR_MAP = {
   FaInstagram: "#E1306C",
   FaSnapchatGhost: "#FFFC00",
@@ -41,22 +42,21 @@ const gradientFromHex = (hex) => {
   return `linear-gradient(135deg, ${hex} 0%, #${toHex(r2)}${toHex(g2)}${toHex(b2)} 100%)`;
 };
 
-/* ---------------------------
-   Helper: render marketplace-style badge
-   --------------------------- */
+/* ---------------------------------------------
+   Helper: render marketplace-style badge (JSX-ready)
+---------------------------------------------- */
 const getIconKey = (IconComponent) => {
   const anyI = IconComponent;
-  // react-icons components may have displayName or name - fallback to constructor name
   return anyI.displayName || anyI.name || "Icon";
 };
 
 const renderBadge = (IconComponent, size = 36) => {
-  const badgeSize = Math.max(50, size + 12);
+  const badgeSize = Math.max(48, size + 12);
   const key = getIconKey(IconComponent);
   const hex = ICON_COLOR_MAP[key] || null;
   const bg = hex ? gradientFromHex(hex) : vibrantGradients[key.length % vibrantGradients.length];
-
   const C = IconComponent;
+
   return (
     <div
       aria-hidden
@@ -69,90 +69,83 @@ const renderBadge = (IconComponent, size = 36) => {
         alignItems: "center",
         justifyContent: "center",
         background: bg,
-        boxShadow: "0 10px 28px rgba(10,26,58,0.12)",
+        boxShadow: "0 10px 28px rgba(16,24,40,0.12)",
         transition: "transform .18s ease, box-shadow .18s ease",
       }}
       onMouseEnter={(e) => {
         const el = e.currentTarget;
         el.style.transform = "translateY(-6px) scale(1.02)";
-        el.style.boxShadow = "0 18px 44px rgba(10,26,58,0.18)";
+        el.style.boxShadow = "0 18px 44px rgba(16,24,40,0.18)";
       }}
       onMouseLeave={(e) => {
         const el = e.currentTarget;
         el.style.transform = "translateY(0)";
-        el.style.boxShadow = "0 10px 28px rgba(10,26,58,0.12)";
+        el.style.boxShadow = "0 10px 28px rgba(16,24,40,0.12)";
       }}
     >
-      <C size={Math.round(size * 0.7)} style={{ color: "#fff", filter: "drop-shadow(0 1px 1px rgba(0,0,0,0.12))" }} />
+      <C size={Math.round(size * 0.75)} style={{ color: "#fff", filter: "drop-shadow(0 1px 1px rgba(0,0,0,0.12))" }} />
     </div>
   );
 };
 
-/* ---------------------------
-   Mock data + tabs
-   --------------------------- */
+/* ---------------------------------------------
+   Mock data & tabs
+---------------------------------------------- */
 const MOCK = [
   {
     id: 1,
     title: "Aged instagram Account 7 years",
     desc:
-      "Aged instagram account with real friends and active follower very sharp good and strong just login with good vpn it doesn't get blocked easily login and enjoy up to 7 years account",
+      "Aged instagram account with real friends and active follower very sharp good and strong just login with good vpn it doesn't get blocked easily.",
     price: 7,
     status: "restore",
     platform: "instagram",
   },
   {
     id: 2,
-    title: "Aged very sharp Snapchat Account strong and active to use 1 years",
-    desc: "Aged very sharp Snapchat Account strong and active to use 1 years With good snapscore",
+    title: "Aged Snapchat Account (1 year)",
+    desc: "Aged Snapchat account, good snapscore and activity.",
     price: 6,
     status: "restore",
     platform: "snapchat",
   },
   {
     id: 3,
-    title: "Aged instagram Account 7 years",
+    title: "Aged instagram Account 7 years (alt)",
     desc:
-      "Aged instagram account with real friends and active follower very sharp good and strong just login with good vpn it doesn't get blocked easily login and enjoy up to 7 years account",
+      "Another aged IG account with healthy followers and activity.",
     price: 9,
     status: "restore",
     platform: "instagram",
   },
   {
     id: 4,
-    title: "Aged Facebook dating account already activated",
+    title: "Aged Facebook dating account activated",
     desc:
-      "Activated Facebook dating account very strong and active and get many matches With real friends login and enjoy very good and reliable use a paid vpn to login and enjoy",
+      "Activated Facebook dating account — marketplace ready, use a paid VPN for best reliability.",
     price: 30,
     status: "denied",
     platform: "facebook",
   },
 ];
 
-const tabs = ["All", "Active", "Pending", "Denied", "Restore"];
+const TABS = ["All", "Active", "Pending", "Denied", "Restore"];
 
-/* ---------------------------
-   PlatformIcon: returns badge-only (no box)
-   --------------------------- */
+/* ---------------------------------------------
+   PlatformIcon using same badge style
+---------------------------------------------- */
 function PlatformIcon({ p }) {
   const size = 36;
   if (p === "instagram") return renderBadge(FaInstagram, size);
-  if (p === "snapchat") {
-    // Snapchat color is very bright yellow; use slightly darker fallback for gradient start
-    const SnapchatIcon = FaSnapchatGhost;
-    // override map for Snapchat so gradientFromHex doesn't break on pure #FFFC00 brightness
-    return renderBadge(SnapchatIcon, size);
-  }
+  if (p === "snapchat") return renderBadge(FaSnapchatGhost, size);
   if (p === "facebook") return renderBadge(FaFacebookF, size);
-  // fallback neutral badge
-  return (
-    <div style={{ width: size, height: size, borderRadius: "50%", background: "#E5E7EB" }} />
-  );
+  return <div style={{ width: size, height: size, borderRadius: "50%", background: "#E5E7EB" }} />;
 }
 
-/* ---------------------------
-   MyAds component
-   --------------------------- */
+/* ---------------------------------------------
+   Component (Tailwind look matching MyPurchase/MyOrder)
+   Mobile responsive adjustments added
+---------------------------------------------- */
 const MyAds = () => {
   const [activeTab, setActiveTab] = useState("Restore");
   const [items, setItems] = useState(MOCK);
@@ -168,7 +161,7 @@ const MyAds = () => {
 
   const handleRestore = (id) => {
     setItems((prev) => prev.map((it) => (it.id === id ? { ...it, status: "active" } : it)));
-    alert("Ad restored");
+    window.alert("Ad restored");
   };
 
   const handleDelete = (id) => {
@@ -177,184 +170,161 @@ const MyAds = () => {
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "#F3EFEE", padding: 24 }}>
-      <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-          <div>
-            <h1 style={{ fontSize: 28, color: "#0A1A3A", margin: 0 }}>My Ads</h1>
-            <p style={{ margin: 0, color: "#6B7280" }}>All of your product ads shows here</p>
-          </div>
+    <>
+      <div className="min-h-screen bg-[#F3EFEE] pt-16 sm:pt-20 pb-20 sm:pb-24">
+        <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-6">
+            <div>
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#0A1A3A]">My Ads</h1>
+              <p className="text-xs sm:text-sm text-gray-600 mt-1">All of your product ads show here</p>
+            </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <div
-                style={{
-                  width: 40,
-                  height: 22,
-                  borderRadius: 999,
-                  background: "#FFECE6",
-                  padding: 3,
-                  display: "flex",
-                }}
-              >
-                <div style={{ width: 18, height: 18, borderRadius: 999, background: "#d4a643", marginLeft: "auto" }} />
+            <div className="flex items-center gap-3">
+              <div className="hidden sm:flex items-center gap-2">
+                <div className="w-10 h-6 rounded-full bg-[#FFECE6] p-1 flex items-center">
+                  <div className="w-4 h-4 rounded-full bg-[#d4a643] ml-auto" />
+                </div>
+                <span className="text-sm text-gray-600">Turn Ads Off</span>
               </div>
-              <div style={{ color: "#6B7280" }}>Turn Ads Off</div>
+
+              <Link
+                to="/add-product"
+                className="mt-1 sm:mt-0 bg-[#d4a643] text-white px-4 py-2 rounded-full font-medium hover:opacity-95 transition-shadow shadow"
+              >
+                Create Ad
+              </Link>
             </div>
           </div>
-        </div>
 
-        <div style={{ background: "#fff", borderRadius: 16, padding: 20, boxShadow: "0 3px 12px rgba(10,26,58,0.04)" }}>
-          {/* Tabs */}
-          <div style={{ borderBottom: "1px solid #F3F4F6", paddingBottom: 14, marginBottom: 14 }}>
-            <nav style={{ display: "flex", gap: 24, alignItems: "flex-end" }}>
-              {tabs.map((t) => (
-                <button
-                  key={t}
-                  onClick={() => setActiveTab(t)}
-                  style={{
-                    border: "none",
-                    background: "transparent",
-                    cursor: "pointer",
-                    paddingBottom: 8,
-                    fontSize: 14,
-                    color: activeTab === t ? "#d4a643" : "#6B7280",
-                    borderBottom: activeTab === t ? "2px solid #d4a643" : "2px solid transparent",
-                  }}
-                >
-                  {t}
-                </button>
-              ))}
-            </nav>
-          </div>
-
-          {/* Content */}
-          <div style={{ maxHeight: "62vh", overflow: "auto", paddingRight: 8 }}>
-            {filtered.length === 0 ? (
-              <div style={{ minHeight: "40vh", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", textAlign: "center", color: "#6B7280" }}>
-                <div style={{ marginBottom: 24 }}>
-                  <div style={{ width: 96, height: 96, borderRadius: "50%", background: "#FFF3EB", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 36 }}>🔊</div>
-                </div>
-                <h3 style={{ fontSize: 22, color: "#0A1A3A", margin: 0 }}>No Ads</h3>
-                <p style={{ marginTop: 8 }}>Add products for customers to buy from you</p>
-                <button style={{ marginTop: 18, padding: "10px 18px", borderRadius: 8, background: "#d4a643", color: "#fff", border: "none", cursor: "pointer" }}>Start selling</button>
-              </div>
-            ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                {filtered.map((item) => (
-                  <div
-                    key={item.id}
-                    style={{
-                      display: "flex",
-                      gap: 18,
-                      padding: 16,
-                      borderRadius: 10,
-                      background: item.status === "denied" ? "#F4F7FA" : "#fff",
-                      alignItems: "flex-start",
-                      border: "1px solid rgba(0,0,0,0.02)",
-                    }}
+          {/* Card */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+            {/* Tabs */}
+            <div className="px-4 sm:px-6 pt-4 sm:pt-6">
+              <nav className="flex gap-4 sm:gap-6 border-b border-gray-100 pb-3 sm:pb-4 overflow-x-auto">
+                {TABS.map((t) => (
+                  <button
+                    key={t}
+                    onClick={() => setActiveTab(t)}
+                    className={`pb-2 text-xs sm:text-sm ${activeTab === t ? "text-[#d4a643] border-b-2 border-[#d4a643]" : "text-gray-500"}`}
                   >
-                    <div style={{ flexShrink: 0 }}>
-                      {/* <- changed: show round badge only (no outer white box) */}
-                      <div style={{ width: 56, height: 56, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                        {PlatformIcon({ p: item.platform })}
-                      </div>
+                    {t}
+                  </button>
+                ))}
+              </nav>
+            </div>
+
+            {/* List */}
+            <div className="p-4 sm:p-6">
+              <div className="max-h-[62vh] overflow-y-auto pr-2 sm:pr-4 space-y-4 sm:space-y-6">
+                {filtered.length === 0 ? (
+                  <div className="py-12 sm:py-20 flex flex-col items-center text-center text-gray-500">
+                    <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-[#0A1A3A] flex items-center justify-center mb-4">
+                      <svg className="w-10 h-10 sm:w-14 sm:h-14 text-white" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 00-3.7-3.7H11.5a.5.5 0 01-.5-.5v-3a.5.5 0 00-.5-.5h-1a.5.5 0 00-.5.5v3a.5.5 0 01-.5.5H5.638a4.006 4.006 0 00-3.7 3.7c-.092 1.209-.138 2.43-.138 3.662 0 1.232.046 2.453.138 3.662a4.006 4.006 0 003.7 3.7H8.5a.5.5 0 01.5.5v3a.5.5 0 00.5.5h1a.5.5 0 00.5-.5v-3a.5.5 0 01.5-.5h4.162a4.006 4.006 0 003.7-3.7c.092-1.209.138-2.43.138-3.662z"/>
+                      </svg>
                     </div>
-
-                    <div style={{ flex: 1 }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", gap: 16 }}>
-                        <div style={{ flex: 1 }}>
-                          <h4 style={{ margin: 0, color: "#0A1A3A" }}>{item.title}</h4>
-                          <p style={{ marginTop: 6, color: "#6B7280", fontSize: 14 }}>{item.desc}</p>
-
-                          {item.status === "denied" && (
-                            <div style={{ marginTop: 12, padding: 14, borderRadius: 8, background: "#fff4db", color: "#926B00" }}>
-                              <strong>⚠️ Reason for denied</strong>
-                              <div style={{ marginTop: 8, fontSize: 13, color: "#6B4F00" }}>
-                                Kindly send a screen record of the ads account logged in on your mobile device to our official Telegram number (+2347073823800), thank you.
-                              </div>
-                            </div>
-                          )}
+                    <h3 className="text-lg sm:text-xl font-semibold text-[#0A1A3A] mb-2">No Ads</h3>
+                    <p className="text-sm sm:text-base text-gray-500 max-w-md">Add products for customers to buy from you.</p>
+                    <Link to="/add-product" className="mt-4 sm:mt-6 bg-[#D4A643] text-[#111] px-5 py-2 rounded-full font-medium hover:bg-[#1BC47D] transition">
+                      Start selling
+                    </Link>
+                  </div>
+                ) : (
+                  filtered.map((item) => (
+                    <div
+                      key={item.id}
+                      className={`bg-[#F8FAFB] rounded-lg p-4 sm:p-6 flex flex-col sm:flex-row items-start gap-4 sm:gap-6 border border-[rgba(0,0,0,0.03)]`}
+                    >
+                      {/* left icon (responsive sizes) */}
+                      <div className="flex-shrink-0">
+                        <div className="w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center">
+                          <PlatformIcon p={item.platform} />
                         </div>
+                      </div>
 
-                        <div style={{ width: 160, textAlign: "right", display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 10 }}>
-                          <div style={{ fontSize: 18, fontWeight: 700, color: "#0A1A3A" }}>${item.price}</div>
+                      {/* middle content */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-6">
+                          <div className="flex-1 min-w-0">
+                            <h3 className="text-sm sm:text-base font-semibold text-[#0A1A3A] truncate">{item.title}</h3>
+                            <p className="text-xs sm:text-sm text-gray-500 mt-2 line-clamp-3">{item.desc}</p>
 
-                          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                            {item.status === "restore" && (
-                              <button
-                                onClick={() => handleRestore(item.id)}
-                                style={{
-                                  background: "#d4a643",
-                                  color: "#fff",
-                                  padding: "8px 12px",
-                                  borderRadius: 8,
-                                  border: "none",
-                                  cursor: "pointer",
-                                }}
-                              >
-                                Restore
-                              </button>
+                            {item.status === "denied" && (
+                              <div className="mt-3 p-3 sm:p-4 rounded-lg bg-[#fff4db] text-[#926B00]">
+                                <strong>⚠️ Reason for denied</strong>
+                                <div className="mt-2 text-xs sm:text-sm text-[#6B4F00]">
+                                  Kindly send a screen record of the ads account logged in on your mobile device to our official Telegram number (+2347073823800), thank you.
+                                </div>
+                              </div>
                             )}
 
-                            <button title="Edit" style={{ width: 36, height: 36, borderRadius: 18, border: "none", background: "#fff", boxShadow: "0 2px 6px rgba(10,26,58,0.04)", cursor: "pointer" }}>
-                              <FaPencilAlt />
-                            </button>
-                            <button
-                              title="Delete"
-                              onClick={() => handleDelete(item.id)}
-                              style={{ width: 36, height: 36, borderRadius: 18, border: "none", background: "#fff", boxShadow: "0 2px 6px rgba(10,26,58,0.04)", cursor: "pointer" }}
-                            >
-                              <FaTrash />
-                            </button>
+                            <div className="mt-3 flex items-center gap-2 text-xs sm:text-sm text-gray-500">
+                              <span className="inline-block w-2 h-2 bg-gray-300 rounded-full" />
+                              <span>{item.platform}</span>
+                            </div>
                           </div>
 
-                          <div>
-                            <span
-                              style={{
-                                display: "inline-block",
-                                padding: "6px 10px",
-                                borderRadius: 18,
-                                background: item.status === "approved" ? "#EEF7FF" : item.status === "denied" ? "#fff1f2" : "#F3F4F6",
-                                color: item.status === "approved" ? "#2B6CB0" : item.status === "denied" ? "#9E2A2B" : "#6B7280",
-                                fontSize: 12,
-                              }}
-                            >
-                              {item.status === "approved" ? "Approved" : item.status === "denied" ? "Denied" : item.status === "restore" ? "Restore" : item.status}
-                            </span>
+                          {/* right meta (price/status/buttons) - responsive layout */}
+                          <div className="w-full sm:w-44 flex sm:flex-col flex-row justify-between sm:items-end items-center gap-3">
+                            <div className="text-lg sm:text-xl font-bold text-[#0A1A3A]">${item.price}</div>
+
+                            <div className="flex items-center gap-2">
+                              {item.status === "restore" && (
+                                <button
+                                  onClick={() => handleRestore(item.id)}
+                                  className="px-3 py-1 rounded-md bg-[#d4a643] text-white text-xs sm:text-sm"
+                                >
+                                  Restore
+                                </button>
+                              )}
+
+                              <button title="Edit" className="p-2 rounded-md bg-white border border-gray-100 shadow-sm">
+                                <FaPencilAlt size={14} />
+                              </button>
+                              <button
+                                title="Delete"
+                                onClick={() => handleDelete(item.id)}
+                                className="p-2 rounded-md bg-white border border-gray-100 shadow-sm"
+                              >
+                                <FaTrash size={14} />
+                              </button>
+                            </div>
+
+                            <div className="mt-1 sm:mt-3">
+                              <span
+                                className={`inline-block px-3 py-1 rounded-full text-xs ${
+                                  item.status === "approved" ? "bg-[#ECFDF3] text-[#0F9D58]" :
+                                  item.status === "active" ? "bg-[#ECF8FF] text-[#2B6CB0]" :
+                                  item.status === "pending" ? "bg-[#FFFBEB] text-[#B45309]" :
+                                  item.status === "denied" ? "bg-[#FFF1F2] text-[#9E2A2B]" :
+                                  "bg-[#F3F4F6] text-[#6B7280]"
+                                }`}
+                              >
+                                {item.status === "approved" ? "Approved" : item.status === "restore" ? "Restore" : item.status}
+                              </span>
+                            </div>
                           </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
-            )}
+            </div>
           </div>
         </div>
       </div>
 
-      <button
-        style={{
-          position: "fixed",
-          right: 32,
-          bottom: 32,
-          width: 56,
-          height: 56,
-          borderRadius: "50%",
-          background: "#d4a643",
-          color: "#fff",
-          border: "none",
-          boxShadow: "0 6px 18px rgba(10,26,58,0.12)",
-          cursor: "pointer",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
+      {/* Floating + button - visible on mobile as well */}
+      <Link
+        to="/add-product"
+        className="fixed bottom-6 right-6 bg-[#d4a643] text-white w-14 h-14 rounded-full shadow-2xl flex items-center justify-center text-2xl sm:text-3xl font-light hover:opacity-95 transition z-40"
+        aria-label="Add product"
       >
-        <FaPlus />
-      </button>
-    </div>
+        <FaPlus size={18} />
+      </Link>
+    </>
   );
 };
 
