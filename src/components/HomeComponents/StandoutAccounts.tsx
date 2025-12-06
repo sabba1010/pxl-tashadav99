@@ -210,7 +210,7 @@ const StandoutAccounts: React.FC = () => {
     <section className="py-20 px-6 md:px-12 lg:px-20 bg-white">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-[#0A1A3A] mb-3">Standout Accounts</h2>
+          <h2 className="text-6xl md:text-4xl font-bold text-[#e6c06c] mb-3">Standout Accounts</h2>
           <p className="text-gray-600">Premium verified digital assets • Marketplace-style badges</p>
         </div>
 

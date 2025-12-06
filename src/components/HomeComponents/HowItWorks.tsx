@@ -5,7 +5,7 @@ const HowItWorks = () => {
     <section className="py-24 px-6 md:px-12 lg:px-20 bg-gradient-to-b from-[#00183b] to-[#002a5c]">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16">
-          <h2 className="text-5xl md:text-6xl font-bold text-white">
+          <h2 className="text-6xl md:text-6xl font-bold text-[#e6c06c]">
             How It Works
           </h2>
           <p className="text-white text-xl mt-4">
