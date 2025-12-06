@@ -54,7 +54,7 @@ export default function Navbar() {
               <NavLink to="/" className="flex items-center gap-3">
                 <img src="/logo.png" alt="ActBazaar" className="h-9 w-auto" />
                 <span className="hidden sm:inline font-bold text-xl" style={{ color: EMPIRE_BLUE }}>
-                 CCTBazaar
+                  CCTBazaar
                 </span>
               </NavLink>
             </div>
@@ -68,7 +68,7 @@ export default function Navbar() {
               >
                 Marketplace
               </NavLink>
-                <NavLink
+              <NavLink
                 to="/purchases"
                 className="font-medium"
                 style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}
@@ -89,7 +89,7 @@ export default function Navbar() {
               >
                 My Ads
               </NavLink>
-            
+
               <NavLink
                 to="/wallet"
                 className="font-medium"
@@ -247,14 +247,24 @@ export default function Navbar() {
                 color: isActive ? ROYAL_GOLD : CHARCOAL,
               })}
             >
-              <svg className="w-7 h-7 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                  d="M3 3h2l.4 2M7.48 7h9.02l1.5 9H5.98l1.5-9zM7 13l-2 5h13l-2-5" />
+              <svg
+                className="w-7 h-7 mb-1"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M3 3h2l.4 2M5.4 5h15.2l-1.5 9H7.9L6.4 5zM9 20.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM19 20.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"
+                />
               </svg>
               <span className="text-xs">Market</span>
             </NavLink>
 
-             {/* My Purchases */}
+            {/* My Purchases */}
             <NavLink
               to="/purchases"
               className="flex flex-col items-center justify-center flex-1 pt-3 pb-5"
@@ -312,7 +322,7 @@ export default function Navbar() {
               <span className="text-xs">Ads</span>
             </NavLink>
 
-           
+
 
             {/* Wallet */}
             <NavLink

@@ -210,7 +210,7 @@ const StandoutAccounts: React.FC = () => {
     <section className="py-20 px-6 md:px-12 lg:px-20 bg-white">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-12">
-          <h2 className="text-5xl md:5xl font-bold text-[#e6c06c] mb-3">Standout Accounts</h2>
+          <h2 className="text-3xl md:text-5xl lg:text-5xl font-bold text-[#e6c06c] mb-3">Standout Accounts</h2>
           <p className="text-gray-600">Premium verified digital assets • Marketplace-style badges</p>
         </div>
 
@@ -274,8 +274,6 @@ const StandoutAccounts: React.FC = () => {
                   <div className="text-xs text-[#6B7280] mt-1">{p.delivery}</div>
                 </div>
               </div>
-
-              <p className="text-sm text-gray-600 mt-3">{p.desc}</p>
             </div>
           ))}
         </div>

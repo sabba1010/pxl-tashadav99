@@ -17,7 +17,7 @@ import WithdrawalRequests from "../dashboard/admin-dashboard/WithdrawalRequests"
 
 import BuyerAddProduct from "../dashboard/buyer-dahboard/BuyerAddProduct";
 
-import Marketplace from "../Marketplace/Marketplace";
+import Marketplace from "../components/Marketplace/Marketplace";
 
 // import path from "path";
 import Buyer from "../dashboard/buyer-dahboard/Buyer";

@@ -14,7 +14,7 @@ const HeroBannerSection = () => {
       <div className="relative max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
         {/* Left side */}
         <div className="space-y-8">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight bg-clip-text text-transparent bg-gradient-to-r from-[#daab4c] to-[#f0d084]">
+          <h1 className="text-3xl md:text-5xl lg:text-6xl font-extrabold leading-tight bg-clip-text text-transparent bg-gradient-to-r from-[#daab4c] to-[#f0d084]">
             Buy Social Accounts Marketplace
           </h1>
 
