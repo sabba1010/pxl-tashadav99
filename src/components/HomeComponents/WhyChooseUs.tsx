@@ -41,7 +41,7 @@ const WhyChooseUs = () => {
 
         {/* Features */}
         <div>
-          <h2 className="text-6xl md:text-5xl font-bold text-center text-transparent bg-clip-text bg-gradient-to-r from-[#daab4c] to-[#b8860b] mb-12">
+          <h2 className="text-3xl md:text-5xl lg:text-5xl font-bold text-center text-transparent bg-clip-text bg-gradient-to-r from-[#daab4c] to-[#b8860b] mb-12">
             Powerful Features for Buyers & Sellers
           </h2>
           <div className="grid md:grid-cols-3 gap-8">
