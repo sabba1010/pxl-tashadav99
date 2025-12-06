@@ -1,4 +1,3 @@
-// src/components/HomeComponents/MY Ads/MyAds.jsx
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -13,7 +12,7 @@ import {
 /* ---------------------------------------------
    Brand color map & gradients (Marketplace style)
 ---------------------------------------------- */
-const ICON_COLOR_MAP = {
+const ICON_COLOR_MAP: Record<string, string> = {
   FaInstagram: "#E1306C",
   FaSnapchatGhost: "#FFFC00",
   FaFacebookF: "#1877F2",
@@ -28,29 +27,29 @@ const vibrantGradients = [
   "linear-gradient(135deg,#9BE15D 0%,#00E3AE 100%)",
 ];
 
-const gradientFromHex = (hex) => {
+const gradientFromHex = (hex?: string | null): string => {
   if (!hex) return vibrantGradients[0];
   const h = hex.replace("#", "");
   const r = parseInt(h.substring(0, 2), 16);
   const g = parseInt(h.substring(2, 4), 16);
   const b = parseInt(h.substring(4, 6), 16);
-  const mix = (c) => Math.round(c + (255 - c) * 0.28);
+  const mix = (c: number) => Math.round(c + (255 - c) * 0.28);
   const r2 = mix(r);
   const g2 = mix(g);
   const b2 = mix(b);
-  const toHex = (n) => n.toString(16).padStart(2, "0");
+  const toHex = (n: number) => n.toString(16).padStart(2, "0");
   return `linear-gradient(135deg, ${hex} 0%, #${toHex(r2)}${toHex(g2)}${toHex(b2)} 100%)`;
 };
 
 /* ---------------------------------------------
    Helper: render marketplace-style badge (JSX-ready)
 ---------------------------------------------- */
-const getIconKey = (IconComponent) => {
-  const anyI = IconComponent;
+const getIconKey = (IconComponent: React.ComponentType<any>): string => {
+  const anyI = IconComponent as any;
   return anyI.displayName || anyI.name || "Icon";
 };
 
-const renderBadge = (IconComponent, size = 36) => {
+const renderBadge = (IconComponent: React.ComponentType<any>, size = 36): React.ReactElement => {
   const badgeSize = Math.max(48, size + 12);
   const key = getIconKey(IconComponent);
   const hex = ICON_COLOR_MAP[key] || null;
@@ -73,25 +72,37 @@ const renderBadge = (IconComponent, size = 36) => {
         transition: "transform .18s ease, box-shadow .18s ease",
       }}
       onMouseEnter={(e) => {
-        const el = e.currentTarget;
+        const el = e.currentTarget as HTMLDivElement;
         el.style.transform = "translateY(-6px) scale(1.02)";
         el.style.boxShadow = "0 18px 44px rgba(16,24,40,0.18)";
       }}
       onMouseLeave={(e) => {
-        const el = e.currentTarget;
+        const el = e.currentTarget as HTMLDivElement;
         el.style.transform = "translateY(0)";
         el.style.boxShadow = "0 10px 28px rgba(16,24,40,0.12)";
       }}
     >
-      <C size={Math.round(size * 0.75)} style={{ color: "#fff", filter: "drop-shadow(0 1px 1px rgba(0,0,0,0.12))" }} />
+      {React.createElement(C as any, { size: Math.round(size * 0.75), style: { color: '#fff', filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.12))' } })}
     </div>
   );
 };
 
 /* ---------------------------------------------
-   Mock data & tabs
+   Types, Mock data & tabs
 ---------------------------------------------- */
-const MOCK = [
+type Status = "restore" | "active" | "pending" | "denied" | "approved";
+type Platform = "instagram" | "snapchat" | "facebook" | string;
+
+interface Ad {
+  id: number;
+  title: string;
+  desc: string;
+  price: number;
+  status: Status | string;
+  platform: Platform;
+}
+
+const MOCK: Ad[] = [
   {
     id: 1,
     title: "Aged instagram Account 7 years",
@@ -129,16 +140,16 @@ const MOCK = [
   },
 ];
 
-const TABS = ["All", "Active", "Pending", "Denied", "Restore"];
+const TABS: string[] = ["All", "Active", "Pending", "Denied", "Restore"];
 
 /* ---------------------------------------------
    PlatformIcon using same badge style
 ---------------------------------------------- */
-function PlatformIcon({ p }) {
+function PlatformIcon({ p }: { p: Platform }) {
   const size = 36;
-  if (p === "instagram") return renderBadge(FaInstagram, size);
-  if (p === "snapchat") return renderBadge(FaSnapchatGhost, size);
-  if (p === "facebook") return renderBadge(FaFacebookF, size);
+  if (p === "instagram") return renderBadge(FaInstagram as any, size);
+  if (p === "snapchat") return renderBadge(FaSnapchatGhost as any, size);
+  if (p === "facebook") return renderBadge(FaFacebookF as any, size);
   return <div style={{ width: size, height: size, borderRadius: "50%", background: "#E5E7EB" }} />;
 }
 
@@ -146,9 +157,9 @@ function PlatformIcon({ p }) {
    Component (Tailwind look matching MyPurchase/MyOrder)
    Mobile responsive adjustments added
 ---------------------------------------------- */
-const MyAds = () => {
-  const [activeTab, setActiveTab] = useState("Restore");
-  const [items, setItems] = useState(MOCK);
+const MyAds: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<string>("Restore");
+  const [items, setItems] = useState<Ad[]>(MOCK);
 
   const filtered = items.filter((i) => {
     if (activeTab === "All") return true;
@@ -159,12 +170,12 @@ const MyAds = () => {
     return true;
   });
 
-  const handleRestore = (id) => {
+  const handleRestore = (id: number) => {
     setItems((prev) => prev.map((it) => (it.id === id ? { ...it, status: "active" } : it)));
     window.alert("Ad restored");
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = (id: number) => {
     if (!window.confirm("Delete this ad?")) return;
     setItems((prev) => prev.filter((it) => it.id !== id));
   };
@@ -280,14 +291,14 @@ const MyAds = () => {
                               )}
 
                               <button title="Edit" className="p-2 rounded-md bg-white border border-gray-100 shadow-sm">
-                                <FaPencilAlt size={14} />
+                                {React.createElement(FaPencilAlt as any, { size: 14 })}
                               </button>
                               <button
                                 title="Delete"
                                 onClick={() => handleDelete(item.id)}
                                 className="p-2 rounded-md bg-white border border-gray-100 shadow-sm"
                               >
-                                <FaTrash size={14} />
+                                {React.createElement(FaTrash as any, { size: 14 })}
                               </button>
                             </div>
 
@@ -322,7 +333,7 @@ const MyAds = () => {
         className="fixed bottom-6 right-6 bg-[#d4a643] text-white w-14 h-14 rounded-full shadow-2xl flex items-center justify-center text-2xl sm:text-3xl font-light hover:opacity-95 transition z-40"
         aria-label="Add product"
       >
-        <FaPlus size={18} />
+        {React.createElement(FaPlus as any, { size: 18 })}
       </Link>
     </>
   );
