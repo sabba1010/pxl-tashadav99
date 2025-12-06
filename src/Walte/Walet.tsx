@@ -1,6 +1,8 @@
 // src/components/Wallet.tsx
 import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPlus } from '@fortawesome/free-solid-svg-icons';
 
 type Tx = {
   id: string;
@@ -290,7 +292,7 @@ export default function Wallet(): React.ReactElement {
       </div>
 
       {/* Larger Floating + button */}
-      {showFloating && (
+      {/* {showFloating && (
         <button
           onClick={() => {
             window.scrollTo({ top: 0, behavior: "smooth" });
@@ -306,7 +308,7 @@ export default function Wallet(): React.ReactElement {
             <path d="M12 5v14M5 12h14" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </button>
-      )}
+      )} */}
 
       {/* Deposit Modal */}
       {showDepositModal && (
@@ -374,14 +376,16 @@ export default function Wallet(): React.ReactElement {
       )}
 
       {/* small toggle to hide/show floating */}
-      <button
+      {/* <button
         onClick={() => setShowFloating((s) => !s)}
         className="fixed right-6 bottom-24 z-50 w-10 h-10 rounded-full border shadow"
         title="Toggle FAB"
         style={{ backgroundColor: CLEAN_WHITE, color: CHARCOAL }}
       >
         {showFloating ? "—" : "+"}
-      </button>
+      </button> */}
+
+     
     </div>
   );
 }
