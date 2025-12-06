@@ -1,8 +1,7 @@
-// src/Mypurchase/Mypurchase.tsx
 import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import type { IconType } from "react-icons";
-import { FaInstagram, FaFacebookF, FaTwitter, FaWhatsapp } from "react-icons/fa";
+import { FaInstagram, FaFacebookF, FaTwitter, FaWhatsapp, FaPlus } from "react-icons/fa";
 
 /* ---------------------------------------------
    Brand color map & gradients (Marketplace style)
@@ -46,7 +45,6 @@ const getIconKey = (Icon: IconType) => {
 
 /* ---------------------------------------------
    Render round badge (marketplace style)
-   badgeSize uses size param for inner icon scale
 ---------------------------------------------- */
 const renderBadge = (Icon: IconType, size = 36) => {
   const badgeSize = Math.max(50, size + 14);
@@ -82,10 +80,10 @@ const renderBadge = (Icon: IconType, size = 36) => {
         el.style.boxShadow = "0 10px 28px rgba(16,24,40,0.12)";
       }}
     >
-      <C
-        size={Math.round(size * 0.75)}
-        style={{ color: "#fff", filter: "drop-shadow(0 1px 1px rgba(0,0,0,0.12))" }}
-      />
+      {React.createElement(C, {
+        size: Math.round(size * 0.75),
+        style: { color: "#fff", filter: "drop-shadow(0 1px 1px rgba(0,0,0,0.12))" },
+      })}
     </div>
   );
 };
@@ -212,7 +210,7 @@ const MyPurchase: React.FC = () => {
 
             <Link
               to="/report"
-              className="mt-6 bg-[#d4a643] text-white px-6 py-2 rounded-full font-medium hover:opacity-95 transition-shadow shadow"
+              className="mt-6 bg-[#d4a643] text-white px-6 py-2 rounded-full font-medium hover:opacity-95 transition-shadow shadow lg:mt-0"
             >
               Report Product
             </Link>
@@ -222,7 +220,7 @@ const MyPurchase: React.FC = () => {
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
             {/* Tabs */}
             <div className="px-6 pt-6">
-              <nav className="flex gap-6 border-b border-gray-100 pb-4">
+              <nav className="flex gap-6 border-b border-gray-100 pb-4 overflow-x-auto">
                 {TABS.map((t) => (
                   <button
                     key={t}
@@ -254,16 +252,16 @@ const MyPurchase: React.FC = () => {
                 ) : (
                   <div className="space-y-6">
                     {filtered.map((p) => (
-                      <div key={p.id} className="bg-[#F8FAFB] rounded-lg p-6 flex items-start gap-6 border border-[rgba(0,0,0,0.03)]">
+                      <div key={p.id} className="bg-[#F8FAFB] rounded-lg p-6 flex items-start gap-6 border border-[rgba(0,0,0,0.03)] flex-wrap">
                         {/* left icon (marketplace-style badge, NO white square) */}
                         <div className="flex-shrink-0">
                           <div className="w-16 h-16 flex items-center justify-center">
-                            {PlatformIcon({ platform: p.platform })}
+                            <PlatformIcon platform={p.platform} />
                           </div>
                         </div>
 
                         {/* middle content */}
-                        <div className="flex-1">
+                        <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between gap-6">
                             <div className="flex-1">
                               <h3 className="text-base font-semibold text-[#0A1A3A]">{p.title}</h3>
@@ -315,8 +313,9 @@ const MyPurchase: React.FC = () => {
       <Link
         to="/add-product"
         className="fixed bottom-6 right-6 bg-[#d4a643] text-white w-14 h-14 rounded-full shadow-2xl flex items-center justify-center text-3xl font-light hover:opacity-95 transition z-40 lg:hidden"
+        aria-label="Add product"
       >
-        +
+        {React.createElement(FaPlus as any, { size: 18, color: "#fff" })}
       </Link>
     </>
   );

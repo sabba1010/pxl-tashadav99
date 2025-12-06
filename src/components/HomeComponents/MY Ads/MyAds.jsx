@@ -1,4 +1,3 @@
-// src/components/HomeComponents/MY Ads/MyAds.jsx
 import React, { useState } from "react";
 import {
   FaInstagram,
@@ -46,17 +45,16 @@ const gradientFromHex = (hex) => {
    --------------------------- */
 const getIconKey = (IconComponent) => {
   const anyI = IconComponent;
-  // react-icons components may have displayName or name - fallback to constructor name
   return anyI.displayName || anyI.name || "Icon";
 };
 
 const renderBadge = (IconComponent, size = 36) => {
-  const badgeSize = Math.max(50, size + 12);
+  const badgeSize = Math.max(48, size + 10);
   const key = getIconKey(IconComponent);
   const hex = ICON_COLOR_MAP[key] || null;
   const bg = hex ? gradientFromHex(hex) : vibrantGradients[key.length % vibrantGradients.length];
-
   const C = IconComponent;
+
   return (
     <div
       aria-hidden
@@ -64,7 +62,7 @@ const renderBadge = (IconComponent, size = 36) => {
         width: badgeSize,
         height: badgeSize,
         minWidth: badgeSize,
-        borderRadius: "50%",
+        borderRadius: 999,
         display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
@@ -134,24 +132,18 @@ const tabs = ["All", "Active", "Pending", "Denied", "Restore"];
 /* ---------------------------
    PlatformIcon: returns badge-only (no box)
    --------------------------- */
-function PlatformIcon({ p }) {
+const PlatformIcon = ({ p }) => {
   const size = 36;
   if (p === "instagram") return renderBadge(FaInstagram, size);
-  if (p === "snapchat") {
-    // Snapchat color is very bright yellow; use slightly darker fallback for gradient start
-    const SnapchatIcon = FaSnapchatGhost;
-    // override map for Snapchat so gradientFromHex doesn't break on pure #FFFC00 brightness
-    return renderBadge(SnapchatIcon, size);
-  }
+  if (p === "snapchat") return renderBadge(FaSnapchatGhost, size);
   if (p === "facebook") return renderBadge(FaFacebookF, size);
-  // fallback neutral badge
   return (
     <div style={{ width: size, height: size, borderRadius: "50%", background: "#E5E7EB" }} />
   );
-}
+};
 
 /* ---------------------------
-   MyAds component
+   MyAds component (responsive-friendly)
    --------------------------- */
 const MyAds = () => {
   const [activeTab, setActiveTab] = useState("Restore");
@@ -168,7 +160,7 @@ const MyAds = () => {
 
   const handleRestore = (id) => {
     setItems((prev) => prev.map((it) => (it.id === id ? { ...it, status: "active" } : it)));
-    alert("Ad restored");
+    window.alert("Ad restored");
   };
 
   const handleDelete = (id) => {
@@ -179,7 +171,7 @@ const MyAds = () => {
   return (
     <div style={{ minHeight: "100vh", background: "#F3EFEE", padding: 24 }}>
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, gap: 16 }}>
           <div>
             <h1 style={{ fontSize: 28, color: "#0A1A3A", margin: 0 }}>My Ads</h1>
             <p style={{ margin: 0, color: "#6B7280" }}>All of your product ads shows here</p>
@@ -207,7 +199,7 @@ const MyAds = () => {
         <div style={{ background: "#fff", borderRadius: 16, padding: 20, boxShadow: "0 3px 12px rgba(10,26,58,0.04)" }}>
           {/* Tabs */}
           <div style={{ borderBottom: "1px solid #F3F4F6", paddingBottom: 14, marginBottom: 14 }}>
-            <nav style={{ display: "flex", gap: 24, alignItems: "flex-end" }}>
+            <nav style={{ display: "flex", gap: 24, alignItems: "flex-end", overflowX: "auto" }}>
               {tabs.map((t) => (
                 <button
                   key={t}
@@ -220,6 +212,7 @@ const MyAds = () => {
                     fontSize: 14,
                     color: activeTab === t ? "#d4a643" : "#6B7280",
                     borderBottom: activeTab === t ? "2px solid #d4a643" : "2px solid transparent",
+                    whiteSpace: "nowrap",
                   }}
                 >
                   {t}
@@ -252,20 +245,20 @@ const MyAds = () => {
                       background: item.status === "denied" ? "#F4F7FA" : "#fff",
                       alignItems: "flex-start",
                       border: "1px solid rgba(0,0,0,0.02)",
+                      flexWrap: "wrap",
                     }}
                   >
                     <div style={{ flexShrink: 0 }}>
-                      {/* <- changed: show round badge only (no outer white box) */}
                       <div style={{ width: 56, height: 56, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                        {PlatformIcon({ p: item.platform })}
+                        <PlatformIcon p={item.platform} />
                       </div>
                     </div>
 
-                    <div style={{ flex: 1 }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", gap: 16 }}>
-                        <div style={{ flex: 1 }}>
-                          <h4 style={{ margin: 0, color: "#0A1A3A" }}>{item.title}</h4>
-                          <p style={{ marginTop: 6, color: "#6B7280", fontSize: 14 }}>{item.desc}</p>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", gap: 16, alignItems: "flex-start" }}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <h4 style={{ margin: 0, color: "#0A1A3A", fontSize: 16, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.title}</h4>
+                          <p style={{ marginTop: 6, color: "#6B7280", fontSize: 14, display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{item.desc}</p>
 
                           {item.status === "denied" && (
                             <div style={{ marginTop: 12, padding: 14, borderRadius: 8, background: "#fff4db", color: "#926B00" }}>
@@ -277,7 +270,7 @@ const MyAds = () => {
                           )}
                         </div>
 
-                        <div style={{ width: 160, textAlign: "right", display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 10 }}>
+                        <div style={{ width: 160, textAlign: "right", display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 10 }}> 
                           <div style={{ fontSize: 18, fontWeight: 700, color: "#0A1A3A" }}>${item.price}</div>
 
                           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
@@ -297,15 +290,15 @@ const MyAds = () => {
                               </button>
                             )}
 
-                            <button title="Edit" style={{ width: 36, height: 36, borderRadius: 18, border: "none", background: "#fff", boxShadow: "0 2px 6px rgba(10,26,58,0.04)", cursor: "pointer" }}>
-                              <FaPencilAlt />
+                            <button title="Edit" style={{ width: 36, height: 36, borderRadius: 18, border: "none", background: "#fff", boxShadow: "0 2px 6px rgba(10,26,58,0.04)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+                              {React.createElement(FaPencilAlt, { size: 14 })}
                             </button>
                             <button
                               title="Delete"
                               onClick={() => handleDelete(item.id)}
-                              style={{ width: 36, height: 36, borderRadius: 18, border: "none", background: "#fff", boxShadow: "0 2px 6px rgba(10,26,58,0.04)", cursor: "pointer" }}
+                              style={{ width: 36, height: 36, borderRadius: 18, border: "none", background: "#fff", boxShadow: "0 2px 6px rgba(10,26,58,0.04)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center" }}
                             >
-                              <FaTrash />
+                              {React.createElement(FaTrash, { size: 14 })}
                             </button>
                           </div>
 
@@ -352,7 +345,7 @@ const MyAds = () => {
           justifyContent: "center",
         }}
       >
-        <FaPlus />
+        {React.createElement(FaPlus, { size: 18, color: "#fff" })}
       </button>
     </div>
   );
