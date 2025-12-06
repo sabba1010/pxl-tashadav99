@@ -68,6 +68,13 @@ export default function Navbar() {
               >
                 Marketplace
               </NavLink>
+                <NavLink
+                to="/purchases"
+                className="font-medium"
+                style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}
+              >
+                Mypurchase
+              </NavLink>
               <NavLink
                 to="/orders"
                 className="font-medium"
@@ -82,6 +89,7 @@ export default function Navbar() {
               >
                 My Ads
               </NavLink>
+            
               <NavLink
                 to="/wallet"
                 className="font-medium"
@@ -246,6 +254,21 @@ export default function Navbar() {
               <span className="text-xs">Market</span>
             </NavLink>
 
+             {/* My Purchases */}
+            <NavLink
+              to="/purchases"
+              className="flex flex-col items-center justify-center flex-1 pt-3 pb-5"
+              style={({ isActive }) => ({
+                color: isActive ? ROYAL_GOLD : CHARCOAL,
+              })}
+            >
+              <svg className="w-7 h-7 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                  d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+              </svg>
+              <span className="text-xs">Purchases</span>
+            </NavLink>
+
             {/* Orders */}
             <NavLink
               to="/orders"
@@ -262,7 +285,7 @@ export default function Navbar() {
             </NavLink>
 
             {/* Floating + Button */}
-            <div className="absolute left-1/2 transform -translate-x-1/2 -top-7">
+            {/* <div className="absolute left-1/2 transform -translate-x-1/2 -top-7">
               <NavLink
                 to="/add-product"
                 className="flex items-center justify-center w-16 h-16 rounded-full shadow-2xl border-4 border-white"
@@ -272,7 +295,7 @@ export default function Navbar() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" />
                 </svg>
               </NavLink>
-            </div>
+            </div> */}
 
             {/* My Ads */}
             <NavLink
@@ -288,6 +311,8 @@ export default function Navbar() {
               </svg>
               <span className="text-xs">Ads</span>
             </NavLink>
+
+           
 
             {/* Wallet */}
             <NavLink
