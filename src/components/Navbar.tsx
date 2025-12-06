@@ -1,6 +1,7 @@
 // src/components/Navbar.tsx
 import React, { useState, useRef, useEffect } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, Link } from "react-router-dom";
+import { FaPlus } from "react-icons/fa";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false); // Avatar dropdown
