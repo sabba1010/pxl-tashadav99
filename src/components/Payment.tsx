@@ -1,5 +1,6 @@
 import React from 'react';
 import axios from 'axios';
+import KoraPayment from './KoraPayment';
 
 interface PaymentData {
   name: string;
@@ -44,6 +45,7 @@ const Payment: React.FC = () => {
       >
         Pay Now
       </button>
+      <KoraPayment/>
     </div>
   );
 };
