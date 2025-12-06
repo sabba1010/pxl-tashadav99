@@ -21,15 +21,15 @@ import Marketplace from "../Marketplace/Marketplace";
 
 // import path from "path";
 import Buyer from "../dashboard/buyer-dahboard/Buyer";
-import Mypurchase from "../Mypurchase/Mypurchase";
-import Report from "../Mypurchase/Report";
+import Mypurchase from "../components/Mypurchase/Mypurchase";
+import Report from "../components/Mypurchase/Report";
 import Walet from "../Walte/Walet";
 import Mysells from "../dashboard/buyer-dahboard/Mysells";
 import Payment from "../components/Payment";
 //import MyAds from "../components/HomeComponents/MYAd";
 import MyOrder from "../My Order/MyOrder";
 import Plan from "../pages/plan/Plan";
-import MyAds from "../components/HomeComponents/MY Ads/MyAds";
+import MyAds from "../components/HomeComponents/MYAds/MyAds";
 
 const Routes = createBrowserRouter([
   {
