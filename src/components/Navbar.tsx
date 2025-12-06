@@ -158,8 +158,8 @@ export default function Navbar() {
               to="/add-product"
               className="px-6 py-2.5 rounded-lg font-medium transition shadow-sm"
               style={{
-                backgroundColor: ROYAL_GOLD,
-                color: CHARCOAL,
+                backgroundColor: "#33ac6f",
+                color: "white",
               }}
             >
               Sell Product
@@ -469,8 +469,8 @@ export default function Navbar() {
               <NavLink
                 to="/add-product"
                 onClick={() => setMobileMenuOpen(false)}
-                className="py-3 px-4 rounded-lg font-medium text-center transition"
-                style={{ backgroundColor: ROYAL_GOLD, color: CHARCOAL }}
+                className="py-3 px-4 rounded-lg font-medium text-center transition "
+                style={{ backgroundColor: "#33ac6f", color: CHARCOAL }}
               >
                 Sell Product
               </NavLink>
