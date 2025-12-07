@@ -29,7 +29,7 @@ import Payment from "../components/Payment";
 //import MyAds from "../components/HomeComponents/MYAd";
 import MyOrder from "../components/MyOrder/MyOrder";
 import Plan from "../pages/plan/Plan";
-import MyAds from "../components/HomeComponents/MYAds/MyAds";
+import MyAds from "../components/Myproducts/MyAds";
 
 const Routes = createBrowserRouter([
   {

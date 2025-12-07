@@ -193,7 +193,7 @@ const MyAds: React.FC = () => {
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-6">
             <div>
-              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#0A1A3A]">My product</h1>
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#0A1A3A]">My products</h1>
               <p className="text-xs sm:text-sm text-gray-600 mt-1">All of your product ads show here</p>
             </div>
 
