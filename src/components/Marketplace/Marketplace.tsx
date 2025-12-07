@@ -559,7 +559,7 @@ const Marketplace: React.FC = () => {
         {/* Floating + Button - HIDDEN ON MOBILE */}
         <Link
           to="/add-product"
-          className="hidden sm:fixed bottom-6 right-6 w-14 h-14 bg-[#d4a643] hover:bg-[#c4963a] text-white rounded-full shadow-2xl flex items-center justify-center z-50 transition-all"
+          className="hidden sm:flex sm:fixed bottom-6 right-6 w-14 h-14 bg-[#d4a643] hover:bg-[#c4963a] text-white rounded-full shadow-2xl items-center justify-center z-50 transition-all"
           aria-label="Add Product"
         >
           <FaPlusIcon className="w-7 h-7" />
