@@ -29,11 +29,11 @@ const WhyChooseUs = () => {
             ].map((item, i) => (
               <div
                 key={i}
-                className="bg-white p-10 rounded-3xl shadow-xl hover:shadow-2xl transition"
+                className="bg-[#002654] p-10 rounded-3xl shadow-xl hover:shadow-2xl transition"
               >
-                <div className="text-6xl mb-6">{item.icon}</div>
-                <h3 className="text-2xl font-bold mb-4">{item.title}</h3>
-                <p className="text-gray-600">{item.desc}</p>
+                <div className="text-6xl mb-6 text-[#daab4c]">{item.icon}</div>
+                <h3 className="text-2xl font-bold mb-4 text-white">{item.title}</h3>
+                <p className="text-gray-200">{item.desc}</p>
               </div>
             ))}
           </div>
@@ -79,11 +79,11 @@ const WhyChooseUs = () => {
             ].map((f, i) => (
               <div
                 key={i}
-                className="bg-gray-100 p-8 rounded-2xl hover:bg-white hover:shadow-xl transition"
+                className="bg-[#002654] p-8 rounded-2xl hover:shadow-xl transition"
               >
-                <div className="text-5xl mb-4">{f.icon}</div>
-                <h3 className="text-xl font-bold mb-3">{f.title}</h3>
-                <p className="text-gray-600">{f.desc}</p>
+                <div className="text-5xl mb-4 text-[#daab4c]">{f.icon}</div>
+                <h3 className="text-xl font-bold mb-3 text-white">{f.title}</h3>
+                <p className="text-gray-200">{f.desc}</p>
               </div>
             ))}
           </div>
