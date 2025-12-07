@@ -198,7 +198,7 @@ const MyOrder: React.FC = () => {
 
             <Link
               to="/report"
-              className="mt-2 sm:mt-0 bg-[#33ac6f] text-white px-4 sm:px-6 py-2 rounded-full font-medium hover:opacity-95 transition-shadow shadow"
+              className="mt-2 sm:mt-0 bg-[#d4a643] text-white px-4 sm:px-6 py-2 rounded-full font-medium hover:opacity-95 transition-shadow shadow"
             >
               Report Order
             </Link>

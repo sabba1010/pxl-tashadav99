@@ -223,7 +223,7 @@ const MyAds: React.FC = () => {
                   <button
                     key={t}
                     onClick={() => setActiveTab(t)}
-                    className={`pb-2 text-xs sm:text-sm ${activeTab === t ? "text-[#d4a643] border-b-2 border-[#d4a643]" : "text-gray-500"}`}
+                    className={`pb-2 text-xs sm:text-sm ${activeTab === t ? "text-[#33ac6f] border-b-2 border-[#d4a643]" : "text-gray-500"}`}
                   >
                     {t}
                   </button>
@@ -290,7 +290,7 @@ const MyAds: React.FC = () => {
                               {item.status === "restore" && (
                                 <button
                                   onClick={() => handleRestore(item.id)}
-                                  className="px-2 py-1 rounded-md bg-[#d4a643] text-white text-xs"
+                                  className="px-2 py-1 rounded-md bg-[#33ac6f] text-white text-xs"
                                 >
                                   Restore
                                 </button>
