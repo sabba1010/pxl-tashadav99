@@ -48,7 +48,8 @@ const gradientFromHex = (hex?: string | null): string => {
    Force white icon fill & prevent blend-mode overrides
 ---------------------------------------------- */
 const renderBadge = (IconComponent: IconType, size = 36): React.ReactElement => {
-  const badgeSize = Math.max(48, size + 12);
+  // smaller badges to align with Marketplace/MyPurchase styling
+  const badgeSize = Math.max(36, size + 8);
   const brandHex = ICON_COLOR_MAP.get(IconComponent) ?? null;
   // deterministic fallback index using component function string length
   const fallback = vibrantGradients[String(IconComponent).length % vibrantGradients.length];
@@ -192,7 +193,7 @@ const MyAds: React.FC = () => {
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-6">
             <div>
-              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#0A1A3A]">My Ads</h1>
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#0A1A3A]">My product</h1>
               <p className="text-xs sm:text-sm text-gray-600 mt-1">All of your product ads show here</p>
             </div>
 
@@ -250,11 +251,11 @@ const MyAds: React.FC = () => {
                   filtered.map((item) => (
                     <div
                       key={item.id}
-                      className={`bg-[#F8FAFB] rounded-lg p-4 sm:p-6 flex flex-col sm:flex-row items-start gap-4 sm:gap-6 border border-[rgba(0,0,0,0.03)]`}
+                      className={`bg-[#F8FAFB] rounded-lg p-3 sm:p-4 flex flex-col sm:flex-row items-start gap-3 sm:gap-4 border border-[rgba(0,0,0,0.03)]`}
                     >
                       {/* left icon (responsive sizes) */}
                       <div className="flex-shrink-0">
-                        <div className="w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center">
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center">
                           <PlatformIcon p={item.platform} />
                         </div>
                       </div>
@@ -263,8 +264,8 @@ const MyAds: React.FC = () => {
                       <div className="flex-1 min-w-0">
                         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-6">
                           <div className="flex-1 min-w-0">
-                            <h3 className="text-sm sm:text-base font-semibold text-[#0A1A3A] truncate">{item.title}</h3>
-                            <p className="text-xs sm:text-sm text-gray-500 mt-2 line-clamp-3">{item.desc}</p>
+                            <h3 className="text-sm font-semibold text-[#0A1A3A] truncate">{item.title}</h3>
+                            <p className="text-xs text-gray-500 mt-1 line-clamp-2">{item.desc}</p>
 
                             {item.status === "denied" && (
                               <div className="mt-3 p-3 sm:p-4 rounded-lg bg-[#fff4db] text-[#926B00]">
@@ -275,35 +276,35 @@ const MyAds: React.FC = () => {
                               </div>
                             )}
 
-                            <div className="mt-3 flex items-center gap-2 text-xs sm:text-sm text-gray-500">
+                            <div className="mt-2 flex items-center gap-2 text-xs sm:text-sm text-gray-500">
                               <span className="inline-block w-2 h-2 bg-gray-300 rounded-full" />
                               <span>{item.platform}</span>
                             </div>
                           </div>
 
                           {/* right meta (price/status/buttons) - responsive layout */}
-                          <div className="w-full sm:w-44 flex sm:flex-col flex-row justify-between sm:items-end items-center gap-3">
-                            <div className="text-lg sm:text-xl font-bold text-[#0A1A3A]">${item.price}</div>
+                          <div className="w-full sm:w-36 flex sm:flex-col flex-row justify-between sm:items-end items-center gap-2">
+                            <div className="text-lg font-bold text-[#0A1A3A]">${item.price}</div>
 
                             <div className="flex items-center gap-2">
                               {item.status === "restore" && (
                                 <button
                                   onClick={() => handleRestore(item.id)}
-                                  className="px-3 py-1 rounded-md bg-[#d4a643] text-white text-xs sm:text-sm"
+                                  className="px-2 py-1 rounded-md bg-[#d4a643] text-white text-xs"
                                 >
                                   Restore
                                 </button>
                               )}
 
-                              <button title="Edit" className="p-2 rounded-md bg-white border border-gray-100 shadow-sm">
-                                {React.createElement(FaPencilAlt as any, { size: 14 })}
+                              <button title="Edit" className="p-1 rounded-md bg-white border border-gray-100 shadow-sm">
+                                {React.createElement(FaPencilAlt as any, { size: 12 })}
                               </button>
                               <button
                                 title="Delete"
                                 onClick={() => handleDelete(item.id)}
-                                className="p-2 rounded-md bg-white border border-gray-100 shadow-sm"
+                                className="p-1 rounded-md bg-white border border-gray-100 shadow-sm"
                               >
-                                {React.createElement(FaTrash as any, { size: 14 })}
+                                {React.createElement(FaTrash as any, { size: 12 })}
                               </button>
                             </div>
 
@@ -335,7 +336,7 @@ const MyAds: React.FC = () => {
       {/* Floating + button - visible on mobile as well */}
       <Link
         to="/add-product"
-        className="fixed bottom-6 right-6 bg-[#d4a643] text-white w-14 h-14 rounded-full shadow-2xl flex items-center justify-center text-2xl sm:text-3xl font-light hover:opacity-95 transition z-40"
+        className="hidden sm:fixed bottom-6 right-6 w-14 h-14 bg-[#d4a643] hover:bg-[#c4963a] text-white rounded-full shadow-2xl flex items-center justify-center z-50 transition-all"
         aria-label="Add product"
       >
         {React.createElement(FaPlus as any, { size: 18 })}

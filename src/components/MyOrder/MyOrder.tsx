@@ -42,8 +42,9 @@ const gradientFromHex = (hex?: string) => {
    Render round badge (marketplace style)
    Force white icon color & prevent blend overrides
 ---------------------------------------------- */
-const renderBadge = (IconComponent: IconType, size = 44) => {
-  const badgeSize = Math.max(56, size + 12);
+const renderBadge = (IconComponent: IconType, size = 36) => {
+  // smaller badges to match Marketplace/Mypurchase sizing
+  const badgeSize = Math.max(36, size + 8);
   const brandHex = ICON_COLOR_MAP.get(IconComponent);
   // fallback gradient: use component string length for deterministic pick
   const bg = brandHex ? gradientFromHex(brandHex) : vibrantGradients[String(IconComponent).length % vibrantGradients.length];
@@ -238,12 +239,12 @@ const MyOrder: React.FC = () => {
                   filtered.map((o) => (
                     <div
                       key={o.id}
-                      className="bg-[#F8FAFB] rounded-lg p-4 sm:p-6 flex flex-col sm:flex-row items-start gap-4 sm:gap-6 border border-[rgba(0,0,0,0.03)]"
+                      className="bg-[#F8FAFB] rounded-lg p-3 sm:p-4 flex flex-col sm:flex-row items-start gap-3 sm:gap-4 border border-[rgba(0,0,0,0.03)]"
                     >
                       {/* left icon (responsive) */}
                       <div className="flex-shrink-0">
-                        <div className="w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center">
-                          {renderBadge(o.icon, 48)}
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center">
+                          {renderBadge(o.icon, 36)}
                         </div>
                       </div>
 
@@ -252,10 +253,10 @@ const MyOrder: React.FC = () => {
                         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-6">
                           <div className="flex-1 min-w-0">
                             <div className="text-sm font-semibold text-[#D4A643]">Sell <span className="text-sm font-medium text-[#6B7280] ml-2">{o.platform}</span></div>
-                            <div className="text-xs text-[#6B7280] mt-2">Order number <span className="text-[#0A1A3A] font-semibold">#{o.orderNumber}</span></div>
+                            <div className="text-xs text-[#6B7280] mt-1">Order number <span className="text-[#0A1A3A] font-semibold">#{o.orderNumber}</span></div>
 
-                            <h3 className="text-sm sm:text-base font-semibold text-[#0A1A3A] mt-3 truncate">{o.title}</h3>
-                            <p className="text-xs sm:text-sm text-gray-500 mt-2 line-clamp-3">{o.desc}</p>
+                            <h3 className="text-sm font-semibold text-[#0A1A3A] mt-2 truncate">{o.title}</h3>
+                            <p className="text-xs text-gray-500 mt-1 line-clamp-2">{o.desc}</p>
 
                             <div className="mt-3 flex items-center gap-3 text-sm text-gray-500">
                               <span className="inline-block w-2 h-2 bg-gray-300 rounded-full" />
@@ -264,12 +265,12 @@ const MyOrder: React.FC = () => {
                           </div>
 
                           {/* right meta - becomes full width under content on mobile */}
-                          <div className="w-full sm:w-44 flex sm:flex-col flex-row justify-between sm:items-end items-center gap-3">
-                            <div className="text-lg sm:text-xl font-bold text-[#0A1A3A]">${o.price}</div>
+                          <div className="w-full sm:w-36 flex sm:flex-col flex-row justify-between sm:items-end items-center gap-2">
+                            <div className="text-lg font-bold text-[#0A1A3A]">${o.price}</div>
 
                             <div className="flex items-center gap-2">
-                              <button className="px-3 py-1 rounded-md bg-[#d4a643] text-white text-xs sm:text-sm inline-flex items-center gap-2">
-                                {React.createElement(FaRegCommentDots as any, { size: 14, color: "#fff" })}
+                              <button className="px-2 py-1 rounded-md bg-[#d4a643] text-white text-xs inline-flex items-center gap-2">
+                                {React.createElement(FaRegCommentDots as any, { size: 12, color: "#fff" })}
                                 <span className="hidden sm:inline">See Trade</span>
                                 <span className="sm:hidden">Chat</span>
                               </button>
@@ -299,9 +300,9 @@ const MyOrder: React.FC = () => {
       </div>
 
       {/* Floating + button (visible on mobile & desktop) */}
-       <Link
+      <Link
         to="/add-product"
-        className="fixed bottom-6 right-6 bg-[#d4a643] text-white w-14 h-14 rounded-full shadow-2xl flex items-center justify-center text-2xl sm:text-3xl font-light hover:opacity-95 transition z-40"
+        className="hidden sm:fixed bottom-6 right-6 w-14 h-14 bg-[#d4a643] hover:bg-[#c4963a] text-white rounded-full shadow-2xl flex items-center justify-center z-50 transition-all"
         aria-label="Add product"
       >
         {React.createElement(FaPlus as any, { size: 18 })}
