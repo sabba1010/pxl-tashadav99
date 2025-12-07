@@ -38,7 +38,7 @@ export default function Navbar() {
             <div className="flex items-center">
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="lg:hidden p-2 rounded-md hover:bg-gray-100 transition"
+                className="hidden lg:block lg:hidden p-2 rounded-md hover:bg-gray-100 transition"
               >
                 {mobileMenuOpen ? (
                   <svg className="w-6 h-6" fill="none" stroke={EMPIRE_BLUE} viewBox="0 0 24 24">
@@ -52,7 +52,7 @@ export default function Navbar() {
               </button>
 
               <NavLink to="/" className="flex items-center gap-3">
-                <img src="/logo.png" alt="ActBazaar" className="h-9 w-auto" />
+                <img src="/logo.png" alt="CCTBazaar" className="h-9 w-auto" />
                 <span className="hidden sm:inline font-bold text-xl" style={{ color: EMPIRE_BLUE }}>
                   CCTBazaar
                 </span>
@@ -110,7 +110,7 @@ export default function Navbar() {
             <div className="flex items-center gap-1">
 
 
-              <button className="p-2 rounded-full hover:bg-gray-100 transition">
+              {/* <button className="p-2 rounded-full hover:bg-gray-100 transition">
                 <svg
                   className="w-7 h-7 mb-1"
                   fill="none"
@@ -124,9 +124,9 @@ export default function Navbar() {
                     d="M3 3h2l1.4 2M6.4 5h14l-1.6 9H7.2L5.6 5zM8 18.5a1.5 1.5 0 103 0 1.5 1.5 0 00-3 0zm8 0a1.5 1.5 0 103 0 1.5 1.5 0 00-3 0z"
                   />
                 </svg>
-              </button>
+              </button> */}
 
-              <button className="p-2 rounded-full hover:bg-gray-100 transition">
+              {/* <button className="p-2 rounded-full hover:bg-gray-100 transition">
                 <svg
                   className="w-5 h-5"           // you can even bump to w-6 h-6 if still too small
                   viewBox="0 0 24 24"
@@ -137,15 +137,14 @@ export default function Navbar() {
                   strokeLinejoin="round"
                   xmlns="http://www.w3.org/2000/svg"
                 >
-                  {/* Bigger, fuller bell */}
+                
                   <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9z" />
                   <path d="M10.3 21a1.8 1.8 0 0 0 3.4 0" />
 
-                  {/* Bold notification dot in top-right */}
                   <circle cx="18.5" cy="6" r="4" fill={EMPIRE_BLUE} />
                   <circle cx="18.5" cy="6" r="1.8" fill="white" />
                 </svg>
-              </button>
+              </button> */}
 
               {/* Avatar Dropdown */}
               <div className="relative" ref={dropdownRef}>
