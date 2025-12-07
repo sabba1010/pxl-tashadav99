@@ -225,11 +225,9 @@ const Marketplace: React.FC = () => {
   const [showBanner, setShowBanner] = useState(true);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
-  const [mobileSearchOpen, setMobileSearchOpen] = useState(false); // NEW: Mobile search bar
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
 
   const drawerRef = useRef<HTMLDivElement | null>(null);
-
-  
 
   const filteredItems = useMemo<Item[]>(() => {
     return ALL_ITEMS.filter((item) => {
@@ -410,16 +408,19 @@ const Marketplace: React.FC = () => {
 
           {/* Rest of layout */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            {/* LEFT SIDEBAR - keep as grid cell but inner content sticky */}
             <aside className="hidden lg:block lg:col-span-3">
-              <div className="bg-white rounded-xl shadow-sm border p-6">
-                <h3 className="text-lg font-bold mb-6">Filter</h3>
-                <CategorySelector categoryMap={CATEGORY_MAP} selectedSubcats={selectedSubcats} setSelectedSubcats={setSelectedSubcats} />
-                <div className="mt-6">
-                  <div className="text-sm font-semibold text-[#0A1A3A]">Price range</div>
-                  <input type="range" min={0} max={1000} value={priceRange} onChange={(e) => setPriceRange(Number(e.target.value))} className="w-full" style={{ accentColor: "#33ac6f" }} />
-                  <div className="flex justify-between text-xs text-gray-500">
-                    <span>$0</span>
-                    <span>${priceRange}</span>
+              <div className="sticky top-24 self-start">
+                <div className="bg-white rounded-xl shadow-sm border p-6">
+                  <h3 className="text-lg font-bold mb-6">Filter</h3>
+                  <CategorySelector categoryMap={CATEGORY_MAP} selectedSubcats={selectedSubcats} setSelectedSubcats={setSelectedSubcats} />
+                  <div className="mt-6">
+                    <div className="text-sm font-semibold text-[#0A1A3A]">Price range</div>
+                    <input type="range" min={0} max={1000} value={priceRange} onChange={(e) => setPriceRange(Number(e.target.value))} className="w-full" style={{ accentColor: "#33ac6f" }} />
+                    <div className="flex justify-between text-xs text-gray-500">
+                      <span>$0</span>
+                      <span>${priceRange}</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -558,12 +559,12 @@ const Marketplace: React.FC = () => {
 
         {/* Floating + Button - HIDDEN ON MOBILE */}
         <Link
-        to="/add-product"
-        className="hidden sm:flex sm:fixed bottom-6 right-6 w-14 h-14 bg-[#33ac6f] hover:bg-[#c4963a] text-white rounded-full shadow-2xl items-center justify-center z-50 transition-all"
-        aria-label="Add product"
-      >
-        {React.createElement(FaPlus as any, { size: 18 })}
-      </Link>
+          to="/add-product"
+          className="hidden sm:flex sm:fixed bottom-6 right-6 w-14 h-14 bg-[#33ac6f] hover:bg-[#c4963a] text-white rounded-full shadow-2xl items-center justify-center z-50 transition-all"
+          aria-label="Add product"
+        >
+          {React.createElement(FaPlus as any, { size: 18 })}
+        </Link>
       </div>
     </>
   );
