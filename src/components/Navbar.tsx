@@ -83,11 +83,11 @@ export default function Navbar() {
                 Orders
               </NavLink>
               <NavLink
-                to="/my-ads"
+                to="/myproducts"
                 className="font-medium"
                 style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}
               >
-                My Ads
+                My products
               </NavLink>
 
               <NavLink
@@ -333,7 +333,7 @@ export default function Navbar() {
 
             {/* My Ads */}
             <NavLink
-              to="/my-ads"
+              to="/myproducts"
               className="flex flex-col items-center justify-center flex-1 pt-3 pb-5"
               style={({ isActive }) => ({
                 color: isActive ? ROYAL_GOLD : CHARCOAL,

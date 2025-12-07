@@ -62,7 +62,7 @@ const Routes = createBrowserRouter([
          element:<MyOrder/>,
       },
       {
-          path: "/my-ads",
+          path: "/myproducts",
           element: <MyAds/>,
       },
       {
