@@ -302,13 +302,13 @@ const MyOrder: React.FC = () => {
       </div>
 
       {/* Floating + button (visible on mobile & desktop) */}
-      <Link
-        to="/add-product"
-        className="hidden sm:flex sm:fixed bottom-6 right-6 w-14 h-14 bg-[#33ac6f] hover:bg-[#2aa46a] text-white rounded-full shadow-2xl items-center justify-center z-50 transition-all"
-        aria-label="Add product"
-      >
-        {React.createElement(FaPlus as any, { size: 18 })}
-      </Link>
+       <Link
+             to="/add-product"
+             className="hidden sm:flex sm:fixed bottom-6 right-6 w-14 h-14 bg-[#33ac6f] hover:bg-[#c4963a] text-white rounded-full shadow-2xl items-center justify-center z-50 transition-all"
+             aria-label="Add product"
+           >
+             {React.createElement(FaPlus as any, { size: 18 })}
+           </Link>
     </>
   );
 };
