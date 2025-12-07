@@ -42,7 +42,8 @@ const gradientFromHex = (hex: string) => {
    Force white icon color & prevent blend overrides
 ---------------------------------------------- */
 const renderBadge = (Icon: IconType, size = 36) => {
-  const badgeSize = Math.max(50, size + 14);
+  // make badges slightly smaller by default so cards match Marketplace sizing
+  const badgeSize = Math.max(36, size + 8);
   const brandHex = ICON_COLOR_MAP.get(Icon);
   const bg = brandHex
     ? gradientFromHex(brandHex)
@@ -174,7 +175,7 @@ type Tab = (typeof TABS)[number];
    PlatformIcon: use renderBadge (no white box)
 ---------------------------------------------- */
 function PlatformIcon({ platform }: { platform: Purchase["platform"] }) {
-  const size = 44;
+  const size = 36;
   if (platform === "instagram") return renderBadge(FaInstagram, size);
   if (platform === "facebook") return renderBadge(FaFacebookF, size);
   if (platform === "twitter") return renderBadge(FaTwitter, size);
@@ -251,11 +252,11 @@ const MyPurchase: React.FC = () => {
                   filtered.map((p) => (
                     <div
                       key={p.id}
-                      className="bg-[#F8FAFB] rounded-lg p-4 sm:p-6 flex flex-col sm:flex-row items-start gap-4 sm:gap-6 border border-[rgba(0,0,0,0.03)]"
+                      className="bg-[#F8FAFB] rounded-lg p-3 sm:p-4 flex flex-col sm:flex-row items-start gap-3 sm:gap-4 border border-[rgba(0,0,0,0.03)]"
                     >
                       {/* left icon (responsive) */}
-                      <div className="flex-shrink-0">
-                        <div className="w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center">
+                        <div className="flex-shrink-0">
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center">
                           <PlatformIcon platform={p.platform} />
                         </div>
                       </div>
@@ -264,8 +265,8 @@ const MyPurchase: React.FC = () => {
                       <div className="flex-1 min-w-0">
                         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-6">
                           <div className="flex-1 min-w-0">
-                            <h3 className="text-sm sm:text-base font-semibold text-[#0A1A3A]">{p.title}</h3>
-                            <p className="text-xs sm:text-sm text-gray-500 mt-2 line-clamp-3">{p.desc}</p>
+                            <h3 className="text-sm font-semibold text-[#0A1A3A]">{p.title}</h3>
+                            <p className="text-xs text-gray-500 mt-1 line-clamp-2">{p.desc}</p>
 
                             <div className="mt-3 flex items-center gap-3 text-sm text-gray-500">
                               <span className="inline-block w-2 h-2 bg-gray-300 rounded-full" />
@@ -274,12 +275,12 @@ const MyPurchase: React.FC = () => {
                           </div>
 
                           {/* right meta - becomes full width under content on mobile */}
-                          <div className="w-full sm:w-44 flex sm:flex-col flex-row justify-between sm:items-end items-center gap-3">
+                          <div className="w-full sm:w-36 flex sm:flex-col flex-row justify-between sm:items-end items-center gap-2">
                             <div className="text-lg sm:text-xl font-bold text-[#0A1A3A]">${p.price}</div>
 
                             <div className="flex items-center gap-2">
-                              <button className="px-3 py-1 rounded-md bg-[#d4a643] text-white text-xs sm:text-sm">See Trade</button>
-                              <button className="p-2 rounded-md bg-white border border-gray-100 shadow-sm" title="Chat">
+                              <button className="px-2 py-1 rounded-md bg-[#d4a643] text-white text-xs">See Trade</button>
+                              <button className="p-1 rounded-md bg-white border border-gray-100 shadow-sm" title="Chat">
                                 <svg className="w-4 h-4 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" /></svg>
                               </button>
                             </div>
@@ -314,7 +315,7 @@ const MyPurchase: React.FC = () => {
       {/* Floating + button (visible on mobile & desktop) */}
       <Link
         to="/add-product"
-        className="fixed bottom-6 right-6 bg-[#d4a643] text-white w-14 h-14 rounded-full shadow-2xl flex items-center justify-center text-2xl sm:text-3xl font-light hover:opacity-95 transition z-40"
+        className="hidden sm:fixed bottom-6 right-6 w-14 h-14 bg-[#d4a643] hover:bg-[#c4963a] text-white rounded-full shadow-2xl flex items-center justify-center z-50 transition-all"
         aria-label="Add product"
       >
         {React.createElement(FaPlus as any, { size: 18 })}
