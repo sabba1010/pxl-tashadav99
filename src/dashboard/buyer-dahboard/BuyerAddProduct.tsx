@@ -1,388 +1,220 @@
 // BuyerAddProduct.tsx
-import { PhotoCamera } from "@mui/icons-material";
+import React, { useState } from "react";
 import {
   Box,
   Button,
   Card,
   CardContent,
-  Chip,
   Container,
   FormControl,
-  IconButton,
   InputLabel,
   MenuItem,
-  Select,
-  Stack,
+  OutlinedInput,
+  Radio,
+  RadioGroup,
+  FormControlLabel,
   TextField,
   Typography,
-  SelectChangeEvent,
-  Checkbox,
-  ListItemText,
+  Select,
+  Chip,
+  Avatar,
 } from "@mui/material";
-import React, { useState, ChangeEvent } from "react";
 
-const SOCIAL_OPTIONS = ["Facebook", "Instagram", "Twitter", "LinkedIn"];
+// Brand-colored icons using MUI Avatar + exact brand colors
+const categories = [
+  { value: "facebook", label: "Facebook", color: "#1877F2", letter: "F" },
+  { value: "instagram", label: "Instagram", color: "#E4405F", letter: "IG" },
+  { value: "gmail", label: "Gmail", color: "#EA4335", letter: "G" },
+  { value: "amazon", label: "Amazon", color: "#FF9900", letter: "A" },
+  { value: "discord", label: "Discord", color: "#5865F2", letter: "D" },
+  { value: "twitter", label: "Twitter / X", color: "#000000", letter: "X" },
+  { value: "tiktok", label: "TikTok", color: "#000000", letter: "TT" },
+  { value: "aliexpress", label: "AliExpress", color: "#F57200", letter: "AE" },
+  { value: "alibaba", label: "Alibaba", color: "#FF6A00", letter: "AB" },
+  { value: "911proxy", label: "911 Proxy", color: "#6366F1", letter: "9" },
+  { value: "airchat", label: "Airchat", color: "#10B981", letter: "A" },
+];
 
 const BuyerAddProduct: React.FC = () => {
-  // form state
-  const [imageSource, setImageSource] = useState<string>("upload");
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [socialPlatforms, setSocialPlatforms] = useState<string[]>([]);
-  const [imageUrl, setImageUrl] = useState<string>("");
-  const [title, setTitle] = useState<string>("");
-  const [price, setPrice] = useState<string>("");
+  const [category, setCategory] = useState<string>("");
+  const [name, setName] = useState<string>("");
   const [description, setDescription] = useState<string>("");
-  const [deliveryTime, setDeliveryTime] = useState<string>("");
-
-  // handlers
-  const handleImageSourceChange = (e: SelectChangeEvent<string>) => {
-    const val = e.target.value;
-    setImageSource(val);
-    // reset dependent fields
-    setSelectedFile(null);
-    setPreviewUrl(null);
-    setSocialPlatforms([]);
-    setImageUrl("");
-  };
-
-  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files && e.target.files[0];
-    if (!file) return;
-    // optional: validate size/type here
-    setSelectedFile(file);
-    const url = URL.createObjectURL(file);
-    setPreviewUrl(url);
-  };
-
-  const handleSocialPlatformsChange = (e: SelectChangeEvent<typeof socialPlatforms>) => {
-    const value = e.target.value;
-    // when multiple, MUI gives string[] or single string depending
-    const newVal = typeof value === "string" ? value.split(",") : value;
-    setSocialPlatforms(newVal);
-  };
-
-  const handleSubmit = () => {
-    // Build form data or payload
-    const payload = {
-      title,
-      price,
-      description,
-      deliveryTime,
-      image: {
-        source: imageSource,
-        fileName: selectedFile?.name ?? null,
-        url: imageUrl || previewUrl || null,
-        socialPlatforms: socialPlatforms.length ? socialPlatforms : null,
-      },
-    };
-
-    // For now just log. Replace with API call.
-    console.log("Submitting", payload);
-
-    // TODO: perform validation & actual upload (file -> FormData) or send payload to backend
-  };
+  const [price, setPrice] = useState<string>("");
+  const [releaseOption, setReleaseOption] = useState<"auto" | "manual">("auto");
 
   return (
-    <Container maxWidth="md" sx={{ py: 8 }}>
-      {/* Header */}
-      <Typography
-        variant="h4"
-        align="center"
-        fontWeight="bold"
-        gutterBottom
-        sx={{ color: "#0A1A3A" }}
-      >
-        Create New Service
-      </Typography>
+    <Container maxWidth="lg">
+      <Box sx={{ py: 8, display: "flex", justifyContent: "center" }}>
+        <Card
+          sx={{
+            width: "100%",
+            maxWidth: 800,
+            borderRadius: 4,
+            boxShadow: 4,
+            border: "1px solid #e0e0e0",
+          }}
+        >
+          <CardContent sx={{ p: { xs: 4, md: 6 } }}>
+            <Typography variant="h4" align="center" fontWeight="bold" gutterBottom>
+              Add Account
+            </Typography>
 
-      <Typography variant="body1" align="center" paragraph sx={{ color: "#111111" }}>
-        Fill in the details below to publish your service
-      </Typography>
+            {/* Account Information */}
+            <Typography variant="subtitle1" fontWeight="medium" gutterBottom sx={{ mt: 5 }}>
+              Account Information
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+              You can only select one account at a time
+            </Typography>
 
-      <Card
-        elevation={4}
-        sx={{
-          borderRadius: 3,
-          border: "1px solid #0A1A3A",
-          backgroundColor: "#FFFFFF",
-        }}
-      >
-        <CardContent sx={{ p: { xs: 3, sm: 5 } }}>
-          <Stack spacing={4}>
-            {/* Image Source Select */}
-            <FormControl fullWidth>
-              <InputLabel sx={{ color: "#0A1A3A" }}>Image Source</InputLabel>
+            {/* Colored Icon Dropdown */}
+            <FormControl fullWidth sx={{ mb: 4 }}>
+              <InputLabel>Select Account Category</InputLabel>
               <Select
-                value={imageSource}
-                label="Image Source"
-                onChange={handleImageSourceChange}
-                sx={{
-                  "& .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#0A1A3A",
-                  },
-                  "&:hover .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#D4A643",
-                  },
+                value={category}
+                onChange={(e) => setCategory(e.target.value as string)}
+                input={<OutlinedInput label="Select Account Category" />}
+                renderValue={(selected) => {
+                  const item = categories.find((c) => c.value === selected);
+                  if (!item) return "Select Account Category";
+                  return (
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                      <Avatar
+                        sx={{
+                          width: 32,
+                          height: 32,
+                          bgcolor: item.color,
+                          color: "white",
+                          fontWeight: "bold",
+                          fontSize: "0.9rem",
+                        }}
+                      >
+                        {item.letter}
+                      </Avatar>
+                      <Typography fontWeight="medium">{item.label}</Typography>
+                    </Box>
+                  );
                 }}
               >
-                <MenuItem value="upload">Upload</MenuItem>
-                <MenuItem value="social">Social Media</MenuItem>
-                <MenuItem value="url">Image URL</MenuItem>
+                {categories.map((cat) => (
+                  <MenuItem key={cat.value} value={cat.value}>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                      <Avatar
+                        sx={{
+                          width: 36,
+                          height: 36,
+                          bgcolor: cat.color,
+                          color: "white",
+                          fontWeight: "bold",
+                        }}
+                      >
+                        {cat.letter}
+                      </Avatar>
+                      <Typography>{cat.label}</Typography>
+                    </Box>
+                  </MenuItem>
+                ))}
               </Select>
             </FormControl>
 
-            {/* Image Upload / Social Media / URL */}
-            <Box>
-              <Typography
-                variant="subtitle1"
-                fontWeight="medium"
-                gutterBottom
-                sx={{ color: "#0A1A3A" }}
-              >
-                Service Image{" "}
-                <Chip
-                  label="Required"
-                  size="small"
-                  sx={{
-                    backgroundColor: "#33ac6f",
-                    color: "#ffffff",
-                    fontWeight: "bold",
-                    ml: 1,
-                  }}
-                />
-              </Typography>
-
-              {/* Upload */}
-              {imageSource === "upload" && (
-                <Box
-                  sx={{
-                    border: "2px dashed #0A1A3A",
-                    borderRadius: 2,
-                    p: 4,
-                    textAlign: "center",
-                    bgcolor: "#FFFFFF",
-                    cursor: "pointer",
-                  }}
-                >
-                  <input
-                    accept="image/*"
-                    id="image-upload"
-                    type="file"
-                    style={{ display: "none" }}
-                    onChange={handleFileChange}
-                  />
-                  <label htmlFor="image-upload">
-                    <IconButton component="span" size="large" sx={{ color: "#0A1A3A" }}>
-                      <PhotoCamera fontSize="large" />
-                    </IconButton>
-                  </label>
-
-                  <Typography sx={{ color: "#111111" }}>Click to upload or drag and drop</Typography>
-                  <Typography variant="body2" sx={{ color: "#111111" }}>
-                    PNG, JPG • Max 5MB
-                  </Typography>
-
-                  {selectedFile && (
-                    <Typography variant="body2" sx={{ mt: 2, color: "#0A1A3A" }}>
-                      Selected: {selectedFile.name}
-                    </Typography>
-                  )}
-
-                  {previewUrl && (
-                    <Box sx={{ mt: 2, display: "flex", justifyContent: "center" }}>
-                      <img
-                        src={previewUrl}
-                        alt="preview"
-                        style={{ maxWidth: "240px", maxHeight: "180px", borderRadius: 8 }}
-                      />
-                    </Box>
-                  )}
-                </Box>
-              )}
-
-              {/* Social Media selection */}
-              {imageSource === "social" && (
-                <FormControl fullWidth>
-                  <InputLabel sx={{ color: "#0A1A3A" }}>Pick Social Platforms</InputLabel>
-                  <Select
-                    multiple
-                    value={socialPlatforms}
-                    onChange={handleSocialPlatformsChange}
-                    renderValue={(selected) => (selected as string[]).join(", ")}
-                    label="Pick Social Platforms"
-                    sx={{
-                      "& .MuiOutlinedInput-notchedOutline": { borderColor: "#0A1A3A" },
-                      "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: "#D4A643" },
-                    }}
-                  >
-                    {SOCIAL_OPTIONS.map((name) => (
-                      <MenuItem key={name} value={name}>
-                        <Checkbox checked={socialPlatforms.indexOf(name) > -1} />
-                        <ListItemText primary={name} />
-                      </MenuItem>
-                    ))}
-                  </Select>
-
-                  <Typography variant="body2" sx={{ mt: 1, color: "#111111" }}>
-                    We'll use images from the selected social accounts (you'll be asked to connect accounts on publish).
-                  </Typography>
-                </FormControl>
-              )}
-
-              {/* Image URL */}
-              {imageSource === "url" && (
-                <TextField
-                  label="Image URL"
-                  fullWidth
-                  value={imageUrl}
-                  onChange={(e) => setImageUrl(e.target.value)}
-                  placeholder="https://example.com/image.jpg"
-                  InputLabelProps={{ sx: { color: "#0A1A3A" } }}
-                  sx={{
-                    mt: 1,
-                    "& .MuiOutlinedInput-root": {
-                      "& fieldset": { borderColor: "#0A1A3A" },
-                      "&:hover fieldset": { borderColor: "#D4A643" },
-                    },
-                  }}
-                />
-              )}
-            </Box>
-
-            {/* Title */}
+            {/* Name */}
             <TextField
-              label="Service Title"
               fullWidth
-              required
-              placeholder="e.g. I will design a professional logo in 24 hours"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              InputLabelProps={{ sx: { color: "#0A1A3A" } }}
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  "& fieldset": { borderColor: "#0A1A3A" },
-                  "&:hover fieldset": { borderColor: "#D4A643" },
-                },
-              }}
-            />
-
-            {/* Price */}
-            <TextField
-              label="Price"
-              type="number"
-              fullWidth
-              required
-              placeholder="49.99"
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
-              InputLabelProps={{ sx: { color: "#0A1A3A" } }}
-              InputProps={{
-                startAdornment: <Typography sx={{ mr: 1, color: "#0A1A3A" }}>$</Typography>,
-              }}
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  "& fieldset": { borderColor: "#0A1A3A" },
-                  "&:hover fieldset": { borderColor: "#D4A643" },
-                },
-              }}
+              label="Name"
+              placeholder="e.g., 4 Years Facebook Account"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              sx={{ mb: 3 }}
             />
 
             {/* Description */}
             <TextField
-              label="Short Description"
-              multiline
-              rows={5}
               fullWidth
-              required
-              placeholder="Explain what you will deliver..."
+              label="Description"
+              multiline
+              rows={4}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              InputLabelProps={{ sx: { color: "#0A1A3A" } }}
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  "& fieldset": { borderColor: "#0A1A3A" },
-                  "&:hover fieldset": { borderColor: "#D4A643" },
-                },
-              }}
+              sx={{ mb: 3 }}
             />
 
-            {/* Delivery Time */}
-            <FormControl fullWidth required>
-              <InputLabel sx={{ color: "#0A1A3A" }}>Delivery Time</InputLabel>
-              <Select
-                value={deliveryTime}
-                onChange={(e) => setDeliveryTime(e.target.value as string)}
+            {/* Price */}
+            <TextField
+              fullWidth
+              label="Enter your price"
+              type="number"
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+              InputProps={{
+                startAdornment: <Typography sx={{ mr: 1, color: "text.secondary" }}>$</Typography>,
+              }}
+              sx={{ mb: 5 }}
+            />
+
+            {/* Release Options */}
+            <Typography variant="subtitle1" fontWeight="medium" gutterBottom>
+              Release Options
+            </Typography>
+
+            <RadioGroup value={releaseOption} onChange={(e) => setReleaseOption(e.target.value as any)}>
+              <Box
                 sx={{
-                  "& .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#0A1A3A",
-                  },
-                  "&:hover .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#D4A643",
-                  },
+                  border: releaseOption === "auto" ? "2px solid #ff9800" : "1px solid #e0e0e0",
+                  borderRadius: 2,
+                  p: 2.5,
+                  mb: 2,
+                  bgcolor: releaseOption === "auto" ? "#fff8e1" : "transparent",
                 }}
               >
-                {/* Instant / hours options as requested */}
-                <MenuItem value="instant">Instant deliver</MenuItem>
-                <MenuItem value="5hours">5 hours</MenuItem>
+                <FormControlLabel
+                  value="auto"
+                  control={<Radio color="primary" />}
+                  label={
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <Typography fontWeight="medium">Auto Confirm Order</Typography>
+                      <Chip label="Recommended" size="small" color="success" />
+                    </Box>
+                  }
+                />
+                <Typography variant="body2" color="text.secondary" sx={{ ml: 4, mt: 1 }}>
+                  Perfect for products that don’t need your attention. Logins are sent and the order is confirmed automatically — no action required.
+                </Typography>
+              </Box>
 
-                {/* existing day-based options */}
-                <MenuItem value="1">1 Day (Express)</MenuItem>
-                <MenuItem value="3">3 Days (Fast)</MenuItem>
-                <MenuItem value="7">7 Days (Standard)</MenuItem>
-                <MenuItem value="14">14+ Days (Custom)</MenuItem>
-              </Select>
-            </FormControl>
+              <Box sx={{ border: "1px solid #e0e0e0", borderRadius: 2, p: 2.5 }}>
+                <FormControlLabel
+                  value="manual"
+                  control={<Radio />}
+                  label={<Typography fontWeight="medium">Manual Release</Typography>}
+                />
+                <Typography variant="body2" color="text.secondary" sx={{ ml: 4, mt: 1 }}>
+                  Ideal for products that need your input – like those requiring a code or extra authentication before access. You’ll manually send login details and confirm orders after each sale.
+                </Typography>
+              </Box>
+            </RadioGroup>
 
-            {/* Action Buttons */}
-            <Box sx={{ display: "flex", gap: 2, justifyContent: "flex-end" }}>
-              <Button
-                variant="outlined"
-                size="large"
-                sx={{
-                  borderColor: "#0A1A3A",
-                  color: "#0A1A3A",
-                  "&:hover": {
-                    borderColor: "#D4A643",
-                    color: "#D4A643",
-                  },
-                }}
-                onClick={() => {
-                  // reset form (optional)
-                  setImageSource("upload");
-                  setSelectedFile(null);
-                  setPreviewUrl(null);
-                  setSocialPlatforms([]);
-                  setImageUrl("");
-                  setTitle("");
-                  setPrice("");
-                  setDescription("");
-                  setDeliveryTime("");
-                }}
-              >
-                Cancel
-              </Button>
-
+            {/* Continue Button */}
+            <Box sx={{ mt: 7, textAlign: "center" }}>
               <Button
                 variant="contained"
                 size="large"
                 sx={{
-                  backgroundColor: "#33ac6f",
-                  color: "#ffffff",
+                  minWidth: 280,
+                  py: 1.8,
+                  borderRadius: 3,
+                  fontSize: "1.1rem",
                   fontWeight: "bold",
-                  "&:hover": {
-                    backgroundColor: "#0A1A3A",
-                    color: "#FFFFFF",
-                  },
+                  textTransform: "none",
+                  bgcolor: "#33ac6f",
+                  "&:hover": { bgcolor: "#2e7d32" },
                 }}
-                onClick={handleSubmit}
               >
-                Publish Service
+                Continue
               </Button>
             </Box>
-          </Stack>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </Box>
     </Container>
   );
 };
