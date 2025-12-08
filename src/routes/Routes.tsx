@@ -30,6 +30,7 @@ import Payment from "../components/Payment";
 import MyOrder from "../components/MyOrder/MyOrder";
 import Plan from "../pages/plan/Plan";
 import MyAds from "../components/Myproducts/MyAds";
+import AddAccountCredentials from "../dashboard/buyer-dahboard/AddAccountCredentials";
 
 const Routes = createBrowserRouter([
   {
@@ -84,6 +85,10 @@ const Routes = createBrowserRouter([
       {
         path: "add-product",
         element: <BuyerAddProduct />,
+      },
+        {
+        path: "/sell-your-account",
+        element: <AddAccountCredentials/>,
       },
       {
         path: "buyer-dashboard",
