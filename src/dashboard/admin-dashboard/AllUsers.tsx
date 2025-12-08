@@ -1,5 +1,4 @@
-import React, { useState, useMemo, useCallback } from "react";
-import { Link } from "react-router-dom";
+import React, { useCallback, useMemo, useState } from "react";
 
 /**
  * Interface for a single user record
@@ -401,7 +400,6 @@ const AllUsers: React.FC = () => {
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
-  const totalPages = Math.ceil(users.length / ITEMS_PER_PAGE);
 
   // Helper for currency formatting
   const formatCurrency = (amount: number) =>
@@ -446,7 +444,7 @@ const AllUsers: React.FC = () => {
     }
 
     return result;
-  }, [users, searchTerm, sortBy, sortOrder]); // Removed currentPage from dependency list as it causes a reset loop
+  }, [users, currentPage, searchTerm, sortBy, sortOrder]); // Removed currentPage from dependency list as it causes a reset loop
 
   // --- Pagination Logic ---
   const paginatedUsers = useMemo(() => {
