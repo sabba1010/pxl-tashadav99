@@ -1,5 +1,6 @@
 // BuyerAddProduct.tsx
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Box,
   Button,
@@ -15,10 +16,86 @@ import {
   FormControlLabel,
   TextField,
   Typography,
+  Stepper,
+  Step,
+  StepLabel,
   Select,
   Chip,
   Avatar,
 } from "@mui/material";
+import { FaInstagram, FaSnapchatGhost, FaFacebookF, FaAmazon, FaTwitter, FaEnvelope } from "react-icons/fa";
+import type { IconType } from "react-icons";
+
+const ICON_COLOR_MAP = new Map<IconType, string>([
+  [FaInstagram, "#E1306C"],
+  [FaSnapchatGhost, "#FFFC00"],
+  [FaFacebookF, "#1877F2"],
+  [FaAmazon, "#FF9900"],
+  [FaTwitter, "#1DA1F2"],
+  [FaEnvelope, "#EA4335"],
+]);
+
+const vibrantGradients = [
+  "linear-gradient(135deg,#FF9A9E 0%,#FAD0C4 100%)",
+  "linear-gradient(135deg,#A18CD1 0%,#FBC2EB 100%)",
+  "linear-gradient(135deg,#FDCB6E 0%,#FF6B6B 100%)",
+  "linear-gradient(135deg,#84fab0 0%,#8fd3f4 100%)",
+  "linear-gradient(135deg,#FCCF31 0%,#F55555 100%)",
+  "linear-gradient(135deg,#9BE15D 0%,#00E3AE 100%)",
+];
+
+const gradientFromHex = (hex?: string | null): string => {
+  if (!hex) return vibrantGradients[0];
+  const h = hex.replace("#", "");
+  const r = parseInt(h.substring(0, 2), 16);
+  const g = parseInt(h.substring(2, 4), 16);
+  const b = parseInt(h.substring(4, 6), 16);
+  const mix = (c: number) => Math.round(c + (255 - c) * 0.28);
+  const r2 = mix(r);
+  const g2 = mix(g);
+  const b2 = mix(b);
+  const toHex = (n: number) => n.toString(16).padStart(2, "0");
+  return `linear-gradient(135deg, ${hex} 0%, #${toHex(r2)}${toHex(g2)}${toHex(b2)} 100%)`;
+};
+
+const renderBadge = (IconComponent: IconType, size = 36): React.ReactElement => {
+  const badgeSize = Math.max(36, size + 8);
+  const brandHex = ICON_COLOR_MAP.get(IconComponent) ?? null;
+  const fallback = vibrantGradients[String(IconComponent).length % vibrantGradients.length];
+  const bg = brandHex ? gradientFromHex(brandHex) : fallback;
+  const C = IconComponent as unknown as React.ComponentType<any>;
+
+  return (
+    <div
+      aria-hidden
+      style={{
+        width: badgeSize,
+        height: badgeSize,
+        minWidth: badgeSize,
+        borderRadius: "50%",
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: bg,
+        boxShadow: "0 10px 28px rgba(16,24,40,0.12)",
+      }}
+    >
+      {React.createElement(C, {
+        size: Math.round(size * 0.75),
+        style: { color: "#fff", fill: "#fff" },
+      })}
+    </div>
+  );
+};
+
+const ICON_MAP: Record<string, IconType> = {
+  instagram: FaInstagram,
+  snapchat: FaSnapchatGhost,
+  facebook: FaFacebookF,
+  amazon: FaAmazon,
+  twitter: FaTwitter,
+  gmail: FaEnvelope,
+};
 
 // Brand-colored icons using MUI Avatar + exact brand colors
 const categories = [
@@ -36,6 +113,9 @@ const categories = [
 ];
 
 const BuyerAddProduct: React.FC = () => {
+  const navigate = useNavigate();
+  const steps = ["Make Payment", "Add account", "Credentials", "Review"];
+  const activeStep = 1; // Add account
   const [category, setCategory] = useState<string>("");
   const [name, setName] = useState<string>("");
   const [description, setDescription] = useState<string>("");
@@ -59,6 +139,19 @@ const BuyerAddProduct: React.FC = () => {
               Add Account
             </Typography>
 
+            {/* Stepper */}
+            <Box sx={{ display: "flex", justifyContent: "center", mb: 1 }}>
+              <Stepper activeStep={activeStep} sx={{ width: "100%", maxWidth: 600 }}>
+                {steps.map((label) => (
+                  <Step key={label}>
+                    <StepLabel>{label}</StepLabel>
+                  </Step>
+                ))}
+              </Stepper>
+            </Box>
+
+            {/* Progress bar removed per request */}
+
             {/* Account Information */}
             <Typography variant="subtitle1" fontWeight="medium" gutterBottom sx={{ mt: 5 }}>
               Account Information
@@ -77,20 +170,25 @@ const BuyerAddProduct: React.FC = () => {
                 renderValue={(selected) => {
                   const item = categories.find((c) => c.value === selected);
                   if (!item) return "Select Account Category";
+                  const IconComp = ICON_MAP[item.value];
                   return (
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                      <Avatar
-                        sx={{
-                          width: 32,
-                          height: 32,
-                          bgcolor: item.color,
-                          color: "white",
-                          fontWeight: "bold",
-                          fontSize: "0.9rem",
-                        }}
-                      >
-                        {item.letter}
-                      </Avatar>
+                      {IconComp ? (
+                        renderBadge(IconComp, 32)
+                      ) : (
+                        <Avatar
+                          sx={{
+                            width: 32,
+                            height: 32,
+                            bgcolor: item.color,
+                            color: "white",
+                            fontWeight: "bold",
+                            fontSize: "0.9rem",
+                          }}
+                        >
+                          {item.letter}
+                        </Avatar>
+                      )}
                       <Typography fontWeight="medium">{item.label}</Typography>
                     </Box>
                   );
@@ -99,17 +197,21 @@ const BuyerAddProduct: React.FC = () => {
                 {categories.map((cat) => (
                   <MenuItem key={cat.value} value={cat.value}>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                      <Avatar
-                        sx={{
-                          width: 36,
-                          height: 36,
-                          bgcolor: cat.color,
-                          color: "white",
-                          fontWeight: "bold",
-                        }}
-                      >
-                        {cat.letter}
-                      </Avatar>
+                      {ICON_MAP[cat.value] ? (
+                        renderBadge(ICON_MAP[cat.value], 40)
+                      ) : (
+                        <Avatar
+                          sx={{
+                            width: 36,
+                            height: 36,
+                            bgcolor: cat.color,
+                            color: "white",
+                            fontWeight: "bold",
+                          }}
+                        >
+                          {cat.letter}
+                        </Avatar>
+                      )}
                       <Typography>{cat.label}</Typography>
                     </Box>
                   </MenuItem>
@@ -198,6 +300,7 @@ const BuyerAddProduct: React.FC = () => {
               <Button
                 variant="contained"
                 size="large"
+                onClick={() => navigate("/sell-your-account")}
                 sx={{
                   minWidth: 280,
                   py: 1.8,
@@ -219,4 +322,4 @@ const BuyerAddProduct: React.FC = () => {
   );
 };
 
-export default BuyerAddProduct;
+export default BuyerAddProduct; 
