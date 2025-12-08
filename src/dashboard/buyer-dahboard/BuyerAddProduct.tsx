@@ -152,25 +152,20 @@ const BuyerAddProduct: React.FC = () => {
                 renderValue={(selected) => {
                   const item = categories.find((c) => c.value === selected);
                   if (!item) return "Select Account Category";
-                  const IconComp = ICON_MAP[item.value];
                   return (
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                      {IconComp ? (
-                        renderBadge(IconComp, 32)
-                      ) : (
-                        <Avatar
-                          sx={{
-                            width: 32,
-                            height: 32,
-                            bgcolor: item.color,
-                            color: "white",
-                            fontWeight: "bold",
-                            fontSize: "0.9rem",
-                          }}
-                        >
-                          {item.letter}
-                        </Avatar>
-                      )}
+                      <Avatar
+                        sx={{
+                          width: 32,
+                          height: 32,
+                          bgcolor: item.color,
+                          color: "white",
+                          fontWeight: "bold",
+                          fontSize: "0.9rem",
+                        }}
+                      >
+                        {item.letter}
+                      </Avatar>
                       <Typography fontWeight="medium">{item.label}</Typography>
                     </Box>
                   );
@@ -179,21 +174,17 @@ const BuyerAddProduct: React.FC = () => {
                 {categories.map((cat) => (
                   <MenuItem key={cat.value} value={cat.value}>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                      {ICON_MAP[cat.value] ? (
-                        renderBadge(ICON_MAP[cat.value], 40)
-                      ) : (
-                        <Avatar
-                          sx={{
-                            width: 36,
-                            height: 36,
-                            bgcolor: cat.color,
-                            color: "white",
-                            fontWeight: "bold",
-                          }}
-                        >
-                          {cat.letter}
-                        </Avatar>
-                      )}
+                      <Avatar
+                        sx={{
+                          width: 36,
+                          height: 36,
+                          bgcolor: cat.color,
+                          color: "white",
+                          fontWeight: "bold",
+                        }}
+                      >
+                        {cat.letter}
+                      </Avatar>
                       <Typography>{cat.label}</Typography>
                     </Box>
                   </MenuItem>
