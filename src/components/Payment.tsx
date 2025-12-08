@@ -18,8 +18,8 @@ const Payment: React.FC = () => {
 
     try {
       // 1️⃣ Create Payment (call backend)
-      const res = await axios.post<{ link: string }>('http://localhost:3200/create-payment', paymentData);
-
+      const res = await axios.post<{ link: string }>('http://localhost:3200/flutterwave/create', paymentData);
+      console.log(res.data)
       // 2️⃣ Redirect user to Flutterwave checkout
       window.location.href = res.data.link;
     } catch (err) {
