@@ -140,7 +140,7 @@ const BuyerAddProduct: React.FC = () => {
             </Typography>
 
             {/* Stepper */}
-            <Box sx={{ display: "flex", justifyContent: "center", mb: 1 }}>
+            <Box sx={{ display: { xs: "none", md: "flex" }, justifyContent: "center", mb: 1 }}>
               <Stepper activeStep={activeStep} sx={{ width: "100%", maxWidth: 600 }}>
                 {steps.map((label) => (
                   <Step key={label}>
