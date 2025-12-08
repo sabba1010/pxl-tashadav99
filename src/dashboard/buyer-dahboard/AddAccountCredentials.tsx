@@ -114,7 +114,14 @@ const AddAccountCredentials: React.FC = () => {
         Add any account to sell to thousands of customers on our platform
       </Typography>
 
-      {/* NOTE: Stepper moved to left column as a vertical progress indicator */}
+      {/* STEPPER */}
+      <Stepper activeStep={2} sx={{ mb: 4, maxWidth: 500 }}>
+        {steps.map((label) => (
+          <Step key={label}>
+            <StepLabel>{label}</StepLabel>
+          </Step>
+        ))}
+      </Stepper>
 
       {/* WARNING BANNER */}
       <Alert
@@ -142,19 +149,8 @@ const AddAccountCredentials: React.FC = () => {
           gap: 4,
         }}
       >
-        {/* LEFT COLUMN: Vertical progress + Account Card */}
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-          <Box sx={{ display: { xs: "none", md: "block" } }}>
-            <Stepper activeStep={2} orientation="vertical" sx={{ pr: 2 }}>
-              {steps.map((label, idx) => (
-                <Step key={label} completed={idx < 2}>
-                  <StepLabel sx={{ alignItems: "start" }}>{label}</StepLabel>
-                </Step>
-              ))}
-            </Stepper>
-          </Box>
-        
-          <Card
+        {/* LEFT ACCOUNT CARD */}
+        <Card
           sx={{
             p: 3,
             borderRadius: 3,
@@ -203,7 +199,6 @@ const AddAccountCredentials: React.FC = () => {
             </Box>
           </Stack>
         </Card>
-        </Box>
 
         {/* RIGHT SIDE – FORM */}
         <Card sx={{ p: 4, borderRadius: 3 }} elevation={3}>

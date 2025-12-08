@@ -16,6 +16,9 @@ import {
   FormControlLabel,
   TextField,
   Typography,
+  Stepper,
+  Step,
+  StepLabel,
   Select,
   Chip,
   Avatar,
@@ -111,6 +114,8 @@ const categories = [
 
 const BuyerAddProduct: React.FC = () => {
   const navigate = useNavigate();
+  const steps = ["Make Payment", "Add account", "Credentials", "Review"];
+  const activeStep = 1; // Add account
   const [category, setCategory] = useState<string>("");
   const [name, setName] = useState<string>("");
   const [description, setDescription] = useState<string>("");
@@ -134,6 +139,19 @@ const BuyerAddProduct: React.FC = () => {
               Add Account
             </Typography>
 
+            {/* Stepper */}
+            <Box sx={{ display: "flex", justifyContent: "center", mb: 1 }}>
+              <Stepper activeStep={activeStep} sx={{ width: "100%", maxWidth: 600 }}>
+                {steps.map((label) => (
+                  <Step key={label}>
+                    <StepLabel>{label}</StepLabel>
+                  </Step>
+                ))}
+              </Stepper>
+            </Box>
+
+            {/* Progress bar removed per request */}
+
             {/* Account Information */}
             <Typography variant="subtitle1" fontWeight="medium" gutterBottom sx={{ mt: 5 }}>
               Account Information
@@ -152,20 +170,25 @@ const BuyerAddProduct: React.FC = () => {
                 renderValue={(selected) => {
                   const item = categories.find((c) => c.value === selected);
                   if (!item) return "Select Account Category";
+                  const IconComp = ICON_MAP[item.value];
                   return (
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                      <Avatar
-                        sx={{
-                          width: 32,
-                          height: 32,
-                          bgcolor: item.color,
-                          color: "white",
-                          fontWeight: "bold",
-                          fontSize: "0.9rem",
-                        }}
-                      >
-                        {item.letter}
-                      </Avatar>
+                      {IconComp ? (
+                        renderBadge(IconComp, 32)
+                      ) : (
+                        <Avatar
+                          sx={{
+                            width: 32,
+                            height: 32,
+                            bgcolor: item.color,
+                            color: "white",
+                            fontWeight: "bold",
+                            fontSize: "0.9rem",
+                          }}
+                        >
+                          {item.letter}
+                        </Avatar>
+                      )}
                       <Typography fontWeight="medium">{item.label}</Typography>
                     </Box>
                   );
@@ -174,17 +197,21 @@ const BuyerAddProduct: React.FC = () => {
                 {categories.map((cat) => (
                   <MenuItem key={cat.value} value={cat.value}>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                      <Avatar
-                        sx={{
-                          width: 36,
-                          height: 36,
-                          bgcolor: cat.color,
-                          color: "white",
-                          fontWeight: "bold",
-                        }}
-                      >
-                        {cat.letter}
-                      </Avatar>
+                      {ICON_MAP[cat.value] ? (
+                        renderBadge(ICON_MAP[cat.value], 40)
+                      ) : (
+                        <Avatar
+                          sx={{
+                            width: 36,
+                            height: 36,
+                            bgcolor: cat.color,
+                            color: "white",
+                            fontWeight: "bold",
+                          }}
+                        >
+                          {cat.letter}
+                        </Avatar>
+                      )}
                       <Typography>{cat.label}</Typography>
                     </Box>
                   </MenuItem>
@@ -295,4 +322,4 @@ const BuyerAddProduct: React.FC = () => {
   );
 };
 
-export default BuyerAddProduct;
+export default BuyerAddProduct; 
