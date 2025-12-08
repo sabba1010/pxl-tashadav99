@@ -106,24 +106,35 @@ const AddAccountCredentials: React.FC = () => {
   };
 
   return (
-    <Container maxWidth="xl" sx={{ py: 5 }}>
+    <Container maxWidth="xl" sx={{ px: { xs: 2, sm: 3, md: 4 }, py: { xs: 3, sm: 4, md: 5 } }}>
       {/* HEADER */}
-      <Typography variant="h4" fontWeight="bold" align="left">
+      <Typography
+        variant="h4"
+        fontWeight="bold"
+        align="left"
+        sx={{ fontSize: { xs: "1.5rem", sm: "1.8rem", md: "2.125rem" }, mb: 1 }}
+      >
         Sell your account
       </Typography>
 
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>
+      <Typography
+        variant="body2"
+        color="text.secondary"
+        sx={{ mb: 4, fontSize: { xs: "0.85rem", md: "0.95rem" } }}
+      >
         Add any account to sell to thousands of customers on our platform
       </Typography>
 
       {/* STEPPER */}
-      <Stepper activeStep={2} sx={{ mb: 4, maxWidth: 500 }}>
-        {steps.map((label) => (
-          <Step key={label}>
-            <StepLabel>{label}</StepLabel>
-          </Step>
-        ))}
-      </Stepper>
+      <Box sx={{ display: { xs: "none", md: "block" }, mb: 4 }}>
+        <Stepper activeStep={2} sx={{ maxWidth: 500 }}>
+          {steps.map((label) => (
+            <Step key={label}>
+              <StepLabel>{label}</StepLabel>
+            </Step>
+          ))}
+        </Stepper>
+      </Box>
 
       {/* WARNING BANNER */}
       <Alert
@@ -133,12 +144,13 @@ const AddAccountCredentials: React.FC = () => {
           py: 2,
           borderRadius: 2,
           bgcolor: "#fff9e2",
+          fontSize: { xs: "0.8rem", md: "1rem" },
         }}
       >
         You are in <strong>DEFAULT PLAN</strong>, your account upload limit
         number for today is <strong>40</strong>. If you want to upload more
         account, upgrade your plan.
-        <Button size="small" variant="outlined" sx={{ ml: 1 }}>
+        <Button size="small" variant="outlined" sx={{ ml: 1, fontSize: { xs: "0.7rem", md: "0.875rem" } }}>
           Choose Your Plan Here
         </Button>
       </Alert>
@@ -148,54 +160,56 @@ const AddAccountCredentials: React.FC = () => {
         sx={{
           display: "grid",
           gridTemplateColumns: { xs: "1fr", md: "350px 1fr" },
-          gap: 4,
+          gap: { xs: 2, md: 4 },
         }}
       >
         {/* LEFT ACCOUNT CARD */}
         <Card
           sx={{
-            p: 3,
-            borderRadius: 3,
+            p: { xs: 2, sm: 3 },
+            borderRadius: { xs: 2, md: 3 },
             height: "fit-content",
             border: "1px solid #eee",
           }}
         >
-          <Stack direction="row" spacing={3} alignItems="center">
-            <Box sx={{ width: 60, height: 60, minWidth: 60 }}>
+          <Stack direction={{ xs: "column", sm: "row" }} spacing={{ xs: 2, md: 3 }} alignItems={{ xs: "flex-start", sm: "center" }}>
+            <Box sx={{ width: { xs: 50, md: 60 }, height: { xs: 50, md: 60 }, minWidth: { xs: 50, md: 60 } }}>
               {/* Use MyAds-style badge when we have a known platformKey */}
-              {selectedAccount.platformKey === "instagram" && renderBadge(FaInstagram as IconType, 48)}
-              {selectedAccount.platformKey === "snapchat" && renderBadge(FaSnapchatGhost as IconType, 48)}
-              {selectedAccount.platformKey === "facebook" && renderBadge(FaFacebookF as IconType, 48)}
+              {selectedAccount.platformKey === "instagram" && renderBadge(FaInstagram as IconType, 40)}
+              {selectedAccount.platformKey === "snapchat" && renderBadge(FaSnapchatGhost as IconType, 40)}
+              {selectedAccount.platformKey === "facebook" && renderBadge(FaFacebookF as IconType, 40)}
               {!["instagram", "snapchat", "facebook"].includes(selectedAccount.platformKey as string) && (
                 <Avatar
                   sx={{
                     bgcolor: selectedAccount.color,
-                    width: 60,
-                    height: 60,
+                    width: { xs: 50, md: 60 },
+                    height: { xs: 50, md: 60 },
                     fontWeight: "bold",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                   }}
                 >
-                  <selectedAccount.Icon size={28} color="#fff" />
+                  <selectedAccount.Icon size={24} color="#fff" />
                 </Avatar>
               )}
             </Box>
 
             <Box>
-              <Typography fontWeight="bold">{selectedAccount.name}</Typography>
-              <Typography variant="body2" color="text.secondary">
+              <Typography fontWeight="bold" sx={{ fontSize: { xs: "0.9rem", md: "1rem" } }}>
+                {selectedAccount.name}
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: "0.8rem", md: "0.9rem" } }}>
                 {selectedAccount.platform}
               </Typography>
               <Typography
                 variant="h6"
                 fontWeight="bold"
-                sx={{ color: "#33ac6f" }}
+                sx={{ color: "#33ac6f", fontSize: { xs: "1.1rem", md: "1.5rem" } }}
               >
                 ${selectedAccount.price}
               </Typography>
-              <Typography variant="caption" color="success.main">
+              <Typography variant="caption" color="success.main" sx={{ fontSize: { xs: "0.7rem", md: "0.75rem" } }}>
                 {selectedAccount.delivery}
               </Typography>
             </Box>
@@ -203,12 +217,12 @@ const AddAccountCredentials: React.FC = () => {
         </Card>
 
         {/* RIGHT SIDE – FORM */}
-        <Card sx={{ p: 4, borderRadius: 3 }} elevation={3}>
+        <Card sx={{ p: { xs: 3, sm: 4 }, borderRadius: { xs: 2, md: 3 } }} elevation={3}>
           <Typography
             variant="h6"
             fontWeight="bold"
             align="left"
-            sx={{ mb: 3 }}
+            sx={{ mb: 3, fontSize: { xs: "1rem", md: "1.25rem" } }}
           >
             Account Credentials
           </Typography>
@@ -223,6 +237,7 @@ const AddAccountCredentials: React.FC = () => {
               onChange={(e) =>
                 setFormData({ ...formData, username: e.target.value })
               }
+              inputProps={{ style: { fontSize: "0.9rem" } }}
             />
 
             {/* Password */}
@@ -234,11 +249,12 @@ const AddAccountCredentials: React.FC = () => {
               onChange={(e) =>
                 setFormData({ ...formData, password: e.target.value })
               }
+              inputProps={{ style: { fontSize: "0.9rem" } }}
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
-                    <IconButton onClick={() => setShowPassword((p) => !p)}>
-                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    <IconButton size="small" onClick={() => setShowPassword((p) => !p)}>
+                      {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
                     </IconButton>
                   </InputAdornment>
                 ),
@@ -253,6 +269,7 @@ const AddAccountCredentials: React.FC = () => {
               onChange={(e) =>
                 setFormData({ ...formData, previewLink: e.target.value })
               }
+              inputProps={{ style: { fontSize: "0.9rem" } }}
             />
 
             {/* Additional Info Section Title */}
@@ -260,7 +277,7 @@ const AddAccountCredentials: React.FC = () => {
               variant="subtitle2"
               fontWeight="bold"
               color="text.secondary"
-              sx={{ mt: 1 }}
+              sx={{ mt: 1, fontSize: { xs: "0.8rem", md: "0.875rem" } }}
             >
               Additional Information (optional)
             </Typography>
@@ -273,6 +290,7 @@ const AddAccountCredentials: React.FC = () => {
               onChange={(e) =>
                 setFormData({ ...formData, attachedEmail: e.target.value })
               }
+              inputProps={{ style: { fontSize: "0.9rem" } }}
             />
 
             {/* Attached Password */}
@@ -284,11 +302,12 @@ const AddAccountCredentials: React.FC = () => {
               onChange={(e) =>
                 setFormData({ ...formData, attachedPassword: e.target.value })
               }
+              inputProps={{ style: { fontSize: "0.9rem" } }}
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
-                    <IconButton>
-                      <VisibilityOff />
+                    <IconButton size="small">
+                      <VisibilityOff fontSize="small" />
                     </IconButton>
                   </InputAdornment>
                 ),
@@ -305,6 +324,7 @@ const AddAccountCredentials: React.FC = () => {
               onChange={(e) =>
                 setFormData({ ...formData, additionalInfo: e.target.value })
               }
+              inputProps={{ style: { fontSize: "0.9rem" } }}
             />
           </Stack>
 
@@ -315,6 +335,7 @@ const AddAccountCredentials: React.FC = () => {
               display: "flex",
               justifyContent: "flex-end",
               gap: 2,
+              flexDirection: { xs: "column", sm: "row" },
             }}
           >
             <Button
@@ -323,8 +344,9 @@ const AddAccountCredentials: React.FC = () => {
               sx={{
                 borderColor: "#33ac6f",
                 color: "#33ac6f",
-                px: 4,
+                px: { xs: 2, md: 4 },
                 borderRadius: 3,
+                fontSize: { xs: "0.9rem", md: "1rem" },
               }}
             >
               Review
@@ -334,9 +356,10 @@ const AddAccountCredentials: React.FC = () => {
               variant="contained"
               sx={{
                 bgcolor: "#33ac6f",
-                px: 5,
+                px: { xs: 2, md: 5 },
                 borderRadius: 3,
                 fontWeight: "bold",
+                fontSize: { xs: "0.9rem", md: "1rem" },
                 "&:hover": { bgcolor: "#2e7d32" },
               }}
             >
@@ -350,12 +373,12 @@ const AddAccountCredentials: React.FC = () => {
       <Avatar
         sx={{
           position: "fixed",
-          bottom: 30,
-          right: 30,
+          bottom: { xs: 20, md: 30 },
+          right: { xs: 20, md: 30 },
           bgcolor: "#33ac6f",
-          width: 65,
-          height: 65,
-          fontSize: "2rem",
+          width: { xs: 50, md: 65 },
+          height: { xs: 50, md: 65 },
+          fontSize: { xs: "1.5rem", md: "2rem" },
           boxShadow: 4,
         }}
       >
