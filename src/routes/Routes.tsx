@@ -31,6 +31,7 @@ import MyOrder from "../components/MyOrder/MyOrder";
 import Plan from "../pages/plan/Plan";
 import MyAds from "../components/Myproducts/MyAds";
 import AddAccountCredentials from "../dashboard/buyer-dahboard/AddAccountCredentials";
+import Review from "../dashboard/buyer-dahboard/Review";
 
 const Routes = createBrowserRouter([
   {
@@ -90,6 +91,10 @@ const Routes = createBrowserRouter([
         path: "/sell-your-account",
         element: <AddAccountCredentials/>,
       },
+        {
+          path: "/review",
+          element: <Review />,
+        },
       {
         path: "buyer-dashboard",
         element: <Buyer />,

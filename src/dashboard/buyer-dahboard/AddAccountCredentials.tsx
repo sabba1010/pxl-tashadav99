@@ -1,5 +1,6 @@
 // src/pages/AddAccountCredentials.tsx
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Box,
   Button,
@@ -83,6 +84,7 @@ const renderBadge = (IconComponent: IconType, size = 36): React.ReactElement => 
 const steps = ["Make Payment", "Add account", "Credentials", "Review"];
 
 const AddAccountCredentials: React.FC = () => {
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     username: "",
@@ -317,6 +319,7 @@ const AddAccountCredentials: React.FC = () => {
           >
             <Button
               variant="outlined"
+              onClick={() => navigate('/review')}
               sx={{
                 borderColor: "#33ac6f",
                 color: "#33ac6f",
@@ -349,7 +352,7 @@ const AddAccountCredentials: React.FC = () => {
           position: "fixed",
           bottom: 30,
           right: 30,
-          bgcolor: "#FF6A00",
+          bgcolor: "#33ac6f",
           width: 65,
           height: 65,
           fontSize: "2rem",
