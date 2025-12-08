@@ -181,8 +181,6 @@ const MyOrder: React.FC = () => {
     return orders.filter((o) => o.status === activeTab);
   }, [activeTab, orders]);
 
-  const chatCount = (id: string) => (parseInt(id, 10) % 4) + 1;
-
   return (
     <>
       <div className="min-h-screen bg-[#F3EFEE] pt-16 sm:pt-20 pb-20 sm:pb-24">
@@ -220,7 +218,7 @@ const MyOrder: React.FC = () => {
 
             {/* List */}
             <div className="p-4 sm:p-6">
-              <div className="max-h-[62vh] overflow-y-auto pr-2 sm:pr-4 space-y-4 sm:space-y-6">
+              <div className="space-y-3">
                 {filtered.length === 0 ? (
                   <div className="py-12 sm:py-20 flex flex-col items-center text-center text-gray-500">
                     <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-[#0A1A3A] flex items-center justify-center mb-4">
@@ -238,89 +236,57 @@ const MyOrder: React.FC = () => {
                   filtered.map((o) => (
                     <div
                       key={o.id}
-                      className="bg-[#F8FAFB] rounded-2xl p-4 border border-gray-100 flex flex-col sm:flex-row gap-4"
+                      className="bg-[#F8FAFB] rounded-lg p-4 flex flex-col sm:flex-row gap-4 border border-gray-100 hover:shadow-md transition-shadow"
                     >
-                      {/* Left Icon */}
+                      {/* Left Icon - Smaller */}
                       <div className="flex-shrink-0">
-                        {renderBadge(o.icon, 40)}
+                        {renderBadge(o.icon, 28)}
                       </div>
 
-                      {/* Main Content */}
-                      <div className="flex-1 min-w-0 flex flex-col">
-                        {/* Top Row: Sell Badge + Platform + Order Number */}
-                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
-                          <span className="font-semibold text-[#D4A643]">Sell</span>
-                          <span className="font-medium text-[#6B7280]">{o.platform}</span>
-                          <span className="text-[#6B7280]">
-                            Order number
-                            <span className="font-bold text-[#0A1A3A]"> #{o.orderNumber}</span>
+                      {/* Middle Content */}
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-sm font-semibold text-[#0A1A3A] line-clamp-1">{o.title}</h3>
+                        <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{o.desc}</p>
+
+                        <div className="mt-2">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs bg-gray-100 text-gray-600">
+                            <span className="w-1.5 h-1.5 bg-gray-400 rounded-full"></span>
+                            {o.platform}
                           </span>
                         </div>
 
-                        {/* Title & Description */}
-                        <h3 className="mt-3 text-lg font-bold text-[#0A1A3A] leading-tight">
-                          {o.title}
-                        </h3>
-                        {o.desc && (
-                          <p className="mt-1 text-sm text-gray-600 line-clamp-2">{o.desc}</p>
-                        )}
+                        <div className="mt-3">
+                          <span className="text-xl font-bold text-[#0A1A3A]">${o.price}</span>
+                        </div>
+                      </div>
 
-                        {/* Seller */}
-                        <div className="mt-3 flex items-center gap-2 text-sm text-gray-600">
-                          <span className="w-1.5 h-1.5 bg-gray-400 rounded-full"></span>
-                          <span>{o.seller}</span>
+                      {/* Right Column */}
+                      <div className="flex flex-col justify-between items-end">
+                        <div className="text-right">
+                          <span
+                            className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium border ${
+                              o.status === "Completed"
+                                ? "bg-green-50 text-green-700 border-green-200"
+                                : o.status === "Pending"
+                                  ? "bg-amber-50 text-amber-700 border-amber-200"
+                                  : "bg-red-50 text-red-700 border-red-200"
+                            }`}
+                          >
+                            {o.status}
+                          </span>
+                          <p className="text-xs text-gray-500 mt-1">{o.date}</p>
                         </div>
 
-                        {/* Bottom Row: Status, Date, Price (mobile stacked, desktop side-by-side) */}
-                        <div className="mt-4 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
-                          {/* Status + Date */}
-                          <div className="flex flex-col">
-                            <div className="flex items-center gap-2">
-                              <div className={`w-2 h-2 rounded-full ${
-                                o.status === "Pending" ? "bg-orange-400" : "bg-emerald-400"
-                              }`}></div>
-                              <span className={`font-medium text-sm ${
-                                o.status === "Pending" ? "text-orange-600" : "text-emerald-600"
-                              }`}>
-                                {o.status}
-                              </span>
-                            </div>
-                            <span className="text-xs text-gray-500 mt-1">{o.date}</span>
-                          </div>
-
-                          {/* Price + Actions */}
-                          <div className="flex items-end gap-3">
-                            <div className="text-right">
-                              <div className="text-3xl font-bold text-[#0A1A3A] leading-none">
-                                ${o.price}
-                              </div>
-                            </div>
-
-                            <div className="flex items-center gap-2">
-                              {/* See Trade Button with Notification */}
-                              <div className="relative">
-                                <button className="px-4 py-2.5 bg-[#33ac6f] text-white text-sm rounded-lg flex items-center gap-2 hover:bg-[#2b9a60] transition">
-                                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                    <path d="M3 10h14M3 6h14M3 14h8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                  </svg>
-                                  <span>See Trade</span>
-                                </button>
-                                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                                  {chatCount(o.id)}
-                                </span>
-                              </div>
-
-                              {/* Chat Button */}
-                              <button
-                                className="p-2.5 bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow transition"
-                                title="Chat"
-                              >
-                                <svg className="w-5 h-5 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
-                                </svg>
-                              </button>
-                            </div>
-                          </div>
+                        {/* Buttons */}
+                        <div className="flex items-center gap-2 mt-4 sm:mt-0">
+                          <button className="p-1.5 rounded-lg bg-white border border-gray-200 shadow-sm hover:shadow transition">
+                            <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                            </svg>
+                          </button>
+                          <button className="px-3 py-1.5 bg-[#d4a643] text-white text-xs font-medium rounded-md hover:opacity-90 transition">
+                            See Trade
+                          </button>
                         </div>
                       </div>
                     </div>
