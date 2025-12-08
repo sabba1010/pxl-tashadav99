@@ -198,16 +198,17 @@ const MyOrder: React.FC = () => {
 
             <Link
               to="/report"
-              className="mt-2 sm:mt-0 bg-[#33ac6f] text-white px-4 sm:px-6 py-2 rounded-full font-medium hover:opacity-95 transition-shadow shadow"
+              className="mt-2 sm:mt-0 w-fit self-start bg-[#d4a643] text-white px-3 sm:px-4 py-2 rounded-full font-medium hover:opacity-95 transition-shadow shadow"
             >
               Report Order
             </Link>
-            </div>
-              {/* Card */}
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-                {/* Tabs */}
-                <div className="px-4 sm:px-6 pt-4 sm:pt-6">
-                  <nav className="flex gap-4 sm:gap-6 border-b border-gray-100 pb-3 sm:pb-4 overflow-x-auto">
+
+          </div>
+          {/* Card */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+            {/* Tabs */}
+            <div className="px-4 sm:px-6 pt-4 sm:pt-6">
+              <nav className="flex gap-4 sm:gap-6 border-b border-gray-100 pb-3 sm:pb-4 overflow-x-auto">
                 {TABS.map((t) => (
                   <button
                     key={t}
@@ -217,17 +218,17 @@ const MyOrder: React.FC = () => {
                     {t}
                   </button>
                 ))}
-                  </nav>
-                </div>
+              </nav>
+            </div>
 
-                {/* List */}
-                <div className="p-4 sm:p-6">
+            {/* List */}
+            <div className="p-4 sm:p-6">
               <div className="max-h-[62vh] overflow-y-auto pr-2 sm:pr-4 space-y-4 sm:space-y-6">
                 {filtered.length === 0 ? (
                   <div className="py-12 sm:py-20 flex flex-col items-center text-center text-gray-500">
                     <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-[#0A1A3A] flex items-center justify-center mb-4">
                       <svg className="w-10 h-10 sm:w-14 sm:h-14 text-white" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 00-3.7-3.7H11.5a.5.5 0 01-.5-.5v-3a.5.5 0 00-.5-.5h-1a.5.5 0 00-.5.5v3a.5.5 0 01-.5.5H5.638a4.006 4.006 0 00-3.7 3.7c-.092 1.209-.138 2.43-.138 3.662 0 1.232.046 2.453.138 3.662a4.006 4.006 0 003.7 3.7H8.5a.5.5 0 01.5.5v3a.5.5 0 00.5.5h1a.5.5 0 00.5-.5v-3a.5.5 0 01.5-.5h4.162a4.006 4.006 0 003.7-3.7c.092-1.209.138-2.43.138-3.662z"/>
+                        <path d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 00-3.7-3.7H11.5a.5.5 0 01-.5-.5v-3a.5.5 0 00-.5-.5h-1a.5.5 0 00-.5.5v3a.5.5 0 01-.5.5H5.638a4.006 4.006 0 00-3.7 3.7c-.092 1.209-.138 2.43-.138 3.662 0 1.232.046 2.453.138 3.662a4.006 4.006 0 003.7 3.7H8.5a.5.5 0 01.5.5v3a.5.5 0 00.5.5h1a.5.5 0 00.5-.5v-3a.5.5 0 01.5-.5h4.162a4.006 4.006 0 003.7-3.7c.092-1.209.138-2.43.138-3.662z" />
                       </svg>
                     </div>
                     <h3 className="text-lg sm:text-xl font-semibold text-[#0A1A3A] mb-2">No Orders</h3>
