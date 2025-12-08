@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 
 /**
  * Interface for a single deposit request record
@@ -333,7 +333,7 @@ const DepositRequests: React.FC = () => {
     }
 
     return result;
-  }, [requests, searchTerm, sortBy, sortOrder]);
+  }, [currentPage, requests, searchTerm, sortBy, sortOrder]);
 
   // --- Pagination Logic ---
   const paginatedRequests = useMemo(() => {

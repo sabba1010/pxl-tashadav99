@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useMemo, useState } from "react";
 
 /**
  * Interface for a single transaction record
@@ -388,7 +388,7 @@ const AllTransactions: React.FC = () => {
     }
 
     return result;
-  }, [transactions, searchTerm, sortBy, sortOrder]);
+  }, [transactions, currentPage, searchTerm, sortBy, sortOrder]);
 
   // --- Pagination Logic ---
   const paginatedTransactions = useMemo(() => {
