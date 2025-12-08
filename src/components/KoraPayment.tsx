@@ -24,11 +24,12 @@ export default function KoraPayment() {
       const user: UserData = { name: "Rubel Mia", email: "rubel@example.com" };
       const amount = 500;
 
-      const response = await axios.post<PaymentResponse>(
-        "http://localhost:3200/api/korapay/create-payment",
-        { amount, user },
-        { headers: { "Content-Type": "application/json" } }
-      );
+const response = await axios.post<PaymentResponse>(
+  "http://localhost:3200/korapay/create",
+  { amount, user },
+  { headers: { "Content-Type": "application/json" } }
+);
+
 
       console.log("create-payment response:", response.data); // runtime inspect
 
