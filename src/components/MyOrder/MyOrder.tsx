@@ -183,6 +183,8 @@ const MyOrder: React.FC = () => {
     return orders.filter((o) => o.status === activeTab);
   }, [activeTab, orders]);
 
+  const chatCount = (id: string) => (parseInt(id, 10) % 4) + 1;
+
   return (
     <>
       <div className="min-h-screen bg-[#F3EFEE] pt-16 sm:pt-20 pb-20 sm:pb-24">
@@ -196,12 +198,12 @@ const MyOrder: React.FC = () => {
 
             <Link
               to="/report"
-              className="mt-2 sm:mt-0 bg-[#d4a643] text-white px-4 sm:px-6 py-2 rounded-full font-medium hover:opacity-95 transition-shadow shadow"
+              className="mt-2 sm:mt-0 bg-[#33ac6f] text-white px-4 sm:px-6 py-2 rounded-full font-medium hover:opacity-95 transition-shadow shadow"
             >
               Report Order
             </Link>
-          </div>
 
+          </div>
           {/* Card */}
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
             {/* Tabs */}
@@ -226,12 +228,12 @@ const MyOrder: React.FC = () => {
                   <div className="py-12 sm:py-20 flex flex-col items-center text-center text-gray-500">
                     <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-[#0A1A3A] flex items-center justify-center mb-4">
                       <svg className="w-10 h-10 sm:w-14 sm:h-14 text-white" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 00-3.7-3.7H11.5a.5.5 0 01-.5-.5v-3a.5.5 0 00-.5-.5h-1a.5.5 0 00-.5.5v3a.5.5 0 01-.5.5H5.638a4.006 4.006 0 00-3.7 3.7c-.092 1.209-.138 2.43-.138 3.662 0 1.232.046 2.453.138 3.662a4.006 4.006 0 003.7 3.7H8.5a.5.5 0 01.5.5v3a.5.5 0 00.5.5h1a.5.5 0 00.5-.5v-3a.5.5 0 01.5-.5h4.162a4.006 4.006 0 003.7-3.7c.092-1.209.138-2.43.138-3.662z"/>
+                        <path d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 00-3.7-3.7H11.5a.5.5 0 01-.5-.5v-3a.5.5 0 00-.5-.5h-1a.5.5 0 00-.5.5v3a.5.5 0 01-.5.5H5.638a4.006 4.006 0 00-3.7 3.7c-.092 1.209-.138 2.43-.138 3.662 0 1.232.046 2.453.138 3.662a4.006 4.006 0 003.7 3.7H8.5a.5.5 0 01.5.5v3a.5.5 0 00.5.5h1a.5.5 0 00.5-.5v-3a.5.5 0 01.5-.5h4.162a4.006 4.006 0 003.7-3.7c.092-1.209.138-2.43.138-3.662z" />
                       </svg>
                     </div>
                     <h3 className="text-lg sm:text-xl font-semibold text-[#0A1A3A] mb-2">No Orders</h3>
                     <p className="text-sm sm:text-base text-gray-500 max-w-md">You haven't placed any orders yet. Explore the marketplace and grab great offers!</p>
-                    <Link to="/marketplace" className="mt-4 sm:mt-6 bg-[#D4A643] text-[#111111] px-5 py-2 rounded-full font-medium hover:bg-[#1BC47D] transition">
+                    <Link to="/marketplace" className="mt-4 sm:mt-6 bg-[#33ac6f] text-[#111111] px-5 py-2 rounded-full font-medium hover:bg-[#2aa46a] transition">
                       Browse Marketplace
                     </Link>
                   </div>
@@ -252,11 +254,14 @@ const MyOrder: React.FC = () => {
                       <div className="flex-1 min-w-0">
                         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-6">
                           <div className="flex-1 min-w-0">
-                            <div className="text-sm font-semibold text-[#D4A643]">Sell <span className="text-sm font-medium text-[#6B7280] ml-2">{o.platform}</span></div>
+                            <div className="flex items-center gap-3">
+                              <div className="text-sm font-semibold text-[#D4A643]">Sell</div>
+                              <div className="text-sm font-medium text-[#6B7280]">{o.platform}</div>
+                            </div>
                             <div className="text-xs text-[#6B7280] mt-1">Order number <span className="text-[#0A1A3A] font-semibold">#{o.orderNumber}</span></div>
 
-                            <h3 className="text-sm font-semibold text-[#0A1A3A] mt-2 truncate">{o.title}</h3>
-                            <p className="text-xs text-gray-500 mt-1 line-clamp-2">{o.desc}</p>
+                            <h3 className="text-base sm:text-lg font-semibold text-[#0A1A3A] mt-3">{o.title}</h3>
+                            <p className="text-sm text-gray-500 mt-1 line-clamp-2">{o.desc}</p>
 
                             <div className="mt-3 flex items-center gap-3 text-sm text-gray-500">
                               <span className="inline-block w-2 h-2 bg-gray-300 rounded-full" />
@@ -264,28 +269,26 @@ const MyOrder: React.FC = () => {
                             </div>
                           </div>
 
-                          {/* right meta - becomes full width under content on mobile */}
-                          <div className="w-full sm:w-36 flex sm:flex-col flex-row justify-between sm:items-end items-center gap-2">
-                            <div className="text-lg font-bold text-[#0A1A3A]">${o.price}</div>
-
-                            <div className="flex items-center gap-2">
-                              <button className="px-2 py-1 rounded-md bg-[#d4a643] text-white text-xs inline-flex items-center gap-2">
-                                {React.createElement(FaRegCommentDots as any, { size: 12, color: "#fff" })}
-                                <span className="hidden sm:inline">See Trade</span>
-                                <span className="sm:hidden">Chat</span>
-                              </button>
+                          {/* right column: status/date/price & actions */}
+                          <div className="w-full sm:w-48 flex flex-col items-end gap-2 text-right">
+                            <div className="text-sm text-green-500 font-medium flex items-center gap-2">
+                              <span className="w-2 h-2 rounded-full bg-[#34D399] inline-block" />
+                              <span className="text-sm text-[#10B981]">{o.status}</span>
                             </div>
+                            <div className="text-xs text-gray-500">{o.date}</div>
+                            <div className="text-2xl font-bold text-[#0A1A3A] mt-2">${o.price}</div>
 
-                            <div className="mt-1 sm:mt-3">
-                              <span
-                                className={`inline-block px-3 py-1 rounded-full text-xs ${
-                                  o.status === "Completed" ? "bg-[#ECFDF3] text-[#0F9D58]" :
-                                  o.status === "Pending" ? "bg-[#FFFBEB] text-[#B45309]" :
-                                  "bg-[#FFF1F2] text-[#9E2A2B]"
-                                }`}
-                              >
-                                {o.status}
-                              </span>
+                            <div className="mt-3 flex items-center gap-2">
+                              <div className="relative">
+                                <button className="px-4 py-2 rounded-md bg-[#33ac6f] text-white text-sm inline-flex items-center gap-2">
+                                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 10h14M3 6h14M3 14h8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                                  <span>See Trade</span>
+                                </button>
+                                <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">{chatCount(o.id)}</div>
+                              </div>
+                              <button className="p-2 rounded-md bg-white border border-gray-100 shadow-sm" title="Chat">
+                                <svg className="w-4 h-4 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" /></svg>
+                              </button>
                             </div>
                           </div>
                         </div>
@@ -300,13 +303,13 @@ const MyOrder: React.FC = () => {
       </div>
 
       {/* Floating + button (visible on mobile & desktop) */}
-      <Link
-        to="/add-product"
-        className="hidden sm:fixed bottom-6 right-6 w-14 h-14 bg-[#d4a643] hover:bg-[#c4963a] text-white rounded-full shadow-2xl flex items-center justify-center z-50 transition-all"
-        aria-label="Add product"
-      >
-        {React.createElement(FaPlus as any, { size: 18 })}
-      </Link>
+       <Link
+             to="/add-product"
+             className="hidden sm:flex sm:fixed bottom-6 right-6 w-14 h-14 bg-[#33ac6f] hover:bg-[#c4963a] text-white rounded-full shadow-2xl items-center justify-center z-50 transition-all"
+             aria-label="Add product"
+           >
+             {React.createElement(FaPlus as any, { size: 18 })}
+           </Link>
     </>
   );
 };
