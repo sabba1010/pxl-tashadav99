@@ -2,7 +2,7 @@
 import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import type { IconType } from "react-icons";
-import { FaInstagram, FaFacebookF, FaTwitter, FaPlus } from "react-icons/fa";
+import { FaInstagram, FaFacebookF, FaTwitter, FaPlus, FaTimes, FaStar, FaEnvelope, FaDownload } from "react-icons/fa";
 
 /* ---------------------------------------------
    Brand color map & gradients (Marketplace style)
@@ -43,7 +43,10 @@ const gradientFromHex = (hex?: string) => {
 const renderBadge = (IconComponent: IconType, size = 40) => {
   const badgeSize = Math.max(36, size);
   const brandHex = ICON_COLOR_MAP.get(IconComponent);
-  const bg = brandHex ? gradientFromHex(brandHex) : vibrantGradients[String(IconComponent).length % vibrantGradients.length];
+  const bg =
+    brandHex
+      ? gradientFromHex(brandHex)
+      : vibrantGradients[String(IconComponent).length % vibrantGradients.length];
   const C = IconComponent as unknown as React.ComponentType<any>;
   return (
     <div
@@ -82,6 +85,8 @@ interface Order {
   date: string;
   status: OrderStatus;
   icon: IconType;
+  trackingId?: string | null;
+  supportEmail?: string | null;
 }
 
 const MOCK_ORDERS: Order[] = [
@@ -89,49 +94,57 @@ const MOCK_ORDERS: Order[] = [
     id: "1",
     platform: "Instagram",
     title: "Aged Instagram Account 7 years",
-    desc: "Strong account with real followers.",
+    desc: "Strong account with real followers and organic growth. Login provided with email recovery.",
     orderNumber: "e4a70600-58e5-4878-9a81",
     seller: "Ibrahim",
     price: 7,
-    date: "Dec 5, 01:50",
+    date: "Dec 5, 2025 01:50",
     status: "Completed",
     icon: FaInstagram,
+    trackingId: "TRACK-IG-001",
+    supportEmail: "ibrahim@example.com",
   },
   {
     id: "2",
     platform: "Facebook",
     title: "Old Facebook Account (7 years)",
-    desc: "Marketplace enabled, no restrictions.",
+    desc: "Marketplace enabled account, verified email, low risk.",
     orderNumber: "12d983b1-aa18-4585",
     seller: "Rahman",
     price: 15,
-    date: "Dec 4, 19:53",
+    date: "Dec 4, 2025 19:53",
     status: "Completed",
     icon: FaFacebookF,
+    trackingId: "TRACK-FB-002",
+    supportEmail: "rahman@example.com",
   },
   {
     id: "3",
     platform: "Twitter",
     title: "Aged Twitter account 3 years",
-    desc: "Good standing, real followers.",
+    desc: "Good standing account with authentic followers.",
     orderNumber: "174029fc-8237-44ca",
     seller: "Alban",
     price: 7,
-    date: "Dec 4, 19:21",
+    date: "Dec 4, 2025 19:21",
     status: "Completed",
     icon: FaTwitter,
+    trackingId: null,
+    supportEmail: "alban@example.com",
   },
   {
     id: "4",
     platform: "Instagram",
     title: "Fresh Instagram PVA",
-    desc: "Phone verified & secure.",
+    desc: "Phone verified & secure. Includes recovery email.",
     orderNumber: "bb92a-aff3-55f1",
     seller: "Afsar",
     price: 5,
-    date: "Today, 14:10",
+    date: "Dec 9, 2025 14:10",
     status: "Pending",
     icon: FaInstagram,
+    trackingId: null,
+    supportEmail: "afsar@example.com",
   },
   {
     id: "5",
@@ -141,9 +154,11 @@ const MOCK_ORDERS: Order[] = [
     orderNumber: "a1021f-8892-aa99",
     seller: "Rahim",
     price: 10,
-    date: "Today, 10:30",
+    date: "Dec 9, 2025 10:30",
     status: "Pending",
     icon: FaFacebookF,
+    trackingId: null,
+    supportEmail: "rahim@example.com",
   },
 ];
 
@@ -151,11 +166,29 @@ const TABS = ["All", "Pending", "Completed", "Cancelled"] as const;
 type Tab = (typeof TABS)[number];
 
 /* ---------------------------------------------
-   Component (responsive) — full file, clean & compact mobile cards
+   Icon casts & Stars component (fix TS react-icons typing)
+---------------------------------------------- */
+const FaTimesIcon = FaTimes as unknown as React.ComponentType<any>;
+const FaStarIcon = FaStar as unknown as React.ComponentType<any>;
+const FaEnvelopeIcon = FaEnvelope as unknown as React.ComponentType<any>;
+const FaDownloadIcon = FaDownload as unknown as React.ComponentType<any>;
+
+const Stars: React.FC<{ value: number }> = ({ value }) => (
+  <div className="flex items-center gap-1">
+    {Array.from({ length: 5 }).map((_, i) => (
+      <FaStarIcon key={i} className={`w-3 h-3 ${i < value ? "text-yellow-400" : "text-gray-300"}`} />
+    ))}
+  </div>
+);
+
+/* ---------------------------------------------
+   Component (responsive) — full file, with order-specific modal details
 ---------------------------------------------- */
 const MyOrder: React.FC = () => {
   const [activeTab, setActiveTab] = useState<Tab>("All");
   const [cartCount, setCartCount] = useState(0);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+
   const orders = MOCK_ORDERS;
   const filtered = useMemo(() => {
     if (activeTab === "All") return orders;
@@ -164,8 +197,21 @@ const MyOrder: React.FC = () => {
 
   const addToCart = (o: Order) => {
     setCartCount((c) => c + 1);
-    // TODO: replace with real action
-    alert(`${o.title} added to cart (mock).`);
+    // placeholder (mock)
+  };
+
+  // Mock: contact seller via mailto (opens user's mail client)
+  const contactSeller = (o: Order) => {
+    const email = o.supportEmail ?? "support@example.com";
+    const subject = encodeURIComponent(`Order enquiry: ${o.orderNumber}`);
+    const body = encodeURIComponent(`Hi ${o.seller},%0D%0A%0D%0AI have a question about my order ${o.orderNumber} — ${o.title}.%0D%0A%0D%0ARegards,`);
+    window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
+  };
+
+  // Mock: download invoice (navigates to a placeholder invoice route)
+  const downloadInvoice = (o: Order) => {
+    // in real app generate PDF / call API
+    window.open(`/orders/${o.id}/invoice`, "_blank");
   };
 
   return (
@@ -233,7 +279,6 @@ const MyOrder: React.FC = () => {
                   </div>
                 ) : (
                   filtered.map((o) => (
-                    /* ---------- CLEAN & COMPACT CARD ---------- */
                     <article
                       key={o.id}
                       className="bg-[#F8FAFB] rounded-xl p-3 sm:p-4 flex items-start gap-3 border border-gray-100 hover:shadow-md transition-shadow"
@@ -276,18 +321,13 @@ const MyOrder: React.FC = () => {
 
                           <div className="flex items-center gap-2">
                             <button
-                              onClick={() => alert(`Viewing order ${o.orderNumber} (mock)`)}
+                              onClick={() => setSelectedOrder(o)}
                               className="px-3 py-1.5 bg-white border border-gray-200 rounded-md text-xs shadow-sm"
                             >
                               View
                             </button>
 
-                            <button
-                              onClick={() => addToCart(o)}
-                              className="px-3 py-1.5 bg-[#33ac6f] text-white text-xs rounded-md shadow-sm"
-                            >
-                              Buy
-                            </button>
+                         
                           </div>
                         </div>
                       </div>
@@ -308,6 +348,99 @@ const MyOrder: React.FC = () => {
       >
         {React.createElement(FaPlus as any, { size: 18 })}
       </Link>
+
+      {/* --------- ORDER-SPECIFIC modal (no Buy) --------- */}
+      {selectedOrder && (
+        <>
+          <div className="fixed inset-0 bg-black/60 z-40" onClick={() => setSelectedOrder(null)} />
+
+          <div className="fixed inset-x-0 bottom-0 sm:inset-auto sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:max-w-lg bg-white rounded-t-3xl sm:rounded-3xl z-50 max-h-[90vh] sm:max-h-[80vh] overflow-y-auto shadow-2xl">
+            <div className="sm:hidden absolute top-2 left-1/2 -translate-x-1/2 w-12 h-1.5 bg-gray-300 rounded-full" />
+            <div className="sticky top-0 bg-white border-b sm:border-b-0 px-6 py-4 flex justify-between items-center">
+              <div>
+                <h2 className="text-lg font-bold text-[#0A1A3A]">{selectedOrder.title}</h2>
+                <div className="text-xs text-gray-500 mt-0.5">{selectedOrder.platform} • Ordered on {selectedOrder.date}</div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <div className={`text-xs font-semibold px-2 py-1 rounded ${selectedOrder.status === "Completed" ? "bg-green-50 text-green-700" : selectedOrder.status === "Pending" ? "bg-amber-50 text-amber-700" : "bg-red-50 text-red-700"}`}>
+                  {selectedOrder.status}
+                </div>
+
+                <button onClick={() => setSelectedOrder(null)} className="p-2 rounded-md hover:bg-gray-100">
+                  <FaTimesIcon className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6">
+              <div className="flex justify-center">{renderBadge(selectedOrder.icon, 72)}</div>
+
+              <div className="mt-4 text-3xl font-bold text-[#0A1A3A]">${selectedOrder.price.toFixed(2)}</div>
+
+              <div className="mt-4 grid grid-cols-1 gap-3 text-sm">
+                <div>
+                  <p className="text-gray-500">Order Number</p>
+                  <p className="font-medium">{selectedOrder.orderNumber}</p>
+                </div>
+
+                <div>
+                  <p className="text-gray-500">Seller</p>
+                  <p className="font-medium">{selectedOrder.seller}</p>
+                </div>
+
+                
+                <div>
+                  <p className="text-gray-500">Description</p>
+                  <p className="text-sm text-gray-600">{selectedOrder.desc ?? "No additional details."}</p>
+                </div>
+              </div>
+
+              {/* Buyer Protection block (same as Marketplace) */}
+              <div className="mt-4 border p-3 rounded-md bg-[#FBFFFB]">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-sm font-medium">Buyer Protection</div>
+                    <div className="text-xs text-gray-600">Protected purchase — secure transaction & refund policy</div>
+                  </div>
+                  <div className="text-xs font-semibold text-green-600">Verified</div>
+                </div>
+
+                <div className="mt-3 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Stars value={4} />
+                    <div className="text-xs text-gray-600">4.0 (120 reviews)</div>
+                  </div>
+                  <div className="text-xs text-gray-500">Warranty: 7 days</div>
+                </div>
+
+                <div className="mt-3">
+                  <p className="text-xs text-gray-600">Note: Check the buyer description & rating before purchase. Fraud protection available when you pay through our checkout.</p>
+                </div>
+              </div>
+
+              {/* Action buttons tailored for order */}
+              <div className="mt-6 grid grid-cols-1 gap-3">
+                <div className="flex gap-2">
+                  
+
+                
+                </div>
+
+                <div className="flex gap-2">
+            
+                  <button
+                    onClick={() => setSelectedOrder(null)}
+                    className="flex-1 py-2 border rounded"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </>
   );
 };
