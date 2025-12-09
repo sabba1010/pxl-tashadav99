@@ -5,6 +5,7 @@ import StandoutAccounts from "../../components/HomeComponents/StandoutAccounts";
 import ExplorebyCategory from "../../components/HomeComponents/ExplorebyCategory";
 import WhyChooseUs from "../../components/HomeComponents/WhyChooseUs";
 import HowItWorks from "../../components/HomeComponents/HowItWorks";
+//import HomeLinks from "../../components/HomeComponents/HomeLinks";
 
 const Home = () => {
   return (
@@ -19,6 +20,7 @@ const Home = () => {
       <WhyChooseUs />
       {/* How It Works - Modern Flow */}
       <HowItWorks />
+
     </div>
   );
 };
