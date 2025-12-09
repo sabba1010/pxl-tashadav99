@@ -6,7 +6,7 @@ const HowItWorks = () => {
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-5xl lg:text-5xl font-bold text-[#e6c06c]">
-            How It Works
+              How to purchase
           </h2>
           <p className="text-white text-xl mt-4">
             Simple, Secure, and Fast Process
