@@ -66,7 +66,7 @@ type Product = {
 
 // Reuse Marketplace-style renderIcon (round badge)
 const renderIconBadge = (IconComp: IconType | undefined, size = 28) => {
-  const badgeSize = Math.max(48, size + 16);
+  const badgeSize = Math.max(32, size + 12);
   const brandHex = IconComp ? ICON_COLOR_MAP.get(IconComp) : undefined;
   const bg = brandHex
     ? gradientFromHex(brandHex)

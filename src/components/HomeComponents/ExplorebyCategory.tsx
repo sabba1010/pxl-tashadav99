@@ -12,7 +12,7 @@ const ExplorebyCategory = () => {
         </p>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-6xl mx-auto">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 max-w-6xl mx-auto">
         {[
           { icon: "⭐", title: "Featured Listings" },
           { icon: "🚀", title: "Marketing & Promotion" },
@@ -25,12 +25,12 @@ const ExplorebyCategory = () => {
         ].map((cat, i) => (
           <div
             key={i}
-            className="group bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl p-8 text-center hover:bg-white/20 hover:border-[#daab4c]/50 transition-all duration-300 cursor-pointer transform hover:scale-105"
+            className="group bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl p-4 md:p-8 text-center hover:bg-white/20 hover:border-[#daab4c]/50 transition-all duration-300 cursor-pointer transform hover:scale-105"
           >
-            <div className="text-5xl mb-4 group-hover:scale-110 transition-transform">
+            <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl mb-3 group-hover:scale-110 transition-transform">
               {cat.icon}
             </div>
-            <h3 className="text-lg font-semibold text-white">{cat.title}</h3>
+            <h3 className="text-sm md:text-lg font-semibold text-white">{cat.title}</h3>
           </div>
         ))}
       </div>
