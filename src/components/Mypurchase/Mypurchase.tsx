@@ -409,22 +409,7 @@ const MyPurchase: React.FC = () => {
 
                 {/* Actions: Contact seller + Download invoice + Close */}
                 <div className="mt-6 grid grid-cols-1 gap-3">
-                  <div className="flex gap-2">
-                  <button
-  onClick={() => contactSeller(selected.supportEmail ?? undefined, selected.purchaseNumber ?? undefined)}
-  className="flex-1 py-2 border rounded flex items-center justify-center gap-2"
->
-  <FaEnvelopeIcon /> Contact seller
-</button>
-
-
-                    <button
-                      onClick={() => downloadInvoice(selected.id)}
-                      className="flex-1 py-2 border rounded flex items-center justify-center gap-2"
-                    >
-                      <FaDownloadIcon /> Download invoice
-                    </button>
-                  </div>
+               
 
                   <div className="flex gap-2">
                     <button onClick={() => setSelected(null)} className="flex-1 py-2 border rounded">Close</button>
