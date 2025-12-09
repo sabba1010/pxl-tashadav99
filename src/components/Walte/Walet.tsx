@@ -3,6 +3,8 @@ import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { FaPlus } from "react-icons/fa";
 
+/* Workaround: cast icons to React components to avoid TS2786 */
+const FaPlusIcon = FaPlus as unknown as React.ComponentType<any>;
 
 type Tx = {
   id: string;
@@ -196,11 +198,10 @@ export default function Wallet(): React.ReactElement {
                 className="flex flex-col items-center gap-2 w-full sm:w-auto"
                 title="Deposit"
               >
-                <div className="w-12 sm:w-14 h-12 sm:h-14 rounded-md border border-gray-200 bg-white flex items-center justify-center shadow-sm">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                    <path d="M12 5v14" stroke={ROYAL_GOLD} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                    <path d="M5 12h14" stroke={ROYAL_GOLD} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
+                {/* Use responsive sizes: mobile smaller, desktop same as before */}
+                <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-md border border-gray-200 bg-white flex items-center justify-center shadow-sm">
+                  {/* Using FaPlusIcon keeps TS happy; visual same as previous svg */}
+                  <FaPlusIcon size={16} />
                 </div>
                 <div className="text-xs sm:text-sm" style={{ color: "#6B7280" }}>Deposit</div>
               </button>
@@ -291,25 +292,6 @@ export default function Wallet(): React.ReactElement {
         </div>
       </div>
 
-      {/* Larger Floating + button */}
-      {/* {showFloating && (
-        <button
-          onClick={() => {
-            window.scrollTo({ top: 0, behavior: "smooth" });
-            setNotice({ type: "info", text: "Scrolled to top (mock)" });
-          }}
-          aria-label="Open new ticket"
-          className="fixed right-6 bottom-6 z-50 w-16 h-16 rounded-full flex items-center justify-center shadow-lg transition"
-          style={{ backgroundColor: ROYAL_GOLD, color: CHARCOAL }}
-          onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = EMERALD)}
-          onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = ROYAL_GOLD)}
-        >
-          <svg className="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" style={{ color: CHARCOAL }}>
-            <path d="M12 5v14M5 12h14" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </button>
-      )} */}
-
       {/* Deposit Modal */}
       {showDepositModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: "rgba(0,0,0,0.4)" }}>
@@ -375,26 +357,14 @@ export default function Wallet(): React.ReactElement {
         </div>
       )}
 
-      {/* small toggle to hide/show floating */}
-      {/* <button
-        onClick={() => setShowFloating((s) => !s)}
-        className="fixed right-6 bottom-24 z-50 w-10 h-10 rounded-full border shadow"
-        title="Toggle FAB"
-        style={{ backgroundColor: CLEAN_WHITE, color: CHARCOAL }}
-      >
-        {showFloating ? "—" : "+"}
-      </button> */}
-
       {/* Floating + button (visible on mobile & desktop) */}
       <Link
         to="/add-product"
         className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 bg-[#33ac6f] text-white w-12 h-12 sm:w-14 sm:h-14 rounded-full shadow-2xl flex items-center justify-center text-xl sm:text-2xl font-light hover:opacity-95 transition z-40"
         aria-label="Add product"
       >
-        {React.createElement(FaPlus as any, { size: 16 })}
+        <FaPlusIcon size={16} />
       </Link>
-
-
     </div>
   );
 }
