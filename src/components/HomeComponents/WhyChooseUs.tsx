@@ -1,4 +1,5 @@
 import React from "react";
+import ExplorebyCategory from "./ExplorebyCategory";
 
 const WhyChooseUs = () => {
   return (
@@ -40,7 +41,9 @@ const WhyChooseUs = () => {
         </div>
 
         {/* Features */}
-        <div>
+
+        <ExplorebyCategory />
+        {/* <div>
           <h2 className="text-3xl md:text-5xl lg:text-5xl font-bold text-center text-transparent bg-clip-text bg-gradient-to-r from-[#daab4c] to-[#b8860b] mb-12">
             Powerful Features for Buyers & Sellers
           </h2>
@@ -87,7 +90,7 @@ const WhyChooseUs = () => {
               </div>
             ))}
           </div>
-        </div>
+        </div> */}
       </div>
     </section>
   );
