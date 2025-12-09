@@ -29,9 +29,13 @@ import Payment from "../components/Payment";
 //import MyAds from "../components/HomeComponents/MYAd";
 import MyOrder from "../components/MyOrder/MyOrder";
 import Plan from "../pages/plan/Plan";
+
+
 import MyAds from "../components/Myproducts/MyAds";
 import AddAccountCredentials from "../dashboard/buyer-dahboard/AddAccountCredentials";
 import Review from "../dashboard/buyer-dahboard/Review";
+import ReferralProgram from "../components/Policy/ReferralProgram";
+import PrivacyPolicy from "../components/Policy/PrivacyPolicy";
 
 const Routes = createBrowserRouter([
   {
@@ -46,6 +50,14 @@ const Routes = createBrowserRouter([
       {
         path: "/marketplace",
         element: <Marketplace />,
+      },
+      {
+        path: "/referral",
+        element: <ReferralProgram />,
+      },
+      {
+        path: "/privacy",
+        element: <PrivacyPolicy />,
       },
        {
          path:"/plans",
