@@ -101,7 +101,7 @@ const Register = () => {
                 <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-pink-600 rounded-2xl flex items-center justify-center shadow-2xl shadow-orange-500/50">
                   <Sparkles className="w-9 h-9 text-white" />
                 </div>
-                <span className="text-5xl font-black text-white">cctbazaar</span>
+                <span className="text-5xl font-black text-white">Acctempire</span>
               </motion.div>
 
               <motion.h1
@@ -141,7 +141,7 @@ const Register = () => {
                   <div className="w-14 h-14 bg-gradient-to-br from-orange-500 to-pink-600 rounded-2xl flex items-center justify-center shadow-xl">
                     <Sparkles className="w-8 h-8 text-white" />
                   </div>
-                  <span className="text-3xl font-bold text-white">cctbazaar</span>
+                  <span className="text-3xl font-bold text-white">Acctempire</span>
                 </div>
               </div>
 
@@ -151,7 +151,7 @@ const Register = () => {
                 transition={{ delay: 0.3 }}
                 className="text-4xl font-black text-center text-white mb-2 flex items-center justify-center gap-3"
               >
-                Welcome to cctbazaar
+                Welcome to Acctempire
                 <motion.span
                   animate={{ rotate: [0, 20, -10, 15, 0] }}
                   transition={{ duration: 2, repeat: Infinity }}
@@ -293,7 +293,7 @@ const Register = () => {
                     className="w-5 h-5 text-orange-500 rounded focus:ring-orange-500 bg-gray-800 border-gray-600"
                   />
                   <label htmlFor="terms" className="text-sm text-gray-400">
-                    By clicking on this, I give consent to cctbazaar Privacy Policy and Terms of Use
+                    By clicking on this, I give consent to Acctempire Privacy Policy and Terms of Use
                   </label>
                 </div>
 

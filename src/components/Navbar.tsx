@@ -52,9 +52,9 @@ export default function Navbar() {
               </button>
 
               <NavLink to="/" className="flex items-center gap-3">
-                <img src="/logo.png" alt="CCTBazaar" className="h-9 w-auto" />
+                <img src="/logo.png" alt="Acctempire" className="h-9 w-auto" />
                 <span className="hidden sm:inline font-bold text-xl" style={{ color: EMPIRE_BLUE }}>
-                  CCTBazaar
+                  Acctempire
                 </span>
               </NavLink>
             </div>

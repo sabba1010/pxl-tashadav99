@@ -18,7 +18,7 @@ export default function Footer({ theme = "dark" }: Props) {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 items-start">
           {/* Brand */}
           <div>
-            <h2 className={`text-lg font-semibold ${isDark ? "text-white" : "text-gray-900"} mb-1`}>CCTBazaar</h2>
+            <h2 className={`text-lg font-semibold ${isDark ? "text-white" : "text-gray-900"} mb-1`}>Acctempire</h2>
             <p className="text-sm leading-tight">
               Your trusted marketplace for CCTV cameras, NVRs, DVRs & security solutions.
             </p>
@@ -55,7 +55,7 @@ export default function Footer({ theme = "dark" }: Props) {
           <div>
             <h3 className={`text-sm font-semibold ${isDark ? "text-white" : "text-gray-900"} mb-2`}>Contact</h3>
             <ul className="text-sm space-y-1">
-              <li className={`${isDark ? "text-gray-400" : "text-gray-600"}`}>Email: support@cctbazaar.com</li>
+              <li className={`${isDark ? "text-gray-400" : "text-gray-600"}`}>Email: support@Acctempire.com</li>
               <li className={`${isDark ? "text-gray-400" : "text-gray-600"}`}>Phone: +880 1234-567890</li>
               <li className={`${isDark ? "text-gray-400" : "text-gray-600"}`}>Address: Dhaka, Bangladesh</li>
             </ul>
@@ -64,7 +64,7 @@ export default function Footer({ theme = "dark" }: Props) {
 
         {/* Bottom row: compact, center on small screens */}
         <div className={`mt-5 pt-4 text-center text-xs ${isDark ? "text-gray-500" : "text-gray-500"} border-t ${isDark ? "border-gray-800" : "border-gray-100"}`}>
-          © {new Date().getFullYear()} CCTBazaar — All rights reserved.
+          © {new Date().getFullYear()} Acctempire — All rights reserved.
         </div>
       </div>
     </footer>
