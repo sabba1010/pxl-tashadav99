@@ -1,17 +1,16 @@
+// src/MyOrder/MyOrder.tsx
 import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import type { IconType } from "react-icons";
-import { FaInstagram, FaFacebookF, FaTwitter, FaPlus, FaRegCommentDots } from "react-icons/fa";
+import { FaInstagram, FaFacebookF, FaTwitter, FaPlus } from "react-icons/fa";
 
 /* ---------------------------------------------
    Brand color map & gradients (Marketplace style)
-   Use Map keyed by component references to avoid production name mangling
 ---------------------------------------------- */
 const ICON_COLOR_MAP = new Map<IconType, string>([
   [FaInstagram, "#E1306C"],
   [FaFacebookF, "#1877F2"],
   [FaTwitter, "#1DA1F2"],
-  [FaRegCommentDots, "#6B46C1"],
   [FaPlus, "#111827"],
 ]);
 
@@ -39,14 +38,11 @@ const gradientFromHex = (hex?: string) => {
 };
 
 /* ---------------------------------------------
-   Render round badge (marketplace style)
-   Force white icon color & prevent blend overrides
+   Render round badge (marketplace style) — tuned for compact mobile
 ---------------------------------------------- */
-const renderBadge = (IconComponent: IconType, size = 36) => {
-  // smaller badges to match Marketplace/Mypurchase sizing
-  const badgeSize = Math.max(36, size + 8);
+const renderBadge = (IconComponent: IconType, size = 40) => {
+  const badgeSize = Math.max(36, size);
   const brandHex = ICON_COLOR_MAP.get(IconComponent);
-  // fallback gradient: use component string length for deterministic pick
   const bg = brandHex ? gradientFromHex(brandHex) : vibrantGradients[String(IconComponent).length % vibrantGradients.length];
   const C = IconComponent as unknown as React.ComponentType<any>;
   return (
@@ -56,32 +52,16 @@ const renderBadge = (IconComponent: IconType, size = 36) => {
         width: badgeSize,
         height: badgeSize,
         minWidth: badgeSize,
-        borderRadius: "50%",
+        borderRadius: 12,
         display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
         background: bg,
-        boxShadow: "0 10px 28px rgba(16,24,40,0.12)",
-        transition: "transform .18s ease, box-shadow .18s ease",
-        mixBlendMode: "normal",
-        isolation: "isolate",
+        boxShadow: "0 10px 20px rgba(16,24,40,0.08)",
       }}
-      onMouseEnter={(e) => {
-        const el = e.currentTarget as HTMLDivElement;
-        el.style.transform = "translateY(-6px) scale(1.02)";
-        el.style.boxShadow = "0 18px 44px rgba(16,24,40,0.18)";
-      }}
-      onMouseLeave={(e) => {
-        const el = e.currentTarget as HTMLDivElement;
-        el.style.transform = "translateY(0)";
-        el.style.boxShadow = "0 10px 28px rgba(16,24,40,0.12)";
-      }}
+      className="shrink-0"
     >
-      {React.createElement(C, {
-        size: Math.round(size * 0.75),
-        style: { color: "#fff", fill: "#fff", WebkitTextFillColor: "#fff", filter: "drop-shadow(0 1px 1px rgba(0,0,0,0.12))" },
-        className: "standout-icon",
-      })}
+      {React.createElement(C, { size: Math.round(size * 0.66), style: { color: "#fff", fill: "#fff" } })}
     </div>
   );
 };
@@ -113,7 +93,7 @@ const MOCK_ORDERS: Order[] = [
     orderNumber: "e4a70600-58e5-4878-9a81",
     seller: "Ibrahim",
     price: 7,
-    date: "Friday, December 5, 01:50",
+    date: "Dec 5, 01:50",
     status: "Completed",
     icon: FaInstagram,
   },
@@ -125,7 +105,7 @@ const MOCK_ORDERS: Order[] = [
     orderNumber: "12d983b1-aa18-4585",
     seller: "Rahman",
     price: 15,
-    date: "Thursday, December 4, 19:53",
+    date: "Dec 4, 19:53",
     status: "Completed",
     icon: FaFacebookF,
   },
@@ -137,7 +117,7 @@ const MOCK_ORDERS: Order[] = [
     orderNumber: "174029fc-8237-44ca",
     seller: "Alban",
     price: 7,
-    date: "Thursday, December 4, 19:21",
+    date: "Dec 4, 19:21",
     status: "Completed",
     icon: FaTwitter,
   },
@@ -171,35 +151,54 @@ const TABS = ["All", "Pending", "Completed", "Cancelled"] as const;
 type Tab = (typeof TABS)[number];
 
 /* ---------------------------------------------
-   Component (responsive)
+   Component (responsive) — full file, clean & compact mobile cards
 ---------------------------------------------- */
 const MyOrder: React.FC = () => {
   const [activeTab, setActiveTab] = useState<Tab>("All");
+  const [cartCount, setCartCount] = useState(0);
   const orders = MOCK_ORDERS;
   const filtered = useMemo(() => {
     if (activeTab === "All") return orders;
     return orders.filter((o) => o.status === activeTab);
   }, [activeTab, orders]);
 
+  const addToCart = (o: Order) => {
+    setCartCount((c) => c + 1);
+    // TODO: replace with real action
+    alert(`${o.title} added to cart (mock).`);
+  };
+
   return (
     <>
       <div className="min-h-screen bg-[#F3EFEE] pt-16 sm:pt-20 pb-20 sm:pb-24">
         <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
             <div>
               <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#0A1A3A]">Orders</h1>
               <p className="text-xs sm:text-sm text-gray-600 mt-1">All orders placed on your platform</p>
             </div>
-            <Link
-              to="/report"
-              className="mt-2 sm:mt-0 bg-[#d4a643] text-white px-4 sm:px-6 py-2 rounded-full font-medium hover:opacity-95 transition-shadow shadow"
-            >
-              Report Order
-            </Link>
+
+            <div className="flex items-center gap-3">
+              <Link
+                to="/report"
+                className="mt-2 sm:mt-0 bg-[#d4a643] text-white px-4 sm:px-6 py-2 rounded-full font-medium shadow hover:opacity-95 transition"
+              >
+                Report Order
+              </Link>
+
+              <Link to="/cart" className="relative">
+                <div className="p-2 bg-white border rounded-md shadow-sm">🛒</div>
+                {cartCount > 0 && (
+                  <div className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center">
+                    {cartCount}
+                  </div>
+                )}
+              </Link>
+            </div>
           </div>
 
-          {/* Card */}
+          {/* Card wrapper */}
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
             {/* Tabs */}
             <div className="px-4 sm:px-6 pt-4 sm:pt-6">
@@ -234,62 +233,65 @@ const MyOrder: React.FC = () => {
                   </div>
                 ) : (
                   filtered.map((o) => (
-                    <div
+                    /* ---------- CLEAN & COMPACT CARD ---------- */
+                    <article
                       key={o.id}
-                      className="bg-[#F8FAFB] rounded-lg p-4 flex flex-col sm:flex-row gap-4 border border-gray-100 hover:shadow-md transition-shadow"
+                      className="bg-[#F8FAFB] rounded-xl p-3 sm:p-4 flex items-start gap-3 border border-gray-100 hover:shadow-md transition-shadow"
+                      role="article"
+                      style={{ minHeight: 74 }}
                     >
-                      {/* Left Icon - Smaller */}
-                      <div className="flex-shrink-0">
-                        {renderBadge(o.icon, 28)}
+                      {/* Left Icon */}
+                      <div className="flex-shrink-0 mt-1">
+                        {renderBadge(o.icon, 36)}
                       </div>
 
                       {/* Middle Content */}
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-sm font-semibold text-[#0A1A3A] line-clamp-1">{o.title}</h3>
-                        <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{o.desc}</p>
+                        <h3 className="text-sm font-semibold text-[#0A1A3A] truncate">{o.title}</h3>
 
-                        <div className="mt-2">
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs bg-gray-100 text-gray-600">
-                            <span className="w-1.5 h-1.5 bg-gray-400 rounded-full"></span>
-                            {o.platform}
-                          </span>
+                        {/* Single-line desc on mobile, 2-lines on sm+ */}
+                        <p className="text-xs text-gray-500 mt-1 line-clamp-1 sm:line-clamp-2">
+                          {o.desc}
+                        </p>
+
+                        {/* platform + price row */}
+                        <div className="flex items-center justify-between mt-2">
+                          <span className="text-[11px] px-2 py-0.5 rounded bg-gray-100 text-gray-600">{o.platform}</span>
+                          <span className="text-base font-bold text-[#0A1A3A]">${o.price.toFixed(2)}</span>
                         </div>
 
-                        <div className="mt-3">
-                          <span className="text-xl font-bold text-[#0A1A3A]">${o.price}</span>
-                        </div>
-                      </div>
-
-                      {/* Right Column */}
-                      <div className="flex flex-col justify-between items-end">
-                        <div className="text-right">
+                        {/* footer: status + actions (compact) */}
+                        <div className="flex items-center justify-between mt-2">
                           <span
-                            className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium border ${
+                            className={`px-2 py-0.5 rounded-full text-[11px] font-medium border ${
                               o.status === "Completed"
                                 ? "bg-green-50 text-green-700 border-green-200"
                                 : o.status === "Pending"
-                                  ? "bg-amber-50 text-amber-700 border-amber-200"
-                                  : "bg-red-50 text-red-700 border-red-200"
+                                ? "bg-amber-50 text-amber-700 border-amber-200"
+                                : "bg-red-50 text-red-700 border-red-200"
                             }`}
                           >
                             {o.status}
                           </span>
-                          <p className="text-xs text-gray-500 mt-1">{o.date}</p>
-                        </div>
 
-                        {/* Buttons */}
-                        <div className="flex items-center gap-2 mt-4 sm:mt-0">
-                          <button className="p-1.5 rounded-lg bg-white border border-gray-200 shadow-sm hover:shadow transition">
-                            <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                            </svg>
-                          </button>
-                          <button className="px-3 py-1.5 bg-[#d4a643] text-white text-xs font-medium rounded-md hover:opacity-90 transition">
-                            See Trade
-                          </button>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => alert(`Viewing order ${o.orderNumber} (mock)`)}
+                              className="px-3 py-1.5 bg-white border border-gray-200 rounded-md text-xs shadow-sm"
+                            >
+                              View
+                            </button>
+
+                            <button
+                              onClick={() => addToCart(o)}
+                              className="px-3 py-1.5 bg-[#33ac6f] text-white text-xs rounded-md shadow-sm"
+                            >
+                              Buy
+                            </button>
+                          </div>
                         </div>
                       </div>
-                    </div>
+                    </article>
                   ))
                 )}
               </div>
@@ -298,7 +300,7 @@ const MyOrder: React.FC = () => {
         </div>
       </div>
 
-      {/* Floating + button (visible on mobile & desktop) */}
+      {/* Floating + button (visible on desktop) */}
       <Link
         to="/add-product"
         className="hidden sm:flex sm:fixed bottom-6 right-6 w-14 h-14 bg-[#33ac6f] hover:bg-[#c4963a] text-white rounded-full shadow-2xl items-center justify-center z-50 transition-all"
