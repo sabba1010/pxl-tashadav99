@@ -109,7 +109,7 @@ interface Purchase {
   date: string;
   status: PurchaseStatus;
   purchaseNumber?: string;
-  trackingId?: string | null;
+ 
   supportEmail?: string | null;
 }
 
@@ -127,7 +127,7 @@ const MOCK_PURCHASES: Purchase[] = [
     date: "Dec 5, 2025 02:12",
     status: "Cancelled",
     purchaseNumber: "PUR-0001",
-    trackingId: null,
+
     supportEmail: "senior@example.com",
   },
   {
@@ -140,7 +140,7 @@ const MOCK_PURCHASES: Purchase[] = [
     date: "Dec 4, 2025 13:01",
     status: "Completed",
     purchaseNumber: "PUR-0002",
-    trackingId: "TRACK-GM-002",
+
     supportEmail: "mailking@example.com",
   },
   {
@@ -153,7 +153,7 @@ const MOCK_PURCHASES: Purchase[] = [
     date: "Dec 3, 2025 09:21",
     status: "Completed",
     purchaseNumber: "PUR-0003",
-    trackingId: null,
+   
     supportEmail: "asdigitals@example.com",
   },
   {
@@ -166,7 +166,7 @@ const MOCK_PURCHASES: Purchase[] = [
     date: "Dec 2, 2025 18:00",
     status: "Pending",
     purchaseNumber: "PUR-0004",
-    trackingId: null,
+  
     supportEmail: "biztools@example.com",
   },
 ];
@@ -368,10 +368,7 @@ const MyPurchase: React.FC = () => {
                     <p className="font-medium">{selected.purchaseNumber ?? "—"}</p>
                   </div>
 
-                  <div>
-                    <p className="text-gray-500">Tracking ID</p>
-                    <p className="font-medium">{selected.trackingId ?? "Not available"}</p>
-                  </div>
+               
 
                   <div>
                     <p className="text-gray-500">Support Email</p>
