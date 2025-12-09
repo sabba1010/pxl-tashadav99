@@ -68,7 +68,7 @@ const ReportTransaction: React.FC = () => {
           {/* Primary Button */}
           <Link
             to="/report"
-            className="inline-flex items-center justify-center gap-3 w-full md:w-auto px-8 py-5 text-lg md:text-xl font-bold text-white bg-gradient-to-r from-teal-500 to-cyan-500 rounded-2xl shadow-lg hover:shadow-xl hover:shadow-teal-500/40 hover:scale-105 active:scale-95 transition-all duration-300"
+            className="inline-flex items-center justify-center gap-3 w-full md:w-auto px-3 py-3 text-4xl md:text-xl font-bold text-white bg-gradient-to-r from-teal-500 to-cyan-500 rounded-2xl shadow-lg hover:shadow-xl hover:shadow-teal-500/40 hover:scale-105 active:scale-95 transition-all duration-300"
           >
             <AlertCircle className="w-6 h-6 md:w-7 md:h-7" />
             Open Report Form
