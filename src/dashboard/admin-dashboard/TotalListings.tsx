@@ -376,7 +376,7 @@ const TotalListings: React.FC = () => {
     }
 
     return result;
-  }, [listings, searchTerm, sortBy, sortOrder]);
+  }, [currentPage, listings, searchTerm, sortBy, sortOrder]);
 
   // --- Pagination Logic ---
   const paginatedListings = useMemo(() => {

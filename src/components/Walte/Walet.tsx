@@ -113,28 +113,28 @@ export default function Wallet(): React.ReactElement {
   const renderList = (items: Tx[]) => {
     if (!items || items.length === 0) {
       return (
-        <div className="h-80 flex flex-col items-center justify-center" style={{ color: "#9CA3AF" }}>
-          <svg width="80" height="80" viewBox="0 0 24 24" fill="none" className="mb-3 opacity-80">
+        <div className="h-48 sm:h-60 lg:h-80 flex flex-col items-center justify-center" style={{ color: "#9CA3AF" }}>
+          <svg width="60" height="60" viewBox="0 0 24 24" fill="none" className="mb-3 opacity-80">
             <path d="M3 7h18" stroke="#CBD5E1" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             <rect x="3" y="8" width="18" height="10" rx="2" stroke="#CBD5E1" strokeWidth="1.5" />
             <path d="M8 12h8" stroke="#CBD5E1" strokeWidth="1.5" strokeLinecap="round" />
           </svg>
-          <div>No Data Found</div>
+          <div className="text-sm">No Data Found</div>
         </div>
       );
     }
     return (
-      <div className="space-y-3">
+      <div className="space-y-2 sm:space-y-3">
         {items.map((t) => (
-          <div key={t.id} className="flex items-center justify-between p-3 border rounded-md bg-white shadow-sm">
-            <div>
-              <div className="text-sm font-medium" style={{ color: EMPIRE_BLUE }}>
+          <div key={t.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-2 sm:p-3 border rounded-md bg-white shadow-sm gap-2 sm:gap-0">
+            <div className="w-full sm:w-auto">
+              <div className="text-xs sm:text-sm font-medium" style={{ color: EMPIRE_BLUE }}>
                 {t.type === "withdraw" ? "Withdrawal" : t.type === "manual-deposit" ? "Manual Deposit" : "Online Deposit"}
               </div>
               <div className="text-xs" style={{ color: "#6B7280" }}>{t.date} • {t.note}</div>
             </div>
-            <div className="text-right">
-              <div className="text-lg font-semibold" style={{ color: EMPIRE_BLUE }}>${t.amount.toFixed(2)}</div>
+            <div className="w-full sm:w-auto text-right">
+              <div className="text-lg sm:text-lg font-semibold" style={{ color: EMPIRE_BLUE }}>${t.amount.toFixed(2)}</div>
               <div
                 className="text-xs"
                 style={{
@@ -164,24 +164,24 @@ export default function Wallet(): React.ReactElement {
   };
 
   return (
-    <div className="min-h-[85vh] p-8" style={{ backgroundColor: "#f3efee" }}>
-      <div className="max-w-7xl mx-auto bg-white rounded-md p-6 shadow-sm">
-        <h2 className="text-3xl font-bold mb-6" style={{ color: EMPIRE_BLUE }}>Wallet</h2>
-        <div className="grid grid-cols-12 gap-6">
+    <div className="min-h-[85vh] p-4 sm:p-6 lg:p-8" style={{ backgroundColor: "#f3efee" }}>
+      <div className="max-w-7xl mx-auto bg-white rounded-md p-4 sm:p-6 shadow-sm">
+        <h2 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6" style={{ color: EMPIRE_BLUE }}>Wallet</h2>
+        <div className="grid grid-cols-12 gap-4 sm:gap-6">
           {/* Left card - made larger (height + width) */}
           <div className="col-span-12 lg:col-span-5">
             <div
-              className="rounded-2xl overflow-hidden relative text-white h-96 p-8 flex flex-col justify-between"
+              className="rounded-2xl overflow-hidden relative text-white h-48 sm:h-60 lg:h-96 p-4 sm:p-6 lg:p-8 flex flex-col justify-between"
               style={{
                 background: `linear-gradient(180deg, ${EMPIRE_BLUE} 0%, ${ROYAL_GOLD} 100%)`,
               }}
             >
               <div>
-                <div className="text-sm opacity-90">Your Balance</div>
+                <div className="text-xs sm:text-sm opacity-90">Your Balance</div>
               </div>
 
-              <div className="bg-white/20 rounded-xl px-6 py-3 self-start">
-                <div className="text-3xl font-semibold" style={{ color: CLEAN_WHITE }}>${balance.toFixed(2)}</div>
+              <div className="bg-white/20 rounded-xl px-4 sm:px-6 py-2 sm:py-3 self-start">
+                <div className="text-2xl sm:text-3xl font-semibold" style={{ color: CLEAN_WHITE }}>${balance.toFixed(2)}</div>
               </div>
 
               <svg className="absolute right-0 top-0 opacity-10" width="320" height="320" viewBox="0 0 240 240" fill="none">
@@ -190,24 +190,24 @@ export default function Wallet(): React.ReactElement {
               </svg>
             </div>
 
-            <div className="mt-6 flex items-center gap-6">
+            <div className="mt-4 sm:mt-6 flex flex-col sm:flex-row items-center gap-3 sm:gap-6">
               <button
                 onClick={() => setShowDepositModal(true)}
-                className="flex flex-col items-center gap-2"
+                className="flex flex-col items-center gap-2 w-full sm:w-auto"
                 title="Deposit"
               >
-                <div className="w-14 h-14 rounded-md border border-gray-200 bg-white flex items-center justify-center shadow-sm">
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                <div className="w-12 sm:w-14 h-12 sm:h-14 rounded-md border border-gray-200 bg-white flex items-center justify-center shadow-sm">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                     <path d="M12 5v14" stroke={ROYAL_GOLD} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                     <path d="M5 12h14" stroke={ROYAL_GOLD} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </div>
-                <div className="text-sm" style={{ color: "#6B7280", marginTop: 4 }}>Deposit</div>
+                <div className="text-xs sm:text-sm" style={{ color: "#6B7280" }}>Deposit</div>
               </button>
 
               <Link
                 to="/report"
-                className="ml-auto px-4 py-2 rounded-md font-medium"
+                className="ml-0 sm:ml-auto px-3 sm:px-4 py-2 rounded-md font-medium text-xs sm:text-sm w-full sm:w-auto text-center"
                 style={{ backgroundColor: ROYAL_GOLD, color: CHARCOAL }}
               >
                 Report transaction
@@ -217,11 +217,11 @@ export default function Wallet(): React.ReactElement {
 
           {/* Right main area - slightly wider */}
           <div className="col-span-12 lg:col-span-7">
-            <div className="flex items-center gap-4 border-b pb-3 mb-4">
+            <div className="flex items-center gap-2 sm:gap-4 border-b pb-2 sm:pb-3 mb-4 overflow-x-auto">
               {/* Active tab styling */}
               <button
                 onClick={() => setActiveTab("online")}
-                className="px-4 py-2 text-sm rounded-md transition"
+                className="px-2 sm:px-4 py-2 text-xs sm:text-sm rounded-md transition whitespace-nowrap"
                 style={
                   activeTab === "online"
                     ? { backgroundColor: ROYAL_GOLD, color: CHARCOAL, boxShadow: "0 6px 18px rgba(0,0,0,0.06)" }
@@ -233,7 +233,7 @@ export default function Wallet(): React.ReactElement {
 
               <button
                 onClick={() => setActiveTab("manual")}
-                className="px-4 py-2 text-sm rounded-md transition"
+                className="px-2 sm:px-4 py-2 text-xs sm:text-sm rounded-md transition whitespace-nowrap"
                 style={
                   activeTab === "manual"
                     ? { backgroundColor: ROYAL_GOLD, color: CHARCOAL, boxShadow: "0 6px 18px rgba(0,0,0,0.06)" }
@@ -245,7 +245,7 @@ export default function Wallet(): React.ReactElement {
 
               <button
                 onClick={() => setActiveTab("withdraw")}
-                className="px-4 py-2 text-sm rounded-md transition"
+                className="px-2 sm:px-4 py-2 text-xs sm:text-sm rounded-md transition whitespace-nowrap"
                 style={
                   activeTab === "withdraw"
                     ? { backgroundColor: ROYAL_GOLD, color: CHARCOAL, boxShadow: "0 6px 18px rgba(0,0,0,0.06)" }
@@ -256,18 +256,18 @@ export default function Wallet(): React.ReactElement {
               </button>
             </div>
 
-            <div className="min-h-[24rem] border border-gray-100 rounded-md p-6 bg-white">
+            <div className="min-h-[20rem] sm:min-h-[24rem] border border-gray-100 rounded-md p-4 sm:p-6 bg-white">
               {activeTab === "online" && (
                 <div>
-                  <div className="mb-4 flex items-center gap-3">
+                  <div className="mb-4 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
                     <button
                       onClick={() => handleFakeTopUp(10)}
-                      className="px-3 py-2 rounded"
+                      className="px-2 sm:px-3 py-2 rounded text-xs sm:text-sm"
                       style={{ backgroundColor: `${ROYAL_GOLD}20`, color: ROYAL_GOLD }}
                     >
                       Fake +$10
                     </button>
-                    <div className="text-sm" style={{ color: "#6B7280" }}>Simulate an online deposit (fake data)</div>
+                    <div className="text-xs sm:text-sm" style={{ color: "#6B7280" }}>Simulate an online deposit (fake data)</div>
                   </div>
                   {renderList(onlineDeposits)}
                 </div>
@@ -275,14 +275,14 @@ export default function Wallet(): React.ReactElement {
 
               {activeTab === "manual" && (
                 <div>
-                  <div className="mb-4 text-sm" style={{ color: "#6B7280" }}>Manual deposits submitted by user (mock). Admin approves them in real product.</div>
+                  <div className="mb-4 text-xs sm:text-sm" style={{ color: "#6B7280" }}>Manual deposits submitted by user (mock). Admin approves them in real product.</div>
                   {renderList(manualDeposits)}
                 </div>
               )}
 
               {activeTab === "withdraw" && (
                 <div>
-                  <div className="mb-4 text-sm" style={{ color: "#6B7280" }}>Past withdrawals</div>
+                  <div className="mb-4 text-xs sm:text-sm" style={{ color: "#6B7280" }}>Past withdrawals</div>
                   {renderList(withdrawals)}
                 </div>
               )}
@@ -312,32 +312,32 @@ export default function Wallet(): React.ReactElement {
 
       {/* Deposit Modal */}
       {showDepositModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ backgroundColor: "rgba(0,0,0,0.4)" }}>
-          <div className="bg-white rounded-md w-full max-w-md p-6">
-            <h3 className="text-lg font-semibold mb-3" style={{ color: EMPIRE_BLUE }}>Submit Manual Deposit (mock)</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: "rgba(0,0,0,0.4)" }}>
+          <div className="bg-white rounded-md w-full max-w-md p-4 sm:p-6">
+            <h3 className="text-base sm:text-lg font-semibold mb-3" style={{ color: EMPIRE_BLUE }}>Submit Manual Deposit (mock)</h3>
 
             <label className="text-xs" style={{ color: "#374151" }}>Amount (USD)</label>
             <input
               type="number"
               value={depositAmount}
               onChange={(e) => setDepositAmount(e.target.value === "" ? "" : Number(e.target.value))}
-              className="w-full border rounded px-3 py-2 mb-3"
+              className="w-full border rounded px-3 py-2 mb-3 text-sm"
               placeholder="50"
             />
 
             <label className="text-xs" style={{ color: "#374151" }}>Note</label>
-            <input value={depositNote} onChange={(e) => setDepositNote(e.target.value)} className="w-full border rounded px-3 py-2 mb-4" placeholder="Payment reference" />
+            <input value={depositNote} onChange={(e) => setDepositNote(e.target.value)} className="w-full border rounded px-3 py-2 mb-4 text-sm" placeholder="Payment reference" />
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3 flex-col sm:flex-row">
               <button
                 onClick={submitManualDeposit}
-                className="px-4 py-2 rounded disabled:opacity-60"
+                className="px-4 py-2 rounded disabled:opacity-60 text-sm w-full sm:w-auto"
                 disabled={loading}
                 style={{ backgroundColor: ROYAL_GOLD, color: CHARCOAL }}
               >
                 {loading ? "Submitting..." : "Submit"}
               </button>
-              <button onClick={() => setShowDepositModal(false)} className="px-4 py-2 border rounded" style={{ color: CHARCOAL }}>Cancel</button>
+              <button onClick={() => setShowDepositModal(false)} className="px-4 py-2 border rounded text-sm w-full sm:w-auto" style={{ color: CHARCOAL }}>Cancel</button>
             </div>
           </div>
         </div>
@@ -345,15 +345,15 @@ export default function Wallet(): React.ReactElement {
 
       {/* Report Modal */}
       {showReportModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ backgroundColor: "rgba(0,0,0,0.4)" }}>
-          <div className="bg-white rounded-md w-full max-w-sm p-6">
-            <h3 className="text-lg font-semibold mb-3" style={{ color: EMPIRE_BLUE }}>Report Transaction (mock)</h3>
-            <p className="text-sm" style={{ color: "#6B7280", marginBottom: 12 }}>You are submitting a mock report. In production this will notify support.</p>
-            <div className="flex items-center gap-3">
-              <button onClick={() => submitReport()} className="px-4 py-2 rounded disabled:opacity-60" disabled={loading} style={{ backgroundColor: ROYAL_GOLD, color: CHARCOAL }}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: "rgba(0,0,0,0.4)" }}>
+          <div className="bg-white rounded-md w-full max-w-sm p-4 sm:p-6">
+            <h3 className="text-base sm:text-lg font-semibold mb-3" style={{ color: EMPIRE_BLUE }}>Report Transaction (mock)</h3>
+            <p className="text-xs sm:text-sm" style={{ color: "#6B7280", marginBottom: 12 }}>You are submitting a mock report. In production this will notify support.</p>
+            <div className="flex items-center gap-2 sm:gap-3 flex-col sm:flex-row">
+              <button onClick={() => submitReport()} className="px-4 py-2 rounded disabled:opacity-60 text-sm w-full sm:w-auto" disabled={loading} style={{ backgroundColor: ROYAL_GOLD, color: CHARCOAL }}>
                 {loading ? "Sending..." : "Send Report"}
               </button>
-              <button onClick={() => setShowReportModal(false)} className="px-4 py-2 border rounded" style={{ color: CHARCOAL }}>Cancel</button>
+              <button onClick={() => setShowReportModal(false)} className="px-4 py-2 border rounded text-sm w-full sm:w-auto" style={{ color: CHARCOAL }}>Cancel</button>
             </div>
           </div>
         </div>
@@ -388,10 +388,10 @@ export default function Wallet(): React.ReactElement {
       {/* Floating + button (visible on mobile & desktop) */}
       <Link
         to="/add-product"
-        className="fixed bottom-6 right-6 bg-[#33ac6f] text-white w-14 h-14 rounded-full shadow-2xl flex items-center justify-center text-2xl sm:text-3xl font-light hover:opacity-95 transition z-40"
+        className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 bg-[#33ac6f] text-white w-12 h-12 sm:w-14 sm:h-14 rounded-full shadow-2xl flex items-center justify-center text-xl sm:text-2xl font-light hover:opacity-95 transition z-40"
         aria-label="Add product"
       >
-        {React.createElement(FaPlus as any, { size: 18 })}
+        {React.createElement(FaPlus as any, { size: 16 })}
       </Link>
 
 

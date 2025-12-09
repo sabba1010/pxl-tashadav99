@@ -4,9 +4,11 @@ import { Link } from "react-router-dom";
 import type { IconType } from "react-icons";
 import { FaInstagram, FaFacebookF, FaTwitter, FaWhatsapp, FaPlus } from "react-icons/fa";
 
+// Fix for react-icons in strict mode
+const Icon = FaPlus as React.ElementType;
+
 /* ---------------------------------------------
-   Brand color map & gradients (robust for prod)
-   Use Map keyed by component references to avoid name-mangling
+   Brand color map & gradients
 ---------------------------------------------- */
 const ICON_COLOR_MAP = new Map<IconType, string>([
   [FaInstagram, "#E1306C"],
@@ -20,8 +22,6 @@ const vibrantGradients = [
   "linear-gradient(135deg,#A18CD1 0%,#FBC2EB 100%)",
   "linear-gradient(135deg,#FDCB6E 0%,#FF6B6B 100%)",
   "linear-gradient(135deg,#84fab0 0%,#8fd3f4 100%)",
-  "linear-gradient(135deg,#FCCF31 0%,#F55555 100%)",
-  "linear-gradient(135deg,#9BE15D 0%,#00E3AE 100%)",
 ];
 
 const gradientFromHex = (hex: string) => {
@@ -38,62 +38,51 @@ const gradientFromHex = (hex: string) => {
 };
 
 /* ---------------------------------------------
-   Render round badge (marketplace style)
-   Force white icon color & prevent blend overrides
+   Render round badge - Smaller size
 ---------------------------------------------- */
-const renderBadge = (Icon: IconType, size = 36) => {
-  // make badges slightly smaller by default so cards match Marketplace sizing
-  const badgeSize = Math.max(36, size + 8);
+const renderBadge = (Icon: IconType, size = 28) => { // Reduced from 36
+  const badgeSize = size + 10; // Reduced from +12
   const brandHex = ICON_COLOR_MAP.get(Icon);
   const bg = brandHex
     ? gradientFromHex(brandHex)
     : vibrantGradients[String(Icon).length % vibrantGradients.length];
 
   const C = Icon as unknown as React.ComponentType<any>;
-
   return (
     <div
       aria-hidden
       style={{
         width: badgeSize,
         height: badgeSize,
-        minWidth: badgeSize,
         borderRadius: "50%",
-        display: "inline-flex",
+        display: "flex",
         alignItems: "center",
         justifyContent: "center",
         background: bg,
         boxShadow: "0 10px 28px rgba(16,24,40,0.12)",
-        transition: "transform .18s ease, box-shadow .18s ease",
-        mixBlendMode: "normal",
-        isolation: "isolate",
+        transition: "all .2s ease",
       }}
       onMouseEnter={(e) => {
-        const el = e.currentTarget as HTMLDivElement;
-        el.style.transform = "translateY(-6px) scale(1.02)";
-        el.style.boxShadow = "0 18px 44px rgba(16,24,40,0.18)";
+        e.currentTarget.style.transform = "translateY(-4px) scale(1.05)";
+        e.currentTarget.style.boxShadow = "0 18px 40px rgba(16,24,40,0.2)";
       }}
       onMouseLeave={(e) => {
-        const el = e.currentTarget as HTMLDivElement;
-        el.style.transform = "translateY(0)";
-        el.style.boxShadow = "0 10px 28px rgba(16,24,40,0.12)";
+        e.currentTarget.style.transform = "";
+        e.currentTarget.style.boxShadow = "0 10px 28px rgba(16,24,40,0.12)";
       }}
     >
       {React.createElement(C, {
-        size: Math.round(size * 0.75),
-        // force both color & fill to prevent inheritance / blend tint in production
-        style: { color: "#fff", fill: "#fff", WebkitTextFillColor: "#fff", filter: "drop-shadow(0 1px 1px rgba(0,0,0,0.12))" },
-        className: "standout-icon",
+        size: size * 0.7,
+        style: { color: "#fff", fill: "#fff" },
       })}
     </div>
   );
 };
 
 /* ---------------------------------------------
-   Data types & mock purchases
+   Types & Mock Data
 ---------------------------------------------- */
 type PurchaseStatus = "Pending" | "Completed" | "Cancelled";
-
 interface Purchase {
   id: string;
   platform: "instagram" | "facebook" | "twitter" | "whatsapp";
@@ -101,7 +90,7 @@ interface Purchase {
   desc?: string;
   seller: string;
   price: number;
-  date: string; // human readable for demo
+  date: string;
   status: PurchaseStatus;
 }
 
@@ -146,85 +135,61 @@ const MOCK_PURCHASES: Purchase[] = [
     date: "Monday, Nov 3rd, 10:30 AM",
     status: "Pending",
   },
-  {
-    id: "p5",
-    platform: "instagram",
-    title: "Instagram PVA 2020",
-    desc: "Aged instagram PVA account 2020 active and secure.",
-    seller: "IG King",
-    price: 12,
-    date: "Sunday, Sep 21st, 7:12 PM",
-    status: "Pending",
-  },
-  {
-    id: "p6",
-    platform: "twitter",
-    title: "Twitter Verified Helper",
-    desc: "Helper for getting verified features, supports 1 device login",
-    seller: "X Helper",
-    price: 7,
-    date: "Tuesday, Jul 8th, 11:05 AM",
-    status: "Cancelled",
-  },
 ];
 
 const TABS = ["All", "Pending", "Completed", "Cancelled"] as const;
 type Tab = (typeof TABS)[number];
 
-/* ---------------------------------------------
-   PlatformIcon: use renderBadge (no white box)
----------------------------------------------- */
 function PlatformIcon({ platform }: { platform: Purchase["platform"] }) {
-  const size = 36;
-  if (platform === "instagram") return renderBadge(FaInstagram, size);
-  if (platform === "facebook") return renderBadge(FaFacebookF, size);
-  if (platform === "twitter") return renderBadge(FaTwitter, size);
-  if (platform === "whatsapp") return renderBadge(FaWhatsapp, size);
-  // fallback neutral badge
-  return <div style={{ width: size, height: size, borderRadius: "50%", background: "#E5E7EB" }} />;
+  if (platform === "instagram") return renderBadge(FaInstagram);
+  if (platform === "facebook") return renderBadge(FaFacebookF);
+  if (platform === "twitter") return renderBadge(FaTwitter);
+  if (platform === "whatsapp") return renderBadge(FaWhatsapp);
+  return <div className="w-10 h-10 rounded-full bg-gray-200" />;
 }
 
 /* ---------------------------------------------
-   Component (responsive)
+   Main Component
 ---------------------------------------------- */
 const MyPurchase: React.FC = () => {
   const [activeTab, setActiveTab] = useState<Tab>("All");
-  const purchases = MOCK_PURCHASES;
-
   const filtered = useMemo(() => {
-    if (activeTab === "All") return purchases;
-    return purchases.filter((p) => p.status === activeTab);
-  }, [activeTab, purchases]);
+    if (activeTab === "All") return MOCK_PURCHASES;
+    return MOCK_PURCHASES.filter((p) => p.status === activeTab);
+  }, [activeTab]);
 
   return (
     <>
-      <div className="min-h-screen bg-[#F3EFEE] pt-16 sm:pt-20 pb-20 sm:pb-24">
+      <div className="min-h-screen bg-[#F3EFEE] pt-16 sm:pt-20 pb-20">
         <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
             <div>
-              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#0A1A3A]">My Purchase</h1>
-              <p className="text-xs sm:text-sm text-gray-600 mt-1">All of your product Purchase shows here</p>
+              <h1 className="text-2xl sm:text-3xl font-bold text-[#0A1A3A]">My Purchase</h1>
+              <p className="text-sm text-gray-600 mt-1">All of your product Purchase shows here</p>
             </div>
-
             <Link
               to="/report"
-              className="mt-2 sm:mt-0 bg-[#d4a643] text-white px-4 sm:px-6 py-2 rounded-full font-medium hover:opacity-95 transition-shadow shadow"
+              className="mt-4 sm:mt-0 bg-[#d4a643] text-white px-6 py-2.5 rounded-full font-medium shadow hover:opacity-90 transition"
             >
               Report Product
             </Link>
           </div>
 
-          {/* Card */}
+          {/* Main Card */}
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
             {/* Tabs */}
-            <div className="px-4 sm:px-6 pt-4 sm:pt-6">
-              <nav className="flex gap-4 sm:gap-6 border-b border-gray-100 pb-3 sm:pb-4 overflow-x-auto">
+            <div className="px-6 pt-6 border-b border-gray-100">
+              <nav className="flex gap-8 overflow-x-auto pb-4">
                 {TABS.map((t) => (
                   <button
                     key={t}
                     onClick={() => setActiveTab(t)}
-                    className={`pb-2 text-xs sm:text-sm ${activeTab === t ? "text-[#d4a643] border-b-2 border-[#d4a643]" : "text-gray-500"}`}
+                    className={`text-sm font-medium pb-3 border-b-2 transition-colors ${
+                      activeTab === t
+                        ? "text-[#d4a643] border-[#d4a643]"
+                        : "text-gray-500 border-transparent"
+                    }`}
                   >
                     {t}
                   </button>
@@ -232,19 +197,19 @@ const MyPurchase: React.FC = () => {
               </nav>
             </div>
 
-            {/* List */}
+            {/* Purchase List - Compact Cards */}
             <div className="p-4 sm:p-6">
-              <div className="max-h-[62vh] overflow-y-auto pr-2 sm:pr-4 space-y-4 sm:space-y-6">
+              <div className="space-y-3"> {/* Reduced from space-y-4 */}
                 {filtered.length === 0 ? (
-                  <div className="py-12 sm:py-20 flex flex-col items-center text-center text-gray-500">
-                    <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-[#0A1A3A] flex items-center justify-center mb-4">
-                      <svg className="w-10 h-10 sm:w-14 sm:h-14 text-white" viewBox="0 0 24 24" fill="currentColor">
+                  <div className="text-center py-20 text-gray-500">
+                    <div className="w-28 h-28 bg-[#0A1A3A] rounded-full flex items-center justify-center mx-auto mb-6">
+                      <svg className="w-14 h-14 text-white" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 00-3.7-3.7H11.5a.5.5 0 01-.5-.5v-3a.5.5 0 00-.5-.5h-1a.5.5 0 00-.5.5v3a.5.5 0 01-.5.5H5.638a4.006 4.006 0 00-3.7 3.7c-.092 1.209-.138 2.43-.138 3.662 0 1.232.046 2.453.138 3.662a4.006 4.006 0 003.7 3.7H8.5a.5.5 0 01.5.5v3a.5.5 0 00.5.5h1a.5.5 0 00.5-.5v-3a.5.5 0 01.5-.5h4.162a4.006 4.006 0 003.7-3.7c.092-1.209.138-2.43.138-3.662z" />
                       </svg>
                     </div>
-                    <h3 className="text-lg sm:text-xl font-semibold text-[#0A1A3A] mb-2">No Purchases</h3>
-                    <p className="text-sm sm:text-base text-gray-500 max-w-md">You haven't purchased anything yet. Explore the marketplace and grab amazing deals!</p>
-                    <Link to="/marketplace" className="mt-4 sm:mt-6 bg-[#D4A643] text-[#111111] px-5 py-2 rounded-full font-medium hover:bg-[#1BC47D] transition">
+                    <h3 className="text-xl font-semibold text-[#0A1A3A]">No Purchases</h3>
+                    <p className="mt-2 max-w-md mx-auto">You haven't purchased anything yet. Explore the marketplace!</p>
+                    <Link to="/marketplace" className="mt-6 inline-block bg-[#d4a643] text-black px-6 py-3 rounded-full font-medium">
                       Browse Marketplace
                     </Link>
                   </div>
@@ -252,55 +217,67 @@ const MyPurchase: React.FC = () => {
                   filtered.map((p) => (
                     <div
                       key={p.id}
-                      className="bg-[#F8FAFB] rounded-lg p-3 sm:p-4 flex flex-col sm:flex-row items-start gap-3 sm:gap-4 border border-[rgba(0,0,0,0.03)]"
+                      className="bg-[#F8FAFB] rounded-lg p-4 flex flex-col sm:flex-row gap-4 border border-gray-100 hover:shadow-md transition-shadow"
                     >
-                      {/* left icon (responsive) */}
-                        <div className="flex-shrink-0">
-                        <div className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center">
-                          <PlatformIcon platform={p.platform} />
+                      {/* Left Icon - Smaller */}
+                      <div className="flex-shrink-0">
+                        <PlatformIcon platform={p.platform} />
+                      </div>
+
+                      {/* Middle Content */}
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-sm font-semibold text-[#0A1A3A] line-clamp-1">{p.title}</h3>
+                        <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{p.desc}</p>
+
+                        <div className="mt-2">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs bg-gray-100 text-gray-600">
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                            </svg>
+                            Manual (P2P)
+                          </span>
+                        </div>
+
+                        <div className="mt-3 flex items-center gap-2 text-gray-600">
+                          <div className="w-1.5 h-1.5 bg-gray-400 rounded-full"></div>
+                          <div>
+                            <div className="text-xs font-medium">{p.seller}</div>
+                            <div className="text-xs text-gray-400">Offline</div>
+                          </div>
+                        </div>
+
+                        <div className="mt-3">
+                          <span className="text-xl font-bold text-[#0A1A3A]">${p.price}</span>
                         </div>
                       </div>
 
-                      {/* content */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-6">
-                          <div className="flex-1 min-w-0">
-                            <h3 className="text-sm font-semibold text-[#0A1A3A]">{p.title}</h3>
-                            <p className="text-xs text-gray-500 mt-1 line-clamp-2">{p.desc}</p>
+                      {/* Right Column */}
+                      <div className="flex flex-col justify-between items-end">
+                        <div className="text-right">
+                          <span
+                            className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium border ${
+                              p.status === "Completed"
+                                ? "bg-green-50 text-green-700 border-green-200"
+                                : p.status === "Pending"
+                                  ? "bg-amber-50 text-amber-700 border-amber-200"
+                                  : "bg-red-50 text-red-700 border-red-200"
+                            }`}
+                          >
+                            {p.status}
+                          </span>
+                          <p className="text-xs text-gray-500 mt-1">{p.date}</p>
+                        </div>
 
-                            <div className="mt-3 flex items-center gap-3 text-sm text-gray-500">
-                              <span className="inline-block w-2 h-2 bg-gray-300 rounded-full" />
-                              <span>{p.seller}</span>
-                            </div>
-                          </div>
-
-                          {/* right meta - becomes full width under content on mobile */}
-                          <div className="w-full sm:w-36 flex sm:flex-col flex-row justify-between sm:items-end items-center gap-2">
-                            <div className="text-lg sm:text-xl font-bold text-[#0A1A3A]">${p.price}</div>
-
-                            <div className="flex items-center gap-2">
-                              <button className="px-2 py-1 rounded-md bg-[#d4a643] text-white text-xs">See Trade</button>
-                              <button className="p-1 rounded-md bg-white border border-gray-100 shadow-sm" title="Chat">
-                                <svg className="w-4 h-4 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" /></svg>
-                              </button>
-                            </div>
-
-                            <div className="mt-1 sm:mt-3">
-                              <div>
-                                <span
-                                  className={`inline-block px-3 py-1 rounded-full text-xs ${
-                                    p.status === "Completed" ? "bg-[#ECFDF3] text-[#0F9D58]" :
-                                    p.status === "Pending" ? "bg-[#FFFBEB] text-[#B45309]" :
-                                    "bg-[#FFF1F2] text-[#9E2A2B]"
-                                  }`}
-                                >
-                                  {p.status}
-                                </span>
-                              </div>
-
-                              <div className="text-xs text-gray-600 mt-1 sm:mt-2">{p.date}</div>
-                            </div>
-                          </div>
+                        {/* Buttons */}
+                        <div className="flex items-center gap-2 mt-4 sm:mt-0">
+                          <button className="p-1.5 rounded-lg bg-white border border-gray-200 shadow-sm hover:shadow transition">
+                            <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                            </svg>
+                          </button>
+                          <button className="px-3 py-1.5 bg-[#d4a643] text-white text-xs font-medium rounded-md hover:opacity-90 transition">
+                            See Trade
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -312,13 +289,12 @@ const MyPurchase: React.FC = () => {
         </div>
       </div>
 
-      {/* Floating + button (visible on mobile & desktop) */}
+      {/* Floating Add Button */}
       <Link
         to="/add-product"
-        className="hidden sm:flex sm:fixed bottom-6 right-6 w-14 h-14 bg-[#33ac6f] hover:bg-[#c4963a] text-white rounded-full shadow-2xl items-center justify-center z-50 transition-all"
-        aria-label="Add product"
+        className="fixed bottom-6 right-6 w-14 h-14 bg-[#33ac6f] hover:bg-[#c4963a] text-white rounded-full shadow-2xl flex items-center justify-center z-50 transition-all hover:scale-110"
       >
-        {React.createElement(FaPlus as any, { size: 18 })}
+        <Icon size={28} />
       </Link>
     </>
   );
