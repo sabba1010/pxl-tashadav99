@@ -2,9 +2,9 @@ import React from "react";
 
 const ExplorebyCategory = () => {
   return (
-    <section className="pt-0 pb-24 px-6 md:px-12 lg:px-20 bg-[#fafbfc]">
+    <section className="pt-0 pb-24 px-6 md:px-12 lg:px-20 ">
       <div className="max-w-7xl mx-auto text-center mb-16">
-        <h2 className="text-3xl md:text-5xl lg:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#daab4c] to-[#f0d084] mb-4">
+        <h2 className="text-3xl md:text-5xl lg:text-5xl font-bold text-transparent bg-clip-text bg-[#c49322] mb-4">
           Explore by Category
         </h2>
         <p className="text-gray-700 text-lg">
