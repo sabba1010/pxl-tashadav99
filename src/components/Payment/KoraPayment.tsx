@@ -12,8 +12,28 @@ interface PaymentResponse {
   checkoutUrl: string;
 }
 
-export default function KoraPayment() {
+interface KoraPaymentProps {
+  amount: number;        // এখানে dynamic amount আসবে
+  currency?: "NGN" | "USD" | "GHS"; // optional, default NGN
+  user?: UserData;       // optional, default value দিয়ে রাখা যাবে
+}
+
+export default function KoraPayment({
+  amount,
+  currency = "NGN",
+  user = { name: "Rubel Mia", email: "rubel@example.com" },
+}: KoraPaymentProps) {
   const [loading, setLoading] = useState(false);
+
+  // টাকা সুন্দর করে দেখানোর জন্য
+  const formatAmount = () => {
+    const formatter = new Intl.NumberFormat("en-NG", {
+      style: "currency",
+      currency: currency,
+      minimumFractionDigits: 0,
+    });
+    return formatter.format(amount);
+  };
 
   const handlePayment = async () => {
     if (loading) return;
@@ -21,17 +41,13 @@ export default function KoraPayment() {
     try {
       setLoading(true);
 
-      const user: UserData = { name: "Rubel Mia", email: "rubel@example.com" };
-      const amount = 500;
+      const response = await axios.post<PaymentResponse>(
+        "http://localhost:3200/korapay/create",
+        { amount, user, currency }, // currency যদি লাগে backend এ
+        { headers: { "Content-Type": "application/json" } }
+      );
 
-const response = await axios.post<PaymentResponse>(
-  "http://localhost:3200/korapay/create",
-  { amount, user },
-  { headers: { "Content-Type": "application/json" } }
-);
-
-
-      console.log("create-payment response:", response.data); // runtime inspect
+      console.log("KoraPay response:", response.data);
 
       const { checkoutUrl } = response.data;
 
@@ -53,21 +69,37 @@ const response = await axios.post<PaymentResponse>(
   };
 
   return (
-    <button onClick={handlePayment} disabled={loading} className={`px-6 py-3 rounded-lg font-medium transition-all ${loading ? "bg-gray-400 cursor-not-allowed" : "bg-green-600 hover:bg-green-700 text-white shadow-md hover:shadow-lg"}`}>
+    <button
+      onClick={handlePayment}
+      disabled={loading}
+      className={`w-full px-6 py-4 rounded-lg font-semibold text-lg transition-all shadow-md ${
+        loading
+          ? "bg-gray-400 cursor-not-allowed"
+          : "bg-green-600 hover:bg-green-700 text-white hover:shadow-xl"
+      }`}
+    >
       {loading ? (
-        <span className="flex items-center gap-2">
+        <span className="flex items-center justify-center gap-2">
           <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="4"
+            />
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8v8z"
+            />
           </svg>
           Processing...
         </span>
       ) : (
-        "Pay with KoraPay ₦1,500"
+        <>Pay with KoraPay </>
       )}
     </button>
   );
 }
-
-
-
