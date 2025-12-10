@@ -50,6 +50,7 @@ const Routes = createBrowserRouter([
         path: "/",
         element: <Home/>,
       },
+      
       {
         path: "/marketplace",
         element: <Marketplace />,
