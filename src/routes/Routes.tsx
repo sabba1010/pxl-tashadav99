@@ -20,26 +20,25 @@ import BuyerAddProduct from "../dashboard/buyer-dahboard/BuyerAddProduct";
 import Marketplace from "../components/Marketplace/Marketplace";
 
 // import path from "path";
-import Buyer from "../dashboard/buyer-dahboard/Buyer";
 import Mypurchase from "../components/Mypurchase/Mypurchase";
 import Report from "../components/Mypurchase/Report";
-import Walet from "../components/Walte/Walet";
-import Mysells from "../dashboard/buyer-dahboard/Mysells";
 import Payment from "../components/Payment";
+import Walet from "../components/Walte/Walet";
+import Buyer from "../dashboard/buyer-dahboard/Buyer";
+import Mysells from "../dashboard/buyer-dahboard/Mysells";
 //import MyAds from "../components/HomeComponents/MYAd";
 import MyOrder from "../components/MyOrder/MyOrder";
 import Plan from "../pages/plan/Plan";
 
 
 import MyAds from "../components/Myproducts/MyAds";
+import PaymentForm from "../components/Payment Form";
+import PrivacyPolicy from "../components/Policy/PrivacyPolicy";
+import ReferralProgram from "../components/Policy/ReferralProgram";
+import RatingsReputationPanel from "../dashboard/admin-dashboard/RatingsReputationPanel";
+import SellerAccount from "../dashboard/admin-dashboard/SellerAccount";
 import AddAccountCredentials from "../dashboard/buyer-dahboard/AddAccountCredentials";
 import Review from "../dashboard/buyer-dahboard/Review";
-import SellerAccount from "../dashboard/admin-dashboard/SellerAccount";
-import ReferralProgram from "../components/Policy/ReferralProgram";
-import PrivacyPolicy from "../components/Policy/PrivacyPolicy";
-import PaymentForm from "../components/Payment Form";
-import RatingsReputationPanel from "../dashboard/admin-dashboard/RatingsReputationPanel";
-import PaymentDone from "../components/PaymentDone";
 
 const Routes = createBrowserRouter([
   {
@@ -71,11 +70,6 @@ const Routes = createBrowserRouter([
           path:"/payment-done",
           element:<PaymentForm/>
         },
-
-      {
-         path:"/payment-success",
-         element: <PaymentDone/>,
-      },
 
       {
         path: "/login",
