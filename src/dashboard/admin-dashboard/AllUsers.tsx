@@ -335,7 +335,6 @@ const AllUsers: React.FC = () => {
 
   const handleSave = useCallback((updated: User) => {
     // In real app, update via API
-    console.log("Saved:", updated);
     setModalOpen(false);
   }, []);
 

@@ -10,7 +10,6 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const user = useAuth();
-  console.log(user.user);
   const naviate = useNavigate();
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -36,7 +35,7 @@ export default function Navbar() {
     user.logout();
     toast.success("Logged out successfully");
     naviate("/");
-  }
+  };
 
   return (
     <>
@@ -146,7 +145,7 @@ export default function Navbar() {
               <NavLink
                 to="/add-product"
                 className="px-6 py-2.5 rounded-lg font-medium text-white shadow-sm"
-                style={{ backgroundColor: "#33ac6f" }}
+                style={{ backgroundColor: "#D4A643" }}
               >
                 Sell Product
               </NavLink>
@@ -156,7 +155,7 @@ export default function Navbar() {
             <div className="flex items-center gap-1">
               {/* Avatar Dropdown */}
               <div className="relative" ref={dropdownRef}>
-                {user ? (
+                {user.user ? (
                   <button
                     onClick={() => setOpen(!open)}
                     className="flex items-center p-1 rounded-full hover:bg-gray-100 transition"
@@ -171,9 +170,39 @@ export default function Navbar() {
                     </div>
                   </button>
                 ) : (
-                  <div className="md:flex hidden">
-                    <Button>Login</Button>
-                    <Button>Register</Button>
+                  <div className="md:flex hidden gap-2">
+                    <Button
+                      variant="contained"
+                      sx={{
+                        paddingX: 4,
+                        paddingY: 0.4,
+                        borderRadius: "10px",
+                        textTransform: "none",
+                        fontSize: "16px",
+                        fontWeight: 600,
+                        backgroundColor: ROYAL_GOLD,
+                      }}
+                    >
+                      Login
+                    </Button>
+
+                    <Button
+                      variant="outlined"
+                      sx={{
+                        paddingX: 4,
+                        paddingY: 0.4,
+                        borderRadius: "10px",
+                        textTransform: "none",
+                        fontSize: "16px",
+                        fontWeight: 600,
+                        borderWidth: "2px",
+                        "&:hover": {
+                          borderWidth: "2px",
+                        },
+                      }}
+                    >
+                      Register
+                    </Button>
                   </div>
                 )}
 
@@ -338,7 +367,7 @@ export default function Navbar() {
                         to="/add-product"
                         onClick={() => setOpen(false)}
                         className="block w-full text-center py-3 rounded-lg font-semibold text-white"
-                        style={{ backgroundColor: "#33ac6f" }}
+                        style={{ backgroundColor: "#D4A643" }}
                       >
                         Sell Product
                       </NavLink>

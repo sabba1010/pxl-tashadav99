@@ -59,12 +59,10 @@ const Profile: React.FC = () => {
     setProfile((prev) => ({ ...prev, name: nameInput }));
     setIsEditing(false);
     // In a real app, an API call would be made here
-    console.log(`Profile updated: Name changed to ${nameInput}`);
   };
 
   // Simulated action for changing password (modal/form placeholder)
   const handleChangePassword = () => {
-    console.log("Change Password functionality triggered.");
     // Implement a dedicated modal/form for password change here
     alert("Password change form launched (simulated).");
   };
@@ -73,7 +71,6 @@ const Profile: React.FC = () => {
   const handleToggle2FA = () => {
     const newStatus = !profile.isTwoFactorEnabled;
     setProfile((prev) => ({ ...prev, isTwoFactorEnabled: newStatus }));
-    console.log(`2FA status updated to: ${newStatus}`);
   };
 
   // Simulated action for toggling notification preferences

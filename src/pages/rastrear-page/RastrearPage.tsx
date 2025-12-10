@@ -18,7 +18,6 @@ const RastrearPage: React.FC = () => {
   const handleTrackOrder = (e: React.FormEvent) => {
     e.preventDefault();
     // API call এখানে হবে
-    console.log('Tracking order...');
     // setCurrentStep(newStepFromAPI);
   };
 
