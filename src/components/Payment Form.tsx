@@ -1,10 +1,18 @@
+// src/components/PaymentForm.tsx
 import React, { FC, FormEvent, useState } from "react";
 import { motion } from "framer-motion";
 
 type Props = { endpoint?: string };
 
 const Spinner: FC<{ size?: number }> = ({ size = 18 }) => (
-  <svg className="animate-spin" width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden>
+  <svg
+    className="animate-spin"
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    aria-hidden
+  >
     <circle cx="12" cy="12" r="10" strokeWidth="4" stroke="currentColor" className="opacity-20" />
     <path d="M4 12a8 8 0 018-8" strokeWidth="4" strokeLinecap="round" stroke="currentColor" />
   </svg>
@@ -26,19 +34,35 @@ export default function PaymentForm({ endpoint = "http://localhost:3200/api/subm
     setSuccess(null);
 
     try {
-      const params = new URLSearchParams();
-      params.set("paymentMethod", payment);
-      if (name.trim()) params.set("name", name.trim());
-      if (transactionId.trim()) params.set("transactionId", transactionId.trim());
-      if (message.trim()) params.set("message", message.trim());
-      params.set("submittedAt", new Date().toISOString());
+      // Build payload and omit empty values explicitly
+      const payload: Record<string, any> = {
+        paymentMethod: payment,
+        submittedAt: new Date().toISOString(),
+      };
+      if (name.trim()) payload.name = name.trim();
+      if (transactionId.trim()) payload.transactionId = transactionId.trim();
+      if (message.trim()) payload.message = message.trim();
 
-      const url = `${endpoint}?${params.toString()}`;
-      const res = await fetch(url, { method: "GET", headers: { Accept: "application/json" } });
+      const res = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      // try parse JSON safely
       const data = await res.json().catch(() => ({}));
 
-      if (!res.ok) throw new Error(data?.error || `Status ${res.status}`);
+      if (!res.ok) {
+        // server sent an error message?
+        const serverMsg = data?.error || data?.message || `Status ${res.status}`;
+        throw new Error(serverMsg);
+      }
+
       setSuccess(data?.message || "Submitted successfully");
+      // clear form
       setName("");
       setTransactionId("");
       setMessage("");
@@ -57,7 +81,9 @@ export default function PaymentForm({ endpoint = "http://localhost:3200/api/subm
       className="max-w-lg mx-auto mt-8 p-6 bg-gradient-to-br from-white via-slate-50 to-white/90 rounded-2xl shadow-lg border border-slate-100"
     >
       <h3 className="text-2xl font-semibold mb-2 text-slate-800">Payment & Contact</h3>
-      <p className="text-sm text-slate-500 mb-4">Quickly pick a payment method and leave an optional note — we&apos;ll get back to you.</p>
+      <p className="text-sm text-slate-500 mb-4">
+        Quickly pick a payment method and leave an optional note — we'll get back to you.
+      </p>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
@@ -88,34 +114,45 @@ export default function PaymentForm({ endpoint = "http://localhost:3200/api/subm
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-slate-700 mb-2">Name</label>
+            <label htmlFor="name" className="block text-sm font-medium text-slate-700 mb-2">
+              Name
+            </label>
             <input
               id="name"
+              name="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               disabled={loading}
               placeholder="Full name"
               className="w-full rounded-lg border border-slate-200 p-3 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-200 disabled:opacity-60"
+              autoComplete="name"
             />
           </div>
 
           <div>
-            <label htmlFor="tx" className="block text-sm font-medium text-slate-700 mb-2">Transaction ID</label>
+            <label htmlFor="tx" className="block text-sm font-medium text-slate-700 mb-2">
+              Transaction ID
+            </label>
             <input
               id="tx"
+              name="transactionId"
               value={transactionId}
               onChange={(e) => setTransactionId(e.target.value)}
               disabled={loading}
               placeholder="e.g. TX_12345"
               className="w-full rounded-lg border border-slate-200 p-3 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-200 disabled:opacity-60"
+              autoComplete="off"
             />
           </div>
         </div>
 
         <div>
-          <label htmlFor="message" className="block text-sm font-medium text-slate-700 mb-2">Message <span className="text-xs text-slate-400">(optional)</span></label>
+          <label htmlFor="message" className="block text-sm font-medium text-slate-700 mb-2">
+            Message <span className="text-xs text-slate-400">(optional)</span>
+          </label>
           <textarea
             id="message"
+            name="message"
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             disabled={loading}
@@ -137,7 +174,13 @@ export default function PaymentForm({ endpoint = "http://localhost:3200/api/subm
 
           <button
             type="button"
-            onClick={() => { setName(""); setTransactionId(""); setMessage(""); setError(null); setSuccess(null); }}
+            onClick={() => {
+              setName("");
+              setTransactionId("");
+              setMessage("");
+              setError(null);
+              setSuccess(null);
+            }}
             className="px-3 py-2 rounded-lg border text-sm text-slate-700 bg-white hover:bg-slate-50 disabled:opacity-60"
             disabled={loading}
           >
@@ -166,7 +209,9 @@ export default function PaymentForm({ endpoint = "http://localhost:3200/api/subm
           </div>
         </div>
 
-        <p className="text-xs text-slate-400 mt-1">By submitting you agree to our <span className="underline">terms</span>.</p>
+        <p className="text-xs text-slate-400 mt-1">
+          By submitting you agree to our <span className="underline">terms</span>.
+        </p>
       </form>
     </motion.div>
   );
