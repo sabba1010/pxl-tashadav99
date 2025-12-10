@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import { TrendingUp, ShoppingBag } from "@mui/icons-material";
+import { DollarSignIcon, Users2 } from "lucide-react";
 
-/**
- * Interface for the primary financial and operational metrics
- */
 interface AdminMetrics {
   totalUsers: number;
   activeListings: number;
@@ -15,18 +14,13 @@ interface AdminMetrics {
   totalTransactions: number;
 }
 
-/**
- * Interface for the dynamic rate card
- */
 interface ExchangeRates {
-  buyerDepositRate: number; // e.g., 1600 (NGN per $1)
-  sellerWithdrawalRate: number; // e.g., 1450 (NGN per $1)
-  exchangeProfitMargin: number; // Calculated profit margin (Buyer Rate - Seller Rate)
+  buyerDepositRate: number;
+  sellerWithdrawalRate: number;
+  exchangeProfitMargin: number;
 }
 
-// --- MOCK API CALLS ---
-// In a real application, replace these with asynchronous API calls (e.g., Axios/Fetch)
-
+// Mock Data
 const fetchMetrics = (): AdminMetrics => ({
   totalUsers: 2500,
   activeListings: 850,
@@ -38,175 +32,216 @@ const fetchMetrics = (): AdminMetrics => ({
   totalTransactions: 3120,
 });
 
-const fetchRates = (): ExchangeRates => {
-  const buyer = 1600;
-  const seller = 1450;
-  return {
-    buyerDepositRate: buyer,
-    sellerWithdrawalRate: seller,
-    exchangeProfitMargin: buyer - seller,
-  };
-};
+const fetchRates = (): ExchangeRates => ({
+  buyerDepositRate: 1600,
+  sellerWithdrawalRate: 1450,
+  exchangeProfitMargin: 150,
+});
 
-// --- HELPER COMPONENT: CARD ---
-
-interface MetricCardProps {
+const MetricCard: React.FC<{
   title: string;
   value: string | number;
-  description?: string;
+  subtitle?: string;
+  icon?: React.ReactNode;
   linkTo?: string;
-  isProfit?: boolean;
-}
+  variant?: "default" | "profit" | "warning" | "success";
+}> = ({ title, value, subtitle, icon, linkTo, variant = "default" }) => {
+  const variants = {
+    default: "from-gray-800/5 to-white/10 border-white/20",
+    profit: "from-[#D1A148]/20 via-amber-500/10 to-transparent border-[#D1A148]/30",
+    success: "from-[#33ac6f]/20 via-emerald-500/10 to-transparent border-[#33ac6f]/30",
+    warning: "from-orange-500/20 to-transparent border-orange-400/40",
+  };
 
-const MetricCard: React.FC<MetricCardProps> = ({
-  title,
-  value,
-  description,
-  linkTo,
-  isProfit,
-}) => (
-  <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 flex flex-col justify-between">
-    <div>
-      <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-1">
-        {title}
-      </h3>
-      <div
-        className={`text-4xl font-extrabold ${
-          isProfit ? "text-[#D1A148]" : "text-gray-900"
-        }`}
-      >
-        {value}
+  const textColor = {
+    default: "text-gray-700",
+    profit: "text-[#D1A148]",
+    success: "text-[#33ac6f]",
+    warning: "text-orange-600",
+  };
+
+  return (
+    <div
+      className={`group relative overflow-hidden rounded-3xl bg-white/70 backdrop-blur-xl border ${variants[variant]} p-7 shadow-xl transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl hover:shadow-[#33ac6f]/10`}
+    >
+      {/* Gradient Glow */}
+      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700">
+        <div className={`absolute inset-0 bg-gradient-to-br ${variant === "profit" ? "from-[#D1A148]/10" : "from-[#33ac6f]/10"}`} />
       </div>
-      {description && (
-        <p className="text-xs text-gray-400 mt-1">{description}</p>
-      )}
+
+      <div className="relative z-10">
+        <div className="flex items-center justify-between mb-4">
+          <p className="text-sm font-semibold text-gray-500 uppercase tracking-wider">
+            {title}
+          </p>
+          {icon && (
+            <div className={`p-3 rounded-2xl ${variant === "profit" ? "bg-[#D1A148]/15" : "bg-[#33ac6f]/15"}`}>
+              {icon}
+            </div>
+          )}
+        </div>
+
+        <p className={`text-4xl font-black ${textColor[variant]} mb-2`}>
+          {value}
+        </p>
+
+        {subtitle && (
+          <p className="text-sm text-gray-500 leading-relaxed">
+            {subtitle}
+          </p>
+        )}
+
+        {linkTo && (
+          <Link
+            to={linkTo}
+            className="mt-6 inline-flex items-center text-sm font-bold text-[#33ac6f] hover:text-[#2d8f5a] transition-colors"
+          >
+            View Details
+            <span className="ml-1 transition-transform group-hover:translate-x-2">→</span>
+          </Link>
+        )}
+      </div>
+
+      {/* Active Glow Ring */}
+      <div className={`absolute -inset-1 bg-gradient-to-r ${variant === "profit" ? "from-[#D1A148]/40" : "from-[#33ac6f]/40"} to-transparent rounded-3xl blur-xl opacity-0 group-hover:opacity-70 transition duration-1000 -z-10`} />
     </div>
-    {linkTo && (
-      <Link
-        to={linkTo}
-        className="mt-4 text-[#D1A148] hover:text-[#e2bb73] text-sm font-semibold transition duration-150 flex items-center"
-      >
-        View Details &rarr;
-      </Link>
-    )}
-  </div>
-);
+  );
+};
 
 const DashboardOverview: React.FC = () => {
-  const [metrics, setMetrics] = useState<AdminMetrics | null>(null);
-  const [rates, setRates] = useState<ExchangeRates | null>(null);
+  const [metrics] = useState<AdminMetrics>(fetchMetrics());
+  const [rates] = useState<ExchangeRates>(fetchRates());
 
-  useEffect(() => {
-    // Simulate data fetching on component mount
-    setMetrics(fetchMetrics());
-    setRates(fetchRates());
-  }, []);
-
-  if (!metrics || !rates) {
-    return (
-      <div className="text-center p-8 text-gray-500">
-        Loading Admin Metrics...
-      </div>
-    );
-  }
-
-  // Helper for currency formatting
-  const formatCurrency = (amount: number, currency: string = "USD") =>
+  const formatCurrency = (amount: number) =>
     new Intl.NumberFormat("en-US", {
       style: "currency",
-      currency: currency,
+      currency: "USD",
+      minimumFractionDigits: 2,
     }).format(amount);
 
   return (
-    <div className="space-y-8">
-      {/* 💰 Financial & Profit Overview (Based on Wallet & Escrow) */}
-      <h2 className="text-xl font-bold text-gray-800 border-b pb-2">
-        Financial Snapshot
-      </h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <MetricCard
-          title="Escrow Balance"
-          value={formatCurrency(metrics.escrowBalanceUSD)}
-          description="Funds awaiting buyer confirmation."
-        />
-
-        <MetricCard
-          title="Platform Profit (Lifetime)"
-          value={formatCurrency(metrics.platformProfitUSD)}
-          isProfit={true}
-          description="Total earnings from rate difference and 20% split."
-        />
-
-        <MetricCard
-          title="Total Transactions"
-          value={metrics.totalTransactions}
-          linkTo="transactions"
-          description="Completed purchases and transfers."
-        />
-
-        <MetricCard
-          title="Admin Split Ratio"
-          value="20%"
-          description="Automatic percentage of every successful purchase."
-        />
+    <div className="space-y-12 py-4">
+      {/* Header */}
+      <div>
+        <h1 className="text-4xl font-black bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
+          Dashboard Overview
+        </h1>
+        <p className="text-gray-600 mt-3 text-lg">
+          Real-time insights into platform health, revenue, and operations
+        </p>
       </div>
-      {/* ⚖️ Dynamic Exchange Rates & Profit Margin (CRITICAL) */}
-      <h2 className="text-xl font-bold text-gray-800 border-b pb-2 pt-4">
-        Rate Management (NGN ⇄ USD)
-      </h2>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <MetricCard
-          title="Buyer Deposit Rate (NGN)"
-          value={`₦${rates.buyerDepositRate}`}
-          description={`Used for deposits (1 USD = ${rates.buyerDepositRate} NGN).`}
-        />
 
-        <MetricCard
-          title="Seller Withdrawal Rate (NGN)"
-          value={`₦${rates.sellerWithdrawalRate}`}
-          description={`Used for withdrawals (1 USD = ${rates.sellerWithdrawalRate} NGN).`}
-        />
+      {/* Financial Snapshot */}
+      <section>
+        <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
+          <DollarSignIcon className="text-[#33ac6f]" />
+          Financial Overview
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <MetricCard
+            title="Escrow Balance"
+            value={formatCurrency(metrics.escrowBalanceUSD)}
+            subtitle="Funds held in escrow for active deals"
+            icon={<ShoppingBag fontSize="small" className="text-[#33ac6f]" />}
+            variant="success"
+          />
 
-        <MetricCard
-          title="Profit Margin per $1"
-          value={`₦${rates.exchangeProfitMargin}`}
-          isProfit={rates.exchangeProfitMargin > 0}
-          description="Admin profit generated from the rate difference."
-        />
-      </div>
-      {/* 🚧 Operational Workload & Approvals */}
-      <h2 className="text-xl font-bold text-gray-800 border-b pb-2 pt-4">
-        Operational Workload
-      </h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <MetricCard
-          title="Pending Listings"
-          value={metrics.pendingListings}
-          linkTo="listings" // Assuming you create a Pending Listings view
-          description="Listings awaiting admin approval before going live."
-        />
+          <MetricCard
+            title="Platform Profit (Lifetime)"
+            value={formatCurrency(metrics.platformProfitUSD)}
+            subtitle="Total earnings from spreads & fees"
+            icon={<TrendingUp fontSize="small" className="text-[#D1A148]" />}
+            variant="profit"
+          />
 
-        <MetricCard
-          title="Deposit Requests"
-          value={metrics.pendingDepositRequests}
-          linkTo="deposits"
-          description="Pending NGN deposits requiring review/confirmation."
-        />
+          <MetricCard
+            title="Total Transactions"
+            value={metrics.totalTransactions.toLocaleString()}
+            subtitle="Completed deals since launch"
+            linkTo="transactions"
+            variant="default"
+          />
 
-        <MetricCard
-          title="Withdrawal Requests"
-          value={metrics.pendingWithdrawalRequests}
-          linkTo="withdrawals"
-          description="Pending seller withdrawals requiring admin release."
-        />
+          <MetricCard
+            title="Admin Revenue Share"
+            value="20%"
+            subtitle="Automatic cut from every sale"
+            variant="profit"
+          />
+        </div>
+      </section>
 
-        <MetricCard
-          title="Total Users"
-          value={metrics.totalUsers}
-          linkTo="users"
-          description="Total count of Buyers and Sellers."
-        />
-      </div>
+      {/* Exchange Rates & Profit Engine */}
+      <section>
+        <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
+          <span className="text-2xl">Exchange Rate Engine</span>
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <MetricCard
+            title="Buyer Deposit Rate"
+            value={`₦${rates.buyerDepositRate}`}
+            subtitle="1 USD → NGN (when users fund wallet)"
+            variant="default"
+          />
+
+          <MetricCard
+            title="Seller Withdrawal Rate"
+            value={`₦${rates.sellerWithdrawalRate}`}
+            subtitle="1 USD → NGN (when sellers cash out)"
+            variant="default"
+          />
+
+          <MetricCard
+            title="Profit Per $1 Traded"
+            value={`₦${rates.exchangeProfitMargin}`}
+            subtitle="Your spread profit on every dollar exchanged"
+            icon={<TrendingUp fontSize="small" className="text-[#D1A148]" />}
+            variant="profit"
+          />
+        </div>
+      </section>
+
+      {/* Operational Queue */}
+      <section>
+        <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
+          <Users2 className="text-[#33ac6f]" />
+          Operations & Approvals
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <MetricCard
+            title="Pending Listings"
+            value={metrics.pendingListings}
+            subtitle="Awaiting your approval"
+            linkTo="listings"
+            variant="warning"
+          />
+
+          <MetricCard
+            title="Deposit Requests"
+            value={metrics.pendingDepositRequests}
+            subtitle="NGN funding pending confirmation"
+            linkTo="deposits"
+            variant="warning"
+          />
+
+          <MetricCard
+            title="Withdrawal Requests"
+            value={metrics.pendingWithdrawalRequests}
+            subtitle="Sellers waiting for payout"
+            linkTo="withdrawals"
+            variant="warning"
+          />
+
+          <MetricCard
+            title="Total Registered Users"
+            value={metrics.totalUsers.toLocaleString()}
+            subtitle="Buyers + Sellers"
+            linkTo="users"
+            icon={<Users2 fontSize="small" className="text-[#33ac6f]" />}
+            variant="success"
+          />
+        </div>
+      </section>
     </div>
   );
 };
