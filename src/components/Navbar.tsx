@@ -51,7 +51,7 @@ export default function Navbar() {
             <div className="flex items-center">
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="hidden lg:block p-2 rounded-md hover:bg-gray-100 transition"
+                className="hidden p-2 rounded-md hover:bg-gray-100 transition"
               >
                 {mobileMenuOpen ? (
                   <svg
