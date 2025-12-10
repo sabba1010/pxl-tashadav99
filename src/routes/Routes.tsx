@@ -32,7 +32,7 @@ import Plan from "../pages/plan/Plan";
 
 
 import MyAds from "../components/Myproducts/MyAds";
-import PaymentForm from "../components/Payment/Payment Form";
+import PaymentForm from "../components/Payment/PaymentForm";
 import PrivacyPolicy from "../components/Policy/PrivacyPolicy";
 import ReferralProgram from "../components/Policy/ReferralProgram";
 import RatingsReputationPanel from "../dashboard/admin-dashboard/RatingsReputationPanel";
