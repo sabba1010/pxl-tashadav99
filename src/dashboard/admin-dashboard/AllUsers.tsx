@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useState } from "react";
 import { Avatar, Tooltip } from "@mui/material";
-import { Edit, Visibility, Search, Sort, ArrowUpward, ArrowDownward } from "@mui/icons-material";
+import { Edit, Visibility, Search, ArrowUpward, ArrowDownward } from "@mui/icons-material";
 
 // User Interface
 interface User {

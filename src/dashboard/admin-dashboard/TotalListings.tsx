@@ -1,8 +1,13 @@
-import React, { useState, useMemo } from "react";
 import {
-  Avatar,
+  ArrowDownward,
+  ArrowUpward,
+  Close,
+  Edit,
+  Search,
+  Visibility,
+} from "@mui/icons-material";
+import {
   Box,
-  Button,
   Chip,
   Dialog,
   DialogContent,
@@ -19,16 +24,9 @@ import {
   TableRow,
   Tooltip,
   Typography,
-  alpha,
+  alpha
 } from "@mui/material";
-import {
-  Edit,
-  Visibility,
-  Search,
-  ArrowUpward,
-  ArrowDownward,
-  Close,
-} from "@mui/icons-material";
+import React, { useMemo, useState } from "react";
 
 interface Listing {
   id: string;

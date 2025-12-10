@@ -8,11 +8,10 @@ import {
   Menu as MenuIcon,
   People,
   PeopleOutline,
-  Person,
   ReceiptLong,
 } from "@mui/icons-material";
-import { Box, Avatar, Divider } from "@mui/material";
-import React, { useState } from "react";
+import { Avatar, Divider } from "@mui/material";
+import { useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 
 interface NavItem {
@@ -59,9 +58,7 @@ const AdminAdmins: React.FC = () => {
     navigate("/login");
   };
 
-  const currentPageName =
-    navItems.find((item) => item.path === location.pathname)?.name ||
-    "Admin Dashboard";
+
 
   return (
     <div className="flex h-screen bg-gradient-to-br from-slate-50 to-gray-100">
