@@ -32,6 +32,7 @@ import Plan from "../pages/plan/Plan";
 import MyAds from "../components/Myproducts/MyAds";
 import AddAccountCredentials from "../dashboard/buyer-dahboard/AddAccountCredentials";
 import Review from "../dashboard/buyer-dahboard/Review";
+import SellerAccount from "../dashboard/admin-dashboard/SellerAccount";
 
 const Routes = createBrowserRouter([
   {
@@ -138,6 +139,10 @@ const Routes = createBrowserRouter([
         path: "listings",
         element: <TotalListings />,
       },
+      {
+        path: "seller-accounts",
+        element: <SellerAccount/>,
+      }
     ],
   },
   // admin routes can be added here for admin route

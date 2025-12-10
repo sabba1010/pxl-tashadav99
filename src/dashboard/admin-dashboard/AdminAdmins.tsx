@@ -1,17 +1,18 @@
-import React, { useState } from "react";
-import { Link, Outlet, useLocation } from "react-router-dom";
 import {
-  Dashboard,
-  People,
-  ReceiptLong,
-  ListAlt,
   AccountBalanceWallet,
-  CompareArrows,
-  Person,
-  Menu as MenuIcon,
   ChevronLeft,
+  CompareArrows,
+  Dashboard,
+  ListAlt,
+  Menu as MenuIcon,
+  People,
+  PeopleOutline,
+  Person,
+  ReceiptLong,
 } from "@mui/icons-material";
 import { Box } from "@mui/material";
+import React, { useState } from "react";
+import { Link, Outlet, useLocation } from "react-router-dom";
 
 interface NavItem {
   name: string;
@@ -21,13 +22,19 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { name: "Dashboard Overview", path: "/admin-dashboard", icon: <Dashboard /> },
+  { name: "Listings", path: "/admin-dashboard/listings", icon: <ListAlt /> },
+
   { name: "All Users", path: "/admin-dashboard/users", icon: <People /> },
+  {
+    name: "Seller Account",
+    path: "/admin-dashboard/seller-accounts",
+    icon: <PeopleOutline />,
+  },
   {
     name: "All Transactions",
     path: "/admin-dashboard/transactions",
     icon: <ReceiptLong />,
   },
-  { name: "Total Listings", path: "/admin-dashboard/listings", icon: <ListAlt /> },
   {
     name: "Deposit Requests",
     path: "/admin-dashboard/deposits",
@@ -91,7 +98,7 @@ const AdminAdmins: React.FC = () => {
                 }`}
               >
                 <Box sx={{ display: "flex", alignItems: "center" }}>
-                  {React.cloneElement(item.icon as React.ReactElement, )}
+                  {React.cloneElement(item.icon as React.ReactElement)}
                 </Box>
 
                 {/* Text – hidden when collapsed */}
