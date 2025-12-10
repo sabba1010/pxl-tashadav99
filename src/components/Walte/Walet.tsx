@@ -50,7 +50,6 @@ export default function Wallet(): React.ReactElement {
   const [loading, setLoading] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
   const mounted = useRef(true);
-  const [showFloating, setShowFloating] = useState(true);
 
   useEffect(() => {
     mounted.current = true;
@@ -193,8 +192,7 @@ export default function Wallet(): React.ReactElement {
             </div>
 
             <div className="mt-4 sm:mt-6 flex flex-col sm:flex-row items-center gap-3 sm:gap-6">
-              <button
-                onClick={() => setShowDepositModal(true)}
+              <Link to={"/payment"}
                 className="flex flex-col items-center gap-2 w-full sm:w-auto"
                 title="Deposit"
               >
@@ -204,7 +202,7 @@ export default function Wallet(): React.ReactElement {
                   <FaPlusIcon size={16} />
                 </div>
                 <div className="text-xs sm:text-sm" style={{ color: "#6B7280" }}>Deposit</div>
-              </button>
+              </Link>
 
               <Link
                 to="/report"
@@ -291,39 +289,6 @@ export default function Wallet(): React.ReactElement {
           </div>
         </div>
       </div>
-
-      {/* Deposit Modal */}
-      {showDepositModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: "rgba(0,0,0,0.4)" }}>
-          <div className="bg-white rounded-md w-full max-w-md p-4 sm:p-6">
-            <h3 className="text-base sm:text-lg font-semibold mb-3" style={{ color: EMPIRE_BLUE }}>Submit Manual Deposit (mock)</h3>
-
-            <label className="text-xs" style={{ color: "#374151" }}>Amount (USD)</label>
-            <input
-              type="number"
-              value={depositAmount}
-              onChange={(e) => setDepositAmount(e.target.value === "" ? "" : Number(e.target.value))}
-              className="w-full border rounded px-3 py-2 mb-3 text-sm"
-              placeholder="50"
-            />
-
-            <label className="text-xs" style={{ color: "#374151" }}>Note</label>
-            <input value={depositNote} onChange={(e) => setDepositNote(e.target.value)} className="w-full border rounded px-3 py-2 mb-4 text-sm" placeholder="Payment reference" />
-
-            <div className="flex items-center gap-2 sm:gap-3 flex-col sm:flex-row">
-              <button
-                onClick={submitManualDeposit}
-                className="px-4 py-2 rounded disabled:opacity-60 text-sm w-full sm:w-auto"
-                disabled={loading}
-                style={{ backgroundColor: ROYAL_GOLD, color: CHARCOAL }}
-              >
-                {loading ? "Submitting..." : "Submit"}
-              </button>
-              <button onClick={() => setShowDepositModal(false)} className="px-4 py-2 border rounded text-sm w-full sm:w-auto" style={{ color: CHARCOAL }}>Cancel</button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Report Modal */}
       {showReportModal && (
