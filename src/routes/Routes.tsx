@@ -22,7 +22,7 @@ import Marketplace from "../components/Marketplace/Marketplace";
 // import path from "path";
 import Mypurchase from "../components/Mypurchase/Mypurchase";
 import Report from "../components/Mypurchase/Report";
-import Payment from "../components/Payment";
+import Payment from "../components/Payment/Payment";
 import Walet from "../components/Walte/Walet";
 import Buyer from "../dashboard/buyer-dahboard/Buyer";
 import Mysells from "../dashboard/buyer-dahboard/Mysells";
@@ -32,7 +32,7 @@ import Plan from "../pages/plan/Plan";
 
 
 import MyAds from "../components/Myproducts/MyAds";
-import PaymentForm from "../components/Payment Form";
+import PaymentForm from "../components/Payment/Payment Form";
 import PrivacyPolicy from "../components/Policy/PrivacyPolicy";
 import ReferralProgram from "../components/Policy/ReferralProgram";
 import RatingsReputationPanel from "../dashboard/admin-dashboard/RatingsReputationPanel";
