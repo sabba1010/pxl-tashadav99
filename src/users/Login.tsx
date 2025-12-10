@@ -4,12 +4,14 @@ import { motion } from "framer-motion";
 import { Eye, EyeOff, LogIn, Mail, Lock, Sparkles } from "lucide-react";
 import axios from "axios";
 import { toast } from "sonner";
+import Cookies from "js-cookie";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -19,15 +21,24 @@ const Login = () => {
     }
 
     try {
-      const res = await axios.post<{success: boolean}>("http://localhost:3200/api/user/login", {
+      const res = await axios.post<{success:boolean, user:any}>("http://localhost:3200/api/user/login", {
         email,
         password,
       });
 
-      if (res.data.success == true) {
+      if (res.data.success === true) {
         toast.success("Login Successful!");
-        console.log("User:", res.data);
+
+        // SAVE USER DATA IN COOKIE (SECURE)
+        Cookies.set("acctempire_2XLD", JSON.stringify(res.data.user), {
+          expires: 7, // 7 days
+          secure: true,
+          sameSite: "strict",
+        });
+
         navigate("/admin-dashboard");
+      } else {
+        toast.error("Login failed!");
       }
     } catch (err: any) {
       if (err.response) {
@@ -37,6 +48,7 @@ const Login = () => {
       }
     }
   };
+
 
   return (
     <div className="min-h-screen w-full bg-[#111827] relative overflow-hidden">
