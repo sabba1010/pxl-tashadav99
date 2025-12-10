@@ -1,8 +1,8 @@
 import React, { useCallback, useMemo, useState } from "react";
+import { Avatar, Tooltip } from "@mui/material";
+import { Edit, Visibility, Search, Sort, ArrowUpward, ArrowDownward } from "@mui/icons-material";
 
-/**
- * Interface for a single user record
- */
+// User Interface
 interface User {
   id: number;
   name: string;
@@ -10,11 +10,11 @@ interface User {
   role: "Buyer" | "Seller";
   registrationDate: string;
   isActive: boolean;
-  activationFeePaid: boolean; // Relevant only for Sellers
+  activationFeePaid: boolean;
   walletBalanceUSD: number;
 }
 
-// --- MOCK DATA ---
+// Mock Data
 const mockUsers: User[] = [
   {
     id: 1,
@@ -138,242 +138,140 @@ const mockUsers: User[] = [
   },
 ];
 
-const ITEMS_PER_PAGE = 5;
+const ITEMS_PER_PAGE = 10; // Increased for modern tables
 
-// --- HELPER COMPONENT: USER MODAL ---
-
-interface UserModalProps {
+// User Modal (Upgraded with Glassmorphism)
+const UserModal: React.FC<{
   user: User | null;
   mode: "view" | "edit";
   onClose: () => void;
   onSave: (updatedUser: User) => void;
-}
-
-const UserModal: React.FC<UserModalProps> = ({
-  user,
-  mode,
-  onClose,
-  onSave,
-}) => {
-  // Initialize state with a full User object based on the input user
-  const [formData, setFormData] = useState<User | null>(
-    user
-      ? {
-          ...user,
-          // Ensure boolean values are treated as booleans, not strings, if using uncontrolled inputs/selects
-          isActive: user.isActive,
-          activationFeePaid: user.activationFeePaid,
-        }
-      : null
-  );
+}> = ({ user, mode, onClose, onSave }) => {
+  const [formData, setFormData] = useState<User | null>(user ? { ...user } : null);
 
   if (!user || !formData) return null;
 
-  const title =
-    mode === "edit" ? `Edit User: ${user.name}` : `View User: ${user.name}`;
   const isEditMode = mode === "edit";
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value, type } = e.target;
+    let finalValue: string | number | boolean = value;
 
-    setFormData((prev) => {
-      if (!prev) return null;
+    if (type === "checkbox") {
+      finalValue = (e.target as HTMLInputElement).checked;
+    } else if (name === "walletBalanceUSD") {
+      finalValue = parseFloat(value) || 0;
+    } else if (name === "isActive") {
+      finalValue = value === "true";
+    }
 
-      let finalValue: string | number | boolean = value;
-
-      if (type === "checkbox") {
-        finalValue = (e.target as HTMLInputElement).checked;
-      } else if (name === "walletBalanceUSD") {
-        // Parse as float, defaulting to 0 if invalid
-        finalValue = parseFloat(value) || 0;
-      } else if (name === "isActive") {
-        // Convert string 'true'/'false' from select/input to boolean
-        finalValue = value === "true";
-      }
-
-      return {
-        ...prev,
-        [name]: finalValue,
-      } as User;
-    });
+    setFormData((prev) => prev ? { ...prev, [name]: finalValue } as User : null);
   };
 
   const handleSave = () => {
-    if (formData) {
-      onSave(formData);
-    }
+    if (formData) onSave(formData);
   };
 
-  // Status Chip for clarity
-  const StatusChip = ({
-    label,
-    isSuccess,
-  }: {
-    label: string;
-    isSuccess: boolean;
-  }) => (
-    <span
-      className={`px-3 py-1 text-xs font-semibold rounded-full ${
-        isSuccess ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-      }`}
-    >
-      {label}
-    </span>
-  );
-
   return (
-    // Backdrop
-    <div className="fixed inset-0 bg-gray-900 bg-opacity-75 z-50 flex justify-center items-center p-4">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg transform transition-all duration-300">
-        {/* Modal Header */}
-        <div className="p-6 border-b flex justify-between items-center">
-          <h3 className="text-2xl font-bold text-gray-800">{title}</h3>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
+      <div className="bg-white/90 backdrop-blur-2xl rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden border border-white/20 transform transition-all duration-300 scale-100">
+        {/* Header */}
+        <div className="p-6 border-b border-gray-200/50 flex justify-between items-center bg-gradient-to-r from-gray-50 to-white">
+          <h3 className="text-2xl font-bold text-gray-800">{mode === "edit" ? `Edit ${user.name}` : `View ${user.name}`}</h3>
+          <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition">
+            <svg className="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
 
-        {/* Modal Body (Form/Details) */}
-        <div className="p-6 space-y-4">
-          {/* Email (Read-only) */}
-          <div className="grid grid-cols-3 items-center">
-            <label className="text-sm font-medium text-gray-600">Email:</label>
-            <p className="col-span-2 text-sm text-gray-900 font-mono">
-              {user.email}
-            </p>
+        {/* Body */}
+        <div className="p-6 space-y-6">
+          <div className="flex items-center gap-4">
+            <Avatar sx={{ width: 56, height: 56, bgcolor: user.role === "Seller" ? "#D1A148" : "#33ac6f" }}>
+              {user.name[0]}
+            </Avatar>
+            <div>
+              <p className="font-semibold text-lg">{user.name}</p>
+              <p className="text-sm text-gray-500">{user.email}</p>
+            </div>
           </div>
 
-          {/* Role (Read-only) */}
-          <div className="grid grid-cols-3 items-center">
-            <label className="text-sm font-medium text-gray-600">Role:</label>
-            <p className="col-span-2">
-              <span
-                className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                  user.role === "Seller"
-                    ? "bg-indigo-100 text-indigo-800"
-                    : "bg-green-100 text-green-800"
-                }`}
-              >
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-600 mb-1">Role</label>
+              <p className={`px-3 py-1 rounded-full text-xs font-semibold ${user.role === "Seller" ? "bg-[#D1A148]/20 text-[#D1A148]" : "bg-[#33ac6f]/20 text-[#33ac6f]"}`}>
                 {user.role}
-              </span>
-            </p>
+              </p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-600 mb-1">Status</label>
+              <p className={`px-3 py-1 rounded-full text-xs font-semibold ${user.isActive ? "bg-[#33ac6f]/20 text-[#33ac6f]" : "bg-red-100 text-red-800"}`}>
+                {user.isActive ? "Active" : "Inactive"}
+              </p>
+            </div>
           </div>
 
-          {/* Wallet Balance (Editable) */}
-          <div className="grid grid-cols-3 items-center">
-            <label
-              htmlFor="walletBalanceUSD"
-              className="text-sm font-medium text-gray-600"
-            >
-              Wallet Balance (USD):
-            </label>
+          <div>
+            <label className="block text-sm font-medium text-gray-600 mb-1">Wallet Balance (USD)</label>
             {isEditMode ? (
               <input
-                id="walletBalanceUSD"
                 type="number"
                 name="walletBalanceUSD"
                 value={formData.walletBalanceUSD}
                 onChange={handleChange}
                 step="0.01"
-                className="col-span-2 p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                className="w-full p-3 border border-gray-300 rounded-xl focus:ring-[#33ac6f] focus:border-[#33ac6f] transition"
               />
             ) : (
-              <p className="col-span-2 text-sm font-bold text-gray-900">
-                {new Intl.NumberFormat("en-US", {
-                  style: "currency",
-                  currency: "USD",
-                }).format(user.walletBalanceUSD)}
-              </p>
+              <p className="text-xl font-bold text-gray-800">{new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(user.walletBalanceUSD)}</p>
             )}
           </div>
 
-          {/* Seller Activation Fee Status (Editable if Seller) */}
           {user.role === "Seller" && (
-            <div className="grid grid-cols-3 items-center">
-              <label
-                htmlFor="activationFeePaid"
-                className="text-sm font-medium text-gray-600"
-              >
-                Activation Fee Paid ($10):
-              </label>
+            <div>
+              <label className="block text-sm font-medium text-gray-600 mb-1">Activation Fee Paid</label>
               {isEditMode ? (
                 <input
-                  id="activationFeePaid"
                   type="checkbox"
                   name="activationFeePaid"
                   checked={formData.activationFeePaid}
                   onChange={handleChange}
-                  className="h-5 w-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                  className="h-5 w-5 text-[#33ac6f] border-gray-300 rounded focus:ring-[#33ac6f]"
                 />
               ) : (
-                <StatusChip
-                  label={user.activationFeePaid ? "Paid" : "Pending"}
-                  isSuccess={user.activationFeePaid}
-                />
+                <p className={`font-semibold ${user.activationFeePaid ? "text-[#33ac6f]" : "text-red-600"}`}>
+                  {user.activationFeePaid ? "Paid" : "Pending"}
+                </p>
               )}
             </div>
           )}
 
-          {/* Account Status (Active/Inactive) */}
-          <div className="grid grid-cols-3 items-center">
-            <label
-              htmlFor="isActive"
-              className="text-sm font-medium text-gray-600"
-            >
-              Account Status:
-            </label>
-            {isEditMode ? (
+          {isEditMode && (
+            <div>
+              <label className="block text-sm font-medium text-gray-600 mb-1">Active</label>
               <select
-                id="isActive"
                 name="isActive"
-                // Ensure value matches expected type (string 'true' or 'false' for select)
                 value={formData.isActive.toString()}
                 onChange={handleChange}
-                className="col-span-2 p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                className="w-full p-3 border border-gray-300 rounded-xl focus:ring-[#33ac6f] focus:border-[#33ac6f] transition"
               >
                 <option value="true">Active</option>
-                <option value="false">Deactivated</option>
+                <option value="false">Inactive</option>
               </select>
-            ) : (
-              <StatusChip
-                label={user.isActive ? "Active" : "Deactivated"}
-                isSuccess={user.isActive}
-              />
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
-        {/* Modal Footer */}
-        <div className="p-6 bg-gray-50 flex justify-end space-x-3 rounded-b-xl">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 transition duration-150"
-          >
+        {/* Footer */}
+        <div className="p-6 bg-gray-50/80 flex justify-end space-x-4 border-t border-gray-200/50">
+          <button onClick={onClose} className="px-6 py-3 text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition">
             {isEditMode ? "Cancel" : "Close"}
           </button>
           {isEditMode && (
-            <button
-              onClick={handleSave}
-              className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition duration-150 shadow-md"
-            >
+            <button onClick={handleSave} className="px-6 py-3 text-white bg-gradient-to-r from-[#33ac6f] to-[#2d8f5a] rounded-xl hover:opacity-90 transition shadow-md">
               Save Changes
             </button>
           )}
@@ -383,305 +281,186 @@ const UserModal: React.FC<UserModalProps> = ({
   );
 };
 
-// --- MAIN COMPONENT: ALL USERS ---
-
+// Main AllUsers Component
 const AllUsers: React.FC = () => {
-  const [searchTerm, setSearchTerm] = useState<string>("");
-  const [users, setUsers] = useState<User[]>(mockUsers);
-  const [sortBy, setSortBy] = useState<"id" | "name" | "role" | "balance">(
-    "id"
-  );
+  const [searchTerm, setSearchTerm] = useState("");
+  const [users] = useState<User[]>(mockUsers);
+  const [sortBy, setSortBy] = useState<"id" | "name" | "role" | "balance">("id");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
-
-  // Modal State
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [modalMode, setModalMode] = useState<"view" | "edit">("view");
-
-  // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Helper for currency formatting
-  const formatCurrency = (amount: number) =>
-    new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(amount);
+  const filteredUsers = useMemo(() => 
+    users.filter(u => 
+      u.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      u.email.toLowerCase().includes(searchTerm.toLowerCase())
+    ), [users, searchTerm]);
 
-  // --- Filtering and Sorting Logic ---
-  const filteredAndSortedUsers = useMemo(() => {
-    let result = users.filter(
-      (user) =>
-        user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
-    result.sort((a, b) => {
-      let comparison = 0;
+  const sortedUsers = useMemo(() => {
+    return [...filteredUsers].sort((a, b) => {
+      let comp = 0;
       switch (sortBy) {
-        case "name":
-          comparison = a.name.localeCompare(b.name);
-          break;
-        case "role":
-          comparison = a.role.localeCompare(b.role);
-          break;
-        case "balance":
-          comparison = a.walletBalanceUSD - b.walletBalanceUSD;
-          break;
-        default: // 'id'
-          comparison = a.id - b.id;
-          break;
+        case "name": comp = a.name.localeCompare(b.name); break;
+        case "role": comp = a.role.localeCompare(b.role); break;
+        case "balance": comp = a.walletBalanceUSD - b.walletBalanceUSD; break;
+        default: comp = a.id - b.id;
       }
-      return sortOrder === "asc" ? comparison : -comparison;
+      return sortOrder === "asc" ? comp : -comp;
     });
+  }, [filteredUsers, sortBy, sortOrder]);
 
-    // Recalculate total pages and ensure current page is valid after filter/sort
-    const newTotalPages = Math.ceil(result.length / ITEMS_PER_PAGE);
-    if (currentPage > newTotalPages && newTotalPages > 0) {
-      setCurrentPage(newTotalPages);
-    } else if (newTotalPages === 0) {
-      setCurrentPage(1); // Stay on page 1 if no results
-    }
-
-    return result;
-  }, [users, currentPage, searchTerm, sortBy, sortOrder]); // Removed currentPage from dependency list as it causes a reset loop
-
-  // --- Pagination Logic ---
   const paginatedUsers = useMemo(() => {
-    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-    const endIndex = startIndex + ITEMS_PER_PAGE;
-    return filteredAndSortedUsers.slice(startIndex, endIndex);
-  }, [filteredAndSortedUsers, currentPage]);
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    return sortedUsers.slice(start, start + ITEMS_PER_PAGE);
+  }, [sortedUsers, currentPage]);
 
-  // --- Handlers ---
-  const handleSort = (column: "id" | "name" | "role" | "balance") => {
-    setSortBy((prevCol) => {
-      if (prevCol === column) {
-        setSortOrder((prevOrder) => (prevOrder === "asc" ? "desc" : "asc"));
-      } else {
-        setSortOrder("asc");
-      }
-      return column;
-    });
+  const totalPages = Math.ceil(sortedUsers.length / ITEMS_PER_PAGE);
+
+  const handleSort = (column: typeof sortBy) => {
+    if (sortBy === column) {
+      setSortOrder(prev => prev === "asc" ? "desc" : "asc");
+    } else {
+      setSortBy(column);
+      setSortOrder("asc");
+    }
   };
 
   const openModal = (user: User, mode: "view" | "edit") => {
     setSelectedUser(user);
     setModalMode(mode);
-    setIsModalOpen(true);
+    setModalOpen(true);
   };
 
-  const closeModal = () => {
-    setSelectedUser(null);
-    setIsModalOpen(false);
-  };
-
-  const handleSaveUser = useCallback((updatedUser: User) => {
-    setUsers((prevUsers) =>
-      prevUsers.map((u) => (u.id === updatedUser.id ? updatedUser : u))
-    );
-    closeModal();
+  const handleSave = useCallback((updated: User) => {
+    // In real app, update via API
+    console.log("Saved:", updated);
+    setModalOpen(false);
   }, []);
 
-  // Icon for sort direction
-  const SortIndicator = ({
-    column,
-  }: {
-    column: "id" | "name" | "role" | "balance";
-  }) => {
-    if (sortBy !== column) return null;
-    return sortOrder === "asc" ? <span>&uarr;</span> : <span>&darr;</span>;
-  };
-
-  // Recalculate total pages for the footer display based on filtered results
-  const currentTotalPages = Math.ceil(
-    filteredAndSortedUsers.length / ITEMS_PER_PAGE
-  );
-
   return (
-    <div className="p-4 space-y-6">
-      {/* Search and Action Bar */}
-      <div className="flex flex-col sm:flex-row justify-between items-center bg-gray-50 p-4 rounded-xl shadow-inner border border-gray-200">
-        <h3 className="text-xl font-semibold text-gray-800 mb-2 sm:mb-0">
-          User List ({filteredAndSortedUsers.length} of {mockUsers.length})
-        </h3>
-        <input
-          type="text"
-          placeholder="Search by name or email..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="p-2 border border-gray-300 rounded-lg w-full sm:w-1/3 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150"
-        />
+    <div className="space-y-6">
+      {/* Search Bar */}
+      <div className="flex justify-between items-center bg-white/80 backdrop-blur-md p-4 rounded-2xl shadow-md border border-white/20">
+        <h2 className="text-xl font-bold text-gray-800">All Users ({sortedUsers.length})</h2>
+        <div className="relative w-64">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" fontSize="small" />
+          <input
+            type="text"
+            placeholder="Search users..."
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-xl focus:ring-[#33ac6f] focus:border-[#33ac6f] transition"
+          />
+        </div>
       </div>
 
-      {/* User Table */}
-      <div className="overflow-x-auto bg-white rounded-xl shadow-lg border">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+      {/* Table */}
+      <div className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 overflow-hidden">
+        <table className="w-full">
+          <thead className="bg-gradient-to-r from-gray-50 to-white">
             <tr>
-              {/* Define headers with explicit alignment for consistency */}
-              {[
-                { title: "ID", column: "id", align: "text-left" },
-                { title: "Name / Email", column: "name", align: "text-left" },
-                { title: "Role", column: "role", align: "text-center" }, // FIX: Header is now centered
-                { title: "Fee Paid", column: "", align: "text-center" },
-                {
-                  title: "Wallet Balance (USD)",
-                  column: "balance",
-                  align: "text-right",
-                }, // FIX: Header is now right-aligned
-                { title: "Actions", column: "", align: "text-center" },
-              ].map((header) => (
-                <th
-                  key={header.title}
-                  // Use the explicit alignment defined above
-                  className={`px-6 py-3 ${
-                    header.align
-                  } text-xs font-medium text-gray-500 uppercase tracking-wider ${
-                    header.column ? "cursor-pointer hover:bg-gray-100" : ""
-                  }`}
-                  onClick={() =>
-                    header.column &&
-                    handleSort(
-                      header.column as "id" | "name" | "role" | "balance"
-                    )
-                  }
-                >
-                  {header.title}{" "}
-                  {header.column && (
-                    <SortIndicator
-                      column={
-                        header.column as "id" | "name" | "role" | "balance"
-                      }
-                    />
-                  )}
-                </th>
-              ))}
+              <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase cursor-pointer" onClick={() => handleSort("id")}>
+                ID {sortBy === "id" && (sortOrder === "asc" ? <ArrowUpward fontSize="small" /> : <ArrowDownward fontSize="small" />)}
+              </th>
+              <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase cursor-pointer" onClick={() => handleSort("name")}>
+                Name {sortBy === "name" && (sortOrder === "asc" ? <ArrowUpward fontSize="small" /> : <ArrowDownward fontSize="small" />)}
+              </th>
+              <th className="px-6 py-4 text-center text-xs font-semibold text-gray-500 uppercase cursor-pointer" onClick={() => handleSort("role")}>
+                Role {sortBy === "role" && (sortOrder === "asc" ? <ArrowUpward fontSize="small" /> : <ArrowDownward fontSize="small" />)}
+              </th>
+              <th className="px-6 py-4 text-center text-xs font-semibold text-gray-500 uppercase">Fee Paid</th>
+              <th className="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase cursor-pointer" onClick={() => handleSort("balance")}>
+                Balance {sortBy === "balance" && (sortOrder === "asc" ? <ArrowUpward fontSize="small" /> : <ArrowDownward fontSize="small" />)}
+              </th>
+              <th className="px-6 py-4 text-center text-xs font-semibold text-gray-500 uppercase">Actions</th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {paginatedUsers.length > 0 ? (
-              paginatedUsers.map((user) => (
-                <tr
-                  key={user.id}
-                  className="hover:bg-indigo-50/50 transition duration-75"
-                >
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {user.id}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-semibold text-gray-900">
-                      {user.name}
+          <tbody>
+            {paginatedUsers.map(user => (
+              <tr key={user.id} className="hover:bg-gray-50/50 transition">
+                <td className="px-6 py-4 text-sm text-gray-700">{user.id}</td>
+                <td className="px-6 py-4">
+                  <div className="flex items-center gap-3">
+                    <Avatar sx={{ width: 32, height: 32, bgcolor: user.role === "Seller" ? "#D1A148" : "#33ac6f" }}>
+                      {user.name[0]}
+                    </Avatar>
+                    <div>
+                      <p className="font-medium text-gray-900">{user.name}</p>
+                      <p className="text-xs text-gray-500">{user.email}</p>
                     </div>
-                    <div className="text-xs text-gray-500">{user.email}</div>
-                  </td>
-                  {/* Role Data Cell - text-center */}
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
-                    <span
-                      className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        user.role === "Seller"
-                          ? "bg-indigo-100 text-indigo-800"
-                          : "bg-green-100 text-green-800"
-                      }`}
-                    >
-                      {user.role}
-                    </span>
-                  </td>
-                  {/* Fee Paid Data Cell - text-center */}
-                  <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
-                    {user.role === "Seller" ? (
-                      <span
-                        className={`font-bold ${
-                          user.activationFeePaid
-                            ? "text-green-600"
-                            : "text-red-600"
-                        }`}
-                      >
+                  </div>
+                </td>
+                <td className="px-6 py-4 text-center">
+                  <span className={`px-3 py-1 rounded-full text-xs font-semibold ${user.role === "Seller" ? "bg-[#D1A148]/20 text-[#D1A148]" : "bg-[#33ac6f]/20 text-[#33ac6f]"}`}>
+                    {user.role}
+                  </span>
+                </td>
+                <td className="px-6 py-4 text-center">
+                  {user.role === "Seller" ? (
+                    <Tooltip title={user.activationFeePaid ? "Paid" : "Pending"}>
+                      <span className={`font-semibold ${user.activationFeePaid ? "text-[#33ac6f]" : "text-red-500"}`}>
                         {user.activationFeePaid ? "Yes" : "No"}
                       </span>
-                    ) : (
-                      <span className="text-gray-400">—</span>
-                    )}
-                  </td>
-                  {/* Wallet Balance Data Cell - text-right */}
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-right">
-                    {formatCurrency(user.walletBalanceUSD)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium space-x-2">
-                    <button
-                      onClick={() => openModal(user, "view")}
-                      className="text-white bg-[#00183C] hover:bg-[#D1A148] px-3 py-1 rounded-lg text-xs font-medium transition duration-150 shadow-md"
-                    >
-                      View
-                    </button>
-                    <button
-                      onClick={() => openModal(user, "edit")}
-                      className="text-white bg-[#D1A148] hover:bg-[#00183C] px-3 py-1 rounded-lg text-xs font-medium transition duration-150 shadow-md"
-                    >
-                      Edit
-                    </button>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan={6} className="text-center py-10 text-gray-500">
-                  No users found matching "{searchTerm}".
+                    </Tooltip>
+                  ) : (
+                    <span className="text-gray-400">—</span>
+                  )}
                 </td>
+                <td className="px-6 py-4 text-right font-semibold text-gray-900">
+                  {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(user.walletBalanceUSD)}
+                </td>
+                <td className="px-6 py-4 text-center space-x-2">
+                  <Tooltip title="View">
+                    <button onClick={() => openModal(user, "view")} className="p-2 rounded-lg bg-[#33ac6f]/10 hover:bg-[#33ac6f]/20 transition">
+                      <Visibility fontSize="small" className="text-[#33ac6f]" />
+                    </button>
+                  </Tooltip>
+                  <Tooltip title="Edit">
+                    <button onClick={() => openModal(user, "edit")} className="p-2 rounded-lg bg-[#D1A148]/10 hover:bg-[#D1A148]/20 transition">
+                      <Edit fontSize="small" className="text-[#D1A148]" />
+                    </button>
+                  </Tooltip>
+                </td>
+              </tr>
+            ))}
+            {paginatedUsers.length === 0 && (
+              <tr>
+                <td colSpan={6} className="text-center py-8 text-gray-500">No users found.</td>
               </tr>
             )}
           </tbody>
         </table>
       </div>
 
-      {/* Pagination Controls */}
-      {filteredAndSortedUsers.length > ITEMS_PER_PAGE && (
-        <div className="flex justify-between items-center px-4 py-3 bg-white rounded-xl shadow-md border border-gray-100">
-          <p className="text-sm text-gray-700">
-            Showing{" "}
-            <span className="font-medium">
-              {(currentPage - 1) * ITEMS_PER_PAGE + 1}
-            </span>{" "}
-            to{" "}
-            <span className="font-medium">
-              {Math.min(
-                currentPage * ITEMS_PER_PAGE,
-                filteredAndSortedUsers.length
-              )}
-            </span>{" "}
-            of{" "}
-            <span className="font-medium">{filteredAndSortedUsers.length}</span>{" "}
-            results
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex justify-between items-center bg-white/80 backdrop-blur-md p-4 rounded-2xl shadow-md border border-white/20">
+          <p className="text-sm text-gray-600">
+            Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1} - {Math.min(currentPage * ITEMS_PER_PAGE, sortedUsers.length)} of {sortedUsers.length}
           </p>
           <div className="flex space-x-2">
             <button
-              onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
               disabled={currentPage === 1}
-              className="px-3 py-1 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-200 transition duration-150"
+              className="px-4 py-2 rounded-xl bg-gray-100 disabled:opacity-50 hover:bg-gray-200 transition"
             >
-              Previous
+              Prev
             </button>
-            {/* Show page numbers for better navigation experience */}
-            {[...Array(currentTotalPages)].map((_, index) => (
+            {Array.from({ length: totalPages }).map((_, i) => (
               <button
-                key={index}
-                onClick={() => setCurrentPage(index + 1)}
-                className={`px-3 py-1 text-sm font-medium rounded-lg transition duration-150 
-                        ${
-                          currentPage === index + 1
-                            ? "bg-[#D1A148] text-white"
-                            : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                        }`}
+                key={i}
+                onClick={() => setCurrentPage(i + 1)}
+                className={`px-4 py-2 rounded-xl ${currentPage === i + 1 ? "bg-[#33ac6f] text-white" : "bg-gray-100 hover:bg-gray-200"} transition`}
               >
-                {index + 1}
+                {i + 1}
               </button>
             ))}
             <button
-              onClick={() =>
-                setCurrentPage((prev) => Math.min(currentTotalPages, prev + 1))
-              }
-              disabled={currentPage === currentTotalPages}
-              className="px-3 py-1 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-200 transition duration-150"
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              className="px-4 py-2 rounded-xl bg-gray-100 disabled:opacity-50 hover:bg-gray-200 transition"
             >
               Next
             </button>
@@ -689,14 +468,9 @@ const AllUsers: React.FC = () => {
         </div>
       )}
 
-      {/* User Modal */}
-      {isModalOpen && selectedUser && (
-        <UserModal
-          user={selectedUser}
-          mode={modalMode}
-          onClose={closeModal}
-          onSave={handleSaveUser}
-        />
+      {/* Modal */}
+      {modalOpen && selectedUser && (
+        <UserModal user={selectedUser} mode={modalMode} onClose={() => setModalOpen(false)} onSave={handleSave} />
       )}
     </div>
   );
