@@ -23,7 +23,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState<boolean>(true); // added loading state
 
   useEffect(() => {
-    const cookieData = Cookies.get("acctempire_2XLD");
+    const cookieData = Cookies.get("aEmpireVault_2XLD");
     if (cookieData) {
       try {
         const parsed = JSON.parse(cookieData);
@@ -37,7 +37,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const logout = () => {
-    Cookies.remove("acctempire_2XLD");
+    Cookies.remove("aEmpireVault_2XLD");
     setUser(null);
   };
 

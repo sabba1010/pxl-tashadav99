@@ -16,7 +16,7 @@ const SUBJECTS = [
   "Other",
 ];
 
-const LOCAL_KEY = "aAcctempire:ticket:draft";
+const LOCAL_KEY = "aAEmpireVault:ticket:draft";
 
 export default function Report(): React.ReactElement {
   const [form, setForm] = useState<TicketForm>({
@@ -236,7 +236,7 @@ export default function Report(): React.ReactElement {
 
           <p className="text-sm text-gray-600 pt-2">
             If you encounter any issues with the ticket system or haven't received a response, please reach out at{" "}
-            <a href="mailto:help@aAcctempire.com" className="text-orange-600 hover:underline">help@aAcctempire.com</a>.
+            <a href="mailto:help@aAEmpireVault.com" className="text-orange-600 hover:underline">help@aAEmpireVault.com</a>.
             Our technical support is available in English.
           </p>
         </form>

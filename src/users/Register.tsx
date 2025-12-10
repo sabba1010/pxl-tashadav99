@@ -154,7 +154,7 @@ const Register = () => {
                   <Sparkles className="w-9 h-9 text-white" />
                 </div>
                 <span className="text-5xl font-black text-white">
-                  Acctempire
+                  AEmpireVault
                 </span>
               </motion.div>
 
@@ -198,7 +198,7 @@ const Register = () => {
                     <Sparkles className="w-8 h-8 text-white" />
                   </div>
                   <span className="text-3xl font-bold text-white">
-                    Acctempire
+                    AEmpireVault
                   </span>
                 </div>
               </div>
@@ -209,7 +209,7 @@ const Register = () => {
                 transition={{ delay: 0.3 }}
                 className="text-4xl font-black text-center text-white mb-2 flex items-center justify-center gap-3"
               >
-                Welcome to Acctempire
+                Welcome to AEmpireVault
                 <motion.span
                   animate={{ rotate: [0, 20, -10, 15, 0] }}
                   transition={{ duration: 2, repeat: Infinity }}
@@ -365,7 +365,7 @@ const Register = () => {
                     className="w-5 h-5 text-orange-500 rounded focus:ring-orange-500 bg-gray-800 border-gray-600"
                   />
                   <label htmlFor="terms" className="text-sm text-gray-400">
-                    By clicking on this, I give consent to Acctempire Privacy
+                    By clicking on this, I give consent to AEmpireVault Privacy
                     Policy and Terms of Use
                   </label>
                 </div> */}

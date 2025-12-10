@@ -30,7 +30,7 @@ export default function Footer({ theme = "dark" }: Props) {
           {/* Brand Column */}
           <div className="space-y-5">
             <h2 className={`text-2xl font-bold ${isDark ? "text-white" : "text-gray-900"}`}>
-              cctempire
+              EmpireVault
             </h2>
             <p className="text-sm leading-relaxed max-w-xs">
               Your trusted marketplace for premium CCTV cameras, NVRs, DVRs, and complete security solutions in Bangladesh.
@@ -84,7 +84,7 @@ export default function Footer({ theme = "dark" }: Props) {
               <li className="flex items-start gap-3">
                 <Mail className="w-5 h-5 text-[#33ac6f] mt-0.5 flex-shrink-0" />
                 <span className={isDark ? "text-gray-300" : "text-gray-600"}>
-                  <a href="mailto:support@acctempire.com" className="hover:text-[#33ac6f]">support@acctempire.com</a>
+                  <a href="mailto:support@aEmpireVault.com" className="hover:text-[#33ac6f]">support@aEmpireVault.com</a>
                 </span>
               </li>
               <li className="flex items-start gap-3">
@@ -127,7 +127,7 @@ export default function Footer({ theme = "dark" }: Props) {
 
         {/* Bottom Bar */}
         <div className={`mt-12 pt-8 border-t ${isDark ? "border-gray-800" : "border-gray-200"} flex flex-col sm:flex-row justify-between items-center gap-4 text-xs ${isDark ? "text-gray-500" : "text-gray-600"}`}>
-          <p>© {currentYear} Acctempire. All rights reserved.</p>
+          <p>© {currentYear} AEmpireVault. All rights reserved.</p>
           <div className="flex items-center gap-6">
             <a href="#" className={linkHoverClass}>Terms of Service</a>
             <a href="#" className={linkHoverClass}>Privacy Policy</a>

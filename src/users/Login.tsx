@@ -30,7 +30,7 @@ const Login = () => {
         toast.success("Login Successful!");
 
         // SAVE USER DATA IN COOKIE (SECURE)
-        Cookies.set("acctempire_2XLD", JSON.stringify(res.data.user), {
+        Cookies.set("aEmpireVault_2XLD", JSON.stringify(res.data.user), {
           expires: 7, // 7 days
           secure: true,
           sameSite: "strict",
@@ -105,7 +105,7 @@ const Login = () => {
                   />
                 </div>
                 <span className="text-5xl font-black bg-gradient-to-r from-white to-orange-300 bg-clip-text text-transparent">
-                  Acctempire
+                  AEmpireVault
                 </span>
               </motion.div>
 
@@ -169,7 +169,7 @@ const Login = () => {
                     />
                   </div>
                   <span className="text-3xl font-bold text-white">
-                    Acctempire
+                    AEmpireVault
                   </span>
                 </div>
               </motion.div>
