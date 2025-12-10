@@ -36,6 +36,7 @@ import AddAccountCredentials from "../dashboard/buyer-dahboard/AddAccountCredent
 import Review from "../dashboard/buyer-dahboard/Review";
 import ReferralProgram from "../components/Policy/ReferralProgram";
 import PrivacyPolicy from "../components/Policy/PrivacyPolicy";
+import PaymentForm from "../components/Payment Form";
 
 const Routes = createBrowserRouter([
   {
@@ -63,6 +64,12 @@ const Routes = createBrowserRouter([
          path:"/plans",
          element: <Plan/>
        },
+
+      {
+         path:"/payment-success",
+         element: <PaymentForm/>,
+      },
+
       {
         path: "/login",
         element: <Login />,
