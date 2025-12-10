@@ -1,10 +1,9 @@
 // src/components/Navbar.tsx
-import React, { useState, useRef, useEffect, useContext } from "react";
-import { NavLink, Link, useNavigate } from "react-router-dom";
-import { FaPlus } from "react-icons/fa";
-import { useAuth } from "../context/AuthContext";
 import { Button } from "@mui/material";
+import { useEffect, useRef, useState } from "react";
+import { NavLink, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { useAuth } from "../context/AuthContext";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false); // Avatar dropdown
