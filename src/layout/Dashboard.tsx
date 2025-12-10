@@ -1,10 +1,9 @@
 import { Outlet } from "react-router-dom";
-import { useCurrentUser } from "../context/useCurrentUser";
 import AdminAdmins from "../dashboard/admin-dashboard/AdminAdmins";
+import { useAuth } from "../context/AuthContext";
 
 const Dashboard = () => {
-  const newUser = useCurrentUser();
-  console.log(newUser?.role);
+  const newUser = useAuth();
   return (
     <div className="flex">
       <div>

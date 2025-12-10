@@ -1,19 +1,25 @@
 // src/components/Navbar.tsx
 import React, { useState, useRef, useEffect, useContext } from "react";
-import { NavLink, Link } from "react-router-dom";
+import { NavLink, Link, useNavigate } from "react-router-dom";
 import { FaPlus } from "react-icons/fa";
 import { useAuth } from "../context/AuthContext";
+import { Button } from "@mui/material";
+import { toast } from "sonner";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false); // Avatar dropdown
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const user = useAuth();
-  console.log(user.user)
+  console.log(user.user);
+  const naviate = useNavigate();
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setOpen(false);
       }
     };
@@ -26,6 +32,12 @@ export default function Navbar() {
   const ROYAL_GOLD = "#D4A643";
   const CHARCOAL = "#111111";
   const CLEAN_WHITE = "#FFFFFF";
+
+  const handelLougt = () => {
+    user.logout();
+    toast.success("Logged out successfully");
+    naviate("/");
+  }
 
   return (
     <>
@@ -43,19 +55,42 @@ export default function Navbar() {
                 className="hidden lg:block lg:hidden p-2 rounded-md hover:bg-gray-100 transition"
               >
                 {mobileMenuOpen ? (
-                  <svg className="w-6 h-6" fill="none" stroke={EMPIRE_BLUE} viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    stroke={EMPIRE_BLUE}
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
                   </svg>
                 ) : (
-                  <svg className="w-6 h-6" fill="none" stroke={EMPIRE_BLUE} viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    stroke={EMPIRE_BLUE}
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 6h16M4 12h16M4 18h16"
+                    />
                   </svg>
                 )}
               </button>
 
               <NavLink to="/" className="flex items-center gap-3">
                 <img src="/logo.png" alt="cctempire" className="h-9 w-auto" />
-                <span className="hidden sm:inline font-bold text-xl" style={{ color: EMPIRE_BLUE }}>
+                <span
+                  className="hidden sm:inline font-bold text-xl"
+                  style={{ color: EMPIRE_BLUE }}
+                >
                   cctempire
                 </span>
               </NavLink>
@@ -66,28 +101,36 @@ export default function Navbar() {
               <NavLink
                 to="/marketplace"
                 className="font-medium"
-                style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}
+                style={({ isActive }) => ({
+                  color: isActive ? ROYAL_GOLD : CHARCOAL,
+                })}
               >
                 Marketplace
               </NavLink>
               <NavLink
                 to="/purchases"
                 className="font-medium"
-                style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}
+                style={({ isActive }) => ({
+                  color: isActive ? ROYAL_GOLD : CHARCOAL,
+                })}
               >
                 Mypurchase
               </NavLink>
               <NavLink
                 to="/orders"
                 className="font-medium"
-                style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}
+                style={({ isActive }) => ({
+                  color: isActive ? ROYAL_GOLD : CHARCOAL,
+                })}
               >
                 Orders
               </NavLink>
               <NavLink
                 to="/myproducts"
                 className="font-medium"
-                style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}
+                style={({ isActive }) => ({
+                  color: isActive ? ROYAL_GOLD : CHARCOAL,
+                })}
               >
                 My products
               </NavLink>
@@ -95,7 +138,9 @@ export default function Navbar() {
               <NavLink
                 to="/wallet"
                 className="font-medium"
-                style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}
+                style={({ isActive }) => ({
+                  color: isActive ? ROYAL_GOLD : CHARCOAL,
+                })}
               >
                 Wallet
               </NavLink>
@@ -110,59 +155,28 @@ export default function Navbar() {
 
             {/* Right Icons */}
             <div className="flex items-center gap-1">
-
-
-              {/* <button className="p-2 rounded-full hover:bg-gray-100 transition">
-                <svg
-                  className="w-7 h-7 mb-1"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M3 3h2l1.4 2M6.4 5h14l-1.6 9H7.2L5.6 5zM8 18.5a1.5 1.5 0 103 0 1.5 1.5 0 00-3 0zm8 0a1.5 1.5 0 103 0 1.5 1.5 0 00-3 0z"
-                  />
-                </svg>
-              </button> */}
-
-              {/* <button className="p-2 rounded-full hover:bg-gray-100 transition">
-                <svg
-                  className="w-5 h-5"           // you can even bump to w-6 h-6 if still too small
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke={EMPIRE_BLUE}
-                  strokeWidth={2.2}            // slightly thicker stroke
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                
-                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9z" />
-                  <path d="M10.3 21a1.8 1.8 0 0 0 3.4 0" />
-
-                  <circle cx="18.5" cy="6" r="4" fill={EMPIRE_BLUE} />
-                  <circle cx="18.5" cy="6" r="1.8" fill="white" />
-                </svg>
-              </button> */}
-
               {/* Avatar Dropdown */}
               <div className="relative" ref={dropdownRef}>
-                <button
-                  onClick={() => setOpen(!open)}
-                  className="flex items-center p-1 rounded-full hover:bg-gray-100 transition"
-                >
-                  <div
-                    className="h-9 w-9 rounded-full flex items-center justify-center text-white font-bold text-sm"
-                    style={{
-                      background: `linear-gradient(90deg, ${EMPIRE_BLUE} 0%, ${ROYAL_GOLD} 100%)`,
-                    }}
+                {user ? (
+                  <button
+                    onClick={() => setOpen(!open)}
+                    className="flex items-center p-1 rounded-full hover:bg-gray-100 transition"
                   >
-                    A
+                    <div
+                      className="h-9 w-9 rounded-full flex items-center justify-center text-white font-bold text-sm"
+                      style={{
+                        background: `linear-gradient(90deg, ${EMPIRE_BLUE} 0%, ${ROYAL_GOLD} 100%)`,
+                      }}
+                    >
+                      A
+                    </div>
+                  </button>
+                ) : (
+                  <div className="md:flex hidden">
+                    <Button>Login</Button>
+                    <Button>Register</Button>
                   </div>
-                </button>
+                )}
 
                 {/* Dropdown Menu */}
                 {open && (
@@ -171,11 +185,19 @@ export default function Navbar() {
                     style={{ backgroundColor: CLEAN_WHITE }}
                   >
                     {/* User Info */}
-                    <div className="px-6 py-5 border-b" style={{ backgroundColor: "#F9FAFB" }}>
-                      <div className="font-bold text-lg" style={{ color: EMPIRE_BLUE }}>
+                    <div
+                      className="px-6 py-5 border-b"
+                      style={{ backgroundColor: "#F9FAFB" }}
+                    >
+                      <div
+                        className="font-bold text-lg"
+                        style={{ color: EMPIRE_BLUE }}
+                      >
                         Legityankeelogshub
                       </div>
-                      <div className="text-sm text-gray-500">tajudeerrtoyeeb095@gmail.com</div>
+                      <div className="text-sm text-gray-500">
+                        tajudeerrtoyeeb095@gmail.com
+                      </div>
                     </div>
 
                     {/* Wallet Balance Card */}
@@ -187,9 +209,12 @@ export default function Navbar() {
                         }}
                       >
                         <div className="absolute inset-0 opacity-20">
-                          <div className="absolute inset-0" style={{
-                            backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,.1) 10px, rgba(255,255,255,.1) 20px)`,
-                          }}></div>
+                          <div
+                            className="absolute inset-0"
+                            style={{
+                              backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,.1) 10px, rgba(255,255,255,.1) 20px)`,
+                            }}
+                          ></div>
                         </div>
                         <div className="relative z-10">
                           <div className="text-sm opacity-90">Your Balance</div>
@@ -208,11 +233,23 @@ export default function Navbar() {
                     {/* Menu Items */}
                     <div className="py-2">
                       {[
-                        { to: "/account", icon: "account", label: "My Account Dashboard" },
+                        {
+                          to: "/admin-dashboard",
+                          icon: "account",
+                          label: "My Account Dashboard",
+                        },
                         { to: "/referral", icon: "users", label: "Referral" },
                         { to: "/plans", icon: "star", label: "Plans" },
-                        { to: "/purchases", icon: "bag", label: "My Purchases" },
-                        { to: "/account-settings", icon: "settings", label: "Account Settings" },
+                        {
+                          to: "/purchases",
+                          icon: "bag",
+                          label: "My Purchases",
+                        },
+                        {
+                          to: "/account-settings",
+                          icon: "settings",
+                          label: "Account Settings",
+                        },
                       ].map((item) => (
                         <NavLink
                           key={item.to}
@@ -221,20 +258,76 @@ export default function Navbar() {
                           className="flex items-center gap-4 px-6 py-3 hover:bg-gray-50 transition"
                           style={{ color: CHARCOAL }}
                         >
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            {item.icon === "account" && <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />}
-                            {item.icon === "users" && <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6 6 0 0112 0v-1M9 10h.01M15 10h.01" />}
-                            {item.icon === "star" && <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.884 5.794a1 1 0 00.951.69h6.083c.969 0 .689 1.24-.289 1.043l-4.923 3.578a1 1 0 00-.364 1.118l1.884 5.794c.3.921-.755.688-1.239.303L12 17.727l-4.923 3.578c-.484.385-1.539.618-1.239-.303l1.884-5.794a1 1 0 00-.364-1.118L2.435 10.454c-.978-.197-.258-1.437.711-1.043h6.083a1 1 0 00.951-.69l1.884-5.794z" />}
-                            {item.icon === "bag" && <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />}
-                            {item.icon === "settings" && <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065zM15 12a3 3 0 11-6 0 3 3 0 016 0z" />}
+                          <svg
+                            className="w-5 h-5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            {item.icon === "account" && (
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                              />
+                            )}
+                            {item.icon === "users" && (
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6 6 0 0112 0v-1M9 10h.01M15 10h.01"
+                              />
+                            )}
+                            {item.icon === "star" && (
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.884 5.794a1 1 0 00.951.69h6.083c.969 0 .689 1.24-.289 1.043l-4.923 3.578a1 1 0 00-.364 1.118l1.884 5.794c.3.921-.755.688-1.239.303L12 17.727l-4.923 3.578c-.484.385-1.539.618-1.239-.303l1.884-5.794a1 1 0 00-.364-1.118L2.435 10.454c-.978-.197-.258-1.437.711-1.043h6.083a1 1 0 00.951-.69l1.884-5.794z"
+                              />
+                            )}
+                            {item.icon === "bag" && (
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+                              />
+                            )}
+                            {item.icon === "settings" && (
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065zM15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                              />
+                            )}
                           </svg>
-                          <span className="text-sm font-medium">{item.label}</span>
+                          <span className="text-sm font-medium">
+                            {item.label}
+                          </span>
                         </NavLink>
                       ))}
 
-                      <button className="w-full flex items-center gap-4 px-6 py-3 hover:bg-yellow-50 transition text-left" style={{ color: "#B45309" }}>
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                      <button
+                        onClick={handelLougt}
+                        className="w-full flex items-center gap-4 px-6 py-3 hover:bg-yellow-50 transition text-left"
+                        style={{ color: "#B45309" }}
+                      >
+                        <svg
+                          className="w-5 h-5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                          />
                         </svg>
                         <span className="text-sm font-medium">Log out</span>
                       </button>
@@ -298,9 +391,18 @@ export default function Navbar() {
                 color: isActive ? ROYAL_GOLD : CHARCOAL,
               })}
             >
-              <svg className="w-5 h-5 mb-1 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                  d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+              <svg
+                className="w-5 h-5 mb-1 sm:w-6 sm:h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+                />
               </svg>
               <span className="text-xs">Purchases</span>
             </NavLink>
@@ -313,9 +415,18 @@ export default function Navbar() {
                 color: isActive ? ROYAL_GOLD : CHARCOAL,
               })}
             >
-              <svg className="w-5 h-5 mb-1 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+              <svg
+                className="w-5 h-5 mb-1 sm:w-6 sm:h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                />
               </svg>
               <span className="text-xs">Orders</span>
             </NavLink>
@@ -341,14 +452,21 @@ export default function Navbar() {
                 color: isActive ? ROYAL_GOLD : CHARCOAL,
               })}
             >
-              <svg className="w-5 h-5 mb-1 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                  d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2" />
+              <svg
+                className="w-5 h-5 mb-1 sm:w-6 sm:h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2"
+                />
               </svg>
               <span className="text-xs">Ads</span>
             </NavLink>
-
-
 
             {/* Wallet */}
             <NavLink
@@ -358,9 +476,18 @@ export default function Navbar() {
                 color: isActive ? ROYAL_GOLD : CHARCOAL,
               })}
             >
-              <svg className="w-5 h-5 mb-1 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                  d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3v-6a3 3 0 00-3-3H7a3 3 0 00-3 3v6a3 3 0 003 3z" />
+              <svg
+                className="w-5 h-5 mb-1 sm:w-6 sm:h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3v-6a3 3 0 00-3-3H7a3 3 0 00-3 3v6a3 3 0 003 3z"
+                />
               </svg>
               <span className="text-xs">Wallet</span>
             </NavLink>

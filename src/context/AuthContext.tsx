@@ -13,12 +13,14 @@ interface AuthContextType {
   setUser: (user: User | null) => void;
   logout: () => void;
   isLoggedIn: boolean;
+  loading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState<boolean>(true); // added loading state
 
   useEffect(() => {
     const cookieData = Cookies.get("acctempire_2XLD");
@@ -28,8 +30,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(parsed);
       } catch (err) {
         console.error("Invalid cookie data");
+        setUser(null);
       }
     }
+    setLoading(false); // cookie checked, loading finished
   }, []);
 
   const logout = () => {
@@ -38,7 +42,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, setUser, logout, isLoggedIn: !!user }}>
+    <AuthContext.Provider value={{ user, setUser, logout, isLoggedIn: !!user, loading }}>
       {children}
     </AuthContext.Provider>
   );

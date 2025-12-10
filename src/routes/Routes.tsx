@@ -30,7 +30,6 @@ import Mysells from "../dashboard/buyer-dahboard/Mysells";
 import MyOrder from "../components/MyOrder/MyOrder";
 import Plan from "../pages/plan/Plan";
 
-
 import MyAds from "../components/Myproducts/MyAds";
 import PaymentForm from "../components/Payment/PaymentForm";
 import PrivacyPolicy from "../components/Policy/PrivacyPolicy";
@@ -39,6 +38,7 @@ import RatingsReputationPanel from "../dashboard/admin-dashboard/RatingsReputati
 import SellerAccount from "../dashboard/admin-dashboard/SellerAccount";
 import AddAccountCredentials from "../dashboard/buyer-dahboard/AddAccountCredentials";
 import Review from "../dashboard/buyer-dahboard/Review";
+import PrivateRoute from "./PrivateRoute";
 
 const Routes = createBrowserRouter([
   {
@@ -48,7 +48,7 @@ const Routes = createBrowserRouter([
     children: [
       {
         path: "/",
-        element: <Home/>,
+        element: <Home />,
       },
       {
         path: "/marketplace",
@@ -62,14 +62,14 @@ const Routes = createBrowserRouter([
         path: "/privacy",
         element: <PrivacyPolicy />,
       },
-       {
-         path:"/plans",
-         element: <Plan/>
-       },
-        {
-          path:"/payment-done",
-          element:<PaymentForm/>
-        },
+      {
+        path: "/plans",
+        element: <Plan />,
+      },
+      {
+        path: "/payment-done",
+        element: <PaymentForm />,
+      },
 
       {
         path: "/login",
@@ -80,16 +80,16 @@ const Routes = createBrowserRouter([
         element: <Mypurchase />,
       },
       {
-         path: "/orders",
-         element:<MyOrder/>,
+        path: "/orders",
+        element: <MyOrder />,
       },
       {
-          path: "/myproducts",
-          element: <MyAds/>,
+        path: "/myproducts",
+        element: <MyAds />,
       },
       {
         path: "/wallet",
-        element: <Walet/>,
+        element: <Walet />,
       },
       {
         path: "/report",
@@ -99,7 +99,7 @@ const Routes = createBrowserRouter([
         path: "/register",
         element: <Register />,
       },
-       {
+      {
         path: "/mysells",
         element: <Mysells />,
       },
@@ -107,28 +107,32 @@ const Routes = createBrowserRouter([
         path: "add-product",
         element: <BuyerAddProduct />,
       },
-        {
+      {
         path: "/sell-your-account",
-        element: <AddAccountCredentials/>,
+        element: <AddAccountCredentials />,
       },
-        {
-          path: "/review",
-          element: <Review />,
-        },
+      {
+        path: "/review",
+        element: <Review />,
+      },
       {
         path: "buyer-dashboard",
         element: <Buyer />,
       },
       {
-        path: '/payment',
-        element:<Payment/>,
-      }
+        path: "/payment",
+        element: <Payment />,
+      },
     ],
   },
 
   {
     path: "admin-dashboard",
-    element: <AdminAdmins />,
+    element: (
+      <PrivateRoute>
+        <AdminAdmins />
+      </PrivateRoute>
+    ),
     children: [
       {
         index: true,
@@ -160,12 +164,12 @@ const Routes = createBrowserRouter([
       },
       {
         path: "seller-accounts",
-        element: <SellerAccount/>,
+        element: <SellerAccount />,
       },
       {
         path: "ratings",
-        element: <RatingsReputationPanel/>,
-      }
+        element: <RatingsReputationPanel />,
+      },
     ],
   },
   // admin routes can be added here for admin route
