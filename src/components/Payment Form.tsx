@@ -1,4 +1,4 @@
-// PaymentForm.tsx
+// src/components/PaymentForm.tsx
 import React, { FC, FormEvent, useState } from "react";
 import { motion } from "framer-motion";
 
@@ -34,7 +34,7 @@ export default function PaymentForm({ endpoint = "http://localhost:3200/api/subm
     setSuccess(null);
 
     try {
-      // Build payload — omit empty strings by setting undefined (server can handle defaults)
+      // Build payload and omit empty values explicitly
       const payload: Record<string, any> = {
         paymentMethod: payment,
         submittedAt: new Date().toISOString(),
@@ -52,12 +52,17 @@ export default function PaymentForm({ endpoint = "http://localhost:3200/api/subm
         body: JSON.stringify(payload),
       });
 
+      // try parse JSON safely
       const data = await res.json().catch(() => ({}));
 
-      if (!res.ok) throw new Error(data?.error || `Status ${res.status}`);
+      if (!res.ok) {
+        // server sent an error message?
+        const serverMsg = data?.error || data?.message || `Status ${res.status}`;
+        throw new Error(serverMsg);
+      }
 
       setSuccess(data?.message || "Submitted successfully");
-      // optionally you can show returned id or url: data.paymentId, data.paymentUrl
+      // clear form
       setName("");
       setTransactionId("");
       setMessage("");
