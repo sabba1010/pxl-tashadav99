@@ -30,20 +30,20 @@ import { RouterProvider } from "react-router-dom";
 import "./index.css";
 import reportWebVitals from "./reportWebVitals";
 import Routes from "./routes/Routes";
-import { AuthContextProvider } from "./context/AuthContext";
 import { Toaster } from "sonner";
 import { LanguageProvider } from "./i18n/LanguageContext"; //
+import { AuthProvider } from "./context/AuthContext";
 
 const root = ReactDOM.createRoot(document.getElementById("root") as HTMLElement);
 
 root.render(
   <React.StrictMode>
-    <AuthContextProvider>
+    <AuthProvider>
       <LanguageProvider>
         <Toaster position="bottom-right" richColors />
         <RouterProvider router={Routes} />
       </LanguageProvider>
-    </AuthContextProvider>
+    </AuthProvider>
   </React.StrictMode>
 );
 

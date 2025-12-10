@@ -1,13 +1,15 @@
 // src/components/Navbar.tsx
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useContext } from "react";
 import { NavLink, Link } from "react-router-dom";
 import { FaPlus } from "react-icons/fa";
+import { useAuth } from "../context/AuthContext";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false); // Avatar dropdown
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-
+  const user = useAuth();
+  console.log(user.user)
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
