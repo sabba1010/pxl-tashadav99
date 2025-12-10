@@ -2,9 +2,11 @@ import React from "react";
 
 import HeroBannerSection from "../../components/HomeComponents/HeroBannerSection";
 import StandoutAccounts from "../../components/HomeComponents/StandoutAccounts";
-import ExplorebyCategory from "../../components/HomeComponents/ExplorebyCategory";
 import WhyChooseUs from "../../components/HomeComponents/WhyChooseUs";
 import HowItWorks from "../../components/HomeComponents/HowItWorks";
+import ReportTransaction from "../../components/HomeComponents/ReportTransaction";
+//import HomeLinks from "../../components/HomeComponents/HomeLinks";
+import HomeAboutSection from "../../components/HomeComponents/HomeAboutSection"
 
 const Home = () => {
   return (
@@ -13,12 +15,17 @@ const Home = () => {
       <HeroBannerSection />
       {/* Standout Accounts Section - Modern Cards */}
       <StandoutAccounts />
-      {/* Explore by Category - Glass Cards */}
-      <ExplorebyCategory />
+
+       {/* Hero About Section - Modern Gradient + Glassmorphism */}
+      <HomeAboutSection />
+ 
       {/* Why Choose Us + Features - Combined Modern Grid */}
       <WhyChooseUs />
       {/* How It Works - Modern Flow */}
       <HowItWorks />
+        {/* How to Report a Transaction - Modern Flow */}
+      <ReportTransaction />
+
     </div>
   );
 };

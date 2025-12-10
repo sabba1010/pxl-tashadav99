@@ -65,7 +65,7 @@ const Login = () => {
                   />
                 </div>
                 <span className="text-5xl font-black bg-gradient-to-r from-white to-orange-300 bg-clip-text text-transparent">
-                  cctbazaar
+                  Acctempire
                 </span>
               </motion.div>
 
@@ -123,7 +123,7 @@ const Login = () => {
                       className="absolute -inset-2 bg-gradient-to-r from-orange-500 to-pink-600 rounded-2xl blur-xl opacity-50 -z-10"
                     />
                   </div>
-                  <span className="text-3xl font-bold text-white">cctbazaar</span>
+                  <span className="text-3xl font-bold text-white">Acctempire</span>
                 </div>
               </motion.div>
 

@@ -6,7 +6,7 @@ const HowItWorks = () => {
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-5xl lg:text-5xl font-bold text-[#e6c06c]">
-            How It Works
+              How to purchase
           </h2>
           <p className="text-white text-xl mt-4">
             Simple, Secure, and Fast Process
@@ -52,15 +52,15 @@ const HowItWorks = () => {
                 desc: "Your new digital asset is ready to use!",
               },
             ].map((step, i) => (
-              <div key={i} className="flex gap-6 group">
-                <div className="text-4xl bg-gradient-to-br from-[#33ac6f] to-[#33ac6f] text-white w-16 h-16 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition">
+              <div key={i} className="flex gap-4 sm:gap-6 group">
+                <div className="text-xl sm:text-2xl md:text-4xl bg-gradient-to-br from-[#33ac6f] to-[#33ac6f] text-white w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition">
                   {step.icon}
                 </div>
                 <div>
-                  <h3 className="text-2xl font-bold text-white">
+                  <h3 className="text-xl sm:text-2xl md:text-2xl font-bold text-white">
                     {step.title}
                   </h3>
-                  <p className="text-white/90 text-lg mt-1">{step.desc}</p>
+                  <p className="text-white/90 text-base sm:text-lg mt-1">{step.desc}</p>
                 </div>
               </div>
             ))}

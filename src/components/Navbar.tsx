@@ -52,9 +52,9 @@ export default function Navbar() {
               </button>
 
               <NavLink to="/" className="flex items-center gap-3">
-                <img src="/logo.png" alt="CCTBazaar" className="h-9 w-auto" />
+                <img src="/logo.png" alt="cctempire" className="h-9 w-auto" />
                 <span className="hidden sm:inline font-bold text-xl" style={{ color: EMPIRE_BLUE }}>
-                  CCTBazaar
+                  cctempire
                 </span>
               </NavLink>
             </div>
@@ -272,7 +272,7 @@ export default function Navbar() {
               })}
             >
               <svg
-                className="w-7 h-7 mb-1"
+                className="w-5 h-5 mb-1 sm:w-6 sm:h-6"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -296,7 +296,7 @@ export default function Navbar() {
                 color: isActive ? ROYAL_GOLD : CHARCOAL,
               })}
             >
-              <svg className="w-7 h-7 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 mb-1 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                   d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
               </svg>
@@ -311,7 +311,7 @@ export default function Navbar() {
                 color: isActive ? ROYAL_GOLD : CHARCOAL,
               })}
             >
-              <svg className="w-7 h-7 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 mb-1 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                   d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
               </svg>
@@ -339,7 +339,7 @@ export default function Navbar() {
                 color: isActive ? ROYAL_GOLD : CHARCOAL,
               })}
             >
-              <svg className="w-7 h-7 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 mb-1 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                   d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2" />
               </svg>
@@ -356,7 +356,7 @@ export default function Navbar() {
                 color: isActive ? ROYAL_GOLD : CHARCOAL,
               })}
             >
-              <svg className="w-7 h-7 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 mb-1 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                   d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3v-6a3 3 0 00-3-3H7a3 3 0 00-3 3v6a3 3 0 003 3z" />
               </svg>

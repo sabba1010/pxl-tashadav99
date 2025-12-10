@@ -1,3 +1,4 @@
+// src/components/Marketplace/Marketplace.tsx
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import type { IconType } from "react-icons";
 import {
@@ -12,14 +13,19 @@ import {
   FaShoppingCart,
   FaTimes,
   FaSearch,
+  FaStar,
 } from "react-icons/fa";
 import { SiNetflix, SiAmazon, SiSteam, SiGoogle } from "react-icons/si";
 import { Link } from "react-router-dom";
 
+/* ---- Workaround for react-icons + TS JSX typing issues ---- */
 const FaTimesIcon = FaTimes as unknown as React.ComponentType<any>;
 const FaPlusIcon = FaPlus as unknown as React.ComponentType<any>;
 const FaSearchIcon = FaSearch as unknown as React.ComponentType<any>;
+const FaShoppingCartIcon = FaShoppingCart as unknown as React.ComponentType<any>;
+const FaStarIcon = FaStar as unknown as React.ComponentType<any>;
 
+/* ----------------- Types & Constants ----------------- */
 interface Item {
   id: number;
   title: string;
@@ -43,8 +49,6 @@ const CATEGORY_MAP: Record<string, string[]> = {
   Gaming: ["Steam", "Epic Games"],
   Others: ["Misc"],
 };
-
-type SubcatState = Record<string, string[]>;
 
 const ICON_COLOR_MAP = new Map<IconType, string>([
   [FaWhatsapp, "#25D366"],
@@ -99,6 +103,7 @@ const vibrantGradients = [
   "linear-gradient(135deg,#9BE15D 0%,#00E3AE 100%)",
 ];
 
+/* --- Sample data: ALL_ITEMS (use your real data if needed) --- */
 const ALL_ITEMS: Item[] = [
   { id: 1, title: "USA GMAIL NUMBER", desc: "Valid +1 US number attached Gmail with full access & recovery email.", price: 2.5, seller: "Senior man", delivery: "2 mins", icon: FaEnvelope, category: "Emails & Messaging Service", subcategory: "Gmail" },
   { id: 2, title: "Aged Gmail (14y)", desc: "14-year-old strong Gmail, perfect for ads & socials.", price: 4.0, seller: "MailKing", delivery: "1 min", icon: FaEnvelope, category: "Emails & Messaging Service", subcategory: "Gmail" },
@@ -115,6 +120,16 @@ const ALL_ITEMS: Item[] = [
   { id: 13, title: "Secure VPN (Nord)", desc: "1 year subscription.", price: 5.5, seller: "SafeNet", delivery: "Instant", icon: FaLock, category: "VPN & PROXYs", subcategory: "NordVPN" },
   { id: 14, title: "Shopify Store (starter)", desc: "Pre-built store + premium theme.", price: 35.0, seller: "ShopBuilders", delivery: "2 days", icon: FaShoppingCart, category: "E-commerce Platforms", subcategory: "Shopify" },
 ];
+
+/* small hash helper */
+const hashCode = (s: string) => {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = Math.imul(31, h) + s.charCodeAt(i) | 0;
+  return h;
+};
+
+/* ----------------- CategorySelector (full implementation) ----------------- */
+type SubcatState = Record<string, string[]>;
 
 const CategorySelector: React.FC<{
   categoryMap: Record<string, string[]>;
@@ -217,6 +232,7 @@ const CategorySelector: React.FC<{
   );
 };
 
+/* ----------------- Marketplace component (full) ----------------- */
 const Marketplace: React.FC = () => {
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [searchQuery, setSearchQuery] = useState("");
@@ -227,11 +243,16 @@ const Marketplace: React.FC = () => {
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
 
+  /* NEW: pagination + cart state */
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6; // changeable
+  const [cartCount, setCartCount] = useState(0);
+
   const drawerRef = useRef<HTMLDivElement | null>(null);
 
   const filteredItems = useMemo<Item[]>(() => {
+    const q = searchQuery.trim().toLowerCase();
     return ALL_ITEMS.filter((item) => {
-      const q = searchQuery.trim().toLowerCase();
       const matchesSearch =
         q.length === 0 ||
         item.title.toLowerCase().includes(q) ||
@@ -250,6 +271,14 @@ const Marketplace: React.FC = () => {
       );
     });
   }, [searchQuery, selectedSubcats, priceRange]);
+
+  useEffect(() => setCurrentPage(1), [searchQuery, selectedSubcats, priceRange, viewMode]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredItems.length / itemsPerPage));
+  const paginatedItems: Item[] = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredItems.slice(start, start + itemsPerPage);
+  }, [filteredItems, currentPage]);
 
   useEffect(() => {
     document.body.style.overflow = drawerOpen || !!selectedItem || mobileSearchOpen ? "hidden" : "";
@@ -270,7 +299,7 @@ const Marketplace: React.FC = () => {
   const getBrandHex = (icon: Item["icon"]) => {
     if (typeof icon === "string") {
       const key = icon.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
-      return STRING_ICON_COLOR_MAP[key];
+      return (STRING_ICON_COLOR_MAP as any)[key];
     }
     return ICON_COLOR_MAP.get(icon as IconType);
   };
@@ -323,10 +352,34 @@ const Marketplace: React.FC = () => {
     );
   };
 
-  const hashCode = (s: string) => {
+  function hashCode(s: string) {
     let h = 0;
     for (let i = 0; i < s.length; i++) h = Math.imul(31, h) + s.charCodeAt(i) | 0;
     return h;
+  }
+
+  /* small Stars component (demo) */
+  const Stars: React.FC<{ value: number }> = ({ value }) => (
+    <div className="flex items-center gap-1">
+      {Array.from({ length: 5 }).map((_, i) => (
+        <FaStarIcon key={i} className={`w-3 h-3 ${i < value ? "text-yellow-400" : "text-gray-300"}`} />
+      ))}
+    </div>
+  );
+
+  const addToCart = (item: Item) => {
+    setCartCount((c) => c + 1);
+    // replace with real cart logic
+    // toast or UI feedback preferred in real app
+  };
+
+  const buyNow = (item: Item) => {
+    // placeholder buy flow
+    alert(`Proceed to buy: ${item.title} ($${item.price.toFixed(2)})`);
+  };
+
+  const viewItem = (item: Item) => {
+    setSelectedItem(item);
   };
 
   return (
@@ -374,16 +427,29 @@ const Marketplace: React.FC = () => {
               />
             </div>
 
-            {/* Mobile Search Icon */}
-            <button
-              onClick={() => setMobileSearchOpen(true)}
-              className="md:hidden p-3 bg-white border rounded-lg shadow-sm"
-            >
-              <FaSearchIcon className="w-5 h-5" />
-            </button>
+            {/* Mobile Search Icon + Cart */}
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setMobileSearchOpen(true)}
+                className="md:hidden p-3 bg-white border rounded-lg shadow-sm"
+              >
+                <FaSearchIcon className="w-5 h-5" />
+              </button>
+
+              <Link to="/cart" className="relative">
+                <div className="p-3 bg-white border rounded-lg shadow-sm">
+                  <FaShoppingCartIcon className="w-5 h-5" />
+                </div>
+                {cartCount > 0 && (
+                  <div className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center">
+                    {cartCount}
+                  </div>
+                )}
+              </Link>
+            </div>
           </div>
 
-          {/* Mobile Search Bar (Appears on tap) */}
+          {/* Mobile Search */}
           {mobileSearchOpen && (
             <>
               <div className="fixed inset-0 bg-black/50 z-40" onClick={() => setMobileSearchOpen(false)} />
@@ -406,9 +472,7 @@ const Marketplace: React.FC = () => {
             </>
           )}
 
-          {/* Rest of layout */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            {/* LEFT SIDEBAR - keep as grid cell but inner content sticky */}
             <aside className="hidden lg:block lg:col-span-3">
               <div className="sticky top-24 self-start">
                 <div className="bg-white rounded-xl shadow-sm border p-6">
@@ -436,96 +500,179 @@ const Marketplace: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Mobile Cards */}
+                {/* Mobile simple cards (compact) */}
                 <div className="block sm:hidden divide-y">
-                  {filteredItems.map((item) => (
-                    <button key={item.id} onClick={() => setSelectedItem(item)} className="w-full text-left p-4 hover:bg-gray-50 active:bg-gray-100 transition">
-                      <div className="flex gap-4">
-                        <div className="flex-shrink-0">{renderIcon(item.icon, 42)}</div>
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-[#0A1A3A]">{item.title}</h3>
-                          <p className="text-sm text-gray-600 mt-1 line-clamp-2">{item.desc || "Premium account • Instant delivery"}</p>
-                          <div className="mt-3 flex justify-between items-end">
-                            <div>
-                              <div className="text-xs text-gray-500">{item.seller}</div>
-                              <div className="text-xs text-green-600">{item.delivery}</div>
-                            </div>
-                            <div className="text-xl font-bold text-[#0A1A3A]">${item.price.toFixed(2)}</div>
+                  {paginatedItems.map((item: Item) => (
+                    <div key={item.id} className="w-full text-left p-3 hover:bg-gray-50 active:bg-gray-100 transition flex gap-3 items-start">
+                      <div className="flex-shrink-0">{renderIcon(item.icon, 40)}</div>
+                      <div className="flex-1">
+                        <div className="flex justify-between items-start gap-2">
+                          <div>
+                            <h3 className="font-semibold text-sm text-[#0A1A3A]">{item.title}</h3>
+                            <p className="text-xs text-gray-600 mt-1 line-clamp-2">{item.desc || "Premium account • Instant delivery"}</p>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-base font-bold text-[#0A1A3A]">${item.price.toFixed(2)}</div>
+                            <div className="text-[10px] text-gray-500">{item.delivery}</div>
                           </div>
                         </div>
+
+                        <div className="mt-3 flex gap-2">
+                          <button onClick={() => addToCart(item)} className="flex-1 py-2 text-sm border rounded-md">Add to cart</button>
+                          <button onClick={() => viewItem(item)} className="py-2 px-3 text-sm border rounded-md">View</button>
+                          <button onClick={() => buyNow(item)} className="py-2 px-3 text-sm bg-[#33ac6f] text-white rounded-md">Buy</button>
+                        </div>
                       </div>
-                    </button>
+                    </div>
                   ))}
                 </div>
 
-                {/* Desktop List & Grid - Click opens modal */}
+                {/* Desktop list */}
                 {viewMode === "list" && (
                   <div className="hidden sm:block divide-y">
-                    {filteredItems.map((item) => (
-                      <button key={item.id} onClick={() => setSelectedItem(item)} className="w-full p-5 flex gap-5 hover:bg-gray-50 text-left transition">
-                        <div>{renderIcon(item.icon, 40)}</div>
+                    {paginatedItems.map((item: Item) => (
+                      <div key={item.id} className="w-full p-4 flex gap-4 hover:bg-gray-50 text-left transition items-center">
+                        <div>{renderIcon(item.icon, 44)}</div>
                         <div className="flex-1">
-                          <h3 className="font-bold text-[#0A1A3A]">{item.title}</h3>
-                          <p className="text-sm text-gray-600">{item.desc}</p>
+                          <h3 className="font-bold text-sm text-[#0A1A3A]">{item.title}</h3>
+                          <p className="text-xs text-gray-600 mt-1">{item.desc}</p>
                           <div className="text-xs text-gray-500 mt-2">{item.seller} • {item.delivery}</div>
                         </div>
-                        <div className="text-right">
-                          <div className="text-2xl font-bold text-[#0A1A3A]">${item.price.toFixed(2)}</div>
+
+                        <div className="text-right flex flex-col items-end gap-3">
+                          <div className="text-lg font-bold text-[#0A1A3A]">${item.price.toFixed(2)}</div>
+                          <div className="flex gap-2">
+                            <button onClick={() => addToCart(item)} className="px-3 py-1 text-sm border rounded">Add to cart</button>
+                            <button onClick={() => viewItem(item)} className="px-3 py-1 text-sm border rounded">View</button>
+                            <button onClick={() => buyNow(item)} className="px-3 py-1 text-sm bg-[#33ac6f] text-white rounded">Buy Now</button>
+                          </div>
                         </div>
-                      </button>
+                      </div>
                     ))}
                   </div>
                 )}
 
+                {/* Desktop grid */}
                 {viewMode === "grid" && (
-                  <div className="hidden sm:p-6 sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filteredItems.map((item) => (
-                      <button key={item.id} onClick={() => setSelectedItem(item)} className="border rounded-xl p-5 text-center hover:shadow-lg transition bg-white">
+                  <div className="hidden sm:p-6 sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {paginatedItems.map((item: Item) => (
+                      <div key={item.id} className="border rounded-lg p-4 text-center hover:shadow-lg transition bg-white flex flex-col">
                         <div className="flex justify-center">{renderIcon(item.icon, 56)}</div>
-                        <h3 className="mt-4 font-bold text-[#0A1A3A]">{item.title}</h3>
-                        <p className="text-sm text-gray-600 mt-2">{item.desc}</p>
-                        <div className="mt-4 text-2xl font-bold text-[#0A1A3A]">${item.price.toFixed(2)}</div>
-                      </button>
+                        <h3 className="mt-3 font-medium text-sm text-[#0A1A3A]">{item.title}</h3>
+                        <p className="text-xs text-gray-600 mt-1 line-clamp-2">{item.desc}</p>
+                        <div className="mt-3 text-lg font-bold text-[#0A1A3A]">${item.price.toFixed(2)}</div>
+                        <div className="mt-4 flex gap-2">
+                          <button onClick={() => addToCart(item)} className="flex-1 py-2 text-sm border rounded">Cart</button>
+                          <button onClick={() => viewItem(item)} className="py-2 px-3 text-sm border rounded">View</button>
+                          <button onClick={() => buyNow(item)} className="py-2 px-3 text-sm bg-[#33ac6f] text-white rounded">Buy</button>
+                        </div>
+                      </div>
                     ))}
                   </div>
                 )}
+              </div>
+
+              {/* Pagination controls */}
+              <div className="mt-4 flex items-center justify-between">
+                <div className="text-sm text-gray-600">Page {currentPage} of {totalPages}</div>
+                <div className="flex items-center gap-2">
+                  <button onClick={() => setCurrentPage(1)} disabled={currentPage === 1} className="px-3 py-1 border rounded text-sm">First</button>
+                  <button onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} className="px-2 py-1 border rounded text-sm">Prev</button>
+
+                  {Array.from({ length: Math.min(5, totalPages) }).map((_, idx) => {
+                    const start = Math.max(1, Math.min(currentPage - 2, Math.max(1, totalPages - 4)));
+                    const pageNum = start + idx;
+                    if (pageNum > totalPages) return null;
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => setCurrentPage(pageNum)}
+                        className={`px-3 py-1 border rounded text-sm ${pageNum === currentPage ? "bg-[#0A1A3A] text-white" : "bg-white"}`}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  })}
+
+                  <button onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} className="px-2 py-1 border rounded text-sm">Next</button>
+                  <button onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages} className="px-3 py-1 border rounded text-sm">Last</button>
+                </div>
               </div>
             </main>
           </div>
         </div>
 
-        {/* Universal Detail Modal */}
+        {/* Item Detail Modal with Buyer Protection */}
         {selectedItem && (
           <>
             <div className="fixed inset-0 bg-black/60 z-40" onClick={() => setSelectedItem(null)} />
             <div className="fixed inset-x-0 bottom-0 sm:inset-auto sm:top-1/2 sm:left-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:max-w-lg sm:w-full bg-white rounded-t-3xl sm:rounded-3xl z-50 max-h-[90vh] sm:max-h-[80vh] overflow-y-auto shadow-2xl">
               <div className="sm:hidden absolute top-2 left-1/2 -translate-x-1/2 w-12 h-1.5 bg-gray-300 rounded-full" />
               <div className="sticky top-0 bg-white border-b sm:border-b-0 px-6 py-4 flex justify-between items-center">
-                <h2 className="text-xl font-bold text-[#0A1A3A]">{selectedItem.title}</h2>
+                <h2 className="text-lg font-bold text-[#0A1A3A]">{selectedItem.title}</h2>
                 <button onClick={() => setSelectedItem(null)}>
-                  <FaTimesIcon className="w-6 h-6" />
+                  <FaTimesIcon className="w-5 h-5" />
                 </button>
               </div>
-              <div className="p-6 text-center">
+
+              <div className="p-6">
                 <div className="flex justify-center">{renderIcon(selectedItem.icon, 72)}</div>
-                <div className="mt-6 text-4xl font-bold text-[#0A1A3A]">${selectedItem.price.toFixed(2)}</div>
-                <div className="mt-6 text-left space-y-4">
+                <div className="mt-4 text-3xl font-bold text-[#0A1A3A]">${selectedItem.price.toFixed(2)}</div>
+
+                <div className="mt-6 text-left space-y-4 text-sm">
                   <div>
                     <p className="font-medium">Description</p>
                     <p className="text-gray-600">{selectedItem.desc || "High-quality account with warranty."}</p>
                   </div>
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div><p className="text-gray-500">Seller</p><p className="font-medium">{selectedItem.seller}</p></div>
-                    <div><p className="text-gray-500">Delivery</p><p className="font-medium text-green-600">{selectedItem.delivery}</p></div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-gray-500">Seller</p>
+                      <p className="font-medium">{selectedItem.seller}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-500">Delivery</p>
+                      <p className="font-medium text-green-600">{selectedItem.delivery}</p>
+                    </div>
                   </div>
+
                   {selectedItem.subcategory && (
-                    <div><p className="text-gray-500">Category</p><p className="font-medium">{selectedItem.subcategory}</p></div>
+                    <div>
+                      <p className="text-gray-500">Category</p>
+                      <p className="font-medium">{selectedItem.subcategory}</p>
+                    </div>
                   )}
+
+                  {/* Buyer Protection block */}
+                  <div className="border p-3 rounded-md bg-[#FBFFFB]">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-sm font-medium">Buyer Protection</div>
+                        <div className="text-xs text-gray-600">Protected purchase — secure transaction & refund policy</div>
+                      </div>
+                      <div className="text-xs font-semibold text-green-600">Verified</div>
+                    </div>
+                    <div className="mt-3 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <Stars value={4} />
+                        <div className="text-xs text-gray-600">4.0 (120 reviews)</div>
+                      </div>
+                      <div className="text-xs text-gray-500">Warranty: 7 days</div>
+                    </div>
+
+                    <div className="mt-3">
+                      <p className="text-xs text-gray-600">Note: Check the buyer description & rating before purchase. Fraud protection available when you pay through our checkout.</p>
+                    </div>
+                  </div>
+
                 </div>
-                <div className="mt-8">
-                  <button className="w-full py-4 bg-[#33ac6f] text-white rounded-xl font-bold text-lg">
-                    Buy Now
-                  </button>
+
+                <div className="mt-6 grid grid-cols-1 gap-3">
+                  <button onClick={() => buyNow(selectedItem)} className="w-full py-3 bg-[#33ac6f] text-white rounded-xl font-bold text-lg">Buy Now</button>
+                  <div className="flex gap-2">
+                    <button onClick={() => addToCart(selectedItem)} className="flex-1 py-2 border rounded">Add to cart</button>
+                    <button onClick={() => setSelectedItem(null)} className="flex-1 py-2 border rounded">Close</button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -557,13 +704,13 @@ const Marketplace: React.FC = () => {
           </div>
         </aside>
 
-        {/* Floating + Button - HIDDEN ON MOBILE */}
+        {/* Floating + Button */}
         <Link
           to="/add-product"
           className="hidden sm:flex sm:fixed bottom-6 right-6 w-14 h-14 bg-[#33ac6f] hover:bg-[#c4963a] text-white rounded-full shadow-2xl items-center justify-center z-50 transition-all"
           aria-label="Add product"
         >
-          {React.createElement(FaPlus as any, { size: 18 })}
+          <FaPlusIcon />
         </Link>
       </div>
     </>
