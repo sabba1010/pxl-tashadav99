@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Eye,
   EyeOff,
@@ -34,7 +34,7 @@ const Register = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const form = e.target as HTMLFormElement;
+    const form = e.currentTarget as HTMLFormElement;
 
     const formData = {
       name: (form.elements.namedItem("name") as HTMLInputElement).value.trim(),
@@ -57,7 +57,7 @@ const Register = () => {
       !formData.phone ||
       !formData.password
     ) {
-      toast.success("Please fill out all fields!");
+      toast.error("Please fill out all fields!");
       return;
     }
 
@@ -67,11 +67,11 @@ const Register = () => {
     }
 
     try {
-      const res = await axios.post(
+      const res = await axios.post<{ insertedId: string }>(
         "http://localhost:3200/api/user/register",
         formData
       );
-      if (res.data?.insertedId) {
+      if (res?.data?.insertedId) {
         toast.success("🎉 User registered successfully!");
         navigate("/login");
       }

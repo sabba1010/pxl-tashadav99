@@ -1,16 +1,41 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Eye, EyeOff, LogIn, Mail, Lock, Sparkles } from 'lucide-react';
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { Eye, EyeOff, LogIn, Mail, Lock, Sparkles } from "lucide-react";
+import axios from "axios";
+import { toast } from "sonner";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const navigate = useNavigate();
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Login:', { email, password });
+
+    if (!email || !password) {
+      toast.error("Please enter both email and password");
+      return;
+    }
+
+    try {
+      const res = await axios.post<{success: boolean}>("http://localhost:3200/api/user/login", {
+        email,
+        password,
+      });
+
+      if (res.data.success == true) {
+        toast.success("Login Successful!");
+        console.log("User:", res.data);
+        navigate("/admin-dashboard");
+      }
+    } catch (err: any) {
+      if (err.response) {
+        toast.error(err.response.data.message);
+      } else {
+        toast.error("Something went wrong. Try again.");
+      }
+    }
   };
 
   return (
@@ -39,7 +64,6 @@ const Login = () => {
 
       <div className="flex max-w-7xl mx-auto px-6 min-h-screen items-center justify-center">
         <div className="grid lg:grid-cols-2 gap-16 items-center w-full">
-
           {/* Hero – Desktop */}
           <motion.div
             initial={{ opacity: 0, x: -100 }}
@@ -60,7 +84,11 @@ const Login = () => {
                   </div>
                   <motion.div
                     animate={{ rotate: 360 }}
-                    transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                    transition={{
+                      duration: 20,
+                      repeat: Infinity,
+                      ease: "linear",
+                    }}
                     className="absolute -inset-3 bg-gradient-to-r from-orange-500 to-pink-600 rounded-2xl blur-2xl opacity-40 -z-10"
                   />
                 </div>
@@ -90,7 +118,8 @@ const Login = () => {
                 transition={{ delay: 0.9 }}
                 className="mt-8 text-xl text-gray-400 max-w-lg"
               >
-                The first real-time creator commerce marketplace. Turn your audience into tradable assets.
+                The first real-time creator commerce marketplace. Turn your
+                audience into tradable assets.
               </motion.p>
             </div>
           </motion.div>
@@ -119,11 +148,17 @@ const Login = () => {
                     </div>
                     <motion.div
                       animate={{ rotate: 360 }}
-                      transition={{ duration: 18, repeat: Infinity, ease: "linear" }}
+                      transition={{
+                        duration: 18,
+                        repeat: Infinity,
+                        ease: "linear",
+                      }}
                       className="absolute -inset-2 bg-gradient-to-r from-orange-500 to-pink-600 rounded-2xl blur-xl opacity-50 -z-10"
                     />
                   </div>
-                  <span className="text-3xl font-bold text-white">Acctempire</span>
+                  <span className="text-3xl font-bold text-white">
+                    Acctempire
+                  </span>
                 </div>
               </motion.div>
 
@@ -137,21 +172,25 @@ const Login = () => {
               </motion.h2>
 
               <p className="text-center text-gray-500 mt-3 mb-10">
-                No account?{' '}
-                <Link to="/register" className="font-semibold text-orange-400 hover:text-orange-300 transition">
+                No account?{" "}
+                <Link
+                  to="/register"
+                  className="font-semibold text-orange-400 hover:text-orange-300 transition"
+                >
                   Sign up free
                 </Link>
               </p>
 
               <form onSubmit={handleSubmit} className="space-y-6">
-
                 {/* Email */}
                 <motion.div
                   initial={{ x: -40, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ delay: 0.4 }}
                 >
-                  <label className="text-sm font-medium text-gray-300">Email</label>
+                  <label className="text-sm font-medium text-gray-300">
+                    Email
+                  </label>
                   <div className="relative mt-2">
                     <Mail className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-orange-400" />
                     <input
@@ -172,13 +211,20 @@ const Login = () => {
                   transition={{ delay: 0.5 }}
                 >
                   <div className="flex justify-between items-center mb-2">
-                    <label className="text-sm font-medium text-gray-300">Password</label>
-                    <a href="#" className="text-sm text-orange-400 hover:text-orange-300">Forgot?</a>
+                    <label className="text-sm font-medium text-gray-300">
+                      Password
+                    </label>
+                    <a
+                      href="#"
+                      className="text-sm text-orange-400 hover:text-orange-300"
+                    >
+                      Forgot?
+                    </a>
                   </div>
                   <div className="relative">
                     <Lock className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-orange-400" />
                     <input
-                      type={showPassword ? 'text' : 'password'}
+                      type={showPassword ? "text" : "password"}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
@@ -190,7 +236,11 @@ const Login = () => {
                       onClick={() => setShowPassword(!showPassword)}
                       className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-200"
                     >
-                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      {showPassword ? (
+                        <EyeOff className="w-5 h-5" />
+                      ) : (
+                        <Eye className="w-5 h-5" />
+                      )}
                     </button>
                   </div>
                 </motion.div>
@@ -211,8 +261,8 @@ const Login = () => {
                   </span>
                   <motion.div
                     className="absolute inset-0 bg-white/20"
-                    initial={{ x: '-100%' }}
-                    whileHover={{ x: '100%' }}
+                    initial={{ x: "-100%" }}
+                    whileHover={{ x: "100%" }}
                     transition={{ duration: 0.7 }}
                   />
                 </motion.button>
