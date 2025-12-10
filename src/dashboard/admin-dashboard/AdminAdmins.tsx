@@ -5,14 +5,17 @@ import {
   Dashboard,
   ListAlt,
   Logout,
+  Star,
   Menu as MenuIcon,
   People,
   PeopleOutline,
+  Person,
   ReceiptLong,
 } from "@mui/icons-material";
-import { Avatar, Divider } from "@mui/material";
-import { useState } from "react";
-import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Box } from "@mui/material";
+import { ChevronRight } from "lucide-react";
+import React, { useState } from "react";
+import { Link, Outlet, useLocation } from "react-router-dom";
 
 interface NavItem {
   name: string;
@@ -20,12 +23,13 @@ interface NavItem {
   icon: React.ReactNode;
 }
 
-const navItems: NavItem[] = [
+// মেইন নেভিগেশন আইটেমগুলো (উপরে থাকবে)
+const mainNavItems: NavItem[] = [
   { name: "Dashboard Overview", path: "/admin-dashboard", icon: <Dashboard /> },
   { name: "Listings", path: "/admin-dashboard/listings", icon: <ListAlt /> },
   { name: "All Users", path: "/admin-dashboard/users", icon: <People /> },
   {
-    name: "Seller Accounts",
+    name: "Seller Account",
     path: "/admin-dashboard/seller-accounts",
     icon: <PeopleOutline />,
   },
@@ -44,161 +48,158 @@ const navItems: NavItem[] = [
     path: "/admin-dashboard/withdrawals",
     icon: <CompareArrows />,
   },
+   {
+    name: "Withdrawal Requests",
+    path: "/admin-dashboard/withdrawals",
+    icon: <CompareArrows />,
+  },
+  {
+    name: "Ratings & Reputation",
+    path: "/admin-dashboard/ratings",
+    icon: <Star />,
+  },
 ];
 
 const AdminAdmins: React.FC = () => {
   const location = useLocation();
-  const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
 
   const toggleSidebar = () => setCollapsed((prev) => !prev);
 
+  // লগআউট ফাংশন (তোমার প্রজেক্ট অনুযায়ী চেঞ্জ করতে পারো)
   const handleLogout = () => {
-    // TODO: logout logic (clear token, etc.)
-    navigate("/login");
+    // উদাহরণ: localStorage.clear(), then redirect
+    localStorage.removeItem("adminToken");
+    window.location.href = "/admin-login";
   };
 
-
-
   return (
-    <div className="flex h-screen bg-gradient-to-br from-slate-50 to-gray-100">
+    <div className="flex h-screen bg-gray-100">
       {/* Sidebar */}
       <aside
         className={`${
-          collapsed ? "w-20" : "w-72"
-        } bg-black/90 backdrop-blur-2xl text-white flex flex-col transition-all duration-500 ease-out border-r border-white/10 shadow-2xl`}
-        style={{ background: "rgba(0, 0, 0, 0.9)" }}
+          collapsed ? "w-20" : "w-64"
+        } bg-[#00183C] text-white flex flex-col transition-all duration-300 ease-in-out shadow-2xl`}
       >
         {/* Header */}
-        <div className="p-6 border-b border-white/10 flex items-center justify-between">
+        <div className="p-6 border-b border-gray-700 flex items-center justify-between">
           <Link
             to="/"
-            className={`font-black text-2xl tracking-tight bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent transition-all ${
-              collapsed ? "opacity-0 w-0" : "opacity-100"
-            }`}
+            className={`font-extrabold text-[#D1A148] transition-opacity ${
+              collapsed ? "opacity-0 w-0" : "text-xl opacity-100"
+            } overflow-hidden whitespace-nowrap`}
           >
-            ADMIN
+            Admin Panel
           </Link>
 
           <button
             onClick={toggleSidebar}
-            className="p-2.5 rounded-xl bg-white/10 hover:bg-amber-500/30 backdrop-blur-md transition-all hover:scale-110"
+            className="text-white hover:bg-[#D1A148]/20 p-2 rounded-lg transition"
           >
-            {collapsed ? <MenuIcon fontSize="small" /> : <ChevronLeft />}
+            {collapsed ? <ChevronRight /> : <ChevronLeft />}
           </button>
         </div>
 
-        {/* Navigation Links */}
-        <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
-          {navItems.map((item) => {
+        {/* Main Navigation - Scrollable */}
+        <nav className="flex-1 p-4 space-y-2 overflow-y-auto overflow-x-hidden">
+          {mainNavItems.map((item) => {
             const isActive = location.pathname === item.path;
 
             return (
               <Link
                 key={item.path}
                 to={item.path}
-                className={`flex items-center gap-4 px-4 py-3.5 rounded-2xl text-sm font-medium transition-all duration-300 group relative overflow-hidden ${
+                className={`flex items-center gap-4 p-3 text-sm font-medium rounded-lg transition-all duration-150 group relative ${
                   isActive
-                    ? "bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-xl shadow-amber-500/20 scale-105"
-                    : "text-gray-300 hover:bg-white/10 hover:text-white hover:translate-x-2"
+                    ? "bg-[#D1A148] text-white shadow-md"
+                    : "text-gray-300 hover:bg-[#D1A148] hover:text-white"
                 }`}
               >
-                <div
-                  className={`p-2 rounded-xl transition-all ${
-                    isActive
-                      ? "bg-white/20"
-                      : "bg-white/5 group-hover:bg-amber-500/20"
-                  }`}
-                >
-                  {item.icon}
-                </div>
+                <Box sx={{ display: "flex", alignItems: "center" }}>
+                  {React.cloneElement(item.icon as React.ReactElement)}
+                </Box>
 
                 <span
-                  className={`font-medium transition-all duration-500 ${
-                    collapsed ? "opacity-0 w-0" : "opacity-100"
-                  }`}
+                  className={`${
+                    collapsed
+                      ? "opacity-0 w-0"
+                      : "opacity-100 whitespace-nowrap"
+                  } transition-all duration-300 overflow-hidden`}
                 >
                   {item.name}
                 </span>
 
-                {/* Hover Tooltip */}
+                {/* Tooltip when collapsed */}
                 {collapsed && (
-                  <span className="absolute left-20 ml-2 px-4 py-2 bg-gray-900/95 text-white text-xs rounded-xl opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 border border-white/20 backdrop-blur-xl">
+                  <span className="absolute left-20 ml-2 px-3 py-1 bg-black text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
                     {item.name}
                   </span>
-                )}
-
-                {/* Active Indicator */}
-                {isActive && !collapsed && (
-                  <div className="absolute inset-0 -z-10 bg-gradient-to-r from-amber-600/40 to-transparent rounded-2xl" />
                 )}
               </Link>
             );
           })}
         </nav>
 
-        {/* Bottom Section - Profile & Logout */}
-        <div className="p-4 border-t border-white/10">
-          {/* Profile */}
+        {/* Bottom Section - Profile & Logout (Fixed at bottom) */}
+        <div className="border-t border-gray-700 p-4 space-y-2">
+          {/* My Profile */}
           <Link
             to="/admin-dashboard/profile"
-            className={`flex items-center gap-4 px-4 py-4 rounded-2xl transition-all duration-300 group mb-3 ${
+            className={`flex items-center gap-4 p-3 text-sm font-medium rounded-lg transition-all duration-150 group relative ${
               location.pathname === "/admin-dashboard/profile"
-                ? "bg-amber-500/20 border border-amber-500/50"
-                : "hover:bg-white/10"
+                ? "bg-[#D1A148] text-white shadow-md"
+                : "text-gray-300 hover:bg-[#D1A148] hover:text-white"
             }`}
           >
-            <Avatar
-              sx={{
-                width: 44,
-                height:44,
-                bgcolor: "#D1A148",
-                fontWeight: "bold",
-              }}
+            <Person />
+            <span
+              className={`${
+                collapsed ? "opacity-0 w-0" : "opacity-100 whitespace-nowrap"
+              } transition-all duration-300 overflow-hidden`}
             >
-              A
-            </Avatar>
-            <div
-              className={`transition-all duration-500 ${
-                collapsed ? "opacity-0 w-0" : "opacity-100"
-              } overflow-hidden`}
-            >
-              <p className="font-semibold text-white">Admin User</p>
-              <p className="text-xs text-gray-400">admin@site.com</p>
-            </div>
+              My Profile
+            </span>
+            {collapsed && (
+              <span className="absolute left-20 ml-2 px-3 py-1 bg-black text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
+                My Profile
+              </span>
+            )}
           </Link>
-
-          <Divider sx={{ bgcolor: "white" }} className="my-3" />
 
           {/* Logout */}
           <button
             onClick={handleLogout}
-            className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl text-sm font-medium text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-all duration-300 group`}
+            className="w-full flex items-center gap-4 p-3 text-sm font-medium text-gray-300 hover:bg-red-600/20 hover:text-red-400 rounded-lg transition-all duration-150 group relative"
           >
-            <div className="p-2 rounded-xl bg-red-500/20 group-hover:bg-red-500/30 transition">
-              <Logout fontSize="small" />
-            </div>
+            <Logout />
             <span
-              className={`transition-all duration-500 ${
-                collapsed ? "opacity-0 w-0" : "opacity-100"
-              }`}
+              className={`${
+                collapsed ? "opacity-0 w-0" : "opacity-100 whitespace-nowrap"
+              } transition-all duration-300 overflow-hidden ml-4`}
             >
               Logout
             </span>
+            {collapsed && (
+              <span className="absolute left-20 ml-2 px-3 py-1 bg-black text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
+                Logout
+              </span>
+            )}
           </button>
         </div>
       </aside>
 
-      {/* Main Content Area */}
-      <main className="flex-1 overflow-y-auto bg-gradient-to-br from-gray-50 to-gray-50">
-        <div className="p-8 pb-12">
+      {/* Main Content */}
+      <main className="flex-1 overflow-x-hidden overflow-y-auto p-6">
+        <header className="mb-6 pb-3 border-b border-gray-200">
+          <h2 className="text-2xl font-semibold text-gray-900">
+            {[...mainNavItems, { name: "My Profile", path: "/admin-dashboard/profile" }].find(
+              (item) => item.path === location.pathname
+            )?.name || "Welcome to the Dashboard"}
+          </h2>
+        </header>
 
-          {/* Content Card */}
-          <div className="bg-white/70 backdrop-blur-2xl rounded-3xl shadow-2xl border border-white/20 overflow-hidden">
-            <div className="p-8 lg:p-12">
-              <Outlet />
-            </div>
-          </div>
+        <div className="bg-white p-6 rounded-lg shadow-lg min-h-[calc(100vh-150px)]">
+          <Outlet />
         </div>
       </main>
     </div>

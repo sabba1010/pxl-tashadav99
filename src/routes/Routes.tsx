@@ -38,6 +38,7 @@ import SellerAccount from "../dashboard/admin-dashboard/SellerAccount";
 import ReferralProgram from "../components/Policy/ReferralProgram";
 import PrivacyPolicy from "../components/Policy/PrivacyPolicy";
 import PaymentForm from "../components/Payment Form";
+import RatingsReputationPanel from "../dashboard/admin-dashboard/RatingsReputationPanel";
 import PaymentDone from "../components/PaymentDone";
 
 const Routes = createBrowserRouter([
@@ -166,6 +167,10 @@ const Routes = createBrowserRouter([
       {
         path: "seller-accounts",
         element: <SellerAccount/>,
+      },
+      {
+        path: "ratings",
+        element: <RatingsReputationPanel/>,
       }
     ],
   },
