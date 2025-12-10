@@ -349,7 +349,7 @@ const Register = () => {
                       )}
                     </button>
                   </div>
-                  <p className="text-xs text-gray-500 mt-2 text-xs">
+                  <p className="text-xs text-gray-500 mt-2">
                     Minimum length of 8-30 characters
                     <br />
                     Only lowercase, numeric and symbols allowed

@@ -226,12 +226,11 @@ const Login = () => {
                     <label className="text-sm font-medium text-gray-300">
                       Password
                     </label>
-                    <a
-                      href="#"
+                    <Link to={"/"}
                       className="text-sm text-orange-400 hover:text-orange-300"
                     >
                       Forgot?
-                    </a>
+                    </Link>
                   </div>
                   <div className="relative">
                     <Lock className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-orange-400" />
