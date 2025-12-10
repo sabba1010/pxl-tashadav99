@@ -5,6 +5,7 @@ import {
   Dashboard,
   ListAlt,
   Logout,
+  Star,
   Menu as MenuIcon,
   People,
   PeopleOutline,
@@ -43,6 +44,16 @@ const navItems: NavItem[] = [
     name: "Withdrawal Requests",
     path: "/admin-dashboard/withdrawals",
     icon: <CompareArrows />,
+  },
+   {
+    name: "Withdrawal Requests",
+    path: "/admin-dashboard/withdrawals",
+    icon: <CompareArrows />,
+  },
+  {
+    name: "Ratings & Reputation",
+    path: "/admin-dashboard/ratings",
+    icon: <Star />,
   },
 ];
 
