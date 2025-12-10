@@ -78,7 +78,7 @@ export default function PaymentForm({ endpoint = "http://localhost:3200/api/subm
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.32 }}
-      className="max-w-lg mx-auto mt-8 p-6 bg-gradient-to-br from-white via-slate-50 to-white/90 rounded-2xl shadow-lg border border-slate-100"
+      className="max-w-lg mx-auto mt-8 mb-8 p-6 bg-gradient-to-br from-white via-slate-50 to-white/90 rounded-2xl shadow-lg border border-slate-100"
     >
       <h3 className="text-2xl font-semibold mb-2 text-slate-800">Payment & Contact</h3>
       <p className="text-sm text-slate-500 mb-4">
