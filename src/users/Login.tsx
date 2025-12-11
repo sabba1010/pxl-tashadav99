@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Eye, EyeOff, LogIn, Mail, Lock, Sparkles } from "lucide-react";
 import axios from "axios";
@@ -11,6 +11,17 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
+
+
+  const location = useLocation();
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get("refresh") === "true") {
+      window.location.replace("/login"); // Query remove + reload
+    }
+  }, [location.search]);
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
