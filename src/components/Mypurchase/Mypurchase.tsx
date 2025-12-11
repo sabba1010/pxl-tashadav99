@@ -10,6 +10,7 @@ import {
   FaWhatsapp,
   FaPlus,
   FaTimes,
+  FaEye,
   FaStar,
   FaComments,
 } from "react-icons/fa";
@@ -21,6 +22,7 @@ const FaPlusIcon = FaPlus as unknown as React.ComponentType<any>;
 const FaTimesIcon = FaTimes as unknown as React.ComponentType<any>;
 const FaStarIcon = FaStar as unknown as React.ComponentType<any>;
 const FaCommentsIcon = FaComments as unknown as React.ComponentType<any>;
+const FaEyeIcon = FaEye as unknown as React.ComponentType<any>;
 
 /* ---------------------------------------------
    Brand Color Maps & Gradients
@@ -281,13 +283,12 @@ const MyPurchase: React.FC = () => {
 
                         <div className="mt-1 flex gap-1">
                           <button
-                            onClick={() => {
-                              setSelected(p);
-                            }}
-                            className="px-2 py-1 border rounded text-xs bg-white"
+                            onClick={() => setSelected(p)}
+                            className="px-2 py-1 border rounded text-xs bg-white flex items-center justify-center"
                             title="View details"
+                            aria-label="View details"
                           >
-                            View
+                            <FaEyeIcon className="w-4 h-4" />
                           </button>
                           <button
                             onClick={() => {
