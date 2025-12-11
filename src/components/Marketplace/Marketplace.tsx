@@ -16,7 +16,7 @@ import {
 } from "react-icons/fa";
 import { SiNetflix, SiAmazon, SiSteam, SiGoogle } from "react-icons/si";
 import { Link } from "react-router-dom";
-import { sendNotification } from "../Notification/Notification"; // <-- adjust path if needed
+import { sendNotification } from "../Notification/Notification"; 
 
 /* ---- Workaround for react-icons + TS JSX typing issues ---- */
 const FaTimesIcon = FaTimes as unknown as React.ComponentType<any>;

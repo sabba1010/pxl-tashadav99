@@ -39,6 +39,7 @@ import SellerAccount from "../dashboard/admin-dashboard/SellerAccount";
 import AddAccountCredentials from "../dashboard/buyer-dahboard/AddAccountCredentials";
 import Review from "../dashboard/buyer-dahboard/Review";
 import PrivateRoute from "./PrivateRoute";
+import Post from "../components/Notification/Post";
 
 const Routes = createBrowserRouter([
   {
@@ -124,6 +125,10 @@ const Routes = createBrowserRouter([
         path: "/payment",
         element: <Payment />,
       },
+      {
+        path: "/post-data",
+        element: <Post/>
+      }
     ],
   },
 
