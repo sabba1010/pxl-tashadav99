@@ -1,7 +1,7 @@
 // src/components/Navbar.tsx
 import { Button } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuth } from "../context/AuthContext";
 
@@ -171,38 +171,43 @@ export default function Navbar() {
                   </button>
                 ) : (
                   <div className="md:flex hidden gap-2">
-                    <Button
-                      variant="contained"
-                      sx={{
-                        paddingX: 4,
-                        paddingY: 0.4,
-                        borderRadius: "10px",
-                        textTransform: "none",
-                        fontSize: "16px",
-                        fontWeight: 600,
-                        backgroundColor: ROYAL_GOLD,
-                      }}
-                    >
-                      Login
-                    </Button>
+                    <Link to="/login">
+                      <Button
+                        variant="contained"
+                        sx={{
+                          paddingX: 4,
+                          paddingY: 0.4,
+                          borderRadius: "10px",
+                          textTransform: "none",
+                          fontSize: "16px",
+                          fontWeight: 600,
+                          backgroundColor: ROYAL_GOLD,
+                        }}
+                      >
+                        Login
+                      </Button>
+                    </Link>
 
-                    <Button
-                      variant="outlined"
-                      sx={{
-                        paddingX: 4,
-                        paddingY: 0.4,
-                        borderRadius: "10px",
-                        textTransform: "none",
-                        fontSize: "16px",
-                        fontWeight: 600,
-                        borderWidth: "2px",
-                        "&:hover": {
+                    <Link to="/register">
+                      {" "}
+                      <Button
+                        variant="outlined"
+                        sx={{
+                          paddingX: 4,
+                          paddingY: 0.4,
+                          borderRadius: "10px",
+                          textTransform: "none",
+                          fontSize: "16px",
+                          fontWeight: 600,
                           borderWidth: "2px",
-                        },
-                      }}
-                    >
-                      Register
-                    </Button>
+                          "&:hover": {
+                            borderWidth: "2px",
+                          },
+                        }}
+                      >
+                        Register
+                      </Button>
+                    </Link>
                   </div>
                 )}
 
