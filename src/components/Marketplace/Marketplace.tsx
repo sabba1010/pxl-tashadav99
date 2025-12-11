@@ -25,7 +25,8 @@ import {
   FaPaypal,
   FaShoppingBag,
 } from "react-icons/fa";
-import { SiNetflix, SiAmazon, SiSteam, SiGoogle, SiTiktok } from "react-icons/si";
+import { SiNetflix, SiAmazon, SiSteam, SiGoogle, SiTiktok, SiTinder } from "react-icons/si";
+import { MdMail, MdSimCard, MdPhoneIphone, MdVpnLock, MdStorefront, MdLocalOffer } from "react-icons/md";
 import { Link } from "react-router-dom";
 import { sendNotification } from "../Notification/Notification"; // adjust path if needed
 
@@ -56,7 +57,7 @@ interface Item {
 }
 
 const CATEGORY_MAP: Record<string, string[]> = {
-  "Social Media": ["Instagram", "Facebook", "TikTok", "Snapchat", "Twitter / X", "YouTube", "WhatsApp", "Telegram", "Discord", "Reddit", "Pinterest", "LinkedIn"],
+  "Social Media": ["Instagram", "Facebook", "TikTok", "Snapchat", "Twitter / X", "YouTube", "WhatsApp", "Telegram", "Discord", "Reddit", "Pinterest", "LinkedIn", "Gmail"],
   "Digital Services & Boosting": ["Instagram Boost", "TikTok Boost", "YouTube Boost", "Twitter Boost", "Facebook Boost", "App Reviews"],
   "eSIM & Mobile Services": ["eSIM (US)", "eSIM (EU)", "Roaming eSIM", "Temporary SMS", "Disposable Numbers"],
   "Streaming & Entertainment": ["Netflix", "Spotify", "Apple Music", "Hulu", "Amazon Prime", "Disney+", "HBO Max"],
@@ -84,12 +85,16 @@ const ICON_COLOR_MAP = new Map<IconType, string>([
   [FaLinkedinIn, "#0A66C2"],
   [FaYoutube, "#FF0000"],
   [FaSnapchatGhost, "#FFFC00"],
-  [SiTiktok, "#010101"],
+  [SiTiktok, "#000000"],
   [FaTelegramPlane, "#2AABEE"],
   [FaDiscord, "#7289DA"],
   [FaPinterest, "#E60023"],
   [FaRedditAlien, "#FF4500"],
   [FaPaypal, "#003087"],
+  [MdSimCard, "#00A3E0"],
+  [MdVpnLock, "#0F172A"],
+  [MdMail, "#D44638"],
+  [SiTinder, "#FF6B6B"],
 ]);
 
 const STRING_ICON_COLOR_MAP: Record<string, string> = {
@@ -108,7 +113,7 @@ const STRING_ICON_COLOR_MAP: Record<string, string> = {
   linkedin: "#0A66C2",
   youtube: "#FF0000",
   snapchat: "#FFFC00",
-  tiktok: "#010101",
+  tiktok: "#000000",
   telegram: "#2AABEE",
   discord: "#7289DA",
   pinterest: "#E60023",
@@ -165,9 +170,15 @@ const ALL_ITEMS: Item[] = [
   { id: 202, title: "Amazon Giftcard $50", desc: "Redeemable in US store", price: 42.0, seller: "GiftCardsRUs", delivery: "Instant", icon: SiAmazon, category: "Giftcards & Misc", subcategory: "Amazon", platform: "amazon" },
   { id: 203, title: "Steam Wallet $20", desc: "Region-free wallet code", price: 18.0, seller: "SteamCodes", delivery: "Instant", icon: SiSteam, category: "Giftcards & Misc", subcategory: "Steam", platform: "steam" },
   { id: 301, title: "PayPal Verified (age)", desc: "Verified PayPal account with email", price: 25.0, seller: "PayPros", delivery: "Instant", icon: FaPaypal, category: "Finance / Business Tools", subcategory: "PayPal", platform: "paypal" },
-  { id: 401, title: "USA GMAIL NUMBER", desc: "Valid +1 US number attached Gmail with full access & recovery email.", price: 2.5, seller: "Senior man", delivery: "2 mins", icon: FaEnvelope, category: "Social Media", subcategory: "Gmail" },
+  { id: 401, title: "USA GMAIL NUMBER", desc: "Valid +1 US number attached Gmail with full access & recovery email.", price: 2.5, seller: "Senior man", delivery: "2 mins", icon: MdMail, category: "Social Media", subcategory: "Gmail" },
   { id: 402, title: "Shopify Store (starter)", desc: "Pre-built store + premium theme.", price: 35.0, seller: "ShopBuilders", delivery: "2 days", icon: FaShoppingCart, category: "E-commerce Platforms", subcategory: "Shopify" },
+  { id: 403, title: "US eSIM (1 day)", desc: "Instant eSIM activation for US regions", price: 3.5, seller: "eSIMHub", delivery: "Instant", icon: MdSimCard, category: "eSIM & Mobile Services", subcategory: "eSIM (US)" },
+  { id: 404, title: "Disposable Number (SMS)", desc: "Temporary number for SMS verification", price: 1.0, seller: "TempNums", delivery: "Instant", icon: MdPhoneIphone, category: "eSIM & Mobile Services", subcategory: "Disposable Numbers" },
+  { id: 405, title: "VPN 1 Month", desc: "Fast VPN service, multiple locations", price: 4.0, seller: "SafeNet", delivery: "Instant", icon: MdVpnLock, category: "Giftcards & Misc", subcategory: "VPN" },
 ];
+
+
+
 
 /* ----------------- Small helper components ----------------- */
 const Stars: React.FC<{ value: number }> = ({ value }) => (
@@ -195,16 +206,20 @@ const SUBICON_MAP: Record<string, IconType | string> = {
   Telegram: FaTelegramPlane,
   Discord: FaDiscord,
   Reddit: FaRedditAlien,
-  Gmail: FaEnvelope,
-  Tinder: "T",
-  "eSIM (US)": "eSIM",
-  "Disposable Numbers": "☎",
+  Gmail: MdMail,
+  Tinder: SiTinder,
+  "eSIM (US)": MdSimCard,
+  "eSIM (EU)": MdSimCard,
+  "Roaming eSIM": MdSimCard,
+  "Temporary SMS": MdPhoneIphone,
+  "Disposable Numbers": MdPhoneIphone,
   Netflix: SiNetflix,
   Amazon: SiAmazon,
   Steam: SiSteam,
   PayPal: FaPaypal,
-  VPN: "VPN",
+  VPN: MdVpnLock,
   Shopify: FaShoppingCart,
+  "Virtual Cards": MdLocalOffer,
   Others: FaBullhorn,
 };
 
@@ -796,7 +811,17 @@ const Marketplace: React.FC = () => {
                         <p className="text-xs text-gray-600 mt-1 line-clamp-2">{item.desc}</p>
                         <div className="mt-3 text-lg font-bold text-[#0A1A3A]">${item.price.toFixed(2)}</div>
                         <div className="mt-4 flex gap-2">
-                          <button onClick={() => addToCart(item)} className="flex-1 py-2 text-sm border rounded">Cart</button>
+                     <Link to="/cart" className="relative">
+                <div className="p-3 bg-white border rounded-lg shadow-sm flex gap-2 items-center justify-center">
+                  <FaShoppingCartIcon className="w-4 h-4" />
+                  <span>Cart</span>
+                </div>
+                {cartCount > 0 && (
+                  <div className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center">
+                    {cartCount}
+                  </div>
+                )}
+              </Link>
                           <button onClick={() => viewItem(item)} className="py-2 px-3 text-sm border rounded flex items-center gap-2">
                             <FaEyeIcon className="w-4 h-4" />
                             <span>View</span>
