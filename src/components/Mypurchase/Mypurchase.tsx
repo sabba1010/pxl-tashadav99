@@ -285,7 +285,7 @@ const MyPurchase: React.FC = () => {
                       </div>
 
                       {/* right: price, date, actions */}
-                      <div className="flex-shrink-0 w-28 text-right flex flex-col items-end gap-2">
+                      <div className="flex-shrink-0 w-24 text-right flex flex-col items-end gap-2">
                         <div className="text-sm font-medium text-[#0A1A3A]">${p.price.toFixed(2)}</div>
                         <div className="text-xs text-gray-400">{p.date}</div>
 
@@ -329,7 +329,7 @@ const MyPurchase: React.FC = () => {
         <>
           <div className="fixed inset-0 bg-black/50 z-40" onClick={() => setSelected(null)} />
 
-          <div className="fixed inset-x-0 left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 w-full max-w-7xl px-4 max-h-[90vh]">
+          <div className="fixed inset-x-0 left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 w-full max-w-5xl px-4 max-h-[90vh]">
             <div className="bg-white rounded-2xl shadow-2xl overflow-hidden border h-full flex flex-col">
               <div className="flex items-center justify-between px-6 py-4 border-b">
                 <div className="flex items-center gap-4">
