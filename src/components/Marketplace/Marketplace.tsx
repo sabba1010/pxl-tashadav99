@@ -1,3 +1,4 @@
+// src/components/Marketplace/Marketplace.tsx
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import type { IconType } from "react-icons";
 import {
@@ -13,17 +14,19 @@ import {
   FaTimes,
   FaSearch,
   FaStar,
+  FaEye,
 } from "react-icons/fa";
 import { SiNetflix, SiAmazon, SiSteam, SiGoogle } from "react-icons/si";
 import { Link } from "react-router-dom";
-import { sendNotification } from "../Notification/Notification"; // <-- adjust path if needed
+import { sendNotification } from "../Notification/Notification"; // adjust path if needed
 
-/* ---- Workaround for react-icons + TS JSX typing issues ---- */
+/* icons typing workaround */
 const FaTimesIcon = FaTimes as unknown as React.ComponentType<any>;
 const FaPlusIcon = FaPlus as unknown as React.ComponentType<any>;
 const FaSearchIcon = FaSearch as unknown as React.ComponentType<any>;
 const FaShoppingCartIcon = FaShoppingCart as unknown as React.ComponentType<any>;
 const FaStarIcon = FaStar as unknown as React.ComponentType<any>;
+const FaEyeIcon = FaEye as unknown as React.ComponentType<any>;
 
 /* ----------------- Types & Constants ----------------- */
 interface Item {
@@ -81,6 +84,15 @@ const STRING_ICON_COLOR_MAP: Record<string, string> = {
   shoppingcart: "#FF6B6B",
 };
 
+const vibrantGradients = [
+  "linear-gradient(135deg,#FF9A9E 0%,#FAD0C4 100%)",
+  "linear-gradient(135deg,#A18CD1 0%,#FBC2EB 100%)",
+  "linear-gradient(135deg,#FDCB6E 0%,#FF6B6B 100%)",
+  "linear-gradient(135deg,#84fab0 0%,#8fd3f4 100%)",
+  "linear-gradient(135deg,#FCCF31 0%,#F55555 100%)",
+  "linear-gradient(135deg,#9BE15D 0%,#00E3AE 100%)",
+];
+
 const gradientFromHex = (hex: string) => {
   const h = hex.replace("#", "");
   const r = parseInt(h.substring(0, 2), 16);
@@ -94,22 +106,19 @@ const gradientFromHex = (hex: string) => {
   return `linear-gradient(135deg, ${hex} 0%, #${hex2(r2)}${hex2(g2)}${hex2(b2)} 100%)`;
 };
 
-const vibrantGradients = [
-  "linear-gradient(135deg,#FF9A9E 0%,#FAD0C4 100%)",
-  "linear-gradient(135deg,#A18CD1 0%,#FBC2EB 100%)",
-  "linear-gradient(135deg,#FDCB6E 0%,#FF6B6B 100%)",
-  "linear-gradient(135deg,#84fab0 0%,#8fd3f4 100%)",
-  "linear-gradient(135deg,#FCCF31 0%,#F55555 100%)",
-  "linear-gradient(135deg,#9BE15D 0%,#00E3AE 100%)",
-];
+const hashCode = (s: string) => {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = Math.imul(31, h) + s.charCodeAt(i) | 0;
+  return h;
+};
 
-/* --- Sample data: ALL_ITEMS (use your real data if needed) --- */
+
 const ALL_ITEMS: Item[] = [
-  { id: 1, title: "USA GMAIL NUMBER", desc: "Valid +1 US number attached Gmail with full access & recovery email.", price: 2.5, seller: "Senior man", delivery: "2 mins", icon: FaEnvelope, category: "Emails & Messaging Service", subcategory: "Gmail" },
+  { id: 1, title: "USA GMAIL NUMBER", desc: "Valid +1 US number attached Gmail with full access & recovery email.", price: 2.5, seller: "Senior man", delivery: "2 mins", icon: FaEnvelope, category: "Emails & Messaging Service", subcategory: "Gmail",  },
   { id: 2, title: "Aged Gmail (14y)", desc: "14-year-old strong Gmail, perfect for ads & socials.", price: 4.0, seller: "MailKing", delivery: "1 min", icon: FaEnvelope, category: "Emails & Messaging Service", subcategory: "Gmail" },
-  { id: 3, title: "USA WhatsApp number", desc: "One-time verification number, works worldwide.", price: 3.5, seller: "AS Digitals", delivery: "5 mins", icon: FaWhatsapp, category: "Social Media", subcategory: "WhatsApp" },
+  { id: 3, title: "USA WhatsApp number", desc: "One-time verification number, works worldwide.", price: 3.5, seller: "AS Digitals", delivery: "5 mins", icon: FaWhatsapp, category: "Social Media", subcategory: "WhatsApp",  },
   { id: 4, title: "WhatsApp Business + API", desc: "Ready for business messaging & automation.", price: 15.0, seller: "BizTools", delivery: "Instant", icon: FaWhatsapp, category: "Social Media", subcategory: "WhatsApp" },
-  { id: 5, title: "Instagram Active Account", desc: "10K+ followers, high engagement.", price: 8.0, seller: "InstaPro", delivery: "Instant", icon: FaInstagram, category: "Social Media", subcategory: "Instagram" },
+  { id: 5, title: "Instagram Active Account", desc: "10K+ followers, high engagement.", price: 8.0, seller: "InstaPro", delivery: "Instant", icon: FaInstagram, category: "Social Media", subcategory: "Instagram",  },
   { id: 6, title: "Facebook Page Admin", desc: "Full admin access with BM.", price: 12.0, seller: "FBDeals", delivery: "Instant", icon: FaFacebookF, category: "Social Media", subcategory: "Facebook" },
   { id: 7, title: "Twitter Verified-ish (old)", desc: "Legacy blue tick account.", price: 20.0, seller: "TweetMart", delivery: "Instant", icon: FaTwitter, category: "Social Media", subcategory: "Twitter" },
   { id: 8, title: "Netflix Premium 4K", desc: "Family plan, 4 screens, 1 year warranty.", price: 7.99, seller: "StreamZone", delivery: "Instant", icon: SiNetflix, category: "Accounts & Subscriptions", subcategory: "Netflix" },
@@ -121,13 +130,16 @@ const ALL_ITEMS: Item[] = [
   { id: 14, title: "Shopify Store (starter)", desc: "Pre-built store + premium theme.", price: 35.0, seller: "ShopBuilders", delivery: "2 days", icon: FaShoppingCart, category: "E-commerce Platforms", subcategory: "Shopify" },
 ];
 
-const hashCode = (s: string) => {
-  let h = 0;
-  for (let i = 0; i < s.length; i++) h = Math.imul(31, h) + s.charCodeAt(i) | 0;
-  return h;
-};
+/* ----------------- Small helper components ----------------- */
+const Stars: React.FC<{ value: number }> = ({ value }) => (
+  <div className="flex items-center gap-1">
+    {Array.from({ length: 5 }).map((_, i) => (
+      <FaStarIcon key={i} className={`w-3 h-3 ${i < value ? "text-yellow-400" : "text-gray-300"}`} />
+    ))}
+  </div>
+);
 
-/* ----------------- CategorySelector (full implementation) ----------------- */
+/* ----------------- CategorySelector ----------------- */
 type SubcatState = Record<string, string[]>;
 
 const CategorySelector: React.FC<{
@@ -242,11 +254,14 @@ const Marketplace: React.FC = () => {
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
 
-  /* NEW: pagination + cart state + processing state */
+  /* pagination + cart state + processing state */
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6; // changeable
   const [cartCount, setCartCount] = useState(0);
   const [processingIds, setProcessingIds] = useState<number[]>([]);
+
+  /* buyer protection checkbox state (for modal) */
+  const [protectionAccepted, setProtectionAccepted] = useState(false);
 
   const drawerRef = useRef<HTMLDivElement | null>(null);
 
@@ -295,6 +310,10 @@ const Marketplace: React.FC = () => {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
+
+  useEffect(() => {
+    setProtectionAccepted(false);
+  }, [selectedItem]);
 
   const getBrandHex = (icon: Item["icon"]) => {
     if (typeof icon === "string") {
@@ -352,31 +371,22 @@ const Marketplace: React.FC = () => {
     );
   };
 
-  function hashCode(s: string) {
-    let h = 0;
-    for (let i = 0; i < s.length; i++) h = Math.imul(31, h) + s.charCodeAt(i) | 0;
-    return h;
-  }
-
-  /* small Stars component (demo) */
-  const Stars: React.FC<{ value: number }> = ({ value }) => (
-    <div className="flex items-center gap-1">
-      {Array.from({ length: 5 }).map((_, i) => (
-        <FaStarIcon key={i} className={`w-3 h-3 ${i < value ? "text-yellow-400" : "text-gray-300"}`} />
-      ))}
-    </div>
-  );
-
   const addToCart = (item: Item | null) => {
     if (!item) return;
     setCartCount((c) => c + 1);
     // replace with real cart logic
   };
 
-  // ---------- Updated buyNow: automatic flow with processing state ----------
   const buyNow = async (item: Item | null) => {
     if (!item) return;
     if (processingIds.includes(item.id)) return; // already processing
+
+    // If modal purchase, require protectionAccepted
+    if (selectedItem && !protectionAccepted) {
+      alert("Please confirm you've checked the description and rating before purchase.");
+      return;
+    }
+
     setProcessingIds((p) => [...p, item.id]);
 
     try {
@@ -387,7 +397,6 @@ const Marketplace: React.FC = () => {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            // "Authorization": `Bearer ${token}` // add if you use auth
           },
           body: JSON.stringify({
             itemId: item.id,
@@ -416,12 +425,7 @@ const Marketplace: React.FC = () => {
         console.warn("sendNotification failed:", err);
       }
 
-      // IMPORTANT: Do NOT change cartCount here. buyNow should not increment cart.
-      // setCartCount((c) => c + 1); // <- removed
-
       setSelectedItem(null); // close modal if open
-
-      // Production: replace alert with toast
       alert("Purchase successful — notification sent!");
     } catch (err: any) {
       console.error("Buy failed", err);
@@ -434,6 +438,8 @@ const Marketplace: React.FC = () => {
   const viewItem = (item: Item) => {
     setSelectedItem(item);
   };
+
+ 
 
   return (
     <>
@@ -570,15 +576,25 @@ const Marketplace: React.FC = () => {
                           </div>
                         </div>
 
-                        <div className="mt-3 flex gap-2">
-                          <button onClick={() => addToCart(item)} className="flex-1 py-2 text-sm border rounded-md">Add to cart</button>
-                          <button onClick={() => viewItem(item)} className="py-2 px-3 text-sm border rounded-md">View</button>
+                        <div className="mt-3 flex items-center gap-2">
+                          <button onClick={() => addToCart(item)} title="Add to cart" className="p-2 border rounded-md text-sm flex items-center justify-center">
+                            <FaShoppingCartIcon className="w-4 h-4" />
+                          </button>
+
+                         
+
+                          <button onClick={() => viewItem(item)} title="Details" className="p-2 border rounded-md text-sm flex items-center justify-center">
+                            <FaEyeIcon className="w-4 h-4" />
+                          </button>
+
                           <button
                             onClick={() => buyNow(item)}
-                            className="py-2 px-3 text-sm bg-[#33ac6f] text-white rounded-md"
+                            title="Purchase"
+                            className="ml-auto p-2 rounded-md text-sm bg-[#33ac6f] text-white flex items-center justify-center font-medium"
                             disabled={processingIds.includes(item.id)}
                           >
-                            {processingIds.includes(item.id) ? "Processing..." : "Buy"}
+                            <span className="sr-only">Purchase</span>
+                            <div className="text-xs">{processingIds.includes(item.id) ? "..." : "$" + item.price.toFixed(0)}</div>
                           </button>
                         </div>
                       </div>
@@ -600,15 +616,24 @@ const Marketplace: React.FC = () => {
 
                         <div className="text-right flex flex-col items-end gap-3">
                           <div className="text-lg font-bold text-[#0A1A3A]">${item.price.toFixed(2)}</div>
-                          <div className="flex gap-2">
-                            <button onClick={() => addToCart(item)} className="px-3 py-1 text-sm border rounded">Add to cart</button>
-                            <button onClick={() => viewItem(item)} className="px-3 py-1 text-sm border rounded">View</button>
+                          <div className="flex gap-2 items-center">
+                            <button onClick={() => addToCart(item)} className="p-2 border rounded text-sm" title="Add to cart">
+                              <FaShoppingCartIcon className="w-4 h-4" />
+                            </button>
+
+                           
+
+                            <button onClick={() => viewItem(item)} className="p-2 border rounded text-sm flex items-center gap-2" title="View">
+                              <FaEyeIcon className="w-4 h-4" />
+                            </button>
+
                             <button
                               onClick={() => buyNow(item)}
                               className="px-3 py-1 text-sm bg-[#33ac6f] text-white rounded"
                               disabled={processingIds.includes(item.id)}
+                              title="Purchase"
                             >
-                              {processingIds.includes(item.id) ? "Processing..." : "Buy Now"}
+                              {processingIds.includes(item.id) ? "..." : "Purchase"}
                             </button>
                           </div>
                         </div>
@@ -628,7 +653,10 @@ const Marketplace: React.FC = () => {
                         <div className="mt-3 text-lg font-bold text-[#0A1A3A]">${item.price.toFixed(2)}</div>
                         <div className="mt-4 flex gap-2">
                           <button onClick={() => addToCart(item)} className="flex-1 py-2 text-sm border rounded">Cart</button>
-                          <button onClick={() => viewItem(item)} className="py-2 px-3 text-sm border rounded">View</button>
+                          <button onClick={() => viewItem(item)} className="py-2 px-3 text-sm border rounded flex items-center gap-2">
+                            <FaEyeIcon className="w-4 h-4" />
+                            <span>View</span>
+                          </button>
                           <button
                             onClick={() => buyNow(item)}
                             className="py-2 px-3 text-sm bg-[#33ac6f] text-white rounded"
@@ -681,9 +709,12 @@ const Marketplace: React.FC = () => {
               <div className="sm:hidden absolute top-2 left-1/2 -translate-x-1/2 w-12 h-1.5 bg-gray-300 rounded-full" />
               <div className="sticky top-0 bg-white border-b sm:border-b-0 px-6 py-4 flex justify-between items-center">
                 <h2 className="text-lg font-bold text-[#0A1A3A]">{selectedItem.title}</h2>
-                <button onClick={() => setSelectedItem(null)}>
-                  <FaTimesIcon className="w-5 h-5" />
-                </button>
+                <div className="flex items-center gap-3">
+                
+                  <button onClick={() => setSelectedItem(null)}>
+                    <FaTimesIcon className="w-5 h-5" />
+                  </button>
+                </div>
               </div>
 
               <div className="p-6">
@@ -735,16 +766,20 @@ const Marketplace: React.FC = () => {
                       <p className="text-xs text-gray-600">Note: Check the buyer description & rating before purchase. Fraud protection available when you pay through our checkout.</p>
                     </div>
                   </div>
+                </div>
 
+                <div className="mt-4 flex items-center gap-3">
+                  <input id="protectionCheck" type="checkbox" checked={protectionAccepted} onChange={(e) => setProtectionAccepted(e.target.checked)} className="w-4 h-4" />
+                  <label htmlFor="protectionCheck" className="text-xs text-gray-700">I have read the description and checked the seller rating</label>
                 </div>
 
                 <div className="mt-6 grid grid-cols-1 gap-3">
                   <button
                     onClick={() => buyNow(selectedItem)}
-                    className="w-full py-3 bg-[#33ac6f] text-white rounded-xl font-bold text-lg"
-                    disabled={processingIds.includes(selectedItem.id)}
+                    className={`w-full py-3 ${protectionAccepted ? "bg-[#33ac6f] text-white" : "bg-gray-200 text-gray-600"} rounded-xl font-bold text-lg`}
+                    disabled={processingIds.includes(selectedItem.id) || !protectionAccepted}
                   >
-                    {processingIds.includes(selectedItem.id) ? "Processing..." : "Buy Now"}
+                    {processingIds.includes(selectedItem.id) ? "Processing..." : "Purchase"}
                   </button>
                   <div className="flex gap-2">
                     <button onClick={() => addToCart(selectedItem)} className="flex-1 py-2 border rounded">Add to cart</button>
@@ -755,7 +790,6 @@ const Marketplace: React.FC = () => {
             </div>
           </>
         )}
-
         {/* Mobile Filter Drawer */}
         {drawerOpen && <div className="fixed inset-0 bg-black/40 z-40" onClick={() => setDrawerOpen(false)} />}
         <aside
