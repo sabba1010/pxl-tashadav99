@@ -32,34 +32,44 @@ const Login = () => {
     }
 
     try {
-      const res = await axios.post<{success:boolean, user:any}>("http://localhost:3200/api/user/login", {
-        email,
-        password,
-      });
+      const res = await axios.post<{ success: boolean; user: any }>(
+        "http://localhost:3200/api/user/login",
+        {
+          email,
+          password,
+        }
+      );
 
       if (res.data.success === true) {
         toast.success("Login Successful!");
 
-        // SAVE USER DATA IN COOKIE (SECURE)
+        // detect localhost so secure cookie doesn't block local dev
+        const isLocalhost =
+          typeof window !== "undefined" &&
+          (window.location.hostname === "localhost" ||
+            window.location.hostname === "127.0.0.1");
+
+        // SAVE USER DATA IN COOKIE (SECURE WHEN NOT LOCAL)
         Cookies.set("aEmpireVault_2XLD", JSON.stringify(res.data.user), {
           expires: 7, // 7 days
-          secure: true,
+          secure: !isLocalhost, // secure only on HTTPS (production)
           sameSite: "strict",
+          path: "/",
         });
 
-        navigate("/admin-dashboard");
+        // redirect to home page (replace so back button doesn't return to login)
+        navigate("/", { replace: true });
       } else {
         toast.error("Login failed!");
       }
     } catch (err: any) {
-      if (err.response) {
+      if (err.response && err.response.data && err.response.data.message) {
         toast.error(err.response.data.message);
       } else {
         toast.error("Something went wrong. Try again.");
       }
     }
   };
-
 
   return (
     <div className="min-h-screen w-full bg-[#111827] relative overflow-hidden">
@@ -237,7 +247,8 @@ const Login = () => {
                     <label className="text-sm font-medium text-gray-300">
                       Password
                     </label>
-                    <Link to={"/"}
+                    <Link
+                      to={"/"}
                       className="text-sm text-orange-400 hover:text-orange-300"
                     >
                       Forgot?
