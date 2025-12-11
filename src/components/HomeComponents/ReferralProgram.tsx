@@ -124,25 +124,25 @@ const ReferralProgram = () => {
             <ul className="space-y-3 text-gray-200">
               <li className="flex items-start gap-3">
                 <span className="text-[#daab4c] text-xl mt-0.5">•</span>
-                Modify or update reward amounts at any time
+                Change the reward for seller referrals.
               </li>
               <li className="flex items-start gap-3">
                 <span className="text-[#daab4c] text-xl mt-0.5">•</span>
-                Withhold rewards for fraud, spam, or self-referral
+                Change the percentage for buyer referrals.
               </li>
               <li className="flex items-start gap-3">
                 <span className="text-[#daab4c] text-xl mt-0.5">•</span>
-                Ban accounts engaging in abusive behavior
+                Pause, enable, or update the referral program at any time.
               </li>
               <li className="flex items-start gap-3">
                 <span className="text-[#daab4c] text-xl mt-0.5">•</span>
-                Access full referral analytics and modify program rules
+                Monitor, approve, or reject any referral bonuses if fraudulent behavior is suspected.
               </li>
             </ul>
 
-            <p className="text-xs text-gray-400 italic mt-6 pt-4 border-t border-white/10">
+            {/* <p className="text-xs text-gray-400 italic mt-6 pt-4 border-t border-white/10">
               Last updated: December 2025 • We reserve the right to terminate the program with notice.
-            </p>
+            </p> */}
           </motion.div>
         </div>
 

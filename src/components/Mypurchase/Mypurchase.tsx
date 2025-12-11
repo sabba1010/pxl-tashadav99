@@ -10,8 +10,7 @@ import {
   FaPlus,
   FaTimes,
   FaStar,
-  FaEnvelope,
-  FaDownload,
+  FaComments,
 } from "react-icons/fa";
 
 /* ---------------------------------------------
@@ -20,8 +19,7 @@ import {
 const FaPlusIcon = FaPlus as unknown as React.ComponentType<any>;
 const FaTimesIcon = FaTimes as unknown as React.ComponentType<any>;
 const FaStarIcon = FaStar as unknown as React.ComponentType<any>;
-const FaEnvelopeIcon = FaEnvelope as unknown as React.ComponentType<any>;
-const FaDownloadIcon = FaDownload as unknown as React.ComponentType<any>;
+const FaCommentsIcon = FaComments as unknown as React.ComponentType<any>;
 
 /* ---------------------------------------------
    Brand Color Maps & Gradients
@@ -40,19 +38,6 @@ const vibrantGradients = [
   "linear-gradient(135deg,#FDCB6E 0%,#FF6B6B 100%)",
   "linear-gradient(135deg,#84fab0 0%,#8fd3f4 100%)",
 ];
-
-const gradientFromHex = (hex: string) => {
-  const h = hex.replace("#", "");
-  const r = parseInt(h.substring(0, 2), 16);
-  const g = parseInt(h.substring(2, 4), 16);
-  const b = parseInt(h.substring(4, 6), 16);
-  const mix = (c: number) => Math.round(c + (255 - c) * 0.28);
-  const r2 = mix(r);
-  const g2 = mix(g);
-  const b2 = mix(b);
-  const toHex = (n: number) => n.toString(16).padStart(2, "0");
-  return `linear-gradient(135deg, ${hex} 0%, #${toHex(r2)}${toHex(g2)}${toHex(b2)} 100%)`;
-};
 
 /* ---------------------------------------------
    Render circular badge
@@ -206,6 +191,8 @@ const downloadInvoice = (id: string) => {
 const MyPurchase: React.FC = () => {
   const [activeTab, setActiveTab] = useState<Tab>("All");
   const [selected, setSelected] = useState<Purchase | null>(null);
+  const [chatOpen, setChatOpen] = useState(false);
+  const [messages, setMessages] = useState<Array<{ sender: "you" | "seller"; text: string; time: string }>>([]);
 
   const filtered = useMemo(() => {
     if (activeTab === "All") return MOCK_PURCHASES;
@@ -259,10 +246,9 @@ const MyPurchase: React.FC = () => {
                   </div>
                 ) : (
                   filtered.map((p) => (
-                    <article
+                    <div
                       key={p.id}
                       className="bg-[#F8FAFB] rounded-xl p-3 sm:p-4 flex items-start gap-3 border border-gray-100 hover:shadow-md transition-shadow"
-                      role="article"
                       style={{ minHeight: 74 }}
                     >
                       {/* left icon */}
@@ -298,21 +284,35 @@ const MyPurchase: React.FC = () => {
                         </div>
                       </div>
 
-                      {/* right: price, date, view */}
-                      <div className="flex-shrink-0 w-24 text-right flex flex-col items-end gap-2">
+                      {/* right: price, date, actions */}
+                      <div className="flex-shrink-0 w-28 text-right flex flex-col items-end gap-2">
                         <div className="text-sm font-medium text-[#0A1A3A]">${p.price.toFixed(2)}</div>
                         <div className="text-xs text-gray-400">{p.date}</div>
 
-                        <div className="mt-1">
+                        <div className="mt-1 flex gap-1">
                           <button
-                            onClick={() => setSelected(p)}
-                            className="px-3 py-1 border rounded text-xs bg-white"
+                            onClick={() => {
+                              setSelected(p);
+                              setChatOpen(false);
+                            }}
+                            className="px-2 py-1 border rounded text-xs bg-white"
+                            title="View details"
                           >
                             View
                           </button>
+                          <button
+                            onClick={() => {
+                              setSelected(p);
+                              setChatOpen(true);
+                            }}
+                            className="px-2 py-1 border rounded text-md bg-white hover:bg-blue-50"
+                            title="Chat with seller"
+                          >
+                            <FaCommentsIcon className="w-4 h-4" />
+                          </button>
                         </div>
                       </div>
-                    </article>
+                    </div>
                   ))
                 )}
               </div>
@@ -329,11 +329,11 @@ const MyPurchase: React.FC = () => {
         <>
           <div className="fixed inset-0 bg-black/50 z-40" onClick={() => setSelected(null)} />
 
-          <div className="fixed inset-x-0 left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 w-full max-w-3xl px-4">
-            <div className="bg-white rounded-2xl shadow-2xl overflow-hidden border">
+          <div className="fixed inset-x-0 left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 w-full max-w-7xl px-4 max-h-[90vh]">
+            <div className="bg-white rounded-2xl shadow-2xl overflow-hidden border h-full flex flex-col">
               <div className="flex items-center justify-between px-6 py-4 border-b">
                 <div className="flex items-center gap-4">
-                  <PlatformIcon platform={selected.platform} size={48} />
+                  <PlatformIcon platform={selected.platform} size={56} />
                   <div>
                     <h2 className="text-xl font-bold text-[#0A1A3A]">{selected.title}</h2>
                     <div className="text-xs text-gray-500 mt-0.5">{selected.seller} • {selected.date}</div>
@@ -344,76 +344,154 @@ const MyPurchase: React.FC = () => {
                 </button>
               </div>
 
-              <div className="p-6">
-                <p className="text-sm text-gray-700 leading-relaxed">{selected.desc}</p>
+              <div className="flex flex-1 overflow-hidden">
+                {/* Left column: Purchase details */}
+                <div className="flex-1 p-6 overflow-y-auto border-r">
+                  <p className="text-sm text-gray-700 leading-relaxed">{selected.desc}</p>
 
-                <div className="mt-4 grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-gray-500">Status</p>
-                    <div className="mt-2">
-                      <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium border ${selected.status === "Completed" ? "bg-green-50 text-green-700 border-green-200" : selected.status === "Pending" ? "bg-amber-50 text-amber-700 border-amber-200" : "bg-red-50 text-red-700 border-red-200"}`}>{selected.status}</span>
-                    </div>
-                  </div>
-
-                  <div className="text-right">
-                    <p className="text-gray-500">Price</p>
-                    <div className="text-3xl font-bold text-[#0A1A3A] mt-1">${selected.price.toFixed(2)}</div>
-                  </div>
-                </div>
-
-                {/* extra order fields like Order #, Tracking, Support */}
-                <div className="mt-4 grid grid-cols-1 gap-3 text-sm">
-                  <div>
-                    <p className="text-gray-500">Purchase Number</p>
-                    <p className="font-medium">{selected.purchaseNumber ?? "—"}</p>
-                  </div>
-
-               
-
-                  <div>
-                    <p className="text-gray-500">Support Email</p>
-                    <p className="font-medium">{selected.supportEmail ?? "support@example.com"}</p>
-                  </div>
-
-                  <div>
-                    <p className="text-gray-500">Platform</p>
-                    <p className="font-medium">{selected.platform}</p>
-                  </div>
-                </div>
-
-                {/* Seller Protection block */}
-                <div className="mt-4 border p-3 rounded-md bg-[#FBFFFB]">
-                  <div className="flex items-center justify-between">
+                  <div className="mt-4 grid grid-cols-2 gap-4">
                     <div>
-                      <div className="text-sm font-medium">Seller Protection</div>
-                      <div className="text-xs text-gray-600">Seller-backed guarantee — contact seller for support & refund policy</div>
+                      <p className="text-gray-500">Status</p>
+                      <div className="mt-2">
+                        <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium border ${selected.status === "Completed" ? "bg-green-50 text-green-700 border-green-200" : selected.status === "Pending" ? "bg-amber-50 text-amber-700 border-amber-200" : "bg-red-50 text-red-700 border-red-200"}`}>{selected.status}</span>
+                      </div>
                     </div>
-                    <div className="text-xs font-semibold text-green-600">Verified</div>
+
+                    <div className="text-right">
+                      <p className="text-gray-500">Price</p>
+                      <div className="text-3xl font-bold text-[#0A1A3A] mt-1">${selected.price.toFixed(2)}</div>
+                    </div>
                   </div>
 
-                  <div className="mt-3 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <Stars value={4} />
-                      <div className="text-xs text-gray-600">4.0 (120 reviews)</div>
+                  {/* extra order fields like Order #, Tracking, Support */}
+                  <div className="mt-4 grid grid-cols-1 gap-3 text-sm">
+                    <div>
+                      <p className="text-gray-500">Purchase Number</p>
+                      <p className="font-medium">{selected.purchaseNumber ?? "—"}</p>
                     </div>
-                    <div className="text-xs text-gray-500">Warranty: 7 days</div>
+
+                    <div>
+                      <p className="text-gray-500">Support Email</p>
+                      <p className="font-medium">{selected.supportEmail ?? "support@example.com"}</p>
+                    </div>
+
+                    <div>
+                      <p className="text-gray-500">Platform</p>
+                      <p className="font-medium">{selected.platform}</p>
+                    </div>
                   </div>
 
-                  <div className="mt-3">
-                    <p className="text-xs text-gray-600">If you face any issue with this purchase, contact the seller or download the invoice.</p>
+                  {/* Seller Protection block */}
+                  <div className="mt-4 border p-3 rounded-md bg-[#FBFFFB]">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-sm font-medium">Seller Protection</div>
+                        <div className="text-xs text-gray-600">Seller-backed guarantee — contact seller for support & refund policy</div>
+                      </div>
+                      <div className="text-xs font-semibold text-green-600">Verified</div>
+                    </div>
+
+                    <div className="mt-3 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <Stars value={4} />
+                        <div className="text-xs text-gray-600">4.0 (120 reviews)</div>
+                      </div>
+                      <div className="text-xs text-gray-500">Warranty: 7 days</div>
+                    </div>
+
+                    <div className="mt-3">
+                      <p className="text-xs text-gray-600">If you face any issue with this purchase, contact the seller or download the invoice.</p>
+                    </div>
                   </div>
+
+                  {/* Actions: Contact seller + Download invoice + Close */}
+                  <div className="mt-6 grid grid-cols-1 gap-3">
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={() => setChatOpen(!chatOpen)}
+                        className="flex-1 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded font-medium transition"
+                      >
+                        {chatOpen ? '✕ Close Chat' : '💬 Chat with Seller'}
+                      </button>
+                      <button onClick={() => setSelected(null)} className="flex-1 py-2 border rounded">Close</button>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 text-xs text-gray-400">Note: This is a mock detail panel — connect APIs to perform real actions.</div>
                 </div>
 
-                {/* Actions: Contact seller + Download invoice + Close */}
-                <div className="mt-6 grid grid-cols-1 gap-3">
-               
+                {/* Right column: Chat Panel */}
+                {chatOpen && (
+                  <div className="w-80 p-6 overflow-hidden flex flex-col border-l bg-gray-50">
+                    <h4 className="text-sm font-semibold mb-4 text-[#0A1A3A]">Chat with {selected.seller}</h4>
+                    
+                    {/* Messages container */}
+                    <div className="bg-white rounded-lg p-4 flex-1 overflow-y-auto mb-4 space-y-3 border">
+                      {messages.length === 0 ? (
+                        <div className="text-center text-gray-500 text-xs py-8">
+                          <p>No messages yet. Start a conversation!</p>
+                        </div>
+                      ) : (
+                        messages.map((msg, idx) => (
+                          <div key={idx} className={`flex ${msg.sender === "you" ? "justify-end" : "justify-start"}`}>
+                            <div
+                              className={`max-w-xs px-3 py-2 rounded-lg text-sm ${
+                                msg.sender === "you"
+                                  ? "bg-blue-500 text-white"
+                                  : "bg-white border border-gray-200 text-gray-800"
+                              }`}
+                            >
+                              <p>{msg.text}</p>
+                              <p className={`text-xs mt-1 ${msg.sender === "you" ? "text-blue-100" : "text-gray-400"}`}>
+                                {msg.time}
+                              </p>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
 
-                  <div className="flex gap-2">
-                    <button onClick={() => setSelected(null)} className="flex-1 py-2 border rounded">Close</button>
+                    {/* Message input */}
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        placeholder="Type your message..."
+                        className="flex-1 px-3 py-2 border rounded-lg text-sm focus:outline-none focus:border-blue-500"
+                        onKeyPress={(e) => {
+                          if (e.key === "Enter" && e.currentTarget.value.trim()) {
+                            const now = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+                            setMessages([...messages, { sender: "you", text: e.currentTarget.value, time: now }]);
+                            e.currentTarget.value = "";
+                            // Auto-reply simulation
+                            setTimeout(() => {
+                              const autoReply = "Thanks for your message! I'll get back to you soon.";
+                              const replyTime = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+                              setMessages(prev => [...prev, { sender: "seller", text: autoReply, time: replyTime }]);
+                            }, 1000);
+                          }
+                        }}
+                      />
+                      <button
+                        onClick={(e) => {
+                          const input = (e.currentTarget.parentElement?.querySelector("input") as HTMLInputElement) || null;
+                          if (input && input.value.trim()) {
+                            const now = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+                            setMessages([...messages, { sender: "you", text: input.value, time: now }]);
+                            input.value = "";
+                            setTimeout(() => {
+                              const autoReply = "Thanks for your message! I'll get back to you soon.";
+                              const replyTime = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+                              setMessages(prev => [...prev, { sender: "seller", text: autoReply, time: replyTime }]);
+                            }, 1000);
+                          }
+                        }}
+                        className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition"
+                      >
+                        Send
+                      </button>
+                    </div>
                   </div>
-                </div>
-
-                <div className="mt-4 text-xs text-gray-400">Note: This is a mock detail panel — connect APIs to perform real actions.</div>
+                )}
               </div>
             </div>
           </div>
