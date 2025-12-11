@@ -161,9 +161,12 @@ const ALL_ITEMS: Item[] = [
   { id: 109, title: "Reddit Aged Account", desc: "Account with karma & history", price: 5.0, seller: "RedditWorks", delivery: "Instant", icon: FaRedditAlien, category: "Social Media", subcategory: "Reddit", platform: "reddit" },
   { id: 110, title: "Pinterest Business Account", desc: "Business verified account", price: 6.5, seller: "PinPro", delivery: "Instant", icon: FaPinterest, category: "Social Media", subcategory: "Pinterest", platform: "pinterest" },
   { id: 111, title: "LinkedIn Premium Profile", desc: "Premium+ connections", price: 12.0, seller: "LinkPros", delivery: "Instant", icon: FaLinkedinIn, category: "Social Media", subcategory: "LinkedIn", platform: "linkedin" },
-  // ... rest kept same (omitted for brevity in this snippet but included in full file)
-  { id: 1, title: "USA GMAIL NUMBER", desc: "Valid +1 US number attached Gmail with full access & recovery email.", price: 2.5, seller: "Senior man", delivery: "2 mins", icon: FaEnvelope, category: "Social Media", subcategory: "Gmail" },
-  { id: 14, title: "Shopify Store (starter)", desc: "Pre-built store + premium theme.", price: 35.0, seller: "ShopBuilders", delivery: "2 days", icon: FaShoppingCart, category: "E-commerce Platforms", subcategory: "Shopify" },
+  { id: 201, title: "Netflix Account (Family)", desc: "4-screen family plan, working", price: 8.0, seller: "StreamDeals", delivery: "Instant", icon: SiNetflix, category: "Streaming & Entertainment", subcategory: "Netflix", platform: "netflix" },
+  { id: 202, title: "Amazon Giftcard $50", desc: "Redeemable in US store", price: 42.0, seller: "GiftCardsRUs", delivery: "Instant", icon: SiAmazon, category: "Giftcards & Misc", subcategory: "Amazon", platform: "amazon" },
+  { id: 203, title: "Steam Wallet $20", desc: "Region-free wallet code", price: 18.0, seller: "SteamCodes", delivery: "Instant", icon: SiSteam, category: "Giftcards & Misc", subcategory: "Steam", platform: "steam" },
+  { id: 301, title: "PayPal Verified (age)", desc: "Verified PayPal account with email", price: 25.0, seller: "PayPros", delivery: "Instant", icon: FaPaypal, category: "Finance / Business Tools", subcategory: "PayPal", platform: "paypal" },
+  { id: 401, title: "USA GMAIL NUMBER", desc: "Valid +1 US number attached Gmail with full access & recovery email.", price: 2.5, seller: "Senior man", delivery: "2 mins", icon: FaEnvelope, category: "Social Media", subcategory: "Gmail" },
+  { id: 402, title: "Shopify Store (starter)", desc: "Pre-built store + premium theme.", price: 35.0, seller: "ShopBuilders", delivery: "2 days", icon: FaShoppingCart, category: "E-commerce Platforms", subcategory: "Shopify" },
 ];
 
 /* ----------------- Small helper components ----------------- */
@@ -228,6 +231,7 @@ const useInjectScrollbarStyles = () => {
 const renderSubIcon = (sub: string) => {
   const Icon = SUBICON_MAP[sub];
   const size = 18;
+
   if (!Icon) {
     return (
       <div className="flex items-center justify-center rounded-full w-7 h-7 text-xs font-semibold bg-gray-100 text-gray-600">
@@ -235,6 +239,7 @@ const renderSubIcon = (sub: string) => {
       </div>
     );
   }
+
   if (typeof Icon === "string") {
     return (
       <div className="flex items-center justify-center rounded-full w-7 h-7 text-xs font-semibold bg-gray-100 text-gray-700">
@@ -242,10 +247,30 @@ const renderSubIcon = (sub: string) => {
       </div>
     );
   }
-  // cast to ComponentType<any> to satisfy TS for React.createElement
+
+  const brandHex = ICON_COLOR_MAP.get(Icon as IconType) || (() => {
+    try {
+      const name = (Icon as any).displayName || (Icon as any).name || "";
+      const key = name.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+      return (STRING_ICON_COLOR_MAP as any)[key];
+    } catch {
+      return undefined;
+    }
+  })();
+
+  const iconColor = brandHex ?? "#111827";
+  const bgColor = "#ffffff";
+
   return (
-    <div className="rounded-full w-7 h-7 flex items-center justify-center shadow-sm" style={{ background: "#fff" }}>
-      {React.createElement(Icon as AnyIconComponent, { size, style: { color: "#111827" } })}
+    <div
+      className="rounded-full w-7 h-7 flex items-center justify-center shadow-sm"
+      style={{ background: bgColor }}
+      title={sub}
+    >
+      {React.createElement(Icon as AnyIconComponent, {
+        size,
+        style: { color: iconColor },
+      })}
     </div>
   );
 };
