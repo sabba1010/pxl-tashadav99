@@ -128,7 +128,7 @@ export default function Navbar() {
                 Orders
               </NavLink>
               <NavLink to="/myproducts" className="font-medium" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}>
-                My products
+                My Ads
               </NavLink>
               <NavLink to="/wallet" className="font-medium" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}>
                 Wallet
