@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import axios from "axios";
 import { toast } from "sonner";
+import Cookies from "js-cookie";
 
 // Country list with real flag emojis
 const countries = [
@@ -73,7 +74,18 @@ const Register = () => {
       );
       if (res?.data?.insertedId) {
         toast.success("🎉 User registered successfully!");
-        navigate("/login");
+        const savedUser = {
+          _id: res.data.insertedId,
+          name: formData.name,
+          email: formData.email,
+          role: formData.role,
+        };
+        Cookies.set("aEmpireVault_2XLD", JSON.stringify(savedUser), {
+          expires: 7,
+          secure: true,
+          sameSite: "strict",
+        });
+        navigate("/login?refresh=true");
       }
 
       form.reset();
