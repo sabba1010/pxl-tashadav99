@@ -50,7 +50,7 @@ const Login = () => {
             window.location.hostname === "127.0.0.1");
 
         // SAVE USER DATA IN COOKIE (SECURE WHEN NOT LOCAL)
-        Cookies.set("aEmpireVault_2XLD", JSON.stringify(res.data.user), {
+        Cookies.set("aAcctEmpire_2XLD", JSON.stringify(res.data.user), {
           expires: 7, // 7 days
           secure: !isLocalhost, // secure only on HTTPS (production)
           sameSite: "strict",
@@ -126,7 +126,7 @@ const Login = () => {
                   />
                 </div>
                 <span className="text-5xl font-black bg-gradient-to-r from-white to-orange-300 bg-clip-text text-transparent">
-                  AEmpireVault
+                  AAcctEmpire
                 </span>
               </motion.div>
 
@@ -190,7 +190,7 @@ const Login = () => {
                     />
                   </div>
                   <span className="text-3xl font-bold text-white">
-                    AEmpireVault
+                    AAcctEmpire
                   </span>
                 </div>
               </motion.div>
