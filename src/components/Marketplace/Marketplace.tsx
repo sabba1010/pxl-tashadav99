@@ -16,7 +16,7 @@ import {
 } from "react-icons/fa";
 import { SiNetflix, SiAmazon, SiSteam, SiGoogle } from "react-icons/si";
 import { Link } from "react-router-dom";
-import { sendNotification } from "../Notification/Notification";
+import { sendNotification } from "../Notification/Notification"; // <-- adjust path if needed
 
 /* ---- Workaround for react-icons + TS JSX typing issues ---- */
 const FaTimesIcon = FaTimes as unknown as React.ComponentType<any>;
@@ -38,7 +38,6 @@ interface Item {
   subcategory?: string;
 }
 
-/* (kept your original constants) */
 const CATEGORY_MAP: Record<string, string[]> = {
   "Social Media": ["Instagram", "Facebook", "WhatsApp", "Twitter"],
   "Emails & Messaging Service": ["Gmail", "Outlook", "ProtonMail"],
@@ -122,7 +121,6 @@ const ALL_ITEMS: Item[] = [
   { id: 14, title: "Shopify Store (starter)", desc: "Pre-built store + premium theme.", price: 35.0, seller: "ShopBuilders", delivery: "2 days", icon: FaShoppingCart, category: "E-commerce Platforms", subcategory: "Shopify" },
 ];
 
-/* small hash helper */
 const hashCode = (s: string) => {
   let h = 0;
   for (let i = 0; i < s.length; i++) h = Math.imul(31, h) + s.charCodeAt(i) | 0;
@@ -383,7 +381,6 @@ const Marketplace: React.FC = () => {
 
     try {
       // OPTIONAL: create order on backend if available
-      // If you have an authenticated API, include Authorization header
       let orderResult: any = null;
       try {
         const resp = await fetch("/api/orders", {
@@ -401,11 +398,9 @@ const Marketplace: React.FC = () => {
         if (resp.ok) {
           orderResult = await resp.json();
         } else {
-          // backend returned non-OK; continue but log
           console.warn("Order API non-OK:", resp.status);
         }
       } catch (err) {
-        // no backend or network issue — continue (best-effort)
         console.warn("Order API call failed (ignored):", err);
       }
 
@@ -421,8 +416,9 @@ const Marketplace: React.FC = () => {
         console.warn("sendNotification failed:", err);
       }
 
-      // UI updates on success
-      setCartCount((c) => c + 1);
+      // IMPORTANT: Do NOT change cartCount here. buyNow should not increment cart.
+      // setCartCount((c) => c + 1); // <- removed
+
       setSelectedItem(null); // close modal if open
 
       // Production: replace alert with toast
