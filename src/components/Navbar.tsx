@@ -130,6 +130,9 @@ export default function Navbar() {
               <NavLink to="/myproducts" className="font-medium" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}>
                 My Ads
               </NavLink>
+              <NavLink to="/plans" className="font-medium" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}>
+                Plans
+              </NavLink>
               <NavLink to="/wallet" className="font-medium" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}>
                 Wallet
               </NavLink>
@@ -317,12 +320,12 @@ export default function Navbar() {
               <span className="text-xs">Orders</span>
             </NavLink>
 
-            {/* My Ads */}
-            <NavLink to="/myproducts" className="flex flex-col items-center justify-center flex-1 pt-3 pb-5" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}>
+            {/* Plans */}
+            <NavLink to="/plans" className="flex flex-col items-center justify-center flex-1 pt-3 pb-5" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}>
               <svg className="w-5 h-5 mb-1 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.884 5.794a1 1 0 00.951.69h6.083c.969 0 .689 1.24-.289 1.043l-4.923 3.578a1 1 0 00-.364 1.118l1.884 5.794c.3.921-.755.688-1.239.303L12 17.727l-4.923 3.578c-.484.385-1.539.618-1.239-.303l1.884-5.794a1 1 0 00-.364-1.118L2.435 10.454c-.978-.197-.258-1.437.711-1.043h6.083a1 1 0 00.951-.69l1.884-5.794z" />
               </svg>
-              <span className="text-xs">Ads</span>
+              <span className="text-xs">Plans</span>
             </NavLink>
 
             {/* Wallet */}
