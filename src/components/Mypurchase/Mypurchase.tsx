@@ -1,5 +1,6 @@
 // src/components/Mypurchase/MyPurchase.tsx
 import React, { useMemo, useState } from "react";
+// toast removed; using a small coming-soon modal instead
 import { Link } from "react-router-dom";
 import type { IconType } from "react-icons";
 import {
@@ -9,6 +10,7 @@ import {
   FaWhatsapp,
   FaPlus,
   FaTimes,
+  FaEye,
   FaStar,
   FaComments,
 } from "react-icons/fa";
@@ -20,6 +22,7 @@ const FaPlusIcon = FaPlus as unknown as React.ComponentType<any>;
 const FaTimesIcon = FaTimes as unknown as React.ComponentType<any>;
 const FaStarIcon = FaStar as unknown as React.ComponentType<any>;
 const FaCommentsIcon = FaComments as unknown as React.ComponentType<any>;
+const FaEyeIcon = FaEye as unknown as React.ComponentType<any>;
 
 /* ---------------------------------------------
    Brand Color Maps & Gradients
@@ -173,17 +176,7 @@ function PlatformIcon({ platform, size = 36 }: { platform: Purchase["platform"];
 /* ---------------------------------------------
    Helper actions (mock)
 ---------------------------------------------- */
-const contactSeller = (email?: string, purchaseNumber?: string) => {
-  const to = email ?? "support@example.com";
-  const subject = encodeURIComponent(`Order enquiry: ${purchaseNumber ?? "unknown"}`);
-  const body = encodeURIComponent(`Hi, I have a question about my order ${purchaseNumber}.\n\nRegards,`);
-  window.location.href = `mailto:${to}?subject=${subject}&body=${body}`;
-};
-
-const downloadInvoice = (id: string) => {
-  // placeholder — replace with real invoice URL or PDF generator
-  window.open(`/orders/${id}/invoice`, "_blank");
-};
+// (contact/download helpers removed — use real APIs when available)
 
 /* ---------------------------------------------
    MyPurchase component (cards like MyOrder; modal = ORDER style)
@@ -191,8 +184,7 @@ const downloadInvoice = (id: string) => {
 const MyPurchase: React.FC = () => {
   const [activeTab, setActiveTab] = useState<Tab>("All");
   const [selected, setSelected] = useState<Purchase | null>(null);
-  const [chatOpen, setChatOpen] = useState(false);
-  const [messages, setMessages] = useState<Array<{ sender: "you" | "seller"; text: string; time: string }>>([]);
+  const [comingOpen, setComingOpen] = useState(false);
 
   const filtered = useMemo(() => {
     if (activeTab === "All") return MOCK_PURCHASES;
@@ -291,19 +283,17 @@ const MyPurchase: React.FC = () => {
 
                         <div className="mt-1 flex gap-1">
                           <button
-                            onClick={() => {
-                              setSelected(p);
-                              setChatOpen(false);
-                            }}
-                            className="px-2 py-1 border rounded text-xs bg-white"
+                            onClick={() => setSelected(p)}
+                            className="px-2 py-1 border rounded text-xs bg-white flex items-center justify-center"
                             title="View details"
+                            aria-label="View details"
                           >
-                            View
+                            <FaEyeIcon className="w-4 h-4" />
                           </button>
                           <button
                             onClick={() => {
-                              setSelected(p);
-                              setChatOpen(true);
+                              // Open coming-soon popup only; do not open the details modal
+                              setComingOpen(true);
                             }}
                             className="px-2 py-1 border rounded text-md bg-white hover:bg-blue-50"
                             title="Chat with seller"
@@ -327,171 +317,81 @@ const MyPurchase: React.FC = () => {
          --------------------------- */}
       {selected && (
         <>
-          <div className="fixed inset-0 bg-black/50 z-40" onClick={() => setSelected(null)} />
+          <div className="fixed inset-0 bg-black/60 z-40" onClick={() => setSelected(null)} />
 
-          <div className="fixed inset-x-0 left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 w-full max-w-5xl px-4 max-h-[90vh]">
-            <div className="bg-white rounded-2xl shadow-2xl overflow-hidden border h-full flex flex-col">
-              <div className="flex items-center justify-between px-6 py-4 border-b">
-                <div className="flex items-center gap-4">
-                  <PlatformIcon platform={selected.platform} size={56} />
-                  <div>
-                    <h2 className="text-xl font-bold text-[#0A1A3A]">{selected.title}</h2>
-                    <div className="text-xs text-gray-500 mt-0.5">{selected.seller} • {selected.date}</div>
-                  </div>
-                </div>
-                <button onClick={() => setSelected(null)} className="p-2 rounded-md hover:bg-gray-100">
-                  <FaTimesIcon className="w-4 h-4" />
-                </button>
+          <div className="fixed inset-x-0 bottom-0 sm:inset-auto sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:max-w-lg bg-white rounded-t-3xl sm:rounded-3xl z-50 max-h-[90vh] sm:max-h-[80vh] overflow-y-auto shadow-2xl">
+            <div className="sm:hidden absolute top-2 left-1/2 -translate-x-1/2 w-12 h-1.5 bg-gray-300 rounded-full" />
+            <div className="sticky top-0 bg-white border-b sm:border-b-0 px-6 py-4 flex justify-between items-center">
+              <div>
+                <h2 className="text-lg font-bold text-[#0A1A3A]">{selected.title}</h2>
+                <div className="text-xs text-gray-500 mt-0.5">{selected.platform} • Purchased on {selected.date}</div>
               </div>
 
-              <div className="flex flex-1 overflow-hidden">
-                {/* Left column: Purchase details */}
-                <div className="flex-1 p-6 overflow-y-auto border-r">
-                  <p className="text-sm text-gray-700 leading-relaxed">{selected.desc}</p>
-
-                  <div className="mt-4 grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-gray-500">Status</p>
-                      <div className="mt-2">
-                        <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium border ${selected.status === "Completed" ? "bg-green-50 text-green-700 border-green-200" : selected.status === "Pending" ? "bg-amber-50 text-amber-700 border-amber-200" : "bg-red-50 text-red-700 border-red-200"}`}>{selected.status}</span>
-                      </div>
-                    </div>
-
-                    <div className="text-right">
-                      <p className="text-gray-500">Price</p>
-                      <div className="text-3xl font-bold text-[#0A1A3A] mt-1">${selected.price.toFixed(2)}</div>
-                    </div>
-                  </div>
-
-                  {/* extra order fields like Order #, Tracking, Support */}
-                  <div className="mt-4 grid grid-cols-1 gap-3 text-sm">
-                    <div>
-                      <p className="text-gray-500">Purchase Number</p>
-                      <p className="font-medium">{selected.purchaseNumber ?? "—"}</p>
-                    </div>
-
-                    <div>
-                      <p className="text-gray-500">Support Email</p>
-                      <p className="font-medium">{selected.supportEmail ?? "support@example.com"}</p>
-                    </div>
-
-                    <div>
-                      <p className="text-gray-500">Platform</p>
-                      <p className="font-medium">{selected.platform}</p>
-                    </div>
-                  </div>
-
-                  {/* Seller Protection block */}
-                  <div className="mt-4 border p-3 rounded-md bg-[#FBFFFB]">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="text-sm font-medium">Seller Protection</div>
-                        <div className="text-xs text-gray-600">Seller-backed guarantee — contact seller for support & refund policy</div>
-                      </div>
-                      <div className="text-xs font-semibold text-green-600">Verified</div>
-                    </div>
-
-                    <div className="mt-3 flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <Stars value={4} />
-                        <div className="text-xs text-gray-600">4.0 (120 reviews)</div>
-                      </div>
-                      <div className="text-xs text-gray-500">Warranty: 7 days</div>
-                    </div>
-
-                    <div className="mt-3">
-                      <p className="text-xs text-gray-600">If you face any issue with this purchase, contact the seller or download the invoice.</p>
-                    </div>
-                  </div>
-
-                  {/* Actions: Contact seller + Download invoice + Close */}
-                  <div className="mt-6 grid grid-cols-1 gap-3">
-                    <div className="flex gap-2">
-                      <button 
-                        onClick={() => setChatOpen(!chatOpen)}
-                        className="flex-1 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded font-medium transition"
-                      >
-                        {chatOpen ? '✕ Close Chat' : '💬 Chat with Seller'}
-                      </button>
-                      <button onClick={() => setSelected(null)} className="flex-1 py-2 border rounded">Close</button>
-                    </div>
-                  </div>
-
-                  <div className="mt-4 text-xs text-gray-400">Note: This is a mock detail panel — connect APIs to perform real actions.</div>
+              <div className="flex items-center gap-3">
+                <div className={`text-xs font-semibold px-2 py-1 rounded ${selected.status === "Completed" ? "bg-green-50 text-green-700" : selected.status === "Pending" ? "bg-amber-50 text-amber-700" : "bg-red-50 text-red-700"}`}>
+                  {selected.status}
                 </div>
 
-                {/* Right column: Chat Panel */}
-                {chatOpen && (
-                  <div className="w-80 p-6 overflow-hidden flex flex-col border-l bg-gray-50">
-                    <h4 className="text-sm font-semibold mb-4 text-[#0A1A3A]">Chat with {selected.seller}</h4>
-                    
-                    {/* Messages container */}
-                    <div className="bg-white rounded-lg p-4 flex-1 overflow-y-auto mb-4 space-y-3 border">
-                      {messages.length === 0 ? (
-                        <div className="text-center text-gray-500 text-xs py-8">
-                          <p>No messages yet. Start a conversation!</p>
-                        </div>
-                      ) : (
-                        messages.map((msg, idx) => (
-                          <div key={idx} className={`flex ${msg.sender === "you" ? "justify-end" : "justify-start"}`}>
-                            <div
-                              className={`max-w-xs px-3 py-2 rounded-lg text-sm ${
-                                msg.sender === "you"
-                                  ? "bg-blue-500 text-white"
-                                  : "bg-white border border-gray-200 text-gray-800"
-                              }`}
-                            >
-                              <p>{msg.text}</p>
-                              <p className={`text-xs mt-1 ${msg.sender === "you" ? "text-blue-100" : "text-gray-400"}`}>
-                                {msg.time}
-                              </p>
-                            </div>
-                          </div>
-                        ))
-                      )}
-                    </div>
+                <button onClick={() => setSelected(null)} className="p-2 rounded-md hover:bg-gray-100">
+                  <FaTimesIcon className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
 
-                    {/* Message input */}
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        placeholder="Type your message..."
-                        className="flex-1 px-3 py-2 border rounded-lg text-sm focus:outline-none focus:border-blue-500"
-                        onKeyPress={(e) => {
-                          if (e.key === "Enter" && e.currentTarget.value.trim()) {
-                            const now = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-                            setMessages([...messages, { sender: "you", text: e.currentTarget.value, time: now }]);
-                            e.currentTarget.value = "";
-                            // Auto-reply simulation
-                            setTimeout(() => {
-                              const autoReply = "Thanks for your message! I'll get back to you soon.";
-                              const replyTime = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-                              setMessages(prev => [...prev, { sender: "seller", text: autoReply, time: replyTime }]);
-                            }, 1000);
-                          }
-                        }}
-                      />
-                      <button
-                        onClick={(e) => {
-                          const input = (e.currentTarget.parentElement?.querySelector("input") as HTMLInputElement) || null;
-                          if (input && input.value.trim()) {
-                            const now = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-                            setMessages([...messages, { sender: "you", text: input.value, time: now }]);
-                            input.value = "";
-                            setTimeout(() => {
-                              const autoReply = "Thanks for your message! I'll get back to you soon.";
-                              const replyTime = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-                              setMessages(prev => [...prev, { sender: "seller", text: autoReply, time: replyTime }]);
-                            }, 1000);
-                          }
-                        }}
-                        className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition"
-                      >
-                        Send
-                      </button>
-                    </div>
+            <div className="p-6">
+              <div className="flex justify-center">{PlatformIcon({ platform: selected.platform, size: 72 })}</div>
+
+              <div className="mt-4 text-3xl font-bold text-[#0A1A3A]">${selected.price.toFixed(2)}</div>
+
+              <div className="mt-4 grid grid-cols-1 gap-3 text-sm">
+                <div>
+                  <p className="text-gray-500">Purchase Number</p>
+                  <p className="font-medium">{selected.purchaseNumber ?? "—"}</p>
+                </div>
+
+                <div>
+                  <p className="text-gray-500">Seller</p>
+                  <p className="font-medium">{selected.seller}</p>
+                </div>
+
+                <div>
+                  <p className="text-gray-500">Description</p>
+                  <p className="text-sm text-gray-600">{selected.desc ?? "No additional details."}</p>
+                </div>
+              </div>
+
+              <div className="mt-4 border p-3 rounded-md bg-[#FBFFFB]">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-sm font-medium">Buyer Protection</div>
+                    <div className="text-xs text-gray-600">Protected purchase — secure transaction & refund policy</div>
                   </div>
-                )}
+                  <div className="text-xs font-semibold text-green-600">Verified</div>
+                </div>
+
+                <div className="mt-3 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Stars value={4} />
+                    <div className="text-xs text-gray-600">4.0 (120 reviews)</div>
+                  </div>
+                  <div className="text-xs text-gray-500">Warranty: 7 days</div>
+                </div>
+
+                <div className="mt-3">
+                  <p className="text-xs text-gray-600">Note: Check the purchase details & rating. For chat and other actions, use available support channels.</p>
+                </div>
+              </div>
+
+              <div className="mt-6 grid grid-cols-1 gap-3">
+                <div className="flex gap-2">
+                  <button 
+                    onClick={() => setComingOpen(true)}
+                    className="flex-1 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded font-medium transition"
+                  >
+                    💬 Chat (coming soon)
+                  </button>
+                  <button onClick={() => setSelected(null)} className="flex-1 py-2 border rounded">Close</button>
+                </div>
               </div>
             </div>
           </div>
@@ -499,6 +399,23 @@ const MyPurchase: React.FC = () => {
       )}
 
       {/* Floating Add product */}
+      {comingOpen && (
+        <div className="fixed inset-0 z-70 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setComingOpen(false)} />
+          <div className="relative bg-white rounded-xl p-6 z-80 w-full max-w-sm shadow-2xl">
+            <div className="flex items-start justify-between">
+              <h3 className="text-lg font-semibold text-[#0A1A3A]">Coming soon</h3>
+              <button onClick={() => setComingOpen(false)} className="p-1 rounded hover:bg-gray-100">
+                <FaTimesIcon className="w-4 h-4" />
+              </button>
+            </div>
+            <p className="mt-3 text-sm text-gray-600">Chat with the seller is coming soon. We'll notify you when it's available.</p>
+            <div className="mt-4 text-right">
+              <button onClick={() => setComingOpen(false)} className="px-4 py-2 bg-blue-500 text-white rounded">OK</button>
+            </div>
+          </div>
+        </div>
+      )}
       <Link
         to="/add-product"
         className="hidden sm:flex sm:fixed bottom-6 right-6 w-14 h-14 bg-[#33ac6f] hover:bg-[#c4963a] text-white rounded-full shadow-2xl items-center justify-center text-2xl"
@@ -510,3 +427,6 @@ const MyPurchase: React.FC = () => {
 };
 
 export default MyPurchase;
+
+/* Coming-soon modal rendered at root of component to avoid nesting issues */
+
