@@ -297,7 +297,8 @@ const CategorySelector: React.FC<{
     };
   }, []);
 
-  const toggleMain = (main: string) => setOpenMain((p) => ({ ...p, [main]: !p[main] }));
+  const toggleMain = (main: string) =>
+    setOpenMain((p) => ({ ...p, [main]: !p[main] }));
 
   const toggleSubcat = (main: string, sub: string) => {
     setSelectedSubcats((prev) => {
@@ -326,8 +327,14 @@ const CategorySelector: React.FC<{
       <div className="bg-white rounded-lg p-2 border" style={{ borderColor: "#E5E7EB" }}>
         {Object.keys(categoryMap).map((main) => {
           const selectedForMain = selectedSubcats[main] ?? [];
+
           return (
-            <div key={main} className="border-b last:border-b-0" style={{ borderColor: "#F3F4F6" }}>
+            <div
+              key={main}
+              className="border-b last:border-b-0"
+              style={{ borderColor: "#F3F4F6" }}
+            >
+              {/* Main category button */}
               <button
                 type="button"
                 onClick={() => toggleMain(main)}
@@ -335,6 +342,7 @@ const CategorySelector: React.FC<{
               >
                 <div className="flex items-center gap-3">
                   <div className="font-semibold text-[#111827]">{main}</div>
+
                   {selectedForMain.length > 0 && (
                     <div className="text-xs rounded px-2 py-0.5 bg-[#F8F9FA] text-[#6B7280]">
                       {selectedForMain.length} selected
@@ -343,7 +351,9 @@ const CategorySelector: React.FC<{
                 </div>
 
                 <svg
-                  className={`w-4 h-4 transition-transform ${openMain[main] ? "rotate-180" : ""}`}
+                  className={`w-4 h-4 transition-transform ${
+                    openMain[main] ? "rotate-180" : ""
+                  }`}
                   viewBox="0 0 20 20"
                   fill="currentColor"
                 >
@@ -355,13 +365,20 @@ const CategorySelector: React.FC<{
                 </svg>
               </button>
 
+              {/* Subcategory list — now auto height, NO max-height */}
               {openMain[main] && (
                 <div className="px-3 pb-3 pt-1">
-                  <div className="space-y-2 max-h-40 overflow-auto mp-filter-scroll pr-2">
+                  <div className="space-y-2 pr-2">
                     {categoryMap[main].map((sub) => {
-                      const checked = (selectedSubcats[main] ?? []).includes(sub);
+                      const checked =
+                        (selectedSubcats[main] ?? []).includes(sub);
+
                       return (
-                        <label key={sub} className="flex items-center gap-3 cursor-pointer justify-between py-1" title={sub}>
+                        <label
+                          key={sub}
+                          className="flex items-center gap-3 cursor-pointer justify-between py-1"
+                          title={sub}
+                        >
                           <div className="flex items-center gap-3">
                             <input
                               type="checkbox"
@@ -380,8 +397,19 @@ const CategorySelector: React.FC<{
 
                           <div className="w-6 text-right">
                             {checked && (
-                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                                <path d="M20 6L9 17l-5-5" stroke="#D4A643" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                              <svg
+                                width="14"
+                                height="14"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                              >
+                                <path
+                                  d="M20 6L9 17l-5-5"
+                                  stroke="#D4A643"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                />
                               </svg>
                             )}
                           </div>
