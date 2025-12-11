@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useMemo, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import {
   FaInstagram,
   FaSnapchatGhost,
@@ -12,7 +12,6 @@ import type { IconType } from "react-icons";
 
 /* ---------------------------------------------
    Brand color map & gradients (robust for production)
-   Use Map keyed by component references to avoid name-mangling
 ---------------------------------------------- */
 const ICON_COLOR_MAP = new Map<IconType, string>([
   [FaInstagram, "#E1306C"],
@@ -43,15 +42,9 @@ const gradientFromHex = (hex?: string | null): string => {
   return `linear-gradient(135deg, ${hex} 0%, #${toHex(r2)}${toHex(g2)}${toHex(b2)} 100%)`;
 };
 
-/* ---------------------------------------------
-   Helper: render marketplace-style badge
-   Force white icon fill & prevent blend-mode overrides
----------------------------------------------- */
 const renderBadge = (IconComponent: IconType, size = 36): React.ReactElement => {
-  // smaller badges to align with Marketplace/MyPurchase styling
   const badgeSize = Math.max(36, size + 8);
   const brandHex = ICON_COLOR_MAP.get(IconComponent) ?? null;
-  // deterministic fallback index using component function string length
   const fallback = vibrantGradients[String(IconComponent).length % vibrantGradients.length];
   const bg = brandHex ? gradientFromHex(brandHex) : fallback;
   const C = IconComponent as unknown as React.ComponentType<any>;
@@ -86,7 +79,6 @@ const renderBadge = (IconComponent: IconType, size = 36): React.ReactElement => 
     >
       {React.createElement(C, {
         size: Math.round(size * 0.75),
-        // Force white fills to avoid host CSS tinting the SVG
         style: { color: "#fff", fill: "#fff", WebkitTextFillColor: "#fff", filter: "drop-shadow(0 1px 1px rgba(0,0,0,0.12))" },
         className: "standout-icon",
       })}
@@ -164,15 +156,33 @@ function PlatformIcon({ p }: { p: Platform }) {
    Component (Tailwind look matching MyPurchase/MyOrder)
 ---------------------------------------------- */
 const MyAds: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<string>("Restore");
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState<string>("All");
   const [items, setItems] = useState<Ad[]>(MOCK);
 
+  // helper to normalize status comparison (case-insensitive)
+  const statusOf = (s?: string | null) => (s ? s.toString().toLowerCase() : "");
+
+  // counts for tabs (memoized)
+  const counts = useMemo(() => {
+    const map = new Map<string, number>();
+    const statuses = items.map((it) => statusOf(it.status));
+    map.set("All", items.length);
+    map.set("Active", statuses.filter((s) => s === "active" || s === "approved").length);
+    map.set("Pending", statuses.filter((s) => s === "pending").length);
+    map.set("Denied", statuses.filter((s) => s === "denied").length);
+    map.set("Restore", statuses.filter((s) => s === "restore").length);
+    return map;
+  }, [items]);
+
   const filtered = items.filter((i) => {
-    if (activeTab === "All") return true;
-    if (activeTab === "Active") return i.status === "active";
-    if (activeTab === "Pending") return i.status === "pending";
-    if (activeTab === "Denied") return i.status === "denied";
-    if (activeTab === "Restore") return i.status === "restore";
+    const s = statusOf(i.status);
+    const tab = activeTab.toLowerCase();
+    if (tab === "all") return true;
+    if (tab === "active") return s === "active" || s === "approved";
+    if (tab === "pending") return s === "pending";
+    if (tab === "denied") return s === "denied";
+    if (tab === "restore") return s === "restore";
     return true;
   });
 
@@ -184,6 +194,21 @@ const MyAds: React.FC = () => {
   const handleDelete = (id: number) => {
     if (!window.confirm("Delete this ad?")) return;
     setItems((prev) => prev.filter((it) => it.id !== id));
+  };
+
+  const handleEdit = (id: number) => {
+    // navigate to edit route — ensure route exists in your app
+    navigate(`/edit-product/${id}`);
+  };
+
+  const prettyStatusLabel = (s?: string) => {
+    const st = statusOf(s);
+    if (st === "approved") return "Approved";
+    if (st === "active") return "Active";
+    if (st === "pending") return "Pending";
+    if (st === "denied") return "Denied";
+    if (st === "restore") return "Restore";
+    return st ? st.charAt(0).toUpperCase() + st.slice(1) : "Unknown";
   };
 
   return (
@@ -223,9 +248,11 @@ const MyAds: React.FC = () => {
                   <button
                     key={t}
                     onClick={() => setActiveTab(t)}
-                    className={`pb-2 text-xs sm:text-sm ${activeTab === t ? "text-[#33ac6f] border-b-2 border-[#d4a643]" : "text-gray-500"}`}
+                    className={`pb-2 text-xs sm:text-sm ${
+                      activeTab === t ? "text-[#33ac6f] border-b-2 border-[#d4a643]" : "text-gray-500"
+                    }`}
                   >
-                    {t}
+                    {t} <span className="text-gray-400">({counts.get(t) ?? 0})</span>
                   </button>
                 ))}
               </nav>
@@ -267,7 +294,7 @@ const MyAds: React.FC = () => {
                             <h3 className="text-sm font-semibold text-[#0A1A3A] truncate">{item.title}</h3>
                             <p className="text-xs text-gray-500 mt-1 line-clamp-2">{item.desc}</p>
 
-                            {item.status === "denied" && (
+                            {statusOf(item.status) === "denied" && (
                               <div className="mt-3 p-3 sm:p-4 rounded-lg bg-[#fff4db] text-[#926B00]">
                                 <strong>⚠️ Reason for denied</strong>
                                 <div className="mt-2 text-xs sm:text-sm text-[#6B4F00]">
@@ -287,7 +314,7 @@ const MyAds: React.FC = () => {
                             <div className="text-lg font-bold text-[#0A1A3A]">${item.price}</div>
 
                             <div className="flex items-center gap-2">
-                              {item.status === "restore" && (
+                              {statusOf(item.status) === "restore" && (
                                 <button
                                   onClick={() => handleRestore(item.id)}
                                   className="px-2 py-1 rounded-md bg-[#33ac6f] text-white text-xs"
@@ -296,7 +323,11 @@ const MyAds: React.FC = () => {
                                 </button>
                               )}
 
-                              <button title="Edit" className="p-1 rounded-md bg-white border border-gray-100 shadow-sm">
+                              <button
+                                title="Edit"
+                                onClick={() => handleEdit(item.id)}
+                                className="p-1 rounded-md bg-white border border-gray-100 shadow-sm"
+                              >
                                 {React.createElement(FaPencilAlt as any, { size: 12 })}
                               </button>
                               <button
@@ -311,14 +342,14 @@ const MyAds: React.FC = () => {
                             <div className="mt-1 sm:mt-3">
                               <span
                                 className={`inline-block px-3 py-1 rounded-full text-xs ${
-                                  item.status === "approved" ? "bg-[#ECFDF3] text-[#0F9D58]" :
-                                  item.status === "active" ? "bg-[#ECF8FF] text-[#2B6CB0]" :
-                                  item.status === "pending" ? "bg-[#FFFBEB] text-[#B45309]" :
-                                  item.status === "denied" ? "bg-[#FFF1F2] text-[#9E2A2B]" :
+                                  statusOf(item.status) === "approved" ? "bg-[#ECFDF3] text-[#0F9D58]" :
+                                  statusOf(item.status) === "active" ? "bg-[#ECF8FF] text-[#2B6CB0]" :
+                                  statusOf(item.status) === "pending" ? "bg-[#FFFBEB] text-[#B45309]" :
+                                  statusOf(item.status) === "denied" ? "bg-[#FFF1F2] text-[#9E2A2B]" :
                                   "bg-[#F3F4F6] text-[#6B7280]"
                                 }`}
                               >
-                                {item.status === "approved" ? "Approved" : item.status === "restore" ? "Restore" : item.status}
+                                {prettyStatusLabel(item.status)}
                               </span>
                             </div>
                           </div>
