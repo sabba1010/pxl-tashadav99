@@ -1,4 +1,3 @@
-// src/components/Marketplace/Marketplace.tsx
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import type { IconType } from "react-icons";
 import {
@@ -17,6 +16,7 @@ import {
 } from "react-icons/fa";
 import { SiNetflix, SiAmazon, SiSteam, SiGoogle } from "react-icons/si";
 import { Link } from "react-router-dom";
+import { sendNotification } from "../Notification/Notification";
 
 /* ---- Workaround for react-icons + TS JSX typing issues ---- */
 const FaTimesIcon = FaTimes as unknown as React.ComponentType<any>;
@@ -38,6 +38,7 @@ interface Item {
   subcategory?: string;
 }
 
+/* (kept your original constants) */
 const CATEGORY_MAP: Record<string, string[]> = {
   "Social Media": ["Instagram", "Facebook", "WhatsApp", "Twitter"],
   "Emails & Messaging Service": ["Gmail", "Outlook", "ProtonMail"],
@@ -243,10 +244,11 @@ const Marketplace: React.FC = () => {
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
 
-  /* NEW: pagination + cart state */
+  /* NEW: pagination + cart state + processing state */
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6; // changeable
   const [cartCount, setCartCount] = useState(0);
+  const [processingIds, setProcessingIds] = useState<number[]>([]);
 
   const drawerRef = useRef<HTMLDivElement | null>(null);
 
@@ -367,15 +369,70 @@ const Marketplace: React.FC = () => {
     </div>
   );
 
-  const addToCart = (item: Item) => {
+  const addToCart = (item: Item | null) => {
+    if (!item) return;
     setCartCount((c) => c + 1);
     // replace with real cart logic
-    // toast or UI feedback preferred in real app
   };
 
-  const buyNow = (item: Item) => {
-    // placeholder buy flow
-    alert(`Proceed to buy: ${item.title} ($${item.price.toFixed(2)})`);
+  // ---------- Updated buyNow: automatic flow with processing state ----------
+  const buyNow = async (item: Item | null) => {
+    if (!item) return;
+    if (processingIds.includes(item.id)) return; // already processing
+    setProcessingIds((p) => [...p, item.id]);
+
+    try {
+      // OPTIONAL: create order on backend if available
+      // If you have an authenticated API, include Authorization header
+      let orderResult: any = null;
+      try {
+        const resp = await fetch("/api/orders", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            // "Authorization": `Bearer ${token}` // add if you use auth
+          },
+          body: JSON.stringify({
+            itemId: item.id,
+            price: item.price,
+            qty: 1,
+          }),
+        });
+        if (resp.ok) {
+          orderResult = await resp.json();
+        } else {
+          // backend returned non-OK; continue but log
+          console.warn("Order API non-OK:", resp.status);
+        }
+      } catch (err) {
+        // no backend or network issue — continue (best-effort)
+        console.warn("Order API call failed (ignored):", err);
+      }
+
+      // Send notification (your function)
+      try {
+        await sendNotification({
+          type: "buy",
+          title: `Purchase: ${item.title}`,
+          message: `You bought ${item.title} for $${item.price.toFixed(2)}.`,
+          data: { itemId: item.id, price: item.price, order: orderResult },
+        });
+      } catch (err) {
+        console.warn("sendNotification failed:", err);
+      }
+
+      // UI updates on success
+      setCartCount((c) => c + 1);
+      setSelectedItem(null); // close modal if open
+
+      // Production: replace alert with toast
+      alert("Purchase successful — notification sent!");
+    } catch (err: any) {
+      console.error("Buy failed", err);
+      alert("Failed to process purchase: " + (err?.message || String(err)));
+    } finally {
+      setProcessingIds((p) => p.filter((id) => id !== item.id));
+    }
   };
 
   const viewItem = (item: Item) => {
@@ -520,7 +577,13 @@ const Marketplace: React.FC = () => {
                         <div className="mt-3 flex gap-2">
                           <button onClick={() => addToCart(item)} className="flex-1 py-2 text-sm border rounded-md">Add to cart</button>
                           <button onClick={() => viewItem(item)} className="py-2 px-3 text-sm border rounded-md">View</button>
-                          <button onClick={() => buyNow(item)} className="py-2 px-3 text-sm bg-[#33ac6f] text-white rounded-md">Buy</button>
+                          <button
+                            onClick={() => buyNow(item)}
+                            className="py-2 px-3 text-sm bg-[#33ac6f] text-white rounded-md"
+                            disabled={processingIds.includes(item.id)}
+                          >
+                            {processingIds.includes(item.id) ? "Processing..." : "Buy"}
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -544,7 +607,13 @@ const Marketplace: React.FC = () => {
                           <div className="flex gap-2">
                             <button onClick={() => addToCart(item)} className="px-3 py-1 text-sm border rounded">Add to cart</button>
                             <button onClick={() => viewItem(item)} className="px-3 py-1 text-sm border rounded">View</button>
-                            <button onClick={() => buyNow(item)} className="px-3 py-1 text-sm bg-[#33ac6f] text-white rounded">Buy Now</button>
+                            <button
+                              onClick={() => buyNow(item)}
+                              className="px-3 py-1 text-sm bg-[#33ac6f] text-white rounded"
+                              disabled={processingIds.includes(item.id)}
+                            >
+                              {processingIds.includes(item.id) ? "Processing..." : "Buy Now"}
+                            </button>
                           </div>
                         </div>
                       </div>
@@ -564,7 +633,13 @@ const Marketplace: React.FC = () => {
                         <div className="mt-4 flex gap-2">
                           <button onClick={() => addToCart(item)} className="flex-1 py-2 text-sm border rounded">Cart</button>
                           <button onClick={() => viewItem(item)} className="py-2 px-3 text-sm border rounded">View</button>
-                          <button onClick={() => buyNow(item)} className="py-2 px-3 text-sm bg-[#33ac6f] text-white rounded">Buy</button>
+                          <button
+                            onClick={() => buyNow(item)}
+                            className="py-2 px-3 text-sm bg-[#33ac6f] text-white rounded"
+                            disabled={processingIds.includes(item.id)}
+                          >
+                            {processingIds.includes(item.id) ? "Processing..." : "Buy"}
+                          </button>
                         </div>
                       </div>
                     ))}
@@ -668,7 +743,13 @@ const Marketplace: React.FC = () => {
                 </div>
 
                 <div className="mt-6 grid grid-cols-1 gap-3">
-                  <button onClick={() => buyNow(selectedItem)} className="w-full py-3 bg-[#33ac6f] text-white rounded-xl font-bold text-lg">Buy Now</button>
+                  <button
+                    onClick={() => buyNow(selectedItem)}
+                    className="w-full py-3 bg-[#33ac6f] text-white rounded-xl font-bold text-lg"
+                    disabled={processingIds.includes(selectedItem.id)}
+                  >
+                    {processingIds.includes(selectedItem.id) ? "Processing..." : "Buy Now"}
+                  </button>
                   <div className="flex gap-2">
                     <button onClick={() => addToCart(selectedItem)} className="flex-1 py-2 border rounded">Add to cart</button>
                     <button onClick={() => setSelectedItem(null)} className="flex-1 py-2 border rounded">Close</button>
