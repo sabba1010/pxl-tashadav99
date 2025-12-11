@@ -625,6 +625,7 @@ const Marketplace: React.FC = () => {
 
                             <button onClick={() => viewItem(item)} className="p-2 border rounded text-sm flex items-center gap-2" title="View">
                               <FaEyeIcon className="w-4 h-4" />
+                              
                             </button>
 
                             <button

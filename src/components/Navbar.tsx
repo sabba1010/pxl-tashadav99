@@ -109,9 +109,9 @@ export default function Navbar() {
               </button>
 
               <NavLink to="/" className="flex items-center gap-3">
-                <img src="/logo.png" alt="EmpireVault" className="h-9 w-auto" />
+                <img src="/logo.png" alt="AcctEmpire" className="h-9 w-auto" />
                 <span className="hidden sm:inline font-bold text-xl" style={{ color: EMPIRE_BLUE }}>
-                  EmpireVault
+                  AcctEmpire
                 </span>
               </NavLink>
             </div>
