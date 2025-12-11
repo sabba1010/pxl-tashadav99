@@ -7,6 +7,7 @@ import HowItWorks from "../../components/HomeComponents/HowItWorks";
 import ReportTransaction from "../../components/HomeComponents/ReportTransaction";
 //import HomeLinks from "../../components/HomeComponents/HomeLinks";
 import HomeAboutSection from "../../components/HomeComponents/HomeAboutSection"
+import ReferralProgram from "../../components/HomeComponents/ReferralProgram";
 
 const Home = () => {
   return (
@@ -25,6 +26,9 @@ const Home = () => {
       <HowItWorks />
         {/* How to Report a Transaction - Modern Flow */}
       <ReportTransaction />
+      
+      {/* Referral Program - Earn Rewards */}
+      <ReferralProgram />
 
     </div>
   );
