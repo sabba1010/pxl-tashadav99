@@ -6,10 +6,16 @@ import {FaWhatsapp,FaEnvelope,FaPlus,FaBullhorn,FaFacebookF,FaInstagram,FaTwitte
 import { SiNetflix, SiAmazon, SiSteam, SiGoogle, SiTiktok, SiTinder } from "react-icons/si";
 import { MdMail, MdSimCard, MdPhoneIphone, MdVpnLock, MdStorefront, MdLocalOffer } from "react-icons/md";
 import { Link } from "react-router-dom";
+import { BiSolidPurchaseTag } from "react-icons/bi";
+
 import { sendNotification } from "../Notification/Notification"; // adjust path if needed
 
 /* small typing helper for react-icons components */
+
 type AnyIconComponent = React.ComponentType<any>;
+const PurchaseIcon =
+  BiSolidPurchaseTag as unknown as React.ComponentType<any>;
+
 
 /* icons typing workaround for some direct usages */
 const FaTimesIcon = FaTimes as unknown as AnyIconComponent;
@@ -48,58 +54,11 @@ const CATEGORY_MAP: Record<string, string[]> = {
 };
 
 const ICON_COLOR_MAP = new Map<IconType, string>([
-  [FaWhatsapp, "#25D366"],
-  [SiNetflix, "#E50914"],
-  [SiAmazon, "#FF9900"],
-  [FaEnvelope, "#D44638"],
-  [FaFacebookF, "#1877F2"],
-  [FaInstagram, "#E1306C"],
-  [FaTwitter, "#1DA1F2"],
-  [SiSteam, "#171A21"],
-  [SiGoogle, "#4285F4"],
-  [FaBullhorn, "#6B46C1"],
-  [FaLock, "#0A1A3A"],
-  [FaShoppingCart, "#FF6B6B"],
-  [FaLinkedinIn, "#0A66C2"],
-  [FaYoutube, "#FF0000"],
-  [FaSnapchatGhost, "#FFFC00"],
-  [SiTiktok, "#000000"],
-  [FaTelegramPlane, "#2AABEE"],
-  [FaDiscord, "#7289DA"],
-  [FaPinterest, "#E60023"],
-  [FaRedditAlien, "#FF4500"],
-  [FaPaypal, "#003087"],
-  [MdSimCard, "#00A3E0"],
-  [MdVpnLock, "#0F172A"],
-  [MdMail, "#D44638"],
-  [SiTinder, "#FF6B6B"],
+  [FaWhatsapp, "#25D366"],[SiNetflix, "#E50914"],[SiAmazon, "#FF9900"],[FaEnvelope, "#D44638"],[FaFacebookF, "#1877F2"],[FaInstagram, "#E1306C"],[FaTwitter, "#1DA1F2"],[SiSteam, "#171A21"],[SiGoogle, "#4285F4"], [FaBullhorn, "#6B46C1"], [FaLock, "#0A1A3A"],[FaShoppingCart, "#FF6B6B"],[FaLinkedinIn, "#0A66C2"],[FaYoutube, "#FF0000"],[FaSnapchatGhost, "#FFFC00"],[SiTiktok, "#000000"],[FaTelegramPlane, "#2AABEE"],[FaDiscord, "#7289DA"],[FaPinterest, "#E60023"],[FaRedditAlien, "#FF4500"],[FaPaypal, "#003087"],[MdSimCard, "#00A3E0"],[MdVpnLock, "#0F172A"],[MdMail, "#D44638"],[SiTinder, "#FF6B6B"],
 ]);
 
 const STRING_ICON_COLOR_MAP: Record<string, string> = {
-  whatsapp: "#25D366",
-  netflix: "#E50914",
-  amazon: "#FF9900",
-  envelope: "#D44638",
-  facebook: "#1877F2",
-  instagram: "#E1306C",
-  twitter: "#1DA1F2",
-  steam: "#171A21",
-  google: "#4285F4",
-  bullhorn: "#6B46C1",
-  lock: "#0A1A3A",
-  shoppingcart: "#FF6B6B",
-  linkedin: "#0A66C2",
-  youtube: "#FF0000",
-  snapchat: "#FFFC00",
-  tiktok: "#000000",
-  telegram: "#2AABEE",
-  discord: "#7289DA",
-  pinterest: "#E60023",
-  reddit: "#FF4500",
-  paypal: "#003087",
-  esim: "#00A3E0",
-  "virtual-card": "#4B5563",
-  vpn: "#0F172A",
+  whatsapp: "#25D366",netflix: "#E50914",amazon: "#FF9900", envelope: "#D44638",facebook: "#1877F2",instagram: "#E1306C",twitter: "#1DA1F2",steam: "#171A21",google: "#4285F4",bullhorn: "#6B46C1", lock: "#0A1A3A",shoppingcart: "#FF6B6B",linkedin: "#0A66C2", youtube: "#FF0000", snapchat: "#FFFC00", tiktok: "#000000",telegram: "#2AABEE",discord: "#7289DA",pinterest: "#E60023",reddit: "#FF4500",paypal: "#003087",esim: "#00A3E0","virtual-card": "#4B5563",vpn: "#0F172A",
 };
 
 /* gradients fallback */
@@ -171,34 +130,8 @@ const Stars: React.FC<{ value: number }> = ({ value }) => (
 
 type SubcatState = Record<string, string[]>;
 
-const SUBICON_MAP: Record<string, IconType | string> = {
-  Instagram: FaInstagram,
-  Facebook: FaFacebookF,
-  "Twitter / X": FaTwitter,
-  TikTok: SiTiktok,
-  Snapchat: FaSnapchatGhost,
-  LinkedIn: FaLinkedinIn,
-  Pinterest: FaPinterest,
-  YouTube: FaYoutube,
-  WhatsApp: FaWhatsapp,
-  Telegram: FaTelegramPlane,
-  Discord: FaDiscord,
-  Reddit: FaRedditAlien,
-  Gmail: MdMail,
-  Tinder: SiTinder,
-  "eSIM (US)": MdSimCard,
-  "eSIM (EU)": MdSimCard,
-  "Roaming eSIM": MdSimCard,
-  "Temporary SMS": MdPhoneIphone,
-  "Disposable Numbers": MdPhoneIphone,
-  Netflix: SiNetflix,
-  Amazon: SiAmazon,
-  Steam: SiSteam,
-  PayPal: FaPaypal,
-  VPN: MdVpnLock,
-  Shopify: FaShoppingCart,
-  "Virtual Cards": MdLocalOffer,
-  Others: FaBullhorn,
+const SUBICON_MAP: Record<string, IconType | string> = {Instagram: FaInstagram,Facebook: FaFacebookF,"Twitter / X": FaTwitter,TikTok: SiTiktok,
+  Snapchat: FaSnapchatGhost,LinkedIn: FaLinkedinIn,Pinterest: FaPinterest,YouTube: FaYoutube,WhatsApp: FaWhatsapp,Telegram: FaTelegramPlane,Discord: FaDiscord,Reddit: FaRedditAlien,Gmail: MdMail, Tinder: SiTinder,"eSIM (US)": MdSimCard,"eSIM (EU)": MdSimCard,"Roaming eSIM": MdSimCard,"Temporary SMS": MdPhoneIphone,"Disposable Numbers": MdPhoneIphone,Netflix: SiNetflix,Amazon: SiAmazon, Steam: SiSteam,PayPal: FaPaypal,VPN: MdVpnLock,Shopify: FaShoppingCart,"Virtual Cards": MdLocalOffer, Others: FaBullhorn,
 };
 
 const useInjectScrollbarStyles = () => {
@@ -736,10 +669,20 @@ const Marketplace: React.FC = () => {
                             <FaEyeIcon className="w-4 h-4" />
                           </button>
 
-                          <button onClick={() => buyNow(item)} title="Purchase" className="ml-auto p-2 rounded-md text-sm bg-[#33ac6f] text-white flex items-center justify-center font-medium" disabled={processingIds.includes(item.id)}>
-                            <span className="sr-only">Purchase</span>
-                            <div className="text-xs">{processingIds.includes(item.id) ? "..." : "$" + item.price.toFixed(0)}</div>
-                          </button>
+                         <button
+  onClick={() => buyNow(item)}
+  title="Purchase"
+  className="ml-auto p-2 rounded-md bg-[#33ac6f] text-white flex items-center justify-center"
+  disabled={processingIds.includes(item.id)}
+>
+  {processingIds.includes(item.id) ? (
+    <span className="text-xs">...</span>
+  ) : (
+   <PurchaseIcon className="w-5 h-5" />
+
+  )}
+</button>
+
                         </div>
                       </div>
                     </div>
