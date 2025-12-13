@@ -75,7 +75,7 @@ export default function Wallet(): React.ReactElement {
   const renderList = (items: Tx[]) => {
     if (!items || items.length === 0) {
       return (
-        <div className="h-48 sm:h-60 lg:h-80 flex flex-col items-center justify-center" style={{ color: "#9CA3AF" }}>
+        <div className="h-48 sm:h-60 lg:h-80 flex items-center justify-center text-gray-400">
           <div className="text-sm">No Data Found</div>
         </div>
       );
@@ -125,9 +125,9 @@ export default function Wallet(): React.ReactElement {
   };
 
   return (
-    <div className="min-h-[85vh] p-4 sm:p-6 lg:p-8" style={{ backgroundColor: "#f3efee" }}>
+    <div className="min-h-[85vh] p-4 sm:p-6 lg:p-8 bg-[#f3efee]">
       <div className="max-w-7xl mx-auto bg-white rounded-md p-4 sm:p-6 shadow-sm">
-        <h2 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6" style={{ color: EMPIRE_BLUE }}>
+        <h2 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 text-[#0A1A3A]">
           Wallet
         </h2>
 
@@ -141,33 +141,46 @@ export default function Wallet(): React.ReactElement {
               <div className="text-xs sm:text-sm opacity-90">Your Balance</div>
 
               <div className="bg-white/20 rounded-xl px-4 sm:px-6 py-2 sm:py-3 self-start">
-                <div className="text-2xl sm:text-3xl font-semibold" style={{ color: CLEAN_WHITE }}>
+                <div className="text-2xl sm:text-3xl font-semibold text-white">
                   ${balance.toFixed(2)}
                 </div>
               </div>
             </div>
 
-            {/* ACTIONS – SAME STYLE */}
-            <div className="mt-4 sm:mt-6 flex flex-col sm:flex-row items-center gap-3 sm:gap-6">
-              {/* Deposit */}
-              <Link to="/payment" className="flex flex-col items-center gap-2 w-full sm:w-auto">
-                <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-md border border-gray-200 bg-white flex items-center justify-center shadow-sm">
-                  <FaPlusIcon size={16} />
-                </div>
-                <div className="text-xs sm:text-sm text-gray-500">Deposit</div>
-              </Link>
+            {/* ACTIONS */}
+            <div className="mt-4 sm:mt-6">
+              {/* Top row */}
+              <div className="flex items-center gap-2 sm:gap-6">
+                {/* Deposit */}
+                <Link to="/payment" className="flex flex-col items-center gap-1 w-full sm:w-auto">
+                  <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-md border border-gray-200 bg-white flex items-center justify-center shadow-sm">
+                    <FaPlusIcon size={16} />
+                  </div>
+                  <div className="text-[11px] sm:text-sm text-gray-500">Deposit</div>
+                </Link>
 
-              {/* Withdraw – SAME */}
-              <Link to="/withdraw" className="flex flex-col items-center gap-2 w-full sm:w-auto">
-                <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-md border border-gray-200 bg-white flex items-center justify-center shadow-sm">
-                  <FaArrowUpIcon size={16} />
-                </div>
-                <div className="text-xs sm:text-sm text-gray-500">Withdraw</div>
-              </Link>
+                {/* Withdraw */}
+                <Link to="/withdraw" className="flex flex-col items-center gap-1 w-full sm:w-auto">
+                  <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-md border border-gray-200 bg-white flex items-center justify-center shadow-sm">
+                    <FaArrowUpIcon size={16} />
+                  </div>
+                  <div className="text-[11px] sm:text-sm text-gray-500">Withdraw</div>
+                </Link>
 
+                {/* Desktop Report */}
+                <Link
+                  to="/report"
+                  className="hidden sm:inline-block ml-auto px-3 sm:px-4 py-2 rounded-md font-medium text-xs sm:text-sm"
+                  style={{ backgroundColor: ROYAL_GOLD, color: CHARCOAL }}
+                >
+                  Report transaction
+                </Link>
+              </div>
+
+              {/* Mobile Report */}
               <Link
                 to="/report"
-                className="ml-0 sm:ml-auto px-3 sm:px-4 py-2 rounded-md font-medium text-xs sm:text-sm w-full sm:w-auto text-center"
+                className="sm:hidden mt-3 block w-full px-3 py-2 rounded-md font-medium text-xs text-center"
                 style={{ backgroundColor: ROYAL_GOLD, color: CHARCOAL }}
               >
                 Report transaction
