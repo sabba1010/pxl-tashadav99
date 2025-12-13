@@ -200,13 +200,125 @@ export default function Navbar() {
 
               {/* Avatar Dropdown */}
               <div className="relative" ref={dropdownRef}>
-                {user.user ? (
-                  <button onClick={() => setOpen((o) => !o)} className="flex items-center p-1 rounded-full hover:bg-gray-100 transition">
-                    <div className="h-9 w-9 rounded-full flex items-center justify-center text-white font-bold text-sm" style={{ background: `linear-gradient(90deg, ${EMPIRE_BLUE} 0%, ${ROYAL_GOLD} 100%)` }}>
-                      A
-                    </div>
-                  </button>
-                ) : (
+            {user.user ? (
+  <button
+    onClick={() => setOpen((o) => !o)}
+    className="flex items-center p-1 rounded-full hover:bg-gray-100 transition"
+  >
+    <div
+      className="h-9 w-9 rounded-full flex items-center justify-center text-white font-bold text-sm"
+      style={{
+        background: `linear-gradient(90deg, ${EMPIRE_BLUE} 0%, ${ROYAL_GOLD} 100%)`,
+      }}
+    >
+      A
+    </div>
+  </button>
+) : (
+  <>
+    {/* Mobile (top) */}
+  
+
+    {/* Desktop */}
+    {/* Avatar / Auth */}
+<div className="relative" ref={dropdownRef}>
+  {user?.user ? (
+    /* ================= Logged In ================= */
+    <button
+      onClick={() => setOpen((o) => !o)}
+      className="flex items-center p-1 rounded-full hover:bg-gray-100 transition"
+    >
+      <div
+        className="h-9 w-9 rounded-full flex items-center justify-center text-white font-bold text-sm"
+        style={{
+          background: `linear-gradient(90deg, ${EMPIRE_BLUE} 0%, ${ROYAL_GOLD} 100%)`,
+        }}
+      >
+        A
+      </div>
+    </button>
+  ) : (
+    /* ================= Logged Out ================= */
+    <>
+      {/* Mobile */}
+      <div className="flex md:hidden gap-2">
+        <Link to="/login">
+          <Button
+            variant="contained"
+            size="small"
+            sx={{
+              borderRadius: "8px",
+              textTransform: "none",
+              fontWeight: 600,
+              backgroundColor: ROYAL_GOLD,
+            }}
+          >
+            Login
+          </Button>
+        </Link>
+
+        <Link to="/register">
+          <Button
+            variant="outlined"
+            size="small"
+            sx={{
+              borderRadius: "8px",
+              textTransform: "none",
+              fontWeight: 600,
+              borderWidth: "2px",
+            }}
+          >
+            Register
+          </Button>
+        </Link>
+      </div>
+
+      {/* Desktop */}
+      <div className="hidden md:flex gap-2">
+        <Link to="/login">
+          <Button
+            variant="contained"
+            sx={{
+              px: 4,
+              borderRadius: "10px",
+              textTransform: "none",
+              fontWeight: 600,
+              backgroundColor: ROYAL_GOLD,
+            }}
+          >
+            Login
+          </Button>
+        </Link>
+
+        <Link to="/register">
+          <Button
+            variant="outlined"
+            sx={{
+              px: 4,
+              borderRadius: "10px",
+              textTransform: "none",
+              fontWeight: 600,
+              borderWidth: "2px",
+            }}
+          >
+            Register
+          </Button>
+        </Link>
+      </div>
+    </>
+  )}
+
+  {/* Avatar Dropdown (শুধু logged in হলে) */}
+  {open && user?.user && (
+    <div className="absolute right-0 mt-2 w-80 rounded-xl shadow-2xl z-50">
+      {/* তোমার আগের dropdown content এখানেই থাকবে */}
+    </div>
+  )}
+</div>
+
+  </>
+)}
+{/* 
                   <div className="md:flex hidden gap-2">
                     <Link to="/login">
                       <Button variant="contained" sx={{ paddingX: 4, paddingY: 0.4, borderRadius: "10px", textTransform: "none", fontSize: "16px", fontWeight: 600, backgroundColor: ROYAL_GOLD }}>
@@ -219,8 +331,8 @@ export default function Navbar() {
                         Register
                       </Button>
                     </Link>
-                  </div>
-                )}
+                  </div> */}
+              
 
                 {/* Avatar Dropdown Menu */}
                 {open && (
