@@ -943,7 +943,7 @@ const Marketplace: React.FC = () => {
 
                   <div className="flex gap-2">
                     <button onClick={() => addToCart(selectedItem)} className="flex-1 py-2 border rounded">Add to cart</button>
-                    <button onClick={() => setSelectedItem(null)} className="flex-1 py-2 border rounded">Close</button>
+                    <button  className="flex-1 py-2 border rounded">Preview </button>
                   </div>
                 </div>
               </div>
