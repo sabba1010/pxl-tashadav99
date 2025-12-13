@@ -435,6 +435,13 @@ const MyOrder: React.FC = () => {
                   >
                     Close
                   </button>
+                  <button
+  onClick={() => setSelectedOrder(null)}
+  className="flex-1 py-2 border rounded"
+>
+  Confirm Order
+</button>
+
                 </div>
               </div>
             </div>
