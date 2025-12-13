@@ -8,6 +8,7 @@ import ReportTransaction from "../../components/HomeComponents/ReportTransaction
 //import HomeLinks from "../../components/HomeComponents/HomeLinks";
 import HomeAboutSection from "../../components/HomeComponents/HomeAboutSection"
 import ReferralProgram from "../../components/HomeComponents/ReferralProgram";
+import FAQSection from "../../components/HomeComponents/FAQSection";
 
 const Home = () => {
   return (
@@ -29,6 +30,9 @@ const Home = () => {
       
       {/* Referral Program - Earn Rewards */}
       <ReferralProgram />
+
+      {/* Frequently Asked Questions section */}
+      <FAQSection />
 
     </div>
   );
