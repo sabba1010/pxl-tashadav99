@@ -748,7 +748,7 @@ const Marketplace: React.FC = () => {
                             <span>View</span>
                           </button>
                           <button onClick={() => buyNow(item)} className="py-2 px-3 text-sm bg-[#33ac6f] text-white rounded" disabled={processingIds.includes(item.id)}>
-                            {processingIds.includes(item.id) ? "Processing..." : "Buy"}
+                            {processingIds.includes(item.id) ? "Processing..." : "Purchase"}
                           </button>
                         </div>
                       </div>
