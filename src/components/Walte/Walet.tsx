@@ -35,14 +35,12 @@ export default function Wallet(): React.ReactElement {
   const ROYAL_GOLD = "#D4A643";
   const CHARCOAL = "#111111";
   const EMERALD = "#1BC47D";
-  const CLEAN_WHITE = "#FFFFFF";
 
   const [balance, setBalance] = useState<number>(FAKE_BALANCE);
   const [activeTab, setActiveTab] = useState<"online" | "manual" | "withdraw">("manual");
-  const [onlineDeposits, setOnlineDeposits] = useState<Tx[]>(sampleOnlineDeposits);
-  const [manualDeposits, setManualDeposits] = useState<Tx[]>(sampleManualDeposits);
-  const [withdrawals, setWithdrawals] = useState<Tx[]>(sampleWithdrawals);
-  const [notice, setNotice] = useState<{ type: "success" | "error" | "info"; text: string } | null>(null);
+  const [onlineDeposits] = useState<Tx[]>(sampleOnlineDeposits);
+  const [manualDeposits] = useState<Tx[]>(sampleManualDeposits);
+  const [withdrawals] = useState<Tx[]>(sampleWithdrawals);
   const mounted = useRef(true);
 
   useEffect(() => {
@@ -52,25 +50,13 @@ export default function Wallet(): React.ReactElement {
     };
   }, []);
 
-  useEffect(() => {
-    if (!notice) return;
-    const t = setTimeout(() => setNotice(null), 3500);
-    return () => clearTimeout(t);
-  }, [notice]);
-
-  const handleFakeTopUp = (amount = 10) => {
-    setBalance((b) => Number((b + amount).toFixed(2)));
-    const tx: Tx = {
-      id: `o-${Date.now()}`,
-      type: "deposit",
-      amount,
-      status: "completed",
-      date: new Date().toISOString().slice(0, 10),
-      note: "Fake top-up",
-    };
-    setOnlineDeposits((p) => [tx, ...p]);
-    setNotice({ type: "success", text: `+$${amount.toFixed(2)} added (fake).` });
-  };
+  /* ✅ ONLY NEW PART (active tab color) */
+  const tabClass = (tab: "online" | "manual" | "withdraw") =>
+    `pb-2 border-b-2 transition-colors ${
+      activeTab === tab
+        ? "border-[#D4A643] text-[#0A1A3A] font-medium"
+        : "border-transparent text-gray-400"
+    }`;
 
   const renderList = (items: Tx[]) => {
     if (!items || items.length === 0) {
@@ -149,9 +135,7 @@ export default function Wallet(): React.ReactElement {
 
             {/* ACTIONS */}
             <div className="mt-4 sm:mt-6">
-              {/* Top row */}
               <div className="flex items-center gap-2 sm:gap-6">
-                {/* Deposit */}
                 <Link to="/payment" className="flex flex-col items-center gap-1 w-full sm:w-auto">
                   <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-md border border-gray-200 bg-white flex items-center justify-center shadow-sm">
                     <FaPlusIcon size={16} />
@@ -159,7 +143,6 @@ export default function Wallet(): React.ReactElement {
                   <div className="text-[11px] sm:text-sm text-gray-500">Deposit</div>
                 </Link>
 
-                {/* Withdraw */}
                 <Link to="/withdraw" className="flex flex-col items-center gap-1 w-full sm:w-auto">
                   <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-md border border-gray-200 bg-white flex items-center justify-center shadow-sm">
                     <FaArrowUpIcon size={16} />
@@ -167,7 +150,6 @@ export default function Wallet(): React.ReactElement {
                   <div className="text-[11px] sm:text-sm text-gray-500">Withdraw</div>
                 </Link>
 
-                {/* Desktop Report */}
                 <Link
                   to="/report"
                   className="hidden sm:inline-block ml-auto px-3 sm:px-4 py-2 rounded-md font-medium text-xs sm:text-sm"
@@ -177,7 +159,6 @@ export default function Wallet(): React.ReactElement {
                 </Link>
               </div>
 
-              {/* Mobile Report */}
               <Link
                 to="/report"
                 className="sm:hidden mt-3 block w-full px-3 py-2 rounded-md font-medium text-xs text-center"
@@ -191,9 +172,15 @@ export default function Wallet(): React.ReactElement {
           {/* RIGHT */}
           <div className="col-span-12 lg:col-span-7">
             <div className="flex gap-2 sm:gap-4 border-b pb-2 sm:pb-3 mb-4 overflow-x-auto">
-              <button onClick={() => setActiveTab("online")}>Online Deposit</button>
-              <button onClick={() => setActiveTab("manual")}>Manual Deposit</button>
-              <button onClick={() => setActiveTab("withdraw")}>Withdraw History</button>
+              <button onClick={() => setActiveTab("online")} className={tabClass("online")}>
+                Online Deposit
+              </button>
+              <button onClick={() => setActiveTab("manual")} className={tabClass("manual")}>
+                Manual Deposit
+              </button>
+              <button onClick={() => setActiveTab("withdraw")} className={tabClass("withdraw")}>
+                Withdraw History
+              </button>
             </div>
 
             <div className="min-h-[20rem] sm:min-h-[24rem] border rounded-md p-4 sm:p-6 bg-white">
