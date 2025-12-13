@@ -839,23 +839,55 @@ const Marketplace: React.FC = () => {
               {/* Pagination */}
               <div className="mt-4 flex items-center justify-between">
                 <div className="text-sm text-gray-600">Page {currentPage} of {totalPages}</div>
-                <div className="flex items-center gap-2">
-                  <button onClick={() => setCurrentPage(1)} disabled={currentPage === 1} className="px-3 py-1 border rounded text-sm">First</button>
-                  <button onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} className="px-2 py-1 border rounded text-sm">Prev</button>
+
+                {/* Desktop / larger screens: full pagination */}
+                <div className="hidden sm:flex items-center gap-2">
+                  <button onClick={() => setCurrentPage(1)} disabled={currentPage === 1} className="px-3 py-1 border rounded-md text-sm hover:shadow">First</button>
+                  <button onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} className="px-2 py-1 border rounded-md text-sm">Prev</button>
 
                   {Array.from({ length: Math.min(5, totalPages) }).map((_, idx) => {
                     const start = Math.max(1, Math.min(currentPage - 2, Math.max(1, totalPages - 4)));
                     const pageNum = start + idx;
                     if (pageNum > totalPages) return null;
                     return (
-                      <button key={pageNum} onClick={() => setCurrentPage(pageNum)} className={`px-3 py-1 border rounded text-sm ${pageNum === currentPage ? "bg-[#0A1A3A] text-white" : "bg-white"}`}>
+                      <button
+                        key={pageNum}
+                        onClick={() => setCurrentPage(pageNum)}
+                        className={`px-3 py-1 border rounded-md text-sm ${pageNum === currentPage ? "bg-[#0A1A3A] text-white shadow" : "bg-white"}`}
+                      >
                         {pageNum}
                       </button>
                     );
                   })}
 
-                  <button onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} className="px-2 py-1 border rounded text-sm">Next</button>
-                  <button onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages} className="px-3 py-1 border rounded text-sm">Last</button>
+                  <button onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} className="px-2 py-1 border rounded-md text-sm">Next</button>
+                  <button onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages} className="px-3 py-1 border rounded-md text-sm">Last</button>
+                </div>
+
+                {/* Mobile: compact rounded buttons (modern) */}
+                <div className="flex sm:hidden items-center gap-2">
+                  <button onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} className="px-2 py-1 rounded-md border bg-white shadow-sm" aria-label="Previous">
+                    Prev
+                  </button>
+
+                  {Array.from({ length: Math.min(4, totalPages) }).map((_, i) => {
+                    const start = Math.max(1, Math.min(currentPage - 1, Math.max(1, totalPages - 3)));
+                    const pageNum = start + i;
+                    if (pageNum > totalPages) return null;
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => setCurrentPage(pageNum)}
+                        className={`w-8 h-8 flex items-center justify-center text-sm rounded-md border ${pageNum === currentPage ? "bg-[#0A1A3A] text-white shadow" : "bg-white"}`}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  })}
+
+                  <button onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} className="px-2 py-1 rounded-md border bg-white shadow-sm" aria-label="Next">
+                    Next
+                  </button>
                 </div>
               </div>
             </main>
