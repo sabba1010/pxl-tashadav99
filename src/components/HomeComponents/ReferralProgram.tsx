@@ -1,15 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 
 const ReferralProgram = () => {
-  const [openFaq, setOpenFaq] = useState<number | null>(null);
 
-  const faqs = [
-    { q: 'How do I get my referral link?', a: 'Head to your dashboard and click "Share Link"!' },
-    { q: 'When do I get paid?', a: 'Rewards hit your wallet instantly after verification.' },
-    { q: 'Can I refer myself?', a: 'No. Self-referrals or fake accounts will result in permanent suspension.' },
-    { q: 'Are there any limits?', a: 'No limit! The more active users you bring, the more you earn.' },
-  ];
 
   return (
     <section className="py-16 md:py-24 bg-gradient-to-b from-[#00183b] to-[#002a5c] text-white overflow-hidden">
@@ -148,56 +141,7 @@ const ReferralProgram = () => {
           </div>
         )}
 
-        {/* FAQ Section - Super Smooth */}
-        <div className="mb-20">
-          <motion.h3
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="text-3xl font-bold text-center text-[#daab4c] mb-10"
-          >
-            Got Questions?
-          </motion.h3>
-          <div className="space-y-4 max-w-3xl mx-auto">
-            {faqs.map((faq, index) => (
-              <div
-                key={index}
-                className="bg-white/5 rounded-xl overflow-hidden border border-white/10 backdrop-blur-sm"
-              >
-                <button
-                  onClick={() => setOpenFaq(openFaq === index ? null : index)}
-                  className="w-full px-6 py-5 text-left flex justify-between items-center hover:bg-white/10 transition-colors duration-200"
-                >
-                  <span className="font-medium text-lg pr-4">{faq.q}</span>
-                  <motion.span
-                    animate={{ rotate: openFaq === index ? 180 : 0 }}
-                    transition={{ duration: 0.35, ease: "easeInOut" }}
-                    className="text-3xl text-[#daab4c] font-light select-none"
-                  >
-                    {openFaq === index ? '−' : '+'}
-                  </motion.span>
-                </button>
-
-                <motion.div
-                  initial={false}
-                  animate={{
-                    height: openFaq === index ? "auto" : 0,
-                    opacity: openFaq === index ? 1 : 0,
-                  }}
-                  transition={{
-                    height: { duration: 0.4, ease: [0.32, 0.72, 0, 1] },
-                    opacity: { duration: 0.3 },
-                  }}
-                  style={{ overflow: "hidden" }}
-                >
-                  <div className="px-6 pb-6 pt-2 text-gray-200 leading-relaxed">
-                    {faq.a}
-                  </div>
-                </motion.div>
-              </div>
-            ))}
-          </div>
-        </div>
+        {/* FAQ removed per request */}
 
         {/* CTA */}
         <motion.div
