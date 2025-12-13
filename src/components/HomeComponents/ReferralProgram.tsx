@@ -99,52 +99,54 @@ const ReferralProgram = () => {
           </motion.div>
         </div>
 
-        {/* Admin Rights & Fair Use - Now as a matching card */}
-        <div className="max-w-4xl mx-auto mb-20">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-            className="bg-[#002654] rounded-2xl p-8 border border-[#003a7f] shadow-xl hover:shadow-2xl transition-shadow duration-300"
-          >
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-3 rounded-full bg-[#00183b]/10">
-                <svg className="w-8 h-8" style={{ color: '#daab4c' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
+        {/* Admin Rights & Fair Use - commented out for now */}
+        {false && (
+          <div className="max-w-4xl mx-auto mb-20">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              className="bg-[#002654] rounded-2xl p-8 border border-[#003a7f] shadow-xl hover:shadow-2xl transition-shadow duration-300"
+            >
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-3 rounded-full bg-[#00183b]/10">
+                  <svg className="w-8 h-8" style={{ color: '#daab4c' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                </div>
+                <h2 className="text-2xl font-bold text-white">Admin Rights & Fair Use Policy</h2>
               </div>
-              <h2 className="text-2xl font-bold text-white">Admin Rights & Fair Use Policy</h2>
-            </div>
 
-            <p className="text-gray-300 mb-5">
-              Platform administrators reserve the right to maintain fairness and prevent abuse:
-            </p>
+              <p className="text-gray-300 mb-5">
+                Platform administrators reserve the right to maintain fairness and prevent abuse:
+              </p>
 
-            <ul className="space-y-3 text-gray-200">
-              <li className="flex items-start gap-3">
-                <span className="text-[#daab4c] text-xl mt-0.5">•</span>
-                Change the reward for seller referrals.
-              </li>
-              <li className="flex items-start gap-3">
-                <span className="text-[#daab4c] text-xl mt-0.5">•</span>
-                Change the percentage for buyer referrals.
-              </li>
-              <li className="flex items-start gap-3">
-                <span className="text-[#daab4c] text-xl mt-0.5">•</span>
-                Pause, enable, or update the referral program at any time.
-              </li>
-              <li className="flex items-start gap-3">
-                <span className="text-[#daab4c] text-xl mt-0.5">•</span>
-                Monitor, approve, or reject any referral bonuses if fraudulent behavior is suspected.
-              </li>
-            </ul>
+              <ul className="space-y-3 text-gray-200">
+                <li className="flex items-start gap-3">
+                  <span className="text-[#daab4c] text-xl mt-0.5">•</span>
+                  Change the reward for seller referrals.
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-[#daab4c] text-xl mt-0.5">•</span>
+                  Change the percentage for buyer referrals.
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-[#daab4c] text-xl mt-0.5">•</span>
+                  Pause, enable, or update the referral program at any time.
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-[#daab4c] text-xl mt-0.5">•</span>
+                  Monitor, approve, or reject any referral bonuses if fraudulent behavior is suspected.
+                </li>
+              </ul>
 
-            {/* <p className="text-xs text-gray-400 italic mt-6 pt-4 border-t border-white/10">
-              Last updated: December 2025 • We reserve the right to terminate the program with notice.
-            </p> */}
-          </motion.div>
-        </div>
+              {/* <p className="text-xs text-gray-400 italic mt-6 pt-4 border-t border-white/10">
+                Last updated: December 2025 • We reserve the right to terminate the program with notice.
+              </p> */}
+            </motion.div>
+          </div>
+        )}
 
         {/* FAQ Section - Super Smooth */}
         <div className="mb-20">
