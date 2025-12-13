@@ -1,29 +1,7 @@
 // src/components/Marketplace/Marketplace.tsx
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import type { IconType } from "react-icons";
-import {
-  FaWhatsapp,
-  FaEnvelope,
-  FaPlus,
-  FaBullhorn,
-  FaFacebookF,
-  FaInstagram,
-  FaTwitter,
-  FaLock,
-  FaShoppingCart,
-  FaTimes,
-  FaSearch,
-  FaStar,
-  FaEye,
-  FaLinkedinIn,
-  FaYoutube,
-  FaSnapchatGhost,
-  FaTelegramPlane,
-  FaDiscord,
-  FaPinterest,
-  FaRedditAlien,
-  FaPaypal,
-  FaShoppingBag,
+import {FaWhatsapp,FaEnvelope,FaPlus,FaBullhorn,FaFacebookF,FaInstagram,FaTwitter,FaLock,FaShoppingCart,FaTimes,FaSearch,FaStar,FaEye,FaLinkedinIn,FaYoutube,FaSnapchatGhost,FaTelegramPlane,FaDiscord,FaPinterest,FaRedditAlien,FaPaypal,FaShoppingBag,
 } from "react-icons/fa";
 import { SiNetflix, SiAmazon, SiSteam, SiGoogle, SiTiktok, SiTinder } from "react-icons/si";
 import { MdMail, MdSimCard, MdPhoneIphone, MdVpnLock, MdStorefront, MdLocalOffer } from "react-icons/md";
@@ -837,27 +815,110 @@ const Marketplace: React.FC = () => {
               </div>
 
               {/* Pagination */}
-              <div className="mt-4 flex items-center justify-between">
-                <div className="text-sm text-gray-600">Page {currentPage} of {totalPages}</div>
-                <div className="flex items-center gap-2">
-                  <button onClick={() => setCurrentPage(1)} disabled={currentPage === 1} className="px-3 py-1 border rounded text-sm">First</button>
-                  <button onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} className="px-2 py-1 border rounded text-sm">Prev</button>
+            {/* Pagination */}
+<div className="mt-4 flex items-center justify-center">
+  {/* Desktop pagination */}
+  <div className="hidden sm:flex items-center gap-2">
+    <button
+      onClick={() => setCurrentPage(1)}
+      disabled={currentPage === 1}
+      className="px-3 py-1 border rounded text-sm"
+    >
+      First
+    </button>
 
-                  {Array.from({ length: Math.min(5, totalPages) }).map((_, idx) => {
-                    const start = Math.max(1, Math.min(currentPage - 2, Math.max(1, totalPages - 4)));
-                    const pageNum = start + idx;
-                    if (pageNum > totalPages) return null;
-                    return (
-                      <button key={pageNum} onClick={() => setCurrentPage(pageNum)} className={`px-3 py-1 border rounded text-sm ${pageNum === currentPage ? "bg-[#0A1A3A] text-white" : "bg-white"}`}>
-                        {pageNum}
-                      </button>
-                    );
-                  })}
+    <button
+      onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+      className="px-2 py-1 border rounded text-sm"
+    >
+      Prev
+    </button>
 
-                  <button onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} className="px-2 py-1 border rounded text-sm">Next</button>
-                  <button onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages} className="px-3 py-1 border rounded text-sm">Last</button>
-                </div>
-              </div>
+    {Array.from({ length: Math.min(5, totalPages) }).map((_, idx) => {
+      const start = Math.max(
+        1,
+        Math.min(currentPage - 2, Math.max(1, totalPages - 4))
+      );
+      const pageNum = start + idx;
+      if (pageNum > totalPages) return null;
+
+      return (
+        <button
+          key={pageNum}
+          onClick={() => setCurrentPage(pageNum)}
+          className={`px-3 py-1 border rounded text-sm ${
+            pageNum === currentPage
+              ? "bg-[#0A1A3A] text-white"
+              : "bg-white"
+          }`}
+        >
+          {pageNum}
+        </button>
+      );
+    })}
+
+    <button
+      onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+      className="px-2 py-1 border rounded text-sm"
+    >
+      Next
+    </button>
+
+    <button
+      onClick={() => setCurrentPage(totalPages)}
+      disabled={currentPage === totalPages}
+      className="px-3 py-1 border rounded text-sm"
+    >
+      Last
+    </button>
+  </div>
+
+  {/* Mobile pagination (exact like image) */}
+  <div className="flex sm:hidden items-center gap-2 text-sm">
+    <button
+      onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+      disabled={currentPage === 1}
+      className="px-2 py-1 border rounded"
+    >
+      ‹
+    </button>
+
+    <button className="px-3 py-1 border rounded bg-[#0A1A3A] text-white">
+      {currentPage}
+    </button>
+
+    {currentPage + 1 <= totalPages && (
+      <button
+        onClick={() => setCurrentPage(currentPage + 1)}
+        className="px-3 py-1 border rounded"
+      >
+        {currentPage + 1}
+      </button>
+    )}
+
+    {currentPage + 2 < totalPages && (
+      <span className="px-1 text-gray-500">…</span>
+    )}
+
+    {currentPage !== totalPages && (
+      <button
+        onClick={() => setCurrentPage(totalPages)}
+        className="px-3 py-1 border rounded"
+      >
+        {totalPages}
+      </button>
+    )}
+
+    <button
+      onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+      disabled={currentPage === totalPages}
+      className="px-2 py-1 border rounded"
+    >
+      ›
+    </button>
+  </div>
+</div>
+
             </main>
           </div>
         </div>
