@@ -47,7 +47,7 @@ const FAQSection: React.FC = () => {
       a: 'A security system automatically detects fraud, and our support team investigates all disputes.',
     },
     {
-      q: 'Can the admin change fees or plan prices?',
+      q: 'How can I get refund?',
       a: 'Yes. Admin has full control to update seller plans, activation fees, and referral bonuses.',
     },
     {
