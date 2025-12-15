@@ -2,11 +2,12 @@
 import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import type { IconType } from "react-icons";
-import { FaInstagram, FaFacebookF, FaTwitter, FaPlus, FaTimes, FaStar, FaEnvelope, FaDownload } from "react-icons/fa";
+import { FaInstagram, FaFacebookF, FaTwitter, FaPlus, FaTimes, FaStar, FaEnvelope, FaDownload, FaComments } from "react-icons/fa";
 
 /* ---------------------------------------------
    Brand color map & gradients (Marketplace style)
 ---------------------------------------------- */
+const FaCommentsIcon = FaComments as unknown as React.ComponentType<any>;
 const ICON_COLOR_MAP = new Map<IconType, string>([
   [FaInstagram, "#E1306C"],
   [FaFacebookF, "#1877F2"],
@@ -188,6 +189,9 @@ const MyOrder: React.FC = () => {
   const [activeTab, setActiveTab] = useState<Tab>("All");
   const [cartCount, setCartCount] = useState(0);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  
+  // FIX: Added missing state for "setComingOpen"
+  const [comingOpen, setComingOpen] = useState(false);
 
   const orders = MOCK_ORDERS;
   const filtered = useMemo(() => {
@@ -321,6 +325,16 @@ const MyOrder: React.FC = () => {
 
                           <div className="flex items-center gap-2">
                             <button
+                            onClick={() => {
+                              // Open coming-soon popup only; do not open the details modal
+                              setComingOpen(true);
+                            }}
+                            className="px-2 py-1 border rounded text-md bg-white hover:bg-blue-50"
+                            title="Chat with seller"
+                          >
+                            <FaCommentsIcon className="w-4 h-4" />
+                          </button>
+                            <button
                               onClick={() => setSelectedOrder(o)}
                               className="px-3 py-1.5 bg-white border border-gray-200 rounded-md text-xs shadow-sm"
                             >
@@ -447,6 +461,31 @@ const MyOrder: React.FC = () => {
             </div>
           </div>
         </>
+      )}
+
+      {/* FIX: Added Coming Soon Modal to handle the functionality without errors */}
+      {comingOpen && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+           <div 
+             className="fixed inset-0" 
+             onClick={() => setComingOpen(false)} 
+           />
+           <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm relative z-10 text-center">
+             <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
+               <FaCommentsIcon className="w-8 h-8 text-blue-500" />
+             </div>
+             <h3 className="text-lg font-bold text-[#0A1A3A] mb-2">Chat Coming Soon</h3>
+             <p className="text-gray-500 text-sm mb-6">
+               This feature is currently under development. You will be able to chat with sellers directly soon!
+             </p>
+             <button
+               onClick={() => setComingOpen(false)}
+               className="w-full py-2.5 bg-[#0A1A3A] text-white rounded-lg font-medium hover:bg-gray-800 transition"
+             >
+               Okay, Got it
+             </button>
+           </div>
+        </div>
       )}
     </>
   );
