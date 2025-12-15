@@ -137,6 +137,7 @@ const SellerAccount: React.FC = () => {
           </Table>
         </TableContainer>
       )}
+      
     </Box>
   );
 };
