@@ -1,84 +1,18 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 /**
- * Interface for a single deposit request record
+ * Updated Interface based on your API response
  */
 interface DepositRequest {
-  id: string;
-  userId: number;
-  amountUSD: number;
-  method: "Bank Transfer" | "Credit Card" | "PayPal" | "Crypto";
-  dateRequested: string;
+  _id: string; // Was 'id'
+  name: string; // Was 'userId'
+  amountUSD?: number; // Not present in your sample data, made optional
+  paymentMethod: string; // Was 'method'
+  submittedAt: string; // Was 'dateRequested'
   status: "Pending" | "Approved" | "Rejected";
-  proofId: string; // Reference ID or Transaction Hash
+  transactionId: string; // Was 'proofId'
+  message?: string; // New field from your data
 }
-
-// --- MOCK DATA ---
-const mockRequests: DepositRequest[] = [
-  {
-    id: "D001",
-    userId: 15,
-    amountUSD: 250.0,
-    method: "Bank Transfer",
-    dateRequested: "2024-07-01",
-    status: "Pending",
-    proofId: "TRX15984",
-  },
-  {
-    id: "D002",
-    userId: 22,
-    amountUSD: 50.0,
-    method: "Credit Card",
-    dateRequested: "2024-07-02",
-    status: "Approved",
-    proofId: "PAY25631",
-  },
-  {
-    id: "D003",
-    userId: 10,
-    amountUSD: 1200.0,
-    method: "Crypto",
-    dateRequested: "2024-07-03",
-    status: "Pending",
-    proofId: "BTC98533",
-  },
-  {
-    id: "D004",
-    userId: 31,
-    amountUSD: 100.0,
-    method: "PayPal",
-    dateRequested: "2024-07-03",
-    status: "Rejected",
-    proofId: "PPX40027",
-  },
-  {
-    id: "D005",
-    userId: 15,
-    amountUSD: 500.0,
-    method: "Bank Transfer",
-    dateRequested: "2024-07-04",
-    status: "Pending",
-    proofId: "TRX15985",
-  },
-  {
-    id: "D006",
-    userId: 45,
-    amountUSD: 75.5,
-    method: "Credit Card",
-    dateRequested: "2024-07-05",
-    status: "Pending",
-    proofId: "PAY25632",
-  },
-  {
-    id: "D007",
-    userId: 8,
-    amountUSD: 300.0,
-    method: "PayPal",
-    dateRequested: "2024-07-05",
-    status: "Approved",
-    proofId: "PPX40028",
-  },
-];
 
 const ITEMS_PER_PAGE = 5;
 
@@ -98,13 +32,13 @@ const DepositModal: React.FC<DepositModalProps> = ({
   if (!request) return null;
 
   // Helper for currency formatting
-  const formatCurrency = (amount: number) =>
+  const formatCurrency = (amount: number = 0) =>
     new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: "USD",
     }).format(amount);
 
-  const getStatusColor = (status: DepositRequest["status"]) => {
+  const getStatusColor = (status: string) => {
     switch (status) {
       case "Approved":
         return "bg-green-100 text-green-800";
@@ -112,6 +46,8 @@ const DepositModal: React.FC<DepositModalProps> = ({
         return "bg-yellow-100 text-yellow-800";
       case "Rejected":
         return "bg-red-100 text-red-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
 
@@ -121,7 +57,9 @@ const DepositModal: React.FC<DepositModalProps> = ({
   }) => (
     <div className="flex justify-between items-center py-2 border-b border-gray-100">
       <span className="text-sm font-medium text-gray-600">{label}</span>
-      <span className="text-sm font-semibold text-gray-800">{value}</span>
+      <span className="text-sm font-semibold text-gray-800 text-right max-w-[60%] break-words">
+        {value}
+      </span>
     </div>
   );
 
@@ -131,8 +69,8 @@ const DepositModal: React.FC<DepositModalProps> = ({
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-md transform transition-all duration-300">
         {/* Modal Header */}
         <div className="p-6 border-b flex justify-between items-center bg-indigo-50 rounded-t-xl">
-          <h3 className="text-xl font-bold text-indigo-800">
-            Review Deposit Request: {request.id}
+          <h3 className="text-xl font-bold text-indigo-800 truncate pr-4">
+            Review: {request.name}
           </h3>
           <button
             onClick={onClose}
@@ -158,9 +96,10 @@ const DepositModal: React.FC<DepositModalProps> = ({
         {/* Modal Body (Details) */}
         <div className="p-6 space-y-2">
           <DetailRow
-            label="User ID"
-            value={<span className="font-mono">User {request.userId}</span>}
+            label="Request ID"
+            value={<span className="font-mono text-xs">{request._id}</span>}
           />
+          <DetailRow label="User Name" value={request.name} />
 
           <DetailRow
             label="Status"
@@ -175,28 +114,37 @@ const DepositModal: React.FC<DepositModalProps> = ({
             }
           />
 
+          {/* Amount is likely 0 or undefined based on your sample, but handled here */}
           <DetailRow
             label="Amount"
             value={
               <span className="text-lg font-extrabold text-gray-900">
-                {formatCurrency(request.amountUSD)}
+                {formatCurrency(request.amountUSD || 0)}
               </span>
             }
           />
 
-          <DetailRow label="Payment Method" value={request.method} />
-          <DetailRow label="Date Requested" value={request.dateRequested} />
+          <DetailRow label="Payment Method" value={request.paymentMethod} />
+          <DetailRow
+            label="Date Submitted"
+            value={new Date(request.submittedAt).toLocaleDateString()}
+          />
+
+          {request.message && (
+             <div className="pt-2">
+                <p className="text-sm font-medium text-gray-600 mb-1">Message:</p>
+                <p className="text-sm text-gray-800 bg-yellow-50 p-2 rounded border border-yellow-100 italic">
+                    "{request.message}"
+                </p>
+             </div>
+          )}
 
           <div className="pt-4">
             <p className="text-sm font-medium text-gray-600 mb-1">
-              Proof/Reference ID:
+              Transaction ID:
             </p>
             <p className="text-base text-gray-900 bg-gray-50 p-3 rounded-lg border border-gray-200 font-mono break-all">
-              {request.proofId}
-            </p>
-            <p className="text-xs text-gray-500 mt-2 italic">
-              (In a real application, you would verify this ID against bank
-              records or payment processor data.)
+              {request.transactionId}
             </p>
           </div>
         </div>
@@ -207,19 +155,19 @@ const DepositModal: React.FC<DepositModalProps> = ({
             onClick={onClose}
             className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 transition duration-150"
           >
-            {request.status === "Pending" ? "Close Review" : "Close"}
+            {request.status === "Pending" ? "Cancel" : "Close"}
           </button>
 
           {request.status === "Pending" && (
             <>
               <button
-                onClick={() => onUpdateStatus(request.id, "Rejected")}
+                onClick={() => onUpdateStatus(request._id, "Rejected")}
                 className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition duration-150 shadow-md"
               >
                 Reject
               </button>
               <button
-                onClick={() => onUpdateStatus(request.id, "Approved")}
+                onClick={() => onUpdateStatus(request._id, "Approved")}
                 className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition duration-150 shadow-md"
               >
                 Approve
@@ -236,10 +184,11 @@ const DepositModal: React.FC<DepositModalProps> = ({
 
 const DepositRequests: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>("");
-  const [requests, setRequests] = useState<DepositRequest[]>(mockRequests);
+  const [requests, setRequests] = useState<DepositRequest[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
   const [sortBy, setSortBy] = useState<
-    "dateRequested" | "amountUSD" | "status" | "userId"
-  >("dateRequested");
+    "submittedAt" | "amountUSD" | "status" | "name"
+  >("submittedAt");
   const [sortOrder, setSortOrder] = useState<"desc" | "asc">("desc");
 
   // Modal State
@@ -251,8 +200,31 @@ const DepositRequests: React.FC = () => {
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
 
+  // --- DATA FETCHING ---
+  const fetchPayments = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch("http://localhost:3200/payments");
+      const data = await response.json();
+      // Ensure data is an array
+      if (Array.isArray(data)) {
+        setRequests(data);
+      } else {
+        console.error("API did not return an array", data);
+      }
+    } catch (error) {
+      console.error("Error fetching payments:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPayments();
+  }, []);
+
   // Helper for currency formatting
-  const formatCurrency = (amount: number) =>
+  const formatCurrency = (amount: number = 0) =>
     new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: "USD",
@@ -260,11 +232,16 @@ const DepositRequests: React.FC = () => {
 
   // --- Core Handlers ---
   const handleUpdateStatus = useCallback(
-    (id: string, newStatus: "Approved" | "Rejected") => {
+    async (id: string, newStatus: "Approved" | "Rejected") => {
+      // NOTE: Here you should usually call an API endpoint to update the status in the database.
+      // Example: await fetch(`http://localhost:3200/payments/${id}`, { method: 'PATCH', body: ... })
+      
+      // For now, updating local state optimistically:
       setRequests((prevRequests) =>
-        prevRequests.map((r) => (r.id === id ? { ...r, status: newStatus } : r))
+        prevRequests.map((r) =>
+          r._id === id ? { ...r, status: newStatus } : r
+        )
       );
-      // Optionally close the modal after action
       setSelectedRequest((prev) =>
         prev ? { ...prev, status: newStatus } : null
       );
@@ -284,13 +261,13 @@ const DepositRequests: React.FC = () => {
   };
 
   const handleSort = (
-    column: "dateRequested" | "amountUSD" | "status" | "userId"
+    column: "submittedAt" | "amountUSD" | "status" | "name"
   ) => {
     setSortBy((prevCol) => {
       if (prevCol === column) {
         setSortOrder((prevOrder) => (prevOrder === "asc" ? "desc" : "asc"));
       } else {
-        setSortOrder(column === "dateRequested" ? "desc" : "asc");
+        setSortOrder(column === "submittedAt" ? "desc" : "asc");
       }
       return column;
     });
@@ -300,26 +277,27 @@ const DepositRequests: React.FC = () => {
   const filteredAndSortedRequests = useMemo(() => {
     let result = requests.filter(
       (r) =>
-        r.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        r.proofId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        r.method.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        r.status.toLowerCase().includes(searchTerm.toLowerCase())
+        r._id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        r.transactionId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        r.paymentMethod.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        r.status.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        r.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     result.sort((a, b) => {
       let comparison = 0;
       switch (sortBy) {
         case "amountUSD":
-          comparison = a.amountUSD - b.amountUSD;
+          comparison = (a.amountUSD || 0) - (b.amountUSD || 0);
           break;
         case "status":
           comparison = a.status.localeCompare(b.status);
           break;
-        case "userId":
-          comparison = a.userId - b.userId;
+        case "name":
+          comparison = a.name.localeCompare(b.name);
           break;
-        default: // 'dateRequested'
-          comparison = a.dateRequested.localeCompare(b.dateRequested);
+        default: // 'submittedAt'
+          comparison = new Date(a.submittedAt).getTime() - new Date(b.submittedAt).getTime();
           break;
       }
       return sortOrder === "asc" ? comparison : -comparison;
@@ -345,13 +323,13 @@ const DepositRequests: React.FC = () => {
   const SortIndicator = ({
     column,
   }: {
-    column: "dateRequested" | "amountUSD" | "status" | "userId";
+    column: "submittedAt" | "amountUSD" | "status" | "name";
   }) => {
     if (sortBy !== column) return null;
     return sortOrder === "asc" ? <span>&uarr;</span> : <span>&darr;</span>;
   };
 
-  const getStatusColor = (status: DepositRequest["status"]) => {
+  const getStatusColor = (status: string) => {
     switch (status) {
       case "Approved":
         return "bg-green-100 text-green-800";
@@ -359,6 +337,8 @@ const DepositRequests: React.FC = () => {
         return "bg-yellow-100 text-yellow-800";
       case "Rejected":
         return "bg-red-100 text-red-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
 
@@ -371,31 +351,41 @@ const DepositRequests: React.FC = () => {
       {/* Search and Action Bar */}
       <div className="flex flex-col sm:flex-row justify-between items-center bg-gray-50 p-4 rounded-xl shadow-inner border border-gray-200">
         <h3 className="text-xl font-semibold text-gray-800 mb-2 sm:mb-0">
-          Deposit Requests Queue ({filteredAndSortedRequests.length}{" "}
-          pending/total)
+          Payment Requests ({filteredAndSortedRequests.length})
         </h3>
-        <input
-          type="text"
-          placeholder="Search ID, method, or status..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="p-2 border border-gray-300 rounded-lg w-full sm:w-1/3 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150"
-        />
+        <div className="flex gap-2 w-full sm:w-auto">
+            <button 
+                onClick={fetchPayments} 
+                className="bg-white border p-2 rounded-lg hover:bg-gray-100 text-gray-600"
+                title="Refresh Data"
+            >
+                ↻
+            </button>
+            <input
+            type="text"
+            placeholder="Search ID, method, name..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="p-2 border border-gray-300 rounded-lg w-full sm:w-64 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150"
+            />
+        </div>
       </div>
 
       {/* Requests Table */}
       <div className="overflow-x-auto bg-white rounded-xl shadow-lg border">
+        {loading ? (
+            <div className="p-10 text-center text-gray-500">Loading payments...</div>
+        ) : (
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              {/* Define headers with explicit alignment for consistency */}
               {[
-                { title: "Req ID", column: "", align: "text-left" },
-                { title: "Date", column: "dateRequested", align: "text-left" },
-                { title: "User ID", column: "userId", align: "text-left" },
+                { title: "User Name", column: "name", align: "text-left" },
+                { title: "Submitted", column: "submittedAt", align: "text-left" },
                 { title: "Method", column: "", align: "text-left" },
+                { title: "Trx ID", column: "", align: "text-left" },
                 {
-                  title: "Amount (USD)",
+                  title: "Amount",
                   column: "amountUSD",
                   align: "text-right",
                 },
@@ -413,10 +403,10 @@ const DepositRequests: React.FC = () => {
                     header.column &&
                     handleSort(
                       header.column as
-                        | "dateRequested"
+                        | "submittedAt"
                         | "amountUSD"
                         | "status"
-                        | "userId"
+                        | "name"
                     )
                   }
                 >
@@ -425,10 +415,10 @@ const DepositRequests: React.FC = () => {
                     <SortIndicator
                       column={
                         header.column as
-                          | "dateRequested"
+                          | "submittedAt"
                           | "amountUSD"
                           | "status"
-                          | "userId"
+                          | "name"
                       }
                     />
                   )}
@@ -440,24 +430,24 @@ const DepositRequests: React.FC = () => {
             {paginatedRequests.length > 0 ? (
               paginatedRequests.map((r) => (
                 <tr
-                  key={r.id}
+                  key={r._id}
                   className="hover:bg-indigo-50/50 transition duration-75"
                 >
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 font-mono">
-                    {r.id}
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    {r.name}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                    {r.dateRequested}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    User {r.userId}
+                    {new Date(r.submittedAt).toLocaleDateString()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                    {r.method}
+                    {r.paymentMethod}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-xs text-gray-500 font-mono">
+                    {r.transactionId.substring(0, 8)}...
                   </td>
 
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-right">
-                    {formatCurrency(r.amountUSD)}
+                    {formatCurrency(r.amountUSD || 0)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
                     <span
@@ -481,16 +471,17 @@ const DepositRequests: React.FC = () => {
             ) : (
               <tr>
                 <td colSpan={7} className="text-center py-10 text-gray-500">
-                  No deposit requests found matching "{searchTerm}".
+                  No requests found matching "{searchTerm}".
                 </td>
               </tr>
             )}
           </tbody>
         </table>
+        )}
       </div>
 
       {/* Pagination Controls */}
-      {filteredAndSortedRequests.length > ITEMS_PER_PAGE && (
+      {!loading && filteredAndSortedRequests.length > ITEMS_PER_PAGE && (
         <div className="flex justify-between items-center px-4 py-3 bg-white rounded-xl shadow-md border border-gray-100">
           <p className="text-sm text-gray-700">
             Showing{" "}
@@ -518,7 +509,7 @@ const DepositRequests: React.FC = () => {
             >
               Previous
             </button>
-            {/* Show page numbers for better navigation experience */}
+            {/* Show page numbers */}
             {[...Array(currentTotalPages)].map((_, index) => (
               <button
                 key={index}
