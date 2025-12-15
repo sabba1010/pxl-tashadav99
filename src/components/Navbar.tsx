@@ -140,7 +140,7 @@ export default function Navbar() {
               <NavLink to="/wallet" className="font-medium" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}>
                 Wallet
               </NavLink>
-              <NavLink to="/add-product" className="px-6 py-2.5 rounded-lg font-medium text-white shadow-sm" style={{ backgroundColor: ROYAL_GOLD }}>
+              <NavLink to="/selling-form" className="px-6 py-2.5 rounded-lg font-medium text-white shadow-sm" style={{ backgroundColor: ROYAL_GOLD }}>
                 Sell Product
               </NavLink>
             </div>
@@ -395,7 +395,7 @@ export default function Navbar() {
 
                     {/* Sell Button */}
                     <div className="px-6 py-4">
-                      <NavLink to="/add-product" onClick={() => setOpen(false)} className="block w-full text-center py-3 rounded-lg font-semibold text-white" style={{ backgroundColor: ROYAL_GOLD }}>
+                      <NavLink to="/selling-form" onClick={() => setOpen(false)} className="block w-full text-center py-3 rounded-lg font-semibold text-white" style={{ backgroundColor: ROYAL_GOLD }}>
                         Sell Product
                       </NavLink>
                     </div>

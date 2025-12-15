@@ -57,6 +57,7 @@ interface FormData {
   additionalInfo: string;
   userEmail: string;
   userRole: string;
+  status: string;
 }
 
 const SellForm: React.FC = () => {
@@ -77,6 +78,7 @@ const SellForm: React.FC = () => {
     additionalInfo: "",
     userEmail: `${user.user?.email}`,
     userRole: `${user.user?.role}`,
+    status: "pending",
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -294,7 +296,7 @@ const SellForm: React.FC = () => {
           bgcolor: "background.paper",
         }}
       >
-        <Box sx={{ bgcolor: "primary.main", color: "white", py: 4, px: 4 }}>
+        <Box sx={{ bgcolor: "#D4A643", color: "white", py: 4, px: 4 }}>
           <Typography variant="h4" align="center" fontWeight="bold">
             Sell Your Social Media Account
           </Typography>
