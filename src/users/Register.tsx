@@ -50,6 +50,7 @@ const Register = () => {
       role: "buyer",
       accountCreationDate: new Date(),
       referralCode: Math.random().toString(36).substring(2, 10),
+      balance: 0,
     };
 
     if (
@@ -85,7 +86,8 @@ const Register = () => {
           secure: true,
           sameSite: "strict",
         });
-        navigate("/login?refresh=true");
+        navigate("/login");
+        window.location.reload();
       }
 
       form.reset();

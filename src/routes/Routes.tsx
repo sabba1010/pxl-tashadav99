@@ -36,10 +36,11 @@ import PrivacyPolicy from "../components/Policy/PrivacyPolicy";
 import ReferralProgram from "../components/Policy/ReferralProgram";
 import RatingsReputationPanel from "../dashboard/admin-dashboard/RatingsReputationPanel";
 import SellerAccount from "../dashboard/admin-dashboard/SellerAccount";
-import AddAccountCredentials from "../dashboard/buyer-dahboard/AddAccountCredentials";
+import AddAccountCredentials from "../dashboard/buyer-dahboard/AddAccount";
 import Review from "../dashboard/buyer-dahboard/Review";
 import PrivateRoute from "./PrivateRoute";
 import Post from "../components/Notification/Post";
+import SellForm from "../dashboard/user-dashboard/SellForm";
 
 const Routes = createBrowserRouter([
   {
@@ -116,6 +117,10 @@ const Routes = createBrowserRouter([
       {
         path: "/review",
         element: <Review />,
+      },
+      {
+        path: "/selling-form",
+        element: <SellForm/>
       },
       {
         path: "buyer-dashboard",

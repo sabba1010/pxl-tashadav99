@@ -22,6 +22,7 @@ export default function Navbar() {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const notifRef = useRef<HTMLDivElement | null>(null);
   const user = useAuth();
+  const loginUser = user.user
   const navigate = useNavigate();
 
   // Notification state
@@ -340,9 +341,9 @@ export default function Navbar() {
                     {/* User Info */}
                     <div className="px-6 py-5 border-b" style={{ backgroundColor: "#F9FAFB" }}>
                       <div className="font-bold text-lg" style={{ color: EMPIRE_BLUE }}>
-                        Legityankeelogshub
+                        {loginUser?.name}
                       </div>
-                      <div className="text-sm text-gray-500">tajudeerrtoyeeb095@gmail.com</div>
+                      <div className="text-sm text-gray-500">{ loginUser?.email}</div>
                     </div>
 
                     {/* Wallet Balance Card */}
