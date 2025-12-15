@@ -15,7 +15,9 @@ import {
 import { Box } from "@mui/material";
 import { ChevronRight } from "lucide-react";
 import React, { useState } from "react";
-import { Link, Outlet, useLocation } from "react-router-dom";
+import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+import { toast } from "sonner";
 
 interface NavItem {
   name: string;
@@ -48,7 +50,7 @@ const mainNavItems: NavItem[] = [
     path: "/admin-dashboard/withdrawals",
     icon: <CompareArrows />,
   },
-   {
+  {
     name: "Withdrawal Requests",
     path: "/admin-dashboard/withdrawals",
     icon: <CompareArrows />,
@@ -63,14 +65,14 @@ const mainNavItems: NavItem[] = [
 const AdminAdmins: React.FC = () => {
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
-
+  const user = useAuth();
   const toggleSidebar = () => setCollapsed((prev) => !prev);
+  const navigate = useNavigate();
 
-  // লগআউট ফাংশন (তোমার প্রজেক্ট অনুযায়ী চেঞ্জ করতে পারো)
-  const handleLogout = () => {
-    // উদাহরণ: localStorage.clear(), then redirect
-    localStorage.removeItem("adminToken");
-    window.location.href = "/admin-login";
+  const handelLogout = () => {
+    user.logout();
+    toast.success("Logged out successfully");
+    navigate("/");
   };
 
   return (
@@ -168,7 +170,7 @@ const AdminAdmins: React.FC = () => {
 
           {/* Logout */}
           <button
-            onClick={handleLogout}
+            onClick={handelLogout}
             className="w-full flex items-center gap-4 p-3 text-sm font-medium text-gray-300 hover:bg-red-600/20 hover:text-red-400 rounded-lg transition-all duration-150 group relative"
           >
             <Logout />
@@ -192,9 +194,11 @@ const AdminAdmins: React.FC = () => {
       <main className="flex-1 overflow-x-hidden overflow-y-auto p-6">
         <header className="mb-6 pb-3 border-b border-gray-200">
           <h2 className="text-2xl font-semibold text-gray-900">
-            {[...mainNavItems, { name: "My Profile", path: "/admin-dashboard/profile" }].find(
-              (item) => item.path === location.pathname
-            )?.name || "Welcome to the Dashboard"}
+            {[
+              ...mainNavItems,
+              { name: "My Profile", path: "/admin-dashboard/profile" },
+            ].find((item) => item.path === location.pathname)?.name ||
+              "Welcome to the Dashboard"}
           </h2>
         </header>
 
