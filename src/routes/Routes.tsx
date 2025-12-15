@@ -42,6 +42,7 @@ import PrivateRoute from "./PrivateRoute";
 import Post from "../components/Notification/Post";
 import SellForm from "../dashboard/user-dashboard/SellForm";
 import SellerRoute from "./SellerRoute";
+import SellerPay from "../components/Seller/SellerPay";
 
 const Routes = createBrowserRouter([
   {
@@ -74,7 +75,10 @@ const Routes = createBrowserRouter([
         path: "/payment-done",
         element: <PaymentForm />,
       },
-
+       {
+         path: "/seller-pay",
+         element: <SellerPay/>,
+       },
       {
         path: "/login",
         element: <Login />,

@@ -45,11 +45,7 @@ const mainNavItems: NavItem[] = [
     path: "/admin-dashboard/deposits",
     icon: <AccountBalanceWallet />,
   },
-  {
-    name: "Withdrawal Requests",
-    path: "/admin-dashboard/withdrawals",
-    icon: <CompareArrows />,
-  },
+
   {
     name: "Withdrawal Requests",
     path: "/admin-dashboard/withdrawals",

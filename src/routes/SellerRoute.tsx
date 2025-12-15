@@ -24,7 +24,7 @@ const SellerRoute: React.FC<PrivateRouteProps> = ({ children }) => {
     toast.error("Please Login To See Details");
   }
 
-  return <Navigate to="/login" state={{ from: location }} replace />;
+  return <Navigate to="/seller-pay" state={{ from: location }} replace />;
 };
 
 export default SellerRoute;
