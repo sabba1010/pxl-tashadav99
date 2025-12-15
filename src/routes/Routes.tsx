@@ -41,6 +41,7 @@ import Review from "../dashboard/buyer-dahboard/Review";
 import PrivateRoute from "./PrivateRoute";
 import Post from "../components/Notification/Post";
 import SellForm from "../dashboard/user-dashboard/SellForm";
+import SellerRoute from "./SellerRoute";
 
 const Routes = createBrowserRouter([
   {
@@ -52,7 +53,7 @@ const Routes = createBrowserRouter([
         path: "/",
         element: <Home />,
       },
-      
+
       {
         path: "/marketplace",
         element: <Marketplace />,
@@ -120,7 +121,11 @@ const Routes = createBrowserRouter([
       },
       {
         path: "/selling-form",
-        element: <SellForm/>
+        element: (
+          <SellerRoute>
+            <SellForm />
+          </SellerRoute>
+        ),
       },
       {
         path: "buyer-dashboard",
@@ -132,8 +137,8 @@ const Routes = createBrowserRouter([
       },
       {
         path: "/post-data",
-        element: <Post/>
-      }
+        element: <Post />,
+      },
     ],
   },
 
