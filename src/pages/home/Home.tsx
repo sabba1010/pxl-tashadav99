@@ -16,7 +16,7 @@ const Home = () => {
       {/* Hero Banner Section - Modern Gradient + Glassmorphism */}
       <HeroBannerSection />
       {/* Standout Accounts Section - Modern Cards */}
-      <StandoutAccounts />
+      {/* <StandoutAccounts /> */}
 
        {/* Hero About Section - Modern Gradient + Glassmorphism */}
       <HomeAboutSection />

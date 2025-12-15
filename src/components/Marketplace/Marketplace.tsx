@@ -1531,6 +1531,8 @@ const Marketplace: React.FC = () => {
                         purchase. Fraud protection available when you pay
                         through our checkout.
                       </p>
+=======
+                      <p className="text-xs text-gray-600">Warning: Fraud protection, refunds, and monitoring are not available if you transact outside our website.</p>
                     </div>
                   </div>
                 </div>

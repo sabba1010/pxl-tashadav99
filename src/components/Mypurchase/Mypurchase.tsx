@@ -97,7 +97,7 @@ interface Purchase {
   date: string;
   status: PurchaseStatus;
   purchaseNumber?: string;
- 
+  
   supportEmail?: string | null;
 }
 
@@ -141,7 +141,7 @@ const MOCK_PURCHASES: Purchase[] = [
     date: "Dec 3, 2025 09:21",
     status: "Completed",
     purchaseNumber: "PUR-0003",
-   
+    
     supportEmail: "asdigitals@example.com",
   },
   {
@@ -186,10 +186,30 @@ const MyPurchase: React.FC = () => {
   const [selected, setSelected] = useState<Purchase | null>(null);
   const [comingOpen, setComingOpen] = useState(false);
 
+  // Use State for purchases to allow status updates (mock)
+  const [purchases, setPurchases] = useState<Purchase[]>(MOCK_PURCHASES);
+
   const filtered = useMemo(() => {
-    if (activeTab === "All") return MOCK_PURCHASES;
-    return MOCK_PURCHASES.filter((p) => p.status === activeTab);
-  }, [activeTab]);
+    if (activeTab === "All") return purchases;
+    return purchases.filter((p) => p.status === activeTab);
+  }, [activeTab, purchases]);
+
+  // Handler for Confirm Order
+  const handleConfirmOrder = () => {
+    if (!selected) return;
+    
+    // Update the local state to show 'Completed' (Mock Logic)
+    const updatedPurchases = purchases.map((p) => 
+        p.id === selected.id ? { ...p, status: "Completed" as PurchaseStatus } : p
+    );
+    setPurchases(updatedPurchases);
+    
+    // Close modal
+    setSelected(null);
+    
+    // You can add a toast/alert here if needed
+    alert("Order Confirmed Successfully!");
+  };
 
   return (
     <>
@@ -383,12 +403,22 @@ const MyPurchase: React.FC = () => {
               </div>
 
               <div className="mt-6 grid grid-cols-1 gap-3">
+                {/* NEW: Confirm Order Button (Only visible if Pending) */}
+                {selected.status === "Pending" && (
+                    <button 
+                        onClick={handleConfirmOrder}
+                        className="w-full py-2 bg-[#33ac6f] hover:bg-[#2aa46a] text-[#111111] rounded font-medium transition shadow-sm"
+                    >
+                        Confirm Order
+                    </button>
+                )}
+
                 <div className="flex gap-2">
                   <button 
                     onClick={() => setComingOpen(true)}
                     className="flex-1 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded font-medium transition"
                   >
-                    💬 Chat (coming soon)
+                    💬 Chat 
                   </button>
                   <button onClick={() => setSelected(null)} className="flex-1 py-2 border rounded">Close</button>
                 </div>
@@ -427,6 +457,3 @@ const MyPurchase: React.FC = () => {
 };
 
 export default MyPurchase;
-
-/* Coming-soon modal rendered at root of component to avoid nesting issues */
-
