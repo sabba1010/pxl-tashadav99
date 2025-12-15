@@ -1,4 +1,4 @@
-import React, { FC, FormEvent, useState, useEffect } from "react";
+import React, { FC, FormEvent, useState } from "react"; // useEffect removed
 import { motion } from "framer-motion";
 
 // Props types definition
@@ -28,7 +28,7 @@ const Spinner: FC<{ size?: number }> = ({ size = 18 }) => (
 export default function PaymentForm({ endpoint = "http://localhost:3200/api/submit", currentUser }: Props) {
   const [payment, setPayment] = useState<"Kora" | "Flutterwave">("Kora");
   
-  // Form State
+  // Form State (Manual input state)
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [amount, setAmount] = useState("");
@@ -40,11 +40,9 @@ export default function PaymentForm({ endpoint = "http://localhost:3200/api/subm
   const [success, setSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Effect: Auto-fill name and email if currentUser exists
-  useEffect(() => {
-    if (currentUser?.name) setName(currentUser.name);
-    if (currentUser?.email) setEmail(currentUser.email);
-  }, [currentUser]);
+  // Helper: Get effective values (Prefer currentUser prop over manual state)
+  const effectiveName = currentUser?.name || name;
+  const effectiveEmail = currentUser?.email || email;
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -53,15 +51,15 @@ export default function PaymentForm({ endpoint = "http://localhost:3200/api/subm
     setSuccess(null);
 
     try {
-      // Build payload
+      // Build payload using effective values directly
       const payload: Record<string, any> = {
         paymentMethod: payment,
         submittedAt: new Date().toISOString(),
       };
       
-      // Add fields only if they have values
-      if (name.trim()) payload.name = name.trim();
-      if (email.trim()) payload.email = email.trim();
+      // Use effectiveName & effectiveEmail directly
+      if (effectiveName.trim()) payload.name = effectiveName.trim();
+      if (effectiveEmail.trim()) payload.email = effectiveEmail.trim();
       if (amount.trim()) payload.amount = amount.trim();
       if (transactionId.trim()) payload.transactionId = transactionId.trim();
       if (message.trim()) payload.message = message.trim();
@@ -86,11 +84,8 @@ export default function PaymentForm({ endpoint = "http://localhost:3200/api/subm
       setSuccess(data?.message || "Payment submitted successfully!");
       
       // Clear form logic
-      // If user is NOT logged in, clear name/email. If logged in, keep them.
-      if (!currentUser) {
-          setName("");
-          setEmail("");
-      }
+      setName("");
+      setEmail("");
       setAmount("");
       setTransactionId("");
       setMessage("");
@@ -102,11 +97,8 @@ export default function PaymentForm({ endpoint = "http://localhost:3200/api/subm
   };
 
   const handleReset = () => {
-    // Only clear name/email if no user is logged in
-    if(!currentUser) {
-        setName("");
-        setEmail("");
-    }
+    setName("");
+    setEmail("");
     setAmount("");
     setTransactionId("");
     setMessage("");
@@ -123,7 +115,7 @@ export default function PaymentForm({ endpoint = "http://localhost:3200/api/subm
     >
       <h3 className="text-2xl font-semibold mb-2 text-slate-800">Payment Details</h3>
       <p className="text-sm text-slate-500 mb-6">
-        {currentUser 
+        {currentUser?.name 
           ? `Welcome, ${currentUser.name}. Please enter your payment details.` 
           : "Please fill in your details and payment information below."}
       </p>
@@ -165,9 +157,10 @@ export default function PaymentForm({ endpoint = "http://localhost:3200/api/subm
             <input
               id="name"
               name="name"
-              value={name}
+              // DIRECTLY use currentUser.name if available
+              value={effectiveName} 
               onChange={(e) => setName(e.target.value)}
-              disabled={loading || !!currentUser?.name} // Lock if user exists
+              disabled={loading || !!currentUser?.name}
               readOnly={!!currentUser?.name}
               placeholder="Full Name"
               className={`w-full rounded-lg border p-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 disabled:opacity-80 transition-colors ${
@@ -188,9 +181,10 @@ export default function PaymentForm({ endpoint = "http://localhost:3200/api/subm
               id="email"
               name="email"
               type="email"
-              value={email}
+              // DIRECTLY use currentUser.email if available
+              value={effectiveEmail}
               onChange={(e) => setEmail(e.target.value)}
-              disabled={loading || !!currentUser?.email} // Lock if user exists
+              disabled={loading || !!currentUser?.email}
               readOnly={!!currentUser?.email}
               placeholder="user@example.com"
               className={`w-full rounded-lg border p-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 disabled:opacity-80 transition-colors ${
