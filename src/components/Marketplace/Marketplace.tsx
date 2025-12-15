@@ -926,7 +926,7 @@ const Marketplace: React.FC = () => {
                     </div>
 
                     <div className="mt-3">
-                      <p className="text-xs text-gray-600">Note: Check the buyer description & rating before purchase. Fraud protection available when you pay through our checkout.</p>
+                      <p className="text-xs text-gray-600">Warning: Fraud protection, refunds, and monitoring are not available if you transact outside our website.</p>
                     </div>
                   </div>
                 </div>
