@@ -1149,121 +1149,95 @@ const Marketplace: React.FC = () => {
 
                 {/* Mobile list */}
                 <div className="block sm:hidden divide-y">
-                  {paginatedItems.map((item: Item) => (
-                    <div
-                      key={item.id}
-                      className="w-full text-left p-3 hover:bg-gray-50 active:bg-gray-100 transition flex gap-3 items-start"
-                    >
-                      <div className="flex-shrink-0">
-                        {renderIcon(item.icon, 40, !!item.realTime)}
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex justify-between items-start gap-2">
-                          <div>
-                            <h3 className="font-semibold text-sm text-[#0A1A3A]">
-                              {item.title}
-                            </h3>
-                            <p className="text-xs text-gray-600 mt-1 line-clamp-2">
-                              {item.desc ||
-                                "Premium account • Instant delivery"}
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            <div className="text-base font-bold text-[#0A1A3A]">
-                              ${item.price.toFixed(2)}
+                        {paginatedItems.map((item: Item) => (
+                          <div
+                            key={item.id}
+                            className="w-full text-left p-3 transition hover:shadow-lg bg-white rounded-xl flex gap-3 items-start"
+                          >
+                            <div className="flex-shrink-0">{renderIcon(item.icon, 48, !!item.realTime)}</div>
+
+                            <div className="flex-1">
+                              <div className="flex justify-between items-start gap-2">
+                                <div>
+                                  <h3 className="font-semibold text-sm md:text-base text-[#0A1A3A]">
+                                    {item.title}
+                                  </h3>
+                                  <p className="text-xs md:text-sm text-gray-600 mt-1 line-clamp-2">
+                                    {item.desc || "Premium account • Instant delivery"}
+                                  </p>
+                                  <div className="mt-2 flex items-center gap-2 text-xs text-gray-500">
+                                    <span>{item.seller}</span>
+                                    <span>•</span>
+                                    <span>{item.delivery}</span>
+                                  </div>
+                                </div>
+
+                                <div className="text-right flex flex-col items-end">
+                                  <div className="text-base font-extrabold text-[#0A1A3A]">
+                                    ${item.price.toFixed(2)}
+                                  </div>
+                                  <div className="mt-3 flex items-center gap-2">
+                                    <button
+                                      onClick={() => addToCart(item)}
+                                      title="Add to cart"
+                                      className="p-2 border rounded-md text-sm flex items-center justify-center"
+                                    >
+                                      <FaShoppingCartIcon className="w-4 h-4" />
+                                    </button>
+
+                                    <button
+                                      onClick={() => viewItem(item)}
+                                      title="Details"
+                                      className="p-2 border rounded-md text-sm flex items-center justify-center"
+                                    >
+                                      <FaEyeIcon className="w-4 h-4" />
+                                    </button>
+
+                                    <button
+                                      onClick={() => buyNow(item)}
+                                      title="Purchase"
+                                      className="ml-2 px-3 py-2 rounded-lg bg-gradient-to-r from-[#33ac6f] to-[#27b86a] text-white font-semibold flex items-center justify-center"
+                                      disabled={processingIds.includes(item.id)}
+                                    >
+                                      {processingIds.includes(item.id) ? (
+                                        <span className="text-xs">...</span>
+                                      ) : (
+                                        <PurchaseIcon className="w-4 h-4" />
+                                      )}
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
                             </div>
-                            <div className="text-[10px] text-gray-500">
-                              {item.delivery}
-                            </div>
                           </div>
-                        </div>
-
-                        <div className="mt-3 flex items-center gap-2">
-                          <button
-                            onClick={() => addToCart(item)}
-                            title="Add to cart"
-                            className="p-2 border rounded-md text-sm flex items-center justify-center"
-                          >
-                            <FaShoppingCartIcon className="w-4 h-4" />
-                          </button>
-
-                          <button
-                            onClick={() => viewItem(item)}
-                            title="Details"
-                            className="p-2 border rounded-md text-sm flex items-center justify-center"
-                          >
-                            <FaEyeIcon className="w-4 h-4" />
-                          </button>
-
-                          <button
-                            onClick={() => buyNow(item)}
-                            title="Purchase"
-                            className="ml-auto p-2 rounded-md bg-[#33ac6f] text-white flex items-center justify-center"
-                            disabled={processingIds.includes(item.id)}
-                          >
-                            {processingIds.includes(item.id) ? (
-                              <span className="text-xs">...</span>
-                            ) : (
-                              <PurchaseIcon className="w-5 h-5" />
-                            )}
-                          </button>
-                        </div>
+                        ))}
                       </div>
-                    </div>
-                  ))}
-                </div>
 
                 {/* Desktop list */}
                 {viewMode === "list" && (
                   <div className="hidden sm:block divide-y">
                     {paginatedItems.map((item: Item) => (
-                      <div
-                        key={item.id}
-                        className="w-full p-4 flex gap-4 hover:bg-gray-50 text-left transition items-center"
-                      >
+                      <div key={item.id} className="w-full p-4 flex gap-4 bg-white rounded-lg shadow-sm hover:shadow-md transition items-center">
                         <div>{renderIcon(item.icon, 44, !!item.realTime)}</div>
                         <div className="flex-1">
-                          <h3 className="font-bold text-sm text-[#0A1A3A]">
-                            {item.title}
-                          </h3>
-                          <p className="text-xs text-gray-600 mt-1">
-                            {item.desc}
-                          </p>
-                          <div className="text-xs text-gray-500 mt-2">
-                            {item.seller} • {item.delivery}
-                          </div>
+                          <h3 className="font-bold text-sm text-[#0A1A3A]">{item.title}</h3>
+                          <p className="text-xs text-gray-600 mt-1">{item.desc}</p>
+                          <div className="text-xs text-gray-500 mt-2">{item.seller} • {item.delivery}</div>
                         </div>
 
                         <div className="text-right flex flex-col items-end gap-3">
-                          <div className="text-lg font-bold text-[#0A1A3A]">
-                            ${item.price.toFixed(2)}
-                          </div>
+                          <div className="text-lg font-extrabold text-[#0A1A3A]">${item.price.toFixed(2)}</div>
                           <div className="flex gap-2 items-center">
-                            <button
-                              onClick={() => addToCart(item)}
-                              className="p-2 border rounded text-sm"
-                              title="Add to cart"
-                            >
+                            <button onClick={() => addToCart(item)} className="p-2 border rounded text-sm" title="Add to cart">
                               <FaShoppingCartIcon className="w-4 h-4" />
                             </button>
 
-                            <button
-                              onClick={() => viewItem(item)}
-                              className="p-2 border rounded text-sm flex items-center gap-2"
-                              title="View"
-                            >
+                            <button onClick={() => viewItem(item)} className="p-2 border rounded text-sm flex items-center gap-2" title="View">
                               <FaEyeIcon className="w-4 h-4" />
                             </button>
 
-                            <button
-                              onClick={() => buyNow(item)}
-                              className="px-3 py-1 text-sm bg-[#33ac6f] text-white rounded"
-                              disabled={processingIds.includes(item.id)}
-                              title="Purchase"
-                            >
-                              {processingIds.includes(item.id)
-                                ? "..."
-                                : "Purchase"}
+                            <button onClick={() => buyNow(item)} className="px-3 py-1 text-sm bg-gradient-to-r from-[#33ac6f] to-[#27b86a] text-white rounded" disabled={processingIds.includes(item.id)} title="Purchase">
+                              {processingIds.includes(item.id) ? "..." : "Purchase"}
                             </button>
                           </div>
                         </div>
@@ -1276,49 +1250,31 @@ const Marketplace: React.FC = () => {
                 {viewMode === "grid" && (
                   <div className="hidden sm:p-6 sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {paginatedItems.map((item: Item) => (
-                      <div
-                        key={item.id}
-                        className="border rounded-lg p-4 text-center hover:shadow-lg transition bg-white flex flex-col"
-                      >
-                        <div className="flex justify-center">
-                          {renderIcon(item.icon, 56, !!item.realTime)}
-                        </div>
-                        <h3 className="mt-3 font-medium text-sm text-[#0A1A3A]">
-                          {item.title}
-                        </h3>
-                        <p className="text-xs text-gray-600 mt-1 line-clamp-2">
-                          {item.desc}
-                        </p>
-                        <div className="mt-3 text-lg font-bold text-[#0A1A3A]">
-                          ${item.price.toFixed(2)}
-                        </div>
-                        <div className="mt-4 flex gap-2">
+                      <div key={item.id} className="rounded-xl p-4 text-center hover:shadow-2xl transition bg-white flex flex-col">
+                        <div className="flex justify-center">{renderIcon(item.icon, 64, !!item.realTime)}</div>
+                        <h3 className="mt-3 font-medium text-sm md:text-base text-[#0A1A3A]">{item.title}</h3>
+                        <p className="text-xs md:text-sm text-gray-600 mt-1 line-clamp-2">{item.desc}</p>
+
+                        <div className="mt-3 text-lg font-extrabold text-[#0A1A3A]">${item.price.toFixed(2)}</div>
+
+                        <div className="mt-4 flex gap-2 justify-center">
                           <Link to="/cart" className="relative">
                             <div className="p-3 bg-white border rounded-lg shadow-sm flex gap-2 items-center justify-center">
                               <FaShoppingCartIcon className="w-4 h-4" />
-                              <span>Cart</span>
+                              <span className="text-sm">Cart</span>
                             </div>
                             {cartCount > 0 && (
-                              <div className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center">
-                                {cartCount}
-                              </div>
+                              <div className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center">{cartCount}</div>
                             )}
                           </Link>
-                          <button
-                            onClick={() => viewItem(item)}
-                            className="py-2 px-3 text-sm border rounded flex items-center gap-2"
-                          >
+
+                          <button onClick={() => viewItem(item)} className="py-2 px-3 text-sm border rounded flex items-center gap-2">
                             <FaEyeIcon className="w-4 h-4" />
                             <span>View</span>
                           </button>
-                          <button
-                            onClick={() => buyNow(item)}
-                            className="py-2 px-3 text-sm bg-[#33ac6f] text-white rounded"
-                            disabled={processingIds.includes(item.id)}
-                          >
-                            {processingIds.includes(item.id)
-                              ? "Processing..."
-                              : "Purchase"}
+
+                          <button onClick={() => buyNow(item)} className="py-2 px-3 text-sm bg-gradient-to-r from-[#33ac6f] to-[#27b86a] text-white rounded" disabled={processingIds.includes(item.id)}>
+                            {processingIds.includes(item.id) ? "Processing..." : "Purchase"}
                           </button>
                         </div>
                       </div>

@@ -3,8 +3,8 @@ import ExplorebyCategory from "./ExplorebyCategory";
 
 const WhyChooseUs = () => {
   return (
-    <section className="py-24 px-6 md:px-12 lg:px-20 bg-gradient-to-b from-gray-50 to-white">
-      <div className="max-w-7xl mx-auto space-y-24">
+    <section className="py-16 px-6 md:px-12 lg:px-20 bg-gradient-to-b from-gray-50 to-white">
+      <div className="max-w-7xl mx-auto space-y-12">
         {/* Why Choose Us */}
         <div className="text-center">
           <h2 className="text-3xl md:text-5xl lg:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#daab4c] to-[#b8860b] mb-12">

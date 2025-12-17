@@ -34,6 +34,8 @@ import MyAds from "../components/Myproducts/MyAds";
 import PaymentForm from "../components/Payment/PaymentForm";
 import PrivacyPolicy from "../components/Policy/PrivacyPolicy";
 import ReferralProgram from "../components/Policy/ReferralProgram";
+import RefundPolicy from "../components/Policy/RefundPolicy";
+import WhyChooseUs from "../pages/why/WhyChooseUs";
 import RatingsReputationPanel from "../dashboard/admin-dashboard/RatingsReputationPanel";
 import SellerAccount from "../dashboard/admin-dashboard/SellerAccount";
 import AddAccountCredentials from "../dashboard/buyer-dahboard/AddAccount";
@@ -62,6 +64,14 @@ const Routes = createBrowserRouter([
       {
         path: "/referral",
         element: <ReferralProgram />,
+      },
+      {
+        path: "/why-choose-us",
+        element: <WhyChooseUs />,
+      },
+      {
+        path: "/refund",
+        element: <RefundPolicy />,
       },
       {
         path: "/privacy",
