@@ -1,15 +1,4 @@
 import {
-  Facebook as FacebookIcon,
-  Instagram as InstagramIcon,
-  LinkedIn as LinkedInIcon,
-  Pinterest as PinterestIcon,
-  Reddit as RedditIcon,
-  Telegram,
-  Twitter as TwitterIcon,
-  WhatsApp as WhatsAppIcon,
-  YouTube as YouTubeIcon,
-} from "@mui/icons-material";
-import {
   Autocomplete,
   Box,
   Button,
@@ -22,30 +11,21 @@ import {
   Typography,
 } from "@mui/material";
 import axios from "axios";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuth } from "../../context/AuthContext";
 
-interface SocialMediaOption {
-  label: string;
-  icon: React.ReactNode;
+interface Platform {
+  _id: string;
+  id: number;
+  name: string;
+  link: string;
 }
-
-const socialMediaOptions: SocialMediaOption[] = [
-  { label: "Facebook", icon: <FacebookIcon /> },
-  { label: "Twitter / X", icon: <TwitterIcon /> },
-  { label: "Instagram", icon: <InstagramIcon /> },
-  { label: "LinkedIn", icon: <LinkedInIcon /> },
-  { label: "YouTube", icon: <YouTubeIcon /> },
-  { label: "Pinterest", icon: <PinterestIcon /> },
-  { label: "Reddit", icon: <RedditIcon /> },
-  { label: "Telegram", icon: <Telegram /> },
-  { label: "WhatsApp", icon: <WhatsAppIcon /> },
-];
 
 interface FormData {
   category: string;
+  categoryIcon: string; // new: icon URL
   name: string;
   description: string;
   price: string;
@@ -65,8 +45,12 @@ const SellForm: React.FC = () => {
   const navigate = useNavigate();
   const user = useAuth();
 
+  const [platforms, setPlatforms] = useState<Platform[]>([]);
+  const [loadingPlatforms, setLoadingPlatforms] = useState(true);
+
   const [formData, setFormData] = useState<FormData>({
     category: "",
+    categoryIcon: "",
     name: "",
     description: "",
     price: "",
@@ -76,17 +60,46 @@ const SellForm: React.FC = () => {
     email: "",
     password: "",
     additionalInfo: "",
-    userEmail: `${user.user?.email}`,
-    userRole: `${user.user?.role}`,
+    userEmail: user.user?.email ?? "",
+    userRole: user.user?.role ?? "",
     status: "pending",
   });
+
+  // Fetch platforms from API
+  useEffect(() => {
+    const fetchPlatforms = async () => {
+      try {
+        const response = await axios.get<Platform[]>("http://localhost:3200/icon-data");
+        setPlatforms(response.data);
+      } catch (error) {
+        toast.error("Failed to load platforms. Please try again later.");
+        console.error(error);
+      } finally {
+        setLoadingPlatforms(false);
+      }
+    };
+
+    fetchPlatforms();
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleCategoryChange = (_: any, value: SocialMediaOption | null) => {
-    setFormData({ ...formData, category: value ? value.label : "" });
+  const handleCategoryChange = (_: any, value: Platform | null) => {
+    if (value) {
+      setFormData({
+        ...formData,
+        category: value.name,
+        categoryIcon: value.link,
+      });
+    } else {
+      setFormData({
+        ...formData,
+        category: "",
+        categoryIcon: "",
+      });
+    }
   };
 
   const nextStep = () => setStep(step + 1);
@@ -109,11 +122,15 @@ const SellForm: React.FC = () => {
         toast.error("Server did not acknowledge the operation as successful.");
       }
     } catch (error) {
-      toast.error("An error occurred during product sell:");
+      toast.error("An error occurred during product sell.");
+      console.error(error);
     }
   };
 
   const steps = ["Account Details", "Login & Info"];
+
+  const getSelectedPlatform = () =>
+    platforms.find((p) => p.name === formData.category) || null;
 
   const getStepContent = (stepIndex: number) => {
     switch (stepIndex) {
@@ -127,24 +144,27 @@ const SellForm: React.FC = () => {
             <Box
               sx={{ display: "flex", flexDirection: "column", gap: 3, mt: 2 }}
             >
-              {/* Platform */}
+              {/* Platform - Dynamic from API */}
               <Autocomplete
-                options={socialMediaOptions}
-                getOptionLabel={(option) => option.label}
-                value={
-                  socialMediaOptions.find(
-                    (opt) => opt.label === formData.category
-                  ) || null
-                }
+                options={platforms}
+                getOptionLabel={(option) => option.name}
+                value={getSelectedPlatform()}
                 onChange={handleCategoryChange}
+                loading={loadingPlatforms}
                 renderOption={(props, option) => (
                   <Box
                     component="li"
                     {...props}
                     sx={{ display: "flex", alignItems: "center", gap: 2 }}
                   >
-                    {option.icon}
-                    <Typography variant="body1">{option.label}</Typography>
+                    <img
+                      src={option.link}
+                      alt={option.name}
+                      width={24}
+                      height={24}
+                      style={{ objectFit: "contain" }}
+                    />
+                    <Typography variant="body1">{option.name}</Typography>
                   </Box>
                 )}
                 renderInput={(params) => (
@@ -156,11 +176,13 @@ const SellForm: React.FC = () => {
                       ...params.InputProps,
                       startAdornment: formData.category ? (
                         <InputAdornment position="start">
-                          {
-                            socialMediaOptions.find(
-                              (opt) => opt.label === formData.category
-                            )?.icon
-                          }
+                          <img
+                            src={formData.categoryIcon}
+                            alt={formData.category}
+                            width={24}
+                            height={24}
+                            style={{ objectFit: "contain" }}
+                          />
                         </InputAdornment>
                       ) : null,
                     }}
