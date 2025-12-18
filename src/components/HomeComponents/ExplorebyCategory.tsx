@@ -11,6 +11,8 @@ const ExplorebyCategory: React.FC = () => {
     { icon: "🔍", title: "Advanced Search" },
     { icon: "🛡️", title: "Escrow Security" },
     { icon: "📊", title: "Analytics Tools" },
+    { icon: "⚡", title: "Why Choose Us" },
+    { icon: "🤝", title: "Why Us" },
   ];
 
   return (

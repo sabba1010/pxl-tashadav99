@@ -10,6 +10,7 @@ import HomeAboutSection from "../../components/HomeComponents/HomeAboutSection"
 import ReferralProgram from "../../components/HomeComponents/ReferralProgram";
 import FAQSection from "../../components/HomeComponents/FAQSection";
 
+
 const Home = () => {
   return (
     <div className="bg-gray-50 text-gray-900 overflow-hidden">
@@ -23,6 +24,7 @@ const Home = () => {
  
       {/* Why Choose Us + Features - Combined Modern Grid */}
       <WhyChooseUs />
+      
       {/* How It Works - Modern Flow */}
       <HowItWorks />
         {/* How to Report a Transaction - Modern Flow */}

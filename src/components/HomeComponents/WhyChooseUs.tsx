@@ -8,8 +8,11 @@ const WhyChooseUs = () => {
         {/* Why Choose Us */}
         <div className="text-center">
           <h2 className="text-3xl md:text-5xl lg:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#daab4c] to-[#b8860b] mb-12">
-            Why Thousands Trust Us
+            Our Mission & Commitment
           </h2>
+          <p className="text-lg md:text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed mb-10">
+            We deliver trusted, high-quality digital asset listings and services built on transparency, ironclad security, and world-class customer support. Our mission is to empower creators and buyers with reliable tools and a truly fair marketplace.
+          </p>
           <div className="grid md:grid-cols-3 gap-10">
             {[
               {
