@@ -9,6 +9,7 @@ import ReportTransaction from "../../components/HomeComponents/ReportTransaction
 import HomeAboutSection from "../../components/HomeComponents/HomeAboutSection"
 import ReferralProgram from "../../components/HomeComponents/ReferralProgram";
 import FAQSection from "../../components/HomeComponents/FAQSection";
+import RefundPolicy from "../../components/Policy/RefundPolicy";
 
 
 const Home = () => {
@@ -24,7 +25,8 @@ const Home = () => {
  
       {/* Why Choose Us + Features - Combined Modern Grid */}
       <WhyChooseUs />
-      
+      {/* Refund Policy Section - Clear & Concise */}
+      <RefundPolicy />
       {/* How It Works - Modern Flow */}
       <HowItWorks />
         {/* How to Report a Transaction - Modern Flow */}
