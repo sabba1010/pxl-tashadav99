@@ -346,6 +346,11 @@ const ProductModal: React.FC<{
              <button 
                 onClick={() => accepted && onBuy(item)} 
                 disabled={!accepted || isProcessing}
+
+
+
+
+                
                 className={`py-3 rounded-xl font-bold text-white transition ${accepted ? 'bg-[#33ac6f] hover:bg-[#28965e]' : 'bg-gray-300 cursor-not-allowed'}`}
             >
                 {isProcessing ? "Processing..." : "Purchase Now"}
