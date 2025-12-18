@@ -11,7 +11,7 @@ import {
 interface DepositRequest {
   _id: string;
   name: string;
-  amountUSD?: number;
+  amount?: number;
   paymentMethod: string;
   submittedAt: string;
   status: "Pending" | "Approved" | "Rejected";
@@ -167,7 +167,7 @@ const DepositModal: React.FC<{
           />
           <DetailRow
             label="Amount"
-            value={<span className="text-lg font-extrabold text-gray-900">{formatCurrency(request.amountUSD || 0)}</span>}
+            value={<span className="text-lg font-extrabold text-gray-900">{formatCurrency(request.amount || 0)}</span>}
           />
           <DetailRow label="Payment Method" value={request.paymentMethod} />
           <DetailRow
@@ -227,7 +227,7 @@ const DepositRequests: React.FC = () => {
   const queryClient = useQueryClient();
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortBy, setSortBy] = useState<"submittedAt" | "amountUSD" | "status" | "name">("submittedAt");
+  const [sortBy, setSortBy] = useState<"submittedAt" | "amount" | "status" | "name">("submittedAt");
   const [sortOrder, setSortOrder] = useState<"desc" | "asc">("desc");
   const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -299,8 +299,8 @@ const DepositRequests: React.FC = () => {
     filtered.sort((a, b) => {
       let comp = 0;
       switch (sortBy) {
-        case "amountUSD":
-          comp = (a.amountUSD || 0) - (b.amountUSD || 0);
+        case "amount":
+          comp = (a.amount || 0) - (b.amount || 0);
           break;
         case "status":
           comp = a.status.localeCompare(b.status);
@@ -385,7 +385,7 @@ const DepositRequests: React.FC = () => {
                 { title: "Submitted", col: "submittedAt" },
                 { title: "Method", col: "" },
                 { title: "Trx ID", col: "" },
-                { title: "Amount", col: "amountUSD" },
+                { title: "Amount", col: "amount" },
                 { title: "Status", col: "status" },
                 { title: "Actions", col: "" },
               ].map((h) => (
@@ -412,7 +412,7 @@ const DepositRequests: React.FC = () => {
                     {r.transactionId.substring(0, 8)}...
                   </td>
                   <td className="px-6 py-4 text-sm font-bold text-right">
-                    {formatCurrency(r.amountUSD || 0)}
+                    {formatCurrency(r.amount || 0)}
                   </td>
                   <td className="px-6 py-4 text-center">
                     <span className={`px-3 py-1 text-xs font-semibold rounded-full ${getStatusColor(r.status)}`}>

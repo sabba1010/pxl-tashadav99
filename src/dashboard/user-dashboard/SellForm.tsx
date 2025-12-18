@@ -25,7 +25,7 @@ interface Platform {
 
 interface FormData {
   category: string;
-  categoryIcon: string; // new: icon URL
+  categoryIcon: string;
   name: string;
   description: string;
   price: string;
@@ -47,7 +47,7 @@ const SellForm: React.FC = () => {
 
   const [platforms, setPlatforms] = useState<Platform[]>([]);
   const [loadingPlatforms, setLoadingPlatforms] = useState(true);
-
+  console.log(platforms)
   const [formData, setFormData] = useState<FormData>({
     category: "",
     categoryIcon: "",
@@ -60,27 +60,31 @@ const SellForm: React.FC = () => {
     email: "",
     password: "",
     additionalInfo: "",
-    userEmail: user.user?.email ?? "",
-    userRole: user.user?.role ?? "",
+    userEmail: user?.user?.email || "",
+    userRole: user?.user?.role || "",
     status: "pending",
   });
 
-  // Fetch platforms from API
-  useEffect(() => {
-    const fetchPlatforms = async () => {
-      try {
-        const response = await axios.get<Platform[]>("http://localhost:3200/icon-data");
-        setPlatforms(response.data);
-      } catch (error) {
-        toast.error("Failed to load platforms. Please try again later.");
-        console.error(error);
-      } finally {
-        setLoadingPlatforms(false);
-      }
-    };
+useEffect(() => {
+  const fetchPlatforms = async () => {
+    try {
+      const response = await axios.get<{response: any, platforms: any, data: any}>("http://localhost:3200/icon-data");
+      // Adjust here depending on your API response
+      console.log(response.data.data)
+      const data = Array.isArray(response.data) ? response.data : response.data.data;
+      console.log(data)
+      setPlatforms(data || []);
+    } catch (error) {
+      toast.error("Failed to load platforms. Please try again later.");
+      console.error(error);
+    } finally {
+      setLoadingPlatforms(false);
+    }
+  };
 
-    fetchPlatforms();
-  }, []);
+  fetchPlatforms();
+}, []);
+
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -94,11 +98,7 @@ const SellForm: React.FC = () => {
         categoryIcon: value.link,
       });
     } else {
-      setFormData({
-        ...formData,
-        category: "",
-        categoryIcon: "",
-      });
+      setFormData({ ...formData, category: "", categoryIcon: "" });
     }
   };
 
@@ -107,30 +107,30 @@ const SellForm: React.FC = () => {
 
   const handleSubmit = async () => {
     console.log("Submitted:", formData);
-
     try {
       const response = await axios.post<{ acknowledged: boolean }>(
         "http://localhost:3200/product/sell",
         formData
       );
-      const { acknowledged } = response.data;
-
-      if (acknowledged === true) {
-        toast.success("Product sell operation acknowledged successfully!");
+      if (response.data.acknowledged) {
+        toast.success("Product listed successfully!");
         navigate("/myproducts");
       } else {
-        toast.error("Server did not acknowledge the operation as successful.");
+        toast.error("Server did not acknowledge the operation.");
       }
     } catch (error) {
-      toast.error("An error occurred during product sell.");
+      toast.error("An error occurred during product listing.");
       console.error(error);
     }
   };
 
   const steps = ["Account Details", "Login & Info"];
 
-  const getSelectedPlatform = () =>
-    platforms.find((p) => p.name === formData.category) || null;
+const getSelectedPlatform = () => {
+  if (!Array.isArray(platforms)) return null;
+  return platforms.find((p) => p.name === formData.category) || null;
+};
+
 
   const getStepContent = (stepIndex: number) => {
     switch (stepIndex) {
@@ -140,11 +140,7 @@ const SellForm: React.FC = () => {
             <Typography variant="h6" gutterBottom color="text.secondary">
               Tell us about the account you're selling
             </Typography>
-
-            <Box
-              sx={{ display: "flex", flexDirection: "column", gap: 3, mt: 2 }}
-            >
-              {/* Platform - Dynamic from API */}
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 3, mt: 2 }}>
               <Autocomplete
                 options={platforms}
                 getOptionLabel={(option) => option.name}
@@ -189,8 +185,6 @@ const SellForm: React.FC = () => {
                   />
                 )}
               />
-
-              {/* Account Name */}
               <TextField
                 fullWidth
                 label="Account Name / Title"
@@ -199,8 +193,6 @@ const SellForm: React.FC = () => {
                 onChange={handleChange}
                 required
               />
-
-              {/* Description */}
               <TextField
                 fullWidth
                 label="Description"
@@ -211,8 +203,6 @@ const SellForm: React.FC = () => {
                 rows={4}
                 placeholder="Describe the account: followers, niche, engagement, etc."
               />
-
-              {/* Price */}
               <TextField
                 fullWidth
                 label="Price (USD)"
@@ -221,9 +211,7 @@ const SellForm: React.FC = () => {
                 onChange={handleChange}
                 type="number"
                 InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">$</InputAdornment>
-                  ),
+                  startAdornment: <InputAdornment position="start">$</InputAdornment>,
                 }}
                 required
               />
@@ -237,10 +225,7 @@ const SellForm: React.FC = () => {
             <Typography variant="h6" gutterBottom color="text.secondary">
               Provide account access details
             </Typography>
-
-            <Box
-              sx={{ display: "flex", flexDirection: "column", gap: 3, mt: 2 }}
-            >
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 3, mt: 2 }}>
               <TextField
                 fullWidth
                 label="Username / Handle"
@@ -249,7 +234,6 @@ const SellForm: React.FC = () => {
                 onChange={handleChange}
                 required
               />
-
               <TextField
                 fullWidth
                 label="Account Password"
@@ -259,7 +243,6 @@ const SellForm: React.FC = () => {
                 type="password"
                 required
               />
-
               <TextField
                 fullWidth
                 label="Recovery Email Password"
@@ -268,7 +251,6 @@ const SellForm: React.FC = () => {
                 onChange={handleChange}
                 type="password"
               />
-
               <TextField
                 fullWidth
                 label="Email Address (for recovery)"
@@ -277,7 +259,6 @@ const SellForm: React.FC = () => {
                 onChange={handleChange}
                 type="email"
               />
-
               <TextField
                 fullWidth
                 label="Preview Link (optional)"
@@ -286,7 +267,6 @@ const SellForm: React.FC = () => {
                 onChange={handleChange}
                 placeholder="e.g., https://instagram.com/username"
               />
-
               <TextField
                 fullWidth
                 label="Additional Information"
@@ -310,45 +290,23 @@ const SellForm: React.FC = () => {
     <Box sx={{ minHeight: "100vh", bgcolor: "#f5f7fa", py: 6 }}>
       <Paper
         elevation={8}
-        sx={{
-          maxWidth: 680,
-          mx: "auto",
-          borderRadius: 4,
-          overflow: "hidden",
-          bgcolor: "background.paper",
-        }}
+        sx={{ maxWidth: 680, mx: "auto", borderRadius: 4, overflow: "hidden", bgcolor: "background.paper" }}
       >
         <Box sx={{ bgcolor: "#D4A643", color: "white", py: 4, px: 4 }}>
           <Typography variant="h4" align="center" fontWeight="bold">
             Sell Your Social Media Account
           </Typography>
-          <Typography
-            variant="body1"
-            align="center"
-            sx={{ mt: 1, opacity: 0.9 }}
-          >
+          <Typography variant="body1" align="center" sx={{ mt: 1, opacity: 0.9 }}>
             Securely list your account for sale
           </Typography>
         </Box>
 
         <Box sx={{ p: { xs: 3, sm: 5 } }}>
           <Stepper activeStep={step} alternativeLabel sx={{ mb: 6 }}>
-            {steps.map((label) => (
+            {steps.map((label, index) => (
               <Step key={label}>
-                <StepLabel
-                  StepIconProps={{
-                    sx: {
-                      "&.Mui-active": { color: "primary.main" },
-                      "&.Mui-completed": { color: "primary.main" },
-                    },
-                  }}
-                >
-                  <Typography
-                    variant="subtitle1"
-                    fontWeight={
-                      step === steps.indexOf(label) ? "bold" : "medium"
-                    }
-                  >
+                <StepLabel>
+                  <Typography variant="subtitle1" fontWeight={step === index ? "bold" : "medium"}>
                     {label}
                   </Typography>
                 </StepLabel>
@@ -359,16 +317,9 @@ const SellForm: React.FC = () => {
           {getStepContent(step)}
 
           <Box sx={{ display: "flex", justifyContent: "space-between", mt: 6 }}>
-            <Button
-              disabled={step === 0}
-              onClick={prevStep}
-              size="large"
-              variant="outlined"
-              sx={{ px: 4 }}
-            >
+            <Button disabled={step === 0} onClick={prevStep} size="large" variant="outlined" sx={{ px: 4 }}>
               Back
             </Button>
-
             <Button
               onClick={step === steps.length - 1 ? handleSubmit : nextStep}
               size="large"
