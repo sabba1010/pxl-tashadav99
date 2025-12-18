@@ -38,7 +38,7 @@ const ExplorebyCategory: React.FC = () => {
       </div>
 
       {/* CTA Buttons styled like HomeAboutSection */}
-      <div className="max-w-6xl mx-auto flex flex-col sm:flex-row gap-3 md:gap-4 justify-center mt-10">
+      {/* <div className="max-w-6xl mx-auto flex flex-col sm:flex-row gap-3 md:gap-4 justify-center mt-10">
         <Link
           to="/why-choose-us"
           className="w-full sm:w-auto text-center px-6 py-3 md:px-10 md:py-4 bg-[#33ac6f] hover:bg-[#3ed987] text-white font-bold text-base md:text-lg rounded-lg shadow-md hover:shadow-[#33ac6f]/40 transform hover:scale-105 transition-all duration-300"
@@ -52,7 +52,7 @@ const ExplorebyCategory: React.FC = () => {
         >
           Refund Policy
         </Link>
-      </div>
+      </div> */}
     </section>
   );
 };
