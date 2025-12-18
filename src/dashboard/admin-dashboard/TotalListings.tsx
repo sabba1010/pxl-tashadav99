@@ -5,10 +5,12 @@ import {
   Edit,
   Search,
   Visibility,
+  Save,
 } from "@mui/icons-material";
 import {
   Box,
   Chip,
+  CircularProgress,
   Dialog,
   DialogContent,
   DialogTitle,
@@ -24,415 +26,263 @@ import {
   TableRow,
   Tooltip,
   Typography,
-  alpha
+  alpha,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel,
+  Button,
+  Divider,
 } from "@mui/material";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
+// এপিআই থেকে আসা ডাটা স্ট্রাকচার অনুযায়ী ইন্টারফেস
 interface Listing {
-  id: string;
-  title: string;
-  sellerId: number;
-  category: "Electronics" | "Services" | "Home Goods" | "Digital";
-  priceUSD: number;
-  status: "Active" | "Draft" | "Suspended" | "Sold";
-  dateCreated: string;
+  _id: string;
+  category: string;
+  categoryIcon: string;
+  name: string;
+  description: string;
+  price: string;
+  username: string;
+  accountPass: string;
+  previewLink: string;
+  email: string;
+  password: string;
+  additionalInfo: string;
+  userEmail: string;
+  userRole: string;
+  status: string;
 }
-
-// Mock Data
-const mockListings: Listing[] = [
-  {
-    id: "L1001",
-    title: "Vintage Vinyl Player",
-    sellerId: 2,
-    category: "Home Goods",
-    priceUSD: 150.0,
-    dateCreated: "2024-05-15",
-    status: "Active",
-  },
-  {
-    id: "L1002",
-    title: "Premium Logo Design Service",
-    sellerId: 7,
-    category: "Services",
-    priceUSD: 75.0,
-    dateCreated: "2024-05-20",
-    status: "Active",
-  },
-  {
-    id: "L1003",
-    title: "High-speed USB-C Cable (5-pack)",
-    sellerId: 9,
-    category: "Electronics",
-    priceUSD: 19.99,
-    dateCreated: "2024-05-22",
-    status: "Draft",
-  },
-  {
-    id: "L1004",
-    title: "Advanced Data Analysis E-book",
-    sellerId: 4,
-    category: "Digital",
-    priceUSD: 49.99,
-    dateCreated: "2024-05-25",
-    status: "Sold",
-  },
-  {
-    id: "L1005",
-    title: "Custom WordPress Theme Installation",
-    sellerId: 2,
-    category: "Services",
-    priceUSD: 350.0,
-    dateCreated: "2024-06-01",
-    status: "Suspended",
-  },
-  {
-    id: "L1006",
-    title: '4K Monitor 27"',
-    sellerId: 11,
-    category: "Electronics",
-    priceUSD: 599.0,
-    dateCreated: "2024-06-05",
-    status: "Active",
-  },
-  {
-    id: "L1007",
-    title: "Handmade Ceramic Mug Set",
-    sellerId: 7,
-    category: "Home Goods",
-    priceUSD: 25.5,
-    dateCreated: "2024-06-10",
-    status: "Active",
-  },
-  {
-    id: "L1008",
-    title: "Beginner Coding Course Access",
-    sellerId: 4,
-    category: "Digital",
-    priceUSD: 99.0,
-    dateCreated: "2024-06-12",
-    status: "Active",
-  },
-  {
-    id: "L1009",
-    title: "Rare Comic Book Collection",
-    sellerId: 9,
-    category: "Digital",
-    priceUSD: 1200.0,
-    dateCreated: "2024-06-15",
-    status: "Sold",
-  },
-  {
-    id: "L1010",
-    title: "One Hour Fitness Coaching",
-    sellerId: 11,
-    category: "Services",
-    priceUSD: 50.0,
-    dateCreated: "2024-06-18",
-    status: "Active",
-  },
-];
 
 const ITEMS_PER_PAGE = 8;
 
 const ListingsPage: React.FC = () => {
+  const [listings, setListings] = useState<Listing[]>([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
-  const [sortBy, setSortBy] = useState<keyof Listing | "">("");
-  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
-  const [open, setOpen] = useState(false);
-  const selected = useState<Listing | null>(null)[0];
-  const setSelected = useState<Listing | null>(null)[1];
+  
+  // ডায়ালগ এবং সিলেক্টেড আইটেম স্টেট
+  const [openEdit, setOpenEdit] = useState(false);
+  const [openView, setOpenView] = useState(false);
+  const [selected, setSelected] = useState<Listing | null>(null);
+  const [newStatus, setNewStatus] = useState("");
 
-  // Filtering + Sorting
-  const filtered = useMemo(() => {
-    let data = mockListings.filter(
-      (l) =>
-        l.id.toLowerCase().includes(search.toLowerCase()) ||
-        l.title.toLowerCase().includes(search.toLowerCase())
-    );
+  // কম্পোনেন্ট লোড হওয়ার সময় ডাটা ফেচ করা
+  useEffect(() => {
+    fetchData();
+  }, []);
 
-    if (sortBy) {
-      data.sort((a, b) => {
-        const av = a[sortBy];
-        const bv = b[sortBy];
-        if (av < bv) return sortDir === "asc" ? -1 : 1;
-        if (av > bv) return sortDir === "asc" ? 1 : -1;
-        return 0;
-      });
+  const fetchData = async () => {
+    try {
+      const response = await fetch("http://localhost:3200/product/all-sells");
+      const data = await response.json();
+      setListings(data);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      setLoading(false);
     }
-    return data;
-  }, [search, sortBy, sortDir]);
+  };
+
+  // স্ট্যাটাস পরিবর্তনের পর সরাসরি ব্যাকএন্ডে হিট করার ফাংশন
+  const handleUpdateStatus = async () => {
+    if (!selected) return;
+    try {
+      const response = await fetch(`http://localhost:3200/product/update-status/${selected._id}`, {
+        method: 'PATCH', // ব্যাকএন্ড অনুযায়ী PATCH বা PUT ব্যবহার করুন
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus })
+      });
+      
+      if (response.ok) {
+        // ডাটাবেজে আপডেট হলে ফ্রন্টএন্ড স্টেটও আপডেট হবে
+        setListings(prev => prev.map(item => item._id === selected._id ? { ...item, status: newStatus } : item));
+        setOpenEdit(false);
+      } else {
+        alert("Failed to update status on server.");
+      }
+    } catch (error) {
+      console.error("Update failed:", error);
+      alert("Error connecting to backend.");
+    }
+  };
+
+  const filtered = useMemo(() => {
+    return [...listings].filter(l => 
+      l.name.toLowerCase().includes(search.toLowerCase()) || 
+      l._id.toLowerCase().includes(search.toLowerCase())
+    );
+  }, [search, listings]);
 
   const paginated = useMemo(() => {
     const start = (page - 1) * ITEMS_PER_PAGE;
     return filtered.slice(start, start + ITEMS_PER_PAGE);
   }, [filtered, page]);
 
-  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
-
-  const handleSort = (key: keyof Listing) => {
-    if (sortBy === key) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
-    else {
-      setSortBy(key);
-      setSortDir("desc");
+  // স্ট্যাটাস অনুযায়ী ডিজাইন স্টাইল
+  const getStatusStyles = (status: string) => {
+    switch (status?.toLowerCase()) {
+      case "active": return { color: "#34C759", bg: "#E8F9EE" };
+      case "pending": return { color: "#FF9500", bg: "#FFF4E6" };
+      case "reject": return { color: "#FF3B30", bg: "#FFEBEB" };
+      case "sold": return { color: "#007AFF", bg: "#EBF5FF" };
+      default: return { color: "#8E8E93", bg: "#F2F2F7" };
     }
   };
 
-  const statusColor = (s: Listing["status"]) => {
-    const map: Record<Listing["status"], string> = {
-      Active: "#33ac6f",
-      Draft: "#f59e0b",
-      Suspended: "#ef4444",
-      Sold: "#3b82f6",
-    };
-    return map[s];
-  };
+  if (loading) return <Box display="flex" justifyContent="center" mt={10}><CircularProgress sx={{ color: '#33ac6f' }} /></Box>;
 
   return (
-    <Box sx={{ p: 3, pb: 8 }}>
-      {/* Header + Search */}
-      <Paper
-        sx={{
-          p: 3,
-          mb: 4,
-          borderRadius: 3,
-          bgcolor: "rgba(255,255,255,0.8)",
-          backdropFilter: "blur(12px)",
-          border: "1px solid rgba(255,255,255,0.3)",
-        }}
-      >
-        <Box display="flex" justifyContent="space-between" alignItems="center">
-          <Typography variant="h5" fontWeight="bold">
-            Listings ({filtered.length})
-          </Typography>
-
-          <Box position="relative" width={300}>
-            <Search
-              sx={{
-                position: "absolute",
-                left: 12,
-                top: "50%",
-                transform: "translateY(-50%)",
-                color: "gray.500",
-              }}
-            />
-            <InputBase
-              placeholder="Search title / ID..."
-              value={search} // ফিক্স ১
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setPage(1); // ফিক্স ২: প্রতিবার সার্চ করলে পেজ ১ এ রিসেট
-              }}
-              sx={{
-                pl: 5,
-                pr: 2,
-                py: 1.2,
-                width: "100%",
-                bgcolor: "white",
-                borderRadius: 3,
-                border: "1px solid",
-                borderColor: "gray.300",
-                "&:focus-within": {
-                  borderColor: "#33ac6f",
-                  boxShadow: "0 0 0 3px rgba(51, 172, 111, 0.15)",
-                },
-              }}
-            />
-          </Box>
+    <Box sx={{ p: 4, bgcolor: "#F9FAFB", minHeight: "100vh" }}>
+      {/* হেডার এবং সার্চ বার */}
+      <Paper elevation={0} sx={{ p: 4, mb: 4, borderRadius: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid #F2F2F2' }}>
+        <Typography variant="h5" fontWeight="700" sx={{ color: "#111827" }}>
+          Listings ({filtered.length})
+        </Typography>
+        <Box sx={{ position: 'relative', width: 320 }}>
+          <Search sx={{ position: 'absolute', left: 15, top: '50%', transform: 'translateY(-50%)', color: '#9CA3AF', fontSize: 20 }} />
+          <InputBase 
+            placeholder="Search title / ID..." 
+            value={search}
+            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+            sx={{ 
+              bgcolor: '#fff', border: '1px solid #D1D5DB', borderRadius: '10px', 
+              pl: 6, pr: 2, py: 1, width: '100%', fontSize: '14px',
+              '&:focus-within': { borderColor: '#33ac6f', boxShadow: '0 0 0 2px rgba(51, 172, 111, 0.1)' }
+            }}
+          />
         </Box>
       </Paper>
 
-      {/* Table */}
-      <TableContainer
-        component={Paper}
-        sx={{
-          borderRadius: 3,
-          overflow: "hidden",
-          boxShadow: "0 20px 40px rgba(0,0,0,0.08)",
-          bgcolor: "rgba(255,255,255,0.9)",
-          backdropFilter: "blur(16px)",
-        }}
-      >
+      {/* টেবিল ডিজাইন */}
+      <TableContainer component={Paper} elevation={0} sx={{ borderRadius: 4, border: '1px solid #F2F2F2', overflow: 'hidden' }}>
         <Table>
-          <TableHead>
-            <TableRow sx={{ bgcolor: "rgba(51,172,111,0.08)" }}>
-              {[
-                { label: "ID", key: "id" },
-                { label: "Title", key: "" },
-                { label: "Seller", key: "" },
-                { label: "Category", key: "category" },
-                { label: "Price", key: "priceUSD", align: "right" as const },
-                { label: "Status", key: "status" },
-                { label: "Actions", key: "" },
-              ].map((h) => (
-                <TableCell
-                  key={h.label}
-                  align={h.align || "left"}
-                  onClick={() => h.key && handleSort(h.key as keyof Listing)}
-                  sx={{
-                    fontWeight: "bold",
-                    color: "#333",
-                    cursor: h.key ? "pointer" : "default",
-                    userSelect: "none",
-                  }}
-                >
-                  {h.label}
-                  {h.key &&
-                    sortBy === h.key &&
-                    (sortDir === "asc" ? (
-                      <ArrowUpward sx={{ fontSize: 14, ml: 0.5 }} />
-                    ) : (
-                      <ArrowDownward sx={{ fontSize: 14, ml: 0.5 }} />
-                    ))}
+          <TableHead sx={{ bgcolor: "#F9FAFB" }}>
+            <TableRow>
+              {["ID", "Title", "Seller", "Category", "Price", "Status", "Actions"].map((head) => (
+                <TableCell key={head} sx={{ fontWeight: "600", color: "#6B7280", fontSize: "12px", textTransform: "uppercase" }}>
+                  {head}
                 </TableCell>
               ))}
             </TableRow>
           </TableHead>
           <TableBody>
-            {paginated.map((l) => (
-              <TableRow
-                key={l.id}
-                hover
-                sx={{ "&:hover": { bgcolor: alpha("#33ac6f", 0.04) } }}
-              >
-                <TableCell
-                  sx={{ fontFamily: "monospace", fontWeight: "medium" }}
-                >
-                  {l.id}
-                </TableCell>
-                <TableCell>
-                  <Typography fontWeight="medium" noWrap>
-                    {l.title}
-                  </Typography>
-                </TableCell>
-                <TableCell>User {l.sellerId}</TableCell>
-                <TableCell align="center">
-                  <Chip
-                    label={l.category}
-                    size="small"
-                    sx={{
-                      bgcolor:
-                        l.category === "Services" ? "#D1A14822" : undefined,
-                      color: l.category === "Services" ? "#D1A148" : undefined,
-                    }}
-                  />
-                </TableCell>
-                <TableCell align="right" sx={{ fontWeight: "bold" }}>
-                  ${l.priceUSD.toFixed(2)}
-                </TableCell>
-                <TableCell align="center">
-                  <Chip
-                    label={l.status}
-                    size="small"
-                    sx={{
-                      bgcolor: alpha(statusColor(l.status), 0.15),
-                      color: statusColor(l.status),
-                      fontWeight: "bold",
-                    }}
-                  />
-                </TableCell>
-                <TableCell align="center">
-                  <Tooltip title="View">
-                    <IconButton
-                      onClick={() => {
-                        setSelected(l);
-                        setOpen(true);
-                      }}
-                    >
-                      <Visibility sx={{ color: "#33ac6f" }} />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title="Edit">
-                    <IconButton
-                      onClick={() => {
-                        setSelected(l);
-                        setOpen(true);
-                      }}
-                    >
-                      <Edit sx={{ color: "#D1A148" }} />
-                    </IconButton>
-                  </Tooltip>
-                </TableCell>
-              </TableRow>
-            ))}
+            {paginated.map((row) => {
+              const styles = getStatusStyles(row.status);
+              return (
+                <TableRow key={row._id} sx={{ '&:hover': { bgcolor: '#FBFBFC' } }}>
+                  <TableCell sx={{ fontSize: "13px", color: "#6B7280" }}>#{row._id.slice(-5).toUpperCase()}</TableCell>
+                  <TableCell sx={{ fontWeight: "500", fontSize: "14px" }}>{row.name}</TableCell>
+                  <TableCell sx={{ fontSize: "14px" }}>{row.userEmail.split('@')[0]}</TableCell>
+                  <TableCell>
+                    <Chip label={row.category} size="small" sx={{ borderRadius: "6px", fontSize: "11px" }} />
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: "700" }}>${parseFloat(row.price).toFixed(2)}</TableCell>
+                  <TableCell>
+                    <Box sx={{ display: 'inline-block', px: 1.5, py: 0.4, borderRadius: '20px', bgcolor: styles.bg, color: styles.color, fontSize: '12px', fontWeight: '700' }}>
+                      {row.status.toUpperCase()}
+                    </Box>
+                  </TableCell>
+                  <TableCell>
+                    <Box sx={{ display: 'flex' }}>
+                      <Tooltip title="View">
+                        <IconButton size="small" sx={{ color: "#10B981" }} onClick={() => { setSelected(row); setOpenView(true); }}>
+                          <Visibility fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Edit Status">
+                        <IconButton size="small" sx={{ color: "#F59E0B" }} onClick={() => { setSelected(row); setNewStatus(row.status); setOpenEdit(true); }}>
+                          <Edit fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </TableContainer>
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <Box display="flex" justifyContent="center" mt={4}>
-          <Pagination
-            count={totalPages}
-            page={page}
-            onChange={(_, p) => setPage(p)}
-            color="primary"
-            sx={{
-              "& .MuiPaginationItem-root": {
-                borderRadius: 2,
-                bgcolor: page === page ? "#33ac6f" : undefined,
-                color: page === page ? "white" : undefined,
-              },
-            }}
-          />
-        </Box>
-      )}
+      {/* পেজিনেশন */}
+      <Box display="flex" justifyContent="center" mt={4}>
+        <Pagination 
+          count={Math.ceil(filtered.length / ITEMS_PER_PAGE)} 
+          page={page} 
+          onChange={(_, p) => setPage(p)} 
+          color="primary"
+          shape="rounded"
+          sx={{ '& .Mui-selected': { bgcolor: '#33ac6f !important', color: '#fff' } }}
+        />
+      </Box>
 
-      {/* Simple Modal (View/Edit) */}
-      <Dialog
-        open={open}
-        onClose={() => setOpen(false)}
-        maxWidth="sm"
-        fullWidth
-      >
-        {selected && (
-          <>
-            <DialogTitle
-              sx={{
-                bgcolor: "#33ac6f",
-                color: "white",
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              {selected.title}
-              <IconButton
-                onClick={() => setOpen(false)}
-                sx={{ color: "white" }}
-              >
-                <Close />
-              </IconButton>
-            </DialogTitle>
-            <DialogContent dividers sx={{ py: 4 }}>
-              <Box display="grid" gap={3}>
-                <Box>
-                  <strong>ID:</strong> {selected.id}
-                </Box>
-                <Box>
-                  <strong>Seller:</strong> User {selected.sellerId}
-                </Box>
-                <Box>
-                  <strong>Category:</strong> {selected.category}
-                </Box>
-                <Box>
-                  <strong>Price:</strong> ${selected.priceUSD.toFixed(2)}
-                </Box>
-                <Box>
-                  <strong>Status:</strong>{" "}
-                  <Chip
-                    label={selected.status}
-                    sx={{
-                      bgcolor: alpha(statusColor(selected.status), 0.2),
-                      color: statusColor(selected.status),
-                    }}
-                  />
-                </Box>
-                {/* এখানে চাইলে Edit ফর্ম যোগ করতে পারো – কিন্তু এখন সিম্পল রাখলাম */}
+      {/* VIEW DIALOG: শুধুমাত্র তথ্য দেখার জন্য */}
+      <Dialog open={openView} onClose={() => setOpenView(false)} fullWidth maxWidth="sm" PaperProps={{ sx: { borderRadius: 3 } }}>
+        <DialogTitle sx={{ fontWeight: 700, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: '#F9FAFB' }}>
+          Product Details
+          <IconButton onClick={() => setOpenView(false)} size="small"><Close /></IconButton>
+        </DialogTitle>
+        <DialogContent dividers>
+          {selected && (
+            <Box sx={{ display: 'grid', gap: 2.5, py: 1 }}>
+              <Box>
+                <Typography variant="caption" color="text.secondary">Product Name</Typography>
+                <Typography variant="h6" fontWeight="600">{selected.name}</Typography>
               </Box>
-            </DialogContent>
-          </>
-        )}
+              <Box sx={{ display: 'flex', gap: 4 }}>
+                <Box>
+                  <Typography variant="caption" color="text.secondary">Price</Typography>
+                  <Typography variant="body1" fontWeight="700" color="primary">${selected.price}</Typography>
+                </Box>
+                <Box>
+                  <Typography variant="caption" color="text.secondary">Category</Typography>
+                  <Typography variant="body1">{selected.category}</Typography>
+                </Box>
+              </Box>
+              <Divider />
+              <Box>
+                <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>Account Credentials</Typography>
+                <Paper variant="outlined" sx={{ p: 2, bgcolor: '#FAFAFA' }}>
+                  <Typography variant="body2"><strong>Email:</strong> {selected.email}</Typography>
+                  <Typography variant="body2"><strong>Password:</strong> {selected.password}</Typography>
+                </Paper>
+              </Box>
+              <Box>
+                <Typography variant="caption" color="text.secondary">Description</Typography>
+                <Typography variant="body2">{selected.description}</Typography>
+              </Box>
+            </Box>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* EDIT STATUS DIALOG: স্ট্যাটাস আপডেট করার জন্য */}
+      <Dialog open={openEdit} onClose={() => setOpenEdit(false)} PaperProps={{ sx: { borderRadius: 3, width: '100%', maxWidth: '350px' } }}>
+        <DialogTitle sx={{ fontWeight: 700 }}>Update Status</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" sx={{ mb: 3, color: '#666' }}>
+            Change status for <strong>{selected?.name}</strong>
+          </Typography>
+          <FormControl fullWidth>
+            <InputLabel>Status</InputLabel>
+            <Select value={newStatus} label="Status" onChange={(e) => setNewStatus(e.target.value)}>
+              <MenuItem value="active">Active</MenuItem>
+              <MenuItem value="pending">Pending</MenuItem>
+              <MenuItem value="reject">Reject</MenuItem>
+              <MenuItem value="sold">Sold</MenuItem>
+            </Select>
+          </FormControl>
+          <Button 
+            fullWidth 
+            variant="contained" 
+            onClick={handleUpdateStatus} 
+            sx={{ mt: 3, bgcolor: "#33ac6f", borderRadius: 2, py: 1.2, textTransform: 'none', fontWeight: 600, '&:hover': { bgcolor: '#2a8e5b' } }}
+          >
+            Confirm Update
+          </Button>
+        </DialogContent>
       </Dialog>
     </Box>
   );
