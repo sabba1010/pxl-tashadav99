@@ -495,85 +495,135 @@ export default function Navbar() {
 
                     {/* Menu Items */}
                     <div className="py-2">
-                      {[
-                        {
-                          to: "/admin-dashboard",
-                          icon: "account",
-                          label: "My Account Dashboard",
-                        },
-                        { to: "/referral", icon: "users", label: "Referral" },
-                        { to: "/plans", icon: "star", label: "Plans" },
-                        {
-                          to: "/purchases",
-                          icon: "bag",
-                          label: "My Purchases",
-                        },
-                        {
-                          to: "/account-settings",
-                          icon: "settings",
-                          label: "Account Settings",
-                        },
-                      ].map((item) => (
-                        <NavLink
-                          key={item.to}
-                          to={item.to}
-                          onClick={() => setOpen(false)}
-                          className="flex items-center gap-4 px-6 py-3 hover:bg-gray-50 transition"
-                          style={{ color: CHARCOAL }}
-                        >
-                          <svg
-                            className="w-5 h-5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
+                      {/* Dashboard */}
+                      {loginUser?.role === "admin" ? (
+                        <>
+                          {" "}
+                          <NavLink
+                            to="/admin-dashboard"
+                            onClick={() => setOpen(false)}
+                            className="flex items-center gap-4 px-6 py-3 hover:bg-gray-50 transition"
+                            style={{ color: CHARCOAL }}
                           >
-                            {item.icon === "account" && (
+                            <svg
+                              className="w-5 h-5"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
                               <path
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
                                 strokeWidth={2}
                                 d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
                               />
-                            )}
-                            {item.icon === "users" && (
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6 6 0 0112 0v-1M9 10h.01M15 10h.01"
-                              />
-                            )}
-                            {item.icon === "star" && (
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.884 5.794a1 1 0 00.951.69h6.083c.969 0 .689 1.24-.289 1.043l-4.923 3.578a1 1 0 00-.364 1.118l1.884 5.794c.3.921-.755.688-1.239.303L12 17.727l-4.923 3.578c-.484.385-1.539.618-1.239-.303l1.884-5.794a1 1 0 00-.364-1.118L2.435 10.454c-.978-.197-.258-1.437.711-1.043h6.083a1 1 0 00.951-.69l1.884-5.794z"
-                              />
-                            )}
-                            {item.icon === "bag" && (
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
-                              />
-                            )}
-                            {item.icon === "settings" && (
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065zM15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                              />
-                            )}
-                          </svg>
-                          <span className="text-sm font-medium">
-                            {item.label}
-                          </span>
-                        </NavLink>
-                      ))}
+                            </svg>
+                            <span className="text-sm font-medium">
+                              My Account Dashboard
+                            </span>
+                          </NavLink>
+                        </>
+                      ) : (
+                        ""
+                      )}
 
+                      {/* Referral */}
+                      <NavLink
+                        to="/referral"
+                        onClick={() => setOpen(false)}
+                        className="flex items-center gap-4 px-6 py-3 hover:bg-gray-50 transition"
+                        style={{ color: CHARCOAL }}
+                      >
+                        <svg
+                          className="w-5 h-5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1M9 10h.01M15 10h.01"
+                          />
+                        </svg>
+                        <span className="text-sm font-medium">Referral</span>
+                      </NavLink>
+
+                      {/* Plans */}
+                      <NavLink
+                        to="/plans"
+                        onClick={() => setOpen(false)}
+                        className="flex items-center gap-4 px-6 py-3 hover:bg-gray-50 transition"
+                        style={{ color: CHARCOAL }}
+                      >
+                        <svg
+                          className="w-5 h-5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.884 5.794a1 1 0 00.951.69h6.083c.969 0 .689 1.24-.289 1.043l-4.923 3.578a1 1 0 00-.364 1.118l1.884 5.794c.3.921-.755.688-1.239.303L12 17.727l-4.923 3.578c-.484.385-1.539.618-1.239-.303l1.884-5.794a1 1 0 00-.364-1.118L2.435 10.454c-.978-.197-.258-1.437.711-1.043h6.083a1 1 0 00.951-.69l1.884-5.794z"
+                          />
+                        </svg>
+                        <span className="text-sm font-medium">Plans</span>
+                      </NavLink>
+
+                      {/* Purchases */}
+                      <NavLink
+                        to="/purchases"
+                        onClick={() => setOpen(false)}
+                        className="flex items-center gap-4 px-6 py-3 hover:bg-gray-50 transition"
+                        style={{ color: CHARCOAL }}
+                      >
+                        <svg
+                          className="w-5 h-5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+                          />
+                        </svg>
+                        <span className="text-sm font-medium">
+                          My Purchases
+                        </span>
+                      </NavLink>
+
+                      {/* Account Settings */}
+                      <NavLink
+                        to="/account-settings"
+                        onClick={() => setOpen(false)}
+                        className="flex items-center gap-4 px-6 py-3 hover:bg-gray-50 transition"
+                        style={{ color: CHARCOAL }}
+                      >
+                        <svg
+                          className="w-5 h-5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065zM15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                          />
+                        </svg>
+                        <span className="text-sm font-medium">
+                          Account Settings
+                        </span>
+                      </NavLink>
+
+                      {/* Logout */}
                       <button
                         onClick={handelLougt}
                         className="w-full flex items-center gap-4 px-6 py-3 hover:bg-yellow-50 transition text-left"
