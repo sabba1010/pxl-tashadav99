@@ -73,7 +73,7 @@ const FAQSection: React.FC = () => {
   };
 
   return (
-    <section className="py-16 md:py-24 bg-gradient-to-b from-[#002a5c] to-[#00183b] text-white overflow-hidden">
+    <section className="pt-6 pb-10 md:py-24 bg-gradient-to-b from-[#002a5c] to-[#00183b] text-white overflow-hidden">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
