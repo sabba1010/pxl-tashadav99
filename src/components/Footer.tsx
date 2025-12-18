@@ -130,7 +130,7 @@ export default function Footer({ theme = "dark" }: Props) {
           <p>© {currentYear} AAcctEmpire. All rights reserved.</p>
           <div className="flex items-center gap-6">
             <a href="#" className={linkHoverClass}>Terms of Service</a>
-            <a href="#" className={linkHoverClass}>Privacy Policy</a>
+            <a href="/privacy" className={linkHoverClass}>Privacy Policy</a>
             <a href="#" className={linkHoverClass}>Cookie Policy</a>
           </div>
         </div>
