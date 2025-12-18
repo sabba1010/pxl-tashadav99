@@ -3,7 +3,7 @@ import ExplorebyCategory from "./ExplorebyCategory";
 
 const WhyChooseUs = () => {
   return (
-    <section className="py-16 px-6 md:px-12 lg:px-20 bg-gradient-to-b from-gray-50 to-white">
+    <section className="pt-16 pb-6 px-6 md:px-12 lg:px-20 bg-gradient-to-b from-gray-50 to-white">
       <div className="max-w-7xl mx-auto space-y-12">
         {/* Why Choose Us */}
         <div className="text-center">

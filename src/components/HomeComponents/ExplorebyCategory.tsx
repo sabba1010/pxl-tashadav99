@@ -16,7 +16,7 @@ const ExplorebyCategory: React.FC = () => {
   ];
 
   return (
-    <section className="pt-0 pb-12 px-6 md:px-12 lg:px-20">
+    <section className="pt-0 px-6 md:px-12 lg:px-20">
       <div className="max-w-7xl mx-auto text-center mb-12">
         <h2 className="text-3xl md:text-5xl lg:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#c49322] to-[#f0c14a] mb-4">
           Why Choose Us
