@@ -3,6 +3,7 @@ import { Delete, Edit, Plus, Trash } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import Loading from "../Loading";
 
 type Status = "restore" | "active" | "pending" | "denied" | "approved";
 
@@ -29,7 +30,6 @@ const TABS: string[] = ["All", "Active", "Pending", "Denied", "Restore"];
 const MyAds: React.FC = () => {
   const navigate = useNavigate();
   const user = useAuth();
-  console.log(user.user);
   const [activeTab, setActiveTab] = useState<string>("All");
   const [items, setItems] = useState<Ad[]>([]);
   const [loading, setLoading] = useState(true);
@@ -106,7 +106,12 @@ const MyAds: React.FC = () => {
     return st ? st.charAt(0).toUpperCase() + st.slice(1) : "Unknown";
   };
 
-  if (loading) return <div className="text-center mt-10">Loading...</div>;
+  if (loading)
+    return (
+      <div className="text-center mt-10">
+        <Loading />
+      </div>
+    );
 
   return (
     <div className="min-h-screen bg-[#F3EFEE] pt-16 sm:pt-20 pb-20 sm:pb-24">

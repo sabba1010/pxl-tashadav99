@@ -30,21 +30,22 @@ import Mysells from "../dashboard/buyer-dahboard/Mysells";
 import MyOrder from "../components/MyOrder/MyOrder";
 import Plan from "../pages/plan/Plan";
 
-import PaymentForm from "../components/Payment/PaymentForm";
 import PrivacyPolicy from "../components/Policy/PrivacyPolicy";
 import ReferralProgram from "../components/Policy/ReferralProgram";
 import RefundPolicy from "../components/Policy/RefundPolicy";
-import WhyChooseUs from "../pages/why/WhyChooseUs";
 import RatingsReputationPanel from "../dashboard/admin-dashboard/RatingsReputationPanel";
+import WhyChooseUs from "../pages/why/WhyChooseUs";
+
+import MyAds from "../components/Myproducts/MyAds";
+import Post from "../components/Notification/Post";
+import SellerPay from "../components/Seller/SellerPay";
 import SellerAccount from "../dashboard/admin-dashboard/SellerAccount";
 import AddAccountCredentials from "../dashboard/buyer-dahboard/AddAccount";
 import Review from "../dashboard/buyer-dahboard/Review";
-import PrivateRoute from "./PrivateRoute";
-import Post from "../components/Notification/Post";
 import SellForm from "../dashboard/user-dashboard/SellForm";
+import PrivateRoute from "./PrivateRoute";
 import SellerRoute from "./SellerRoute";
-import SellerPay from "../components/Seller/SellerPay";
-import MyAds from "../components/Myproducts/MyAds";
+import PaymentForm from './../components/Payment/PaymentForm';
 
 
 const Routes = createBrowserRouter([
