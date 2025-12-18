@@ -6,7 +6,6 @@ import {
   Search,
   Visibility,
   Save,
-  ContentCopy,
 } from "@mui/icons-material";
 import {
   Box,
@@ -37,7 +36,7 @@ import {
 } from "@mui/material";
 import React, { useEffect, useMemo, useState } from "react";
 
-// Interface based on your real data structure
+// এপিআই থেকে আসা ডাটা স্ট্রাকচার অনুযায়ী ইন্টারফেস
 interface Listing {
   _id: string;
   category: string;
@@ -63,15 +62,14 @@ const ListingsPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
-  const [sortBy, setSortBy] = useState<keyof Listing | "">("");
-  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   
-  // Modal States
+  // ডায়ালগ এবং সিলেক্টেড আইটেম স্টেট
   const [openEdit, setOpenEdit] = useState(false);
   const [openView, setOpenView] = useState(false);
   const [selected, setSelected] = useState<Listing | null>(null);
   const [newStatus, setNewStatus] = useState("");
 
+  // কম্পোনেন্ট লোড হওয়ার সময় ডাটা ফেচ করা
   useEffect(() => {
     fetchData();
   }, []);
@@ -88,20 +86,26 @@ const ListingsPage: React.FC = () => {
     }
   };
 
+  // স্ট্যাটাস পরিবর্তনের পর সরাসরি ব্যাকএন্ডে হিট করার ফাংশন
   const handleUpdateStatus = async () => {
     if (!selected) return;
     try {
       const response = await fetch(`http://localhost:3200/product/update-status/${selected._id}`, {
-        method: 'PATCH',
+        method: 'PATCH', // ব্যাকএন্ড অনুযায়ী PATCH বা PUT ব্যবহার করুন
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus })
       });
+      
       if (response.ok) {
+        // ডাটাবেজে আপডেট হলে ফ্রন্টএন্ড স্টেটও আপডেট হবে
         setListings(prev => prev.map(item => item._id === selected._id ? { ...item, status: newStatus } : item));
         setOpenEdit(false);
+      } else {
+        alert("Failed to update status on server.");
       }
     } catch (error) {
       console.error("Update failed:", error);
+      alert("Error connecting to backend.");
     }
   };
 
@@ -117,6 +121,7 @@ const ListingsPage: React.FC = () => {
     return filtered.slice(start, start + ITEMS_PER_PAGE);
   }, [filtered, page]);
 
+  // স্ট্যাটাস অনুযায়ী ডিজাইন স্টাইল
   const getStatusStyles = (status: string) => {
     switch (status?.toLowerCase()) {
       case "active": return { color: "#34C759", bg: "#E8F9EE" };
@@ -131,7 +136,7 @@ const ListingsPage: React.FC = () => {
 
   return (
     <Box sx={{ p: 4, bgcolor: "#F9FAFB", minHeight: "100vh" }}>
-      {/* Header Section */}
+      {/* হেডার এবং সার্চ বার */}
       <Paper elevation={0} sx={{ p: 4, mb: 4, borderRadius: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid #F2F2F2' }}>
         <Typography variant="h5" fontWeight="700" sx={{ color: "#111827" }}>
           Listings ({filtered.length})
@@ -151,7 +156,7 @@ const ListingsPage: React.FC = () => {
         </Box>
       </Paper>
 
-      {/* Table Section */}
+      {/* টেবিল ডিজাইন */}
       <TableContainer component={Paper} elevation={0} sx={{ borderRadius: 4, border: '1px solid #F2F2F2', overflow: 'hidden' }}>
         <Table>
           <TableHead sx={{ bgcolor: "#F9FAFB" }}>
@@ -201,7 +206,7 @@ const ListingsPage: React.FC = () => {
         </Table>
       </TableContainer>
 
-      {/* Pagination */}
+      {/* পেজিনেশন */}
       <Box display="flex" justifyContent="center" mt={4}>
         <Pagination 
           count={Math.ceil(filtered.length / ITEMS_PER_PAGE)} 
@@ -213,7 +218,7 @@ const ListingsPage: React.FC = () => {
         />
       </Box>
 
-      {/* VIEW DIALOG */}
+      {/* VIEW DIALOG: শুধুমাত্র তথ্য দেখার জন্য */}
       <Dialog open={openView} onClose={() => setOpenView(false)} fullWidth maxWidth="sm" PaperProps={{ sx: { borderRadius: 3 } }}>
         <DialogTitle sx={{ fontWeight: 700, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: '#F9FAFB' }}>
           Product Details
@@ -253,7 +258,7 @@ const ListingsPage: React.FC = () => {
         </DialogContent>
       </Dialog>
 
-      {/* EDIT STATUS DIALOG */}
+      {/* EDIT STATUS DIALOG: স্ট্যাটাস আপডেট করার জন্য */}
       <Dialog open={openEdit} onClose={() => setOpenEdit(false)} PaperProps={{ sx: { borderRadius: 3, width: '100%', maxWidth: '350px' } }}>
         <DialogTitle sx={{ fontWeight: 700 }}>Update Status</DialogTitle>
         <DialogContent>
@@ -275,7 +280,7 @@ const ListingsPage: React.FC = () => {
             onClick={handleUpdateStatus} 
             sx={{ mt: 3, bgcolor: "#33ac6f", borderRadius: 2, py: 1.2, textTransform: 'none', fontWeight: 600, '&:hover': { bgcolor: '#2a8e5b' } }}
           >
-            Save Changes
+            Confirm Update
           </Button>
         </DialogContent>
       </Dialog>
