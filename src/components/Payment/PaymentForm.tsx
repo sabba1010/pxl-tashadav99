@@ -37,6 +37,7 @@ export default function PaymentForm({ endpoint = "http://localhost:3200/api/subm
         amount,
         transactionId,
         message,
+        status: "Pending"
       };
 
       const res = await fetch(endpoint, {

@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { FaPlus, FaArrowUp } from "react-icons/fa";
+import { useAuthHook } from "../../hook/useAuthHook";
 
 const FaPlusIcon = FaPlus as unknown as React.ComponentType<any>;
 const FaArrowUpIcon = FaArrowUp as unknown as React.ComponentType<any>;
@@ -14,7 +15,7 @@ type Tx = {
   note?: string;
 };
 
-const FAKE_BALANCE = 123.45;
+// const FAKE_BALANCE = loginUserData.data?.balance
 const sampleManualDeposits: Tx[] = [
   { id: "m-1", type: "manual-deposit", amount: 50, status: "pending", date: "2025-11-25", note: "bKash trx 12345" },
   { id: "m-2", type: "manual-deposit", amount: 100, status: "completed", date: "2025-11-18", note: "Bank transfer" },
@@ -32,12 +33,12 @@ export default function Wallet(): React.ReactElement {
   const CHARCOAL = "#111111";
   const EMERALD = "#1BC47D";
 
-  const [balance] = useState<number>(FAKE_BALANCE);
   const [activeTab, setActiveTab] = useState<"online" | "manual" | "withdraw">("manual");
 
   const [onlineDeposits] = useState<Tx[]>(sampleOnlineDeposits);
   const [manualDeposits] = useState<Tx[]>(sampleManualDeposits);
   const [withdrawals] = useState<Tx[]>(sampleWithdrawals);
+  const loginUserData = useAuthHook();
 
   const mounted = useRef(true);
   useEffect(() => {
@@ -118,7 +119,7 @@ export default function Wallet(): React.ReactElement {
             >
               <div className="text-lg opacity-90">Available Balance</div>
               <div className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight">
-                ${balance.toFixed(2)}
+                ${loginUserData.data?.balance}
               </div>
               <div className="text-sm opacity-80">Updated just now</div>
             </div>

@@ -46,6 +46,7 @@ import SellForm from "../dashboard/user-dashboard/SellForm";
 import PrivateRoute from "./PrivateRoute";
 import SellerRoute from "./SellerRoute";
 import PaymentForm from './../components/Payment/PaymentForm';
+import AdminRoute from "./AdminRoute";
 
 
 const Routes = createBrowserRouter([
@@ -161,9 +162,9 @@ const Routes = createBrowserRouter([
   {
     path: "admin-dashboard",
     element: (
-      <PrivateRoute>
+      <AdminRoute>
         <AdminAdmins />
-      </PrivateRoute>
+      </AdminRoute>
     ),
     children: [
       {
