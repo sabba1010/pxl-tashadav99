@@ -73,7 +73,7 @@ const TotalListings: React.FC = () => {
 
   const fetchData = async () => {
     try {
-      const response = await fetch("https://vps-backend-server-beta.vercel.app/product/all-sells");
+      const response = await fetch("http://localhost:3200/product/all-sells");
       const data = await response.json();
       setListings(data);
     } catch (error) {
@@ -94,7 +94,7 @@ const TotalListings: React.FC = () => {
     }
 
     try {
-      const response = await fetch(`https://vps-backend-server-beta.vercel.app/product/update-status/${selected._id}`, {
+      const response = await fetch(`http://localhost:3200/product/update-status/${selected._id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 

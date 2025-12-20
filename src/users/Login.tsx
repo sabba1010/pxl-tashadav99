@@ -21,7 +21,7 @@ const Login = () => {
     }
 
     try {
-      const res = await axios.post<{success:any, user: any}>("https://vps-backend-server-beta.vercel.app/api/user/login", {
+      const res = await axios.post<{success:any, user: any}>("http://localhost:3200/api/user/login", {
         email,
         password,
       });

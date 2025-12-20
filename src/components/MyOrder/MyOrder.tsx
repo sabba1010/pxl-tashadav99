@@ -124,7 +124,7 @@ const MyOrder: React.FC = () => {
   const fetchMessages = async () => {
     if (!activeSellerId) return;
     try {
-      const res = await axios.get(`https://vps-backend-server-beta.vercel.app/chat/history/${buyerId}/${activeSellerId}`);
+      const res = await axios.get(`http://localhost:3200/chat/history/${buyerId}/${activeSellerId}`);
       setMessages(res.data as ChatMessage[]);
     } catch (err) { console.error("Chat Error:", err); }
   };
@@ -144,7 +144,7 @@ const MyOrder: React.FC = () => {
     e.preventDefault();
     if (!typedMsg.trim() || !activeSellerId) return;
     try {
-      await axios.post("https://vps-backend-server-beta.vercel.app/chat/send", { senderId: buyerId, receiverId: activeSellerId, message: typedMsg });
+      await axios.post("http://localhost:3200/chat/send", { senderId: buyerId, receiverId: activeSellerId, message: typedMsg });
       setTypedMsg("");
       fetchMessages();
     } catch (err) { console.error("Send Error:", err); }

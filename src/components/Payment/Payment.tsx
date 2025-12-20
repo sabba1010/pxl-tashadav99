@@ -144,7 +144,7 @@ const Payment: React.FC = () => {
                     onClick={async () => {
                       try {
                         // call your backend route
-                        const res = await fetch('https://vps-backend-server-beta.vercel.app/flutterwave/create', {
+                        const res = await fetch('http://localhost:3200/flutterwave/create', {
                           method: 'POST',
                           headers: { 'Content-Type': 'application/json' },
                           body: JSON.stringify({ name: 'Rubel Mia', email: 'test@gmail.com', amount: finalAmount }),
