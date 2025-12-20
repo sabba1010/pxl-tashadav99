@@ -19,12 +19,10 @@ const ITEMS_PER_PAGE = 5;
 
 /* ====================== API FUNCTIONS ====================== */
 const fetchPayments = async (): Promise<DepositRequest[]> => {
-  const response = await axios.get<DepositRequest[]>(
-    "http://localhost:3200/payments"
-  );
-
-  return response.data;
+  const response = await axios.get("http://localhost:3200/payments");
+  return response.data as DepositRequest[];
 };
+
 
 const updatePaymentStatus = async ({
   id,

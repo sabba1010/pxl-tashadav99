@@ -114,7 +114,7 @@ const SellForm: React.FC = () => {
   const handleSubmit = async () => {
     console.log("Submitted:", formData);
     try {
-      const response = await axios.post<{ acknowledged: boolean }>(
+      const response = await axios.post<{ acknowledged: any }>(
         "http://localhost:3200/product/sell",
         formData
       );

@@ -49,9 +49,10 @@ useEffect(() => {
         "http://localhost:3200/product/all-sells"
       );
 
-      const userAds = res.data.filter(
-        (ad) => ad.userEmail === user.user?.email
-      );
+   const userAds = res.data.filter(
+  (ad: { userEmail: string }) => ad.userEmail === user.user?.email
+);
+
 
       setItems(userAds);
     } catch (err) {

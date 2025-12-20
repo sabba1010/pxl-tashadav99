@@ -197,16 +197,18 @@ const MyPurchase: React.FC = () => {
   const buyerId = "currentBuyer123"; 
   const CHAT_API = "http://localhost:3200/chat";
 
-  const fetchChat = async (sId: string) => {
-    try {
-      const res = await axios.get<IMessage[]>(
-        `${CHAT_API}/history/${buyerId}/${sId}`
-      );
-      setChatMessages(res.data);
-    } catch (err) {
-      console.error("Chat fetch error:", err);
-    }
-  };
+const fetchChat = async (sId: string) => {
+  try {
+    const res = await axios.get(
+      `${CHAT_API}/history/${buyerId}/${sId}`
+    );
+
+    setChatMessages(res.data as IMessage[]);
+  } catch (err) {
+    console.error("Chat fetch error:", err);
+  }
+};
+
 
   useEffect(() => {
     let timer: any;

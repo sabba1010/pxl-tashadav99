@@ -41,15 +41,16 @@ export default function KoraPayment({
     try {
       setLoading(true);
 
-      const response = await axios.post<PaymentResponse>(
-        "http://localhost:3200/korapay/create",
-        { amount, user, currency }, // currency যদি লাগে backend এ
-        { headers: { "Content-Type": "application/json" } }
-      );
+     const response = await axios.post(
+  "http://localhost:3200/korapay/create",
+  { amount, user, currency },
+  { headers: { "Content-Type": "application/json" } }
+);
 
-      console.log("KoraPay response:", response.data);
+const data = response.data as PaymentResponse;
 
-      const { checkoutUrl } = response.data;
+const { checkoutUrl } = data;
+
 
       if (checkoutUrl) {
         window.location.href = checkoutUrl;
