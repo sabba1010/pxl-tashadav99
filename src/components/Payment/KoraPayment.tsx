@@ -13,9 +13,9 @@ interface PaymentResponse {
 }
 
 interface KoraPaymentProps {
-  amount: number;        // এখানে dynamic amount আসবে
+  amount: number; // এখানে dynamic amount আসবে
   currency?: "NGN" | "USD" | "GHS"; // optional, default NGN
-  user?: UserData;       // optional, default value দিয়ে রাখা যাবে
+  user?: UserData; // optional, default value দিয়ে রাখা যাবে
 }
 
 export default function KoraPayment({

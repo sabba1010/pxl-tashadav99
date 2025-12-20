@@ -19,7 +19,7 @@ interface User {
   accountCreationDate: string; // ISO Date string
   referralCode?: string;
   // UI Specific fields (Optional or Defaults applied in UI)
-  isActive?: boolean; 
+  isActive?: boolean;
   activationFeePaid?: boolean;
   walletBalanceUSD?: number;
 }
@@ -194,9 +194,10 @@ const UserModal: React.FC<{
               )}
             </div>
           )}
-          
+
           <div className="pt-2 text-xs text-gray-400">
-            Account Created: {new Date(user.accountCreationDate).toLocaleDateString()} <br/>
+            Account Created:{" "}
+            {new Date(user.accountCreationDate).toLocaleDateString()} <br />
             User ID: <span className="font-mono">{user._id}</span>
           </div>
         </div>
@@ -243,7 +244,7 @@ const AllUsers: React.FC = () => {
       setLoading(true);
       const response = await fetch("http://localhost:3200/api/user/getall");
       const data = await response.json();
-      
+
       // Ensure data is array, if your API wraps it in { users: [...] } adjust accordingly
       if (Array.isArray(data)) {
         setUsers(data);
@@ -320,12 +321,13 @@ const AllUsers: React.FC = () => {
   const handleSave = useCallback((updated: User) => {
     // In real app, call API update here (e.g., PUT /api/user/update)
     // For now, update local state
-    setUsers(prev => prev.map(u => u._id === updated._id ? updated : u));
+    setUsers((prev) => prev.map((u) => (u._id === updated._id ? updated : u)));
     setModalOpen(false);
   }, []);
 
   // Helper for role color logic
-  const getRoleColor = (role: string) => role.toLowerCase() === "seller" ? "#D1A148" : "#33ac6f";
+  const getRoleColor = (role: string) =>
+    role.toLowerCase() === "seller" ? "#D1A148" : "#33ac6f";
   const isSeller = (role: string) => role.toLowerCase() === "seller";
 
   return (
@@ -335,188 +337,188 @@ const AllUsers: React.FC = () => {
         <h2 className="text-xl font-bold text-gray-800">
           All Users ({sortedUsers.length})
         </h2>
-        
+
         <div className="flex gap-2">
-            <button 
-                onClick={fetchUsers}
-                className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 transition"
-                title="Refresh Data"
-            >
-                ↻
-            </button>
-            <div className="relative w-64">
+          <button
+            onClick={fetchUsers}
+            className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 transition"
+            title="Refresh Data"
+          >
+            ↻
+          </button>
+          <div className="relative w-64">
             <Search
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                fontSize="small"
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+              fontSize="small"
             />
             <input
-                type="text"
-                placeholder="Search name, email, phone..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-xl focus:ring-[#33ac6f] focus:border-[#33ac6f] transition"
+              type="text"
+              placeholder="Search name, email, phone..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-xl focus:ring-[#33ac6f] focus:border-[#33ac6f] transition"
             />
-            </div>
+          </div>
         </div>
       </div>
 
       {/* Table */}
       <div className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 overflow-hidden min-h-[400px]">
         {loading ? (
-           <div className="flex justify-center items-center h-64">
-               <CircularProgress style={{ color: '#33ac6f' }} />
-           </div>
+          <div className="flex justify-center items-center h-64">
+            <CircularProgress style={{ color: "#33ac6f" }} />
+          </div>
         ) : (
-        <table className="w-full">
-          <thead className="bg-gradient-to-r from-gray-50 to-white">
-            <tr>
-              <th
-                className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase cursor-pointer"
-                onClick={() => handleSort("_id")}
-              >
-                ID{" "}
-                {sortBy === "_id" &&
-                  (sortOrder === "asc" ? (
-                    <ArrowUpward fontSize="small" />
-                  ) : (
-                    <ArrowDownward fontSize="small" />
-                  ))}
-              </th>
-              <th
-                className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase cursor-pointer"
-                onClick={() => handleSort("name")}
-              >
-                User Info{" "}
-                {sortBy === "name" &&
-                  (sortOrder === "asc" ? (
-                    <ArrowUpward fontSize="small" />
-                  ) : (
-                    <ArrowDownward fontSize="small" />
-                  ))}
-              </th>
-              <th
-                className="px-6 py-4 text-center text-xs font-semibold text-gray-500 uppercase cursor-pointer"
-                onClick={() => handleSort("role")}
-              >
-                Role{" "}
-                {sortBy === "role" &&
-                  (sortOrder === "asc" ? (
-                    <ArrowUpward fontSize="small" />
-                  ) : (
-                    <ArrowDownward fontSize="small" />
-                  ))}
-              </th>
-              <th className="px-6 py-4 text-center text-xs font-semibold text-gray-500 uppercase">
-                Fee Paid
-              </th>
-              <th
-                className="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase cursor-pointer"
-                onClick={() => handleSort("walletBalanceUSD")}
-              >
-                Balance{" "}
-                {sortBy === "walletBalanceUSD" &&
-                  (sortOrder === "asc" ? (
-                    <ArrowUpward fontSize="small" />
-                  ) : (
-                    <ArrowDownward fontSize="small" />
-                  ))}
-              </th>
-              <th className="px-6 py-4 text-center text-xs font-semibold text-gray-500 uppercase">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {paginatedUsers.map((user) => (
-              <tr key={user._id} className="hover:bg-gray-50/50 transition">
-                <td className="px-6 py-4 text-sm text-gray-700 font-mono text-xs">
-                  {user._id.substring(0, 8)}...
-                </td>
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-3">
-                    <Avatar
-                      sx={{
-                        width: 32,
-                        height: 32,
-                        bgcolor: getRoleColor(user.role),
-                      }}
-                    >
-                      {user.name[0]?.toUpperCase()}
-                    </Avatar>
-                    <div>
-                      <p className="font-medium text-gray-900">{user.name}</p>
-                      <p className="text-xs text-gray-500">{user.email}</p>
-                    </div>
-                  </div>
-                </td>
-                <td className="px-6 py-4 text-center">
-                  <span
-                    className={`px-3 py-1 rounded-full text-xs font-semibold capitalize ${
-                      isSeller(user.role)
-                        ? "bg-[#D1A148]/20 text-[#D1A148]"
-                        : "bg-[#33ac6f]/20 text-[#33ac6f]"
-                    }`}
-                  >
-                    {user.role}
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-center">
-                  {isSeller(user.role) ? (
-                    <Tooltip
-                      title={user.activationFeePaid ? "Paid" : "Pending"}
-                    >
-                      <span
-                        className={`font-semibold ${
-                          user.activationFeePaid
-                            ? "text-[#33ac6f]"
-                            : "text-red-500"
-                        }`}
-                      >
-                        {user.activationFeePaid ? "Yes" : "No"}
-                      </span>
-                    </Tooltip>
-                  ) : (
-                    <span className="text-gray-400">—</span>
-                  )}
-                </td>
-                <td className="px-6 py-4 text-right font-semibold text-gray-900">
-                  {new Intl.NumberFormat("en-US", {
-                    style: "currency",
-                    currency: "USD",
-                  }).format(user.walletBalanceUSD || 0)}
-                </td>
-                <td className="px-6 py-4 text-center space-x-2">
-                  <Tooltip title="View">
-                    <button
-                      onClick={() => openModal(user, "view")}
-                      className="p-2 rounded-lg bg-[#33ac6f]/10 hover:bg-[#33ac6f]/20 transition"
-                    >
-                      <Visibility
-                        fontSize="small"
-                        className="text-[#33ac6f]"
-                      />
-                    </button>
-                  </Tooltip>
-                  <Tooltip title="Edit">
-                    <button
-                      onClick={() => openModal(user, "edit")}
-                      className="p-2 rounded-lg bg-[#D1A148]/10 hover:bg-[#D1A148]/20 transition"
-                    >
-                      <Edit fontSize="small" className="text-[#D1A148]" />
-                    </button>
-                  </Tooltip>
-                </td>
-              </tr>
-            ))}
-            {paginatedUsers.length === 0 && (
+          <table className="w-full">
+            <thead className="bg-gradient-to-r from-gray-50 to-white">
               <tr>
-                <td colSpan={6} className="text-center py-8 text-gray-500">
-                  No users found.
-                </td>
+                <th
+                  className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase cursor-pointer"
+                  onClick={() => handleSort("_id")}
+                >
+                  ID{" "}
+                  {sortBy === "_id" &&
+                    (sortOrder === "asc" ? (
+                      <ArrowUpward fontSize="small" />
+                    ) : (
+                      <ArrowDownward fontSize="small" />
+                    ))}
+                </th>
+                <th
+                  className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase cursor-pointer"
+                  onClick={() => handleSort("name")}
+                >
+                  User Info{" "}
+                  {sortBy === "name" &&
+                    (sortOrder === "asc" ? (
+                      <ArrowUpward fontSize="small" />
+                    ) : (
+                      <ArrowDownward fontSize="small" />
+                    ))}
+                </th>
+                <th
+                  className="px-6 py-4 text-center text-xs font-semibold text-gray-500 uppercase cursor-pointer"
+                  onClick={() => handleSort("role")}
+                >
+                  Role{" "}
+                  {sortBy === "role" &&
+                    (sortOrder === "asc" ? (
+                      <ArrowUpward fontSize="small" />
+                    ) : (
+                      <ArrowDownward fontSize="small" />
+                    ))}
+                </th>
+                <th className="px-6 py-4 text-center text-xs font-semibold text-gray-500 uppercase">
+                  Fee Paid
+                </th>
+                <th
+                  className="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase cursor-pointer"
+                  onClick={() => handleSort("walletBalanceUSD")}
+                >
+                  Balance{" "}
+                  {sortBy === "walletBalanceUSD" &&
+                    (sortOrder === "asc" ? (
+                      <ArrowUpward fontSize="small" />
+                    ) : (
+                      <ArrowDownward fontSize="small" />
+                    ))}
+                </th>
+                <th className="px-6 py-4 text-center text-xs font-semibold text-gray-500 uppercase">
+                  Actions
+                </th>
               </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {paginatedUsers.map((user) => (
+                <tr key={user._id} className="hover:bg-gray-50/50 transition">
+                  <td className="px-6 py-4 text-sm text-gray-700 font-mono text-xs">
+                    {user._id.substring(0, 8)}...
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-3">
+                      <Avatar
+                        sx={{
+                          width: 32,
+                          height: 32,
+                          bgcolor: getRoleColor(user.role),
+                        }}
+                      >
+                        {user.name[0]?.toUpperCase()}
+                      </Avatar>
+                      <div>
+                        <p className="font-medium text-gray-900">{user.name}</p>
+                        <p className="text-xs text-gray-500">{user.email}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 text-center">
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-semibold capitalize ${
+                        isSeller(user.role)
+                          ? "bg-[#D1A148]/20 text-[#D1A148]"
+                          : "bg-[#33ac6f]/20 text-[#33ac6f]"
+                      }`}
+                    >
+                      {user.role}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-center">
+                    {isSeller(user.role) ? (
+                      <Tooltip
+                        title={user.activationFeePaid ? "Paid" : "Pending"}
+                      >
+                        <span
+                          className={`font-semibold ${
+                            user.activationFeePaid
+                              ? "text-[#33ac6f]"
+                              : "text-red-500"
+                          }`}
+                        >
+                          {user.activationFeePaid ? "Yes" : "No"}
+                        </span>
+                      </Tooltip>
+                    ) : (
+                      <span className="text-gray-400">—</span>
+                    )}
+                  </td>
+                  <td className="px-6 py-4 text-right font-semibold text-gray-900">
+                    {new Intl.NumberFormat("en-US", {
+                      style: "currency",
+                      currency: "USD",
+                    }).format(user.walletBalanceUSD || 0)}
+                  </td>
+                  <td className="px-6 py-4 text-center space-x-2">
+                    <Tooltip title="View">
+                      <button
+                        onClick={() => openModal(user, "view")}
+                        className="p-2 rounded-lg bg-[#33ac6f]/10 hover:bg-[#33ac6f]/20 transition"
+                      >
+                        <Visibility
+                          fontSize="small"
+                          className="text-[#33ac6f]"
+                        />
+                      </button>
+                    </Tooltip>
+                    <Tooltip title="Edit">
+                      <button
+                        onClick={() => openModal(user, "edit")}
+                        className="p-2 rounded-lg bg-[#D1A148]/10 hover:bg-[#D1A148]/20 transition"
+                      >
+                        <Edit fontSize="small" className="text-[#D1A148]" />
+                      </button>
+                    </Tooltip>
+                  </td>
+                </tr>
+              ))}
+              {paginatedUsers.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="text-center py-8 text-gray-500">
+                    No users found.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         )}
       </div>
 
@@ -550,9 +552,7 @@ const AllUsers: React.FC = () => {
               </button>
             ))}
             <button
-              onClick={() =>
-                setCurrentPage((p) => Math.min(totalPages, p + 1))
-              }
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
               className="px-4 py-2 rounded-xl bg-gray-100 disabled:opacity-50 hover:bg-gray-200 transition"
             >

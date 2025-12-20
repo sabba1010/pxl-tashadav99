@@ -1,11 +1,7 @@
 import React, { useCallback, useMemo, useState } from "react";
 import axios from "axios";
 import { toast } from "sonner";
-import {
-  useQuery,
-  useMutation,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 /* ====================== TYPES ====================== */
 interface DepositRequest {
@@ -23,7 +19,10 @@ const ITEMS_PER_PAGE = 5;
 
 /* ====================== API FUNCTIONS ====================== */
 const fetchPayments = async (): Promise<DepositRequest[]> => {
-  const response = await axios.get<DepositRequest[]>("http://localhost:3200/payments");
+  const response = await axios.get<DepositRequest[]>(
+    "http://localhost:3200/payments"
+  );
+
   return response.data;
 };
 
@@ -155,19 +154,30 @@ const DepositModal: React.FC<{
         </div>
 
         <div className="p-6 space-y-2">
-          <DetailRow label="Request ID" value={<span className="font-mono text-xs">{request._id}</span>} />
+          <DetailRow
+            label="Request ID"
+            value={<span className="font-mono text-xs">{request._id}</span>}
+          />
           <DetailRow label="User Name" value={request.name} />
           <DetailRow
             label="Status"
             value={
-              <span className={`px-3 py-1 text-xs font-semibold rounded-full ${getStatusColor(request.status)}`}>
+              <span
+                className={`px-3 py-1 text-xs font-semibold rounded-full ${getStatusColor(
+                  request.status
+                )}`}
+              >
                 {request.status}
               </span>
             }
           />
           <DetailRow
             label="Amount"
-            value={<span className="text-lg font-extrabold text-gray-900">{formatCurrency(request.amount || 0)}</span>}
+            value={
+              <span className="text-lg font-extrabold text-gray-900">
+                {formatCurrency(request.amount || 0)}
+              </span>
+            }
           />
           <DetailRow label="Payment Method" value={request.paymentMethod} />
           <DetailRow
@@ -185,7 +195,9 @@ const DepositModal: React.FC<{
           )}
 
           <div className="pt-4">
-            <p className="text-sm font-medium text-gray-600 mb-1">Transaction ID:</p>
+            <p className="text-sm font-medium text-gray-600 mb-1">
+              Transaction ID:
+            </p>
             <p className="text-base text-gray-900 bg-gray-50 p-3 rounded-lg border border-gray-200 font-mono break-all">
               {request.transactionId}
             </p>
@@ -227,11 +239,15 @@ const DepositRequests: React.FC = () => {
   const queryClient = useQueryClient();
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortBy, setSortBy] = useState<"submittedAt" | "amount" | "status" | "name">("submittedAt");
+  const [sortBy, setSortBy] = useState<
+    "submittedAt" | "amount" | "status" | "name"
+  >("submittedAt");
   const [sortOrder, setSortOrder] = useState<"desc" | "asc">("desc");
   const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedRequest, setSelectedRequest] = useState<DepositRequest | null>(null);
+  const [selectedRequest, setSelectedRequest] = useState<DepositRequest | null>(
+    null
+  );
 
   // Fetch data
   const {
@@ -309,7 +325,9 @@ const DepositRequests: React.FC = () => {
           comp = a.name.localeCompare(b.name);
           break;
         default:
-          comp = new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime();
+          comp =
+            new Date(b.submittedAt).getTime() -
+            new Date(a.submittedAt).getTime();
       }
       return sortOrder === "asc" ? comp : -comp;
     });
@@ -325,22 +343,39 @@ const DepositRequests: React.FC = () => {
   const totalPages = Math.ceil(filteredAndSorted.length / ITEMS_PER_PAGE);
 
   const formatCurrency = (amount = 0) =>
-    new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(amount);
+    new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+    }).format(amount);
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "Approved": return "bg-green-100 text-green-800";
-      case "Pending": return "bg-yellow-100 text-yellow-800";
-      case "Rejected": return "bg-red-100 text-red-800";
-      default: return "bg-gray-100 text-gray-800";
+      case "Approved":
+        return "bg-green-100 text-green-800";
+      case "Pending":
+        return "bg-yellow-100 text-yellow-800";
+      case "Rejected":
+        return "bg-red-100 text-red-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
 
   const SortIndicator = ({ column }: { column: typeof sortBy }) =>
-    sortBy === column ? (sortOrder === "asc" ? <span>↑</span> : <span>↓</span>) : null;
+    sortBy === column ? (
+      sortOrder === "asc" ? (
+        <span>↑</span>
+      ) : (
+        <span>↓</span>
+      )
+    ) : null;
 
   if (isError) {
-    return <div className="p-10 text-center text-red-600">Error: {(error as Error)?.message}</div>;
+    return (
+      <div className="p-10 text-center text-red-600">
+        Error: {(error as Error)?.message}
+      </div>
+    );
   }
 
   if (isLoading && requests.length === 0) {
@@ -356,7 +391,9 @@ const DepositRequests: React.FC = () => {
         </h3>
         <div className="flex gap-2 w-full sm:w-auto">
           <button
-            onClick={() => queryClient.refetchQueries({ queryKey: ["payments"] })}
+            onClick={() =>
+              queryClient.refetchQueries({ queryKey: ["payments"] })
+            }
             className="bg-white border p-2 rounded-lg hover:bg-gray-100 text-gray-600"
             disabled={isLoading}
           >
@@ -391,10 +428,13 @@ const DepositRequests: React.FC = () => {
               ].map((h) => (
                 <th
                   key={h.title}
-                  className={`px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider ${h.col ? "cursor-pointer hover:bg-gray-100" : ""}`}
+                  className={`px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider ${
+                    h.col ? "cursor-pointer hover:bg-gray-100" : ""
+                  }`}
                   onClick={() => h.col && handleSort(h.col as typeof sortBy)}
                 >
-                  {h.title} {h.col && <SortIndicator column={h.col as typeof sortBy} />}
+                  {h.title}{" "}
+                  {h.col && <SortIndicator column={h.col as typeof sortBy} />}
                 </th>
               ))}
             </tr>
@@ -403,11 +443,15 @@ const DepositRequests: React.FC = () => {
             {paginated.length > 0 ? (
               paginated.map((r) => (
                 <tr key={r._id} className="hover:bg-indigo-50/50">
-                  <td className="px-6 py-4 text-sm font-medium text-gray-900">{r.name}</td>
+                  <td className="px-6 py-4 text-sm font-medium text-gray-900">
+                    {r.name}
+                  </td>
                   <td className="px-6 py-4 text-sm text-gray-700">
                     {new Date(r.submittedAt).toLocaleDateString()}
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-700">{r.paymentMethod}</td>
+                  <td className="px-6 py-4 text-sm text-gray-700">
+                    {r.paymentMethod}
+                  </td>
                   <td className="px-6 py-4 text-xs text-gray-500 font-mono">
                     {r.transactionId.substring(0, 8)}...
                   </td>
@@ -415,7 +459,11 @@ const DepositRequests: React.FC = () => {
                     {formatCurrency(r.amount || 0)}
                   </td>
                   <td className="px-6 py-4 text-center">
-                    <span className={`px-3 py-1 text-xs font-semibold rounded-full ${getStatusColor(r.status)}`}>
+                    <span
+                      className={`px-3 py-1 text-xs font-semibold rounded-full ${getStatusColor(
+                        r.status
+                      )}`}
+                    >
                       {r.status}
                     </span>
                   </td>
@@ -454,7 +502,11 @@ const DepositRequests: React.FC = () => {
             <button
               key={i}
               onClick={() => setCurrentPage(i + 1)}
-              className={`px-4 py-2 rounded ${currentPage === i + 1 ? "bg-[#D1A148] text-white" : "bg-gray-200"}`}
+              className={`px-4 py-2 rounded ${
+                currentPage === i + 1
+                  ? "bg-[#D1A148] text-white"
+                  : "bg-gray-200"
+              }`}
             >
               {i + 1}
             </button>

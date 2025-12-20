@@ -7,6 +7,7 @@ export type NotificationPayload = {
   data?: Record<string, any>;
 };
 
+
 const API_BASE = process.env.REACT_APP_API_URL?.replace(/\/$/, "") ?? "http://localhost:3200";
 
 function getAuthHeaders(): Record<string, string> {
@@ -18,7 +19,8 @@ async function handleRes(res: Response) {
   const txt = await res.text();
   try {
     const parsed = txt ? JSON.parse(txt) : {};
-    if (!res.ok) throw new Error(parsed?.error || parsed?.message || res.statusText);
+    if (!res.ok)
+      throw new Error(parsed?.error || parsed?.message || res.statusText);
     return parsed;
   } catch (e: any) {
     if (!res.ok) throw new Error(txt || res.statusText);
@@ -28,7 +30,11 @@ async function handleRes(res: Response) {
 }
 
 /** helper to do fetch with timeout */
-async function fetchWithTimeout(input: RequestInfo, init?: RequestInit, timeoutMs = 8000) {
+async function fetchWithTimeout(
+  input: RequestInfo,
+  init?: RequestInit,
+  timeoutMs = 8000
+) {
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeoutMs);
   try {
@@ -42,14 +48,18 @@ async function fetchWithTimeout(input: RequestInfo, init?: RequestInit, timeoutM
 export async function sendNotification(payload: NotificationPayload) {
   const url = `${API_BASE}/api/notification/notify`;
   try {
-    const res = await fetchWithTimeout(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...getAuthHeaders(),
+    const res = await fetchWithTimeout(
+      url,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...getAuthHeaders(),
+        },
+        body: JSON.stringify(payload),
       },
-      body: JSON.stringify(payload),
-    }, 8000);
+      8000
+    );
     return await handleRes(res);
   } catch (err) {
     // don't throw blindly — bubble up or return null depending on your app needs
@@ -59,14 +69,20 @@ export async function sendNotification(payload: NotificationPayload) {
 }
 
 export async function getAllNotifications(userId?: string) {
-  const url = `${API_BASE}/api/notification/getall${userId ? "?userId=" + encodeURIComponent(userId) : ""}`;
+  const url = `${API_BASE}/api/notification/getall${
+    userId ? "?userId=" + encodeURIComponent(userId) : ""
+  }`;
   try {
-    const res = await fetchWithTimeout(url, {
-      headers: {
-        "Content-Type": "application/json",
-        ...getAuthHeaders(),
+    const res = await fetchWithTimeout(
+      url,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          ...getAuthHeaders(),
+        },
       },
-    }, 8000);
+      8000
+    );
     return await handleRes(res);
   } catch (err) {
     throw err;

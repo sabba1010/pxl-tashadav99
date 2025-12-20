@@ -45,9 +45,9 @@ import Review from "../dashboard/buyer-dahboard/Review";
 import SellForm from "../dashboard/user-dashboard/SellForm";
 import PrivateRoute from "./PrivateRoute";
 import SellerRoute from "./SellerRoute";
-import PaymentForm from './../components/Payment/PaymentForm';
+import PaymentForm from "./../components/Payment/PaymentForm";
 import AdminRoute from "./AdminRoute";
-
+import SellerPrivateRoute from "./SellerPrivateRoute";
 
 const Routes = createBrowserRouter([
   {
@@ -62,7 +62,11 @@ const Routes = createBrowserRouter([
 
       {
         path: "/marketplace",
-        element: <Marketplace />,
+        element: (
+          <PrivateRoute>
+            <Marketplace />
+          </PrivateRoute>
+        ),
       },
       {
         path: "/referral",
@@ -88,17 +92,21 @@ const Routes = createBrowserRouter([
         path: "/payment-done",
         element: <PaymentForm />,
       },
-       {
-         path: "/seller-pay",
-         element: <SellerPay/>,
-       },
+      {
+        path: "/seller-pay",
+        element: <SellerPay />,
+      },
       {
         path: "/login",
         element: <Login />,
       },
       {
         path: "/purchases",
-        element: <Mypurchase />,
+        element: (
+          <PrivateRoute>
+            <Mypurchase />
+          </PrivateRoute>
+        ),
       },
       {
         path: "/orders",
@@ -106,7 +114,11 @@ const Routes = createBrowserRouter([
       },
       {
         path: "/myproducts",
-        element: <MyAds />,
+        element: (
+          <SellerPrivateRoute>
+            <MyAds />
+          </SellerPrivateRoute>
+        ),
       },
       {
         path: "/wallet",
@@ -139,9 +151,9 @@ const Routes = createBrowserRouter([
       {
         path: "/selling-form",
         element: (
-          <SellerRoute>
+          <SellerPrivateRoute>
             <SellForm />
-          </SellerRoute>
+          </SellerPrivateRoute>
         ),
       },
       {
