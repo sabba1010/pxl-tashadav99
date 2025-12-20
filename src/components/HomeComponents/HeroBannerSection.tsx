@@ -3,7 +3,7 @@ import images from "../../assets/social media (1).png";
 
 const HeroBannerSection = () => {
   return (
-    <section className="relative bg-gradient-to-br from-[#00183b] via-[#002a5c] to-[#003d80] text-white py-16 md:py-32 px-6 md:px-12 lg:px-20 overflow-hidden">
+    <section className="relative bg-gradient-to-br from-[#00183b] via-[#002a5c] to-[#003d80] text-white pt-6 pb-10 md:py-32 px-6 md:px-12 lg:px-20 overflow-hidden">
       {/* Dark overlay */}
       <div className="absolute inset-0 bg-black opacity-30"></div>
 
