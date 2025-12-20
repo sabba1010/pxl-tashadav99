@@ -290,7 +290,7 @@ const ItemCard: React.FC<{
             disabled={isProcessing}
             className={`px-3 py-2 text-sm font-semibold text-white rounded bg-gradient-to-r from-[#33ac6f] to-[#27b86a] hover:shadow-lg disabled:opacity-70 flex items-center gap-2 ${isList ? "" : "flex-1 justify-center"}`}
           >
-            {isProcessing ? "..." : <><PurchaseIcon size={16}/> Buy</>}
+            {isProcessing ? "..." : <><PurchaseIcon size={16}/> Purchase</>}
           </button>
         </div>
       </div>
