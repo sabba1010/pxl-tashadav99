@@ -42,7 +42,7 @@ export default function KoraPayment({
       setLoading(true);
 
       const response = await axios.post<PaymentResponse>(
-        "http://localhost:3200/korapay/create",
+        "https://vps-backend-server-beta.vercel.app/korapay/create",
         { amount, user, currency }, // currency যদি লাগে backend এ
         { headers: { "Content-Type": "application/json" } }
       );

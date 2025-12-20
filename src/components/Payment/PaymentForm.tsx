@@ -9,7 +9,7 @@ const Spinner: FC<{ size?: number }> = ({ size = 18 }) => (
   </svg>
 );
 
-export default function PaymentForm({ endpoint = "http://localhost:3200/api/submit" }) {
+export default function PaymentForm({ endpoint = "https://vps-backend-server-beta.vercel.app/api/submit" }) {
   const user  = useAuth(); // user.name, user.email
   const [payment, setPayment] = useState<"Kora" | "Flutterwave">("Kora");
   const [amount, setAmount] = useState("");

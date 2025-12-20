@@ -68,7 +68,7 @@ const SellForm: React.FC = () => {
 useEffect(() => {
   const fetchPlatforms = async () => {
     try {
-      const response = await axios.get<{response: any, platforms: any, data: any}>("http://localhost:3200/icon-data");
+      const response = await axios.get<{response: any, platforms: any, data: any}>("https://vps-backend-server-beta.vercel.app/icon-data");
       // Adjust here depending on your API response
       console.log(response.data.data)
       const data = Array.isArray(response.data) ? response.data : response.data.data;
@@ -109,7 +109,7 @@ useEffect(() => {
     console.log("Submitted:", formData);
     try {
       const response = await axios.post<{ acknowledged: boolean }>(
-        "http://localhost:3200/product/sell",
+        "https://vps-backend-server-beta.vercel.app/product/sell",
         formData
       );
       if (response.data.acknowledged) {
