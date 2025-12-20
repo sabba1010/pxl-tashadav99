@@ -48,6 +48,7 @@ import SellerRoute from "./SellerRoute";
 import PaymentForm from "./../components/Payment/PaymentForm";
 import AdminRoute from "./AdminRoute";
 import SellerPrivateRoute from "./SellerPrivateRoute";
+import CartPage from "../components/Cart/CartPage";
 
 const Routes = createBrowserRouter([
   {
@@ -75,6 +76,10 @@ const Routes = createBrowserRouter([
       {
         path: "/why-choose-us",
         element: <WhyChooseUs />,
+      },
+      {
+       path: "/cart",
+       element: <CartPage/>
       },
       {
         path: "/refund",
