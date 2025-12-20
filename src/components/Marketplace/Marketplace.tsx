@@ -733,9 +733,34 @@ const Marketplace: React.FC = () => {
   }, [filteredItems, currentPage]);
 
   // Actions
-  const addToCart = useCallback((item: Item) => {
-    setCartCount((prev) => prev + 1);
-  }, []);
+const addToCart = useCallback(async (item: Item) => {
+  try {
+    const response = await fetch(`${API_URL}/cart/post`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        productId: item.id,
+        name: item.title,
+        price: item.price,
+        image: item.icon, // আইকন বা ইমেজ
+        sellerEmail: item.seller,
+        addedAt: new Date()
+      }),
+    });
+
+    if (response.ok) {
+      setCartCount((prev) => prev + 1);
+      alert(`${item.title} added to cart successfully!`);
+    } else {
+      throw new Error("Failed to add to cart");
+    }
+  } catch (err: any) {
+    console.error("Cart Error:", err);
+    alert("Could not add to cart. Please try again.");
+  }
+}, []);
 
   const buyNow = async (item: Item) => {
     if (processingIds.includes(item.id)) return;
