@@ -21,10 +21,13 @@ const Login = () => {
     }
 
     try {
-      const res = await axios.post<{success:any, user: any}>("https://vps-backend-server-beta.vercel.app/api/user/login", {
-        email,
-        password,
-      });
+      const res = await axios.post<{ success: any; user: any }>(
+        "http://localhost:3200/api/user/login",
+        {
+          email,
+          password,
+        }
+      );
 
       if (res.data?.success) {
         const isLocalhost =
@@ -41,7 +44,6 @@ const Login = () => {
         toast.success("Login successful");
         navigate("/", { replace: true });
         window.location.reload();
-
       } else {
         toast.error("Invalid credentials");
       }

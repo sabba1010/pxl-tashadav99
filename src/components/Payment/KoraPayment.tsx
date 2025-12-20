@@ -13,9 +13,9 @@ interface PaymentResponse {
 }
 
 interface KoraPaymentProps {
-  amount: number;        // এখানে dynamic amount আসবে
+  amount: number; // এখানে dynamic amount আসবে
   currency?: "NGN" | "USD" | "GHS"; // optional, default NGN
-  user?: UserData;       // optional, default value দিয়ে রাখা যাবে
+  user?: UserData; // optional, default value দিয়ে রাখা যাবে
 }
 
 export default function KoraPayment({
@@ -42,7 +42,7 @@ export default function KoraPayment({
       setLoading(true);
 
       const response = await axios.post<PaymentResponse>(
-        "https://vps-backend-server-beta.vercel.app/korapay/create",
+        "http://localhost:3200/korapay/create",
         { amount, user, currency }, // currency যদি লাগে backend এ
         { headers: { "Content-Type": "application/json" } }
       );

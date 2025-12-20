@@ -174,34 +174,33 @@ export default function Navbar() {
               >
                 Mypurchase
               </NavLink>
-              <NavLink
-                to="/orders"
-                className="font-medium"
-                style={({ isActive }) => ({
-                  color: isActive ? ROYAL_GOLD : CHARCOAL,
-                })}
-              >
-                Orders
-              </NavLink>
-              <NavLink
-                to="/myproducts"
-                className="font-medium"
-                style={({ isActive }) => ({
-                  color: isActive ? ROYAL_GOLD : CHARCOAL,
-                })}
-              >
-                My Ads
-              </NavLink>
-
-              <NavLink
-                to="/wallet"
-                className="font-medium"
-                style={({ isActive }) => ({
-                  color: isActive ? ROYAL_GOLD : CHARCOAL,
-                })}
-              >
-                Wallet
-              </NavLink>
+              {loginUser ? (
+                <NavLink
+                  to="/orders"
+                  className="font-medium"
+                  style={({ isActive }) => ({
+                    color: isActive ? ROYAL_GOLD : CHARCOAL,
+                  })}
+                >
+                  Orders
+                </NavLink>
+              ) : (
+                ""
+              )}
+        
+              {loginUser ? (
+                <NavLink
+                  to="/wallet"
+                  className="font-medium"
+                  style={({ isActive }) => ({
+                    color: isActive ? ROYAL_GOLD : CHARCOAL,
+                  })}
+                >
+                  Wallet
+                </NavLink>
+              ) : (
+                ""
+              )}
               <NavLink
                 to="/selling-form"
                 className="px-6 py-2.5 rounded-lg font-medium text-white shadow-sm"

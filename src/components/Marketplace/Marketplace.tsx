@@ -1,18 +1,50 @@
 // src/components/Marketplace/Marketplace.tsx
-import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
+import React, {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useCallback,
+} from "react";
 import { Link } from "react-router-dom";
 import { IconType } from "react-icons";
 import {
-  FaWhatsapp, FaEnvelope, FaPlus, FaBullhorn, FaFacebookF, FaInstagram,
-  FaTwitter, FaLock, FaShoppingCart, FaTimes, FaSearch, FaStar, FaEye,
-  FaLinkedinIn, FaYoutube, FaSnapchatGhost, FaTelegramPlane, FaDiscord,
-  FaPinterest, FaRedditAlien, FaPaypal,
+  FaWhatsapp,
+  FaEnvelope,
+  FaPlus,
+  FaBullhorn,
+  FaFacebookF,
+  FaInstagram,
+  FaTwitter,
+  FaLock,
+  FaShoppingCart,
+  FaTimes,
+  FaSearch,
+  FaStar,
+  FaEye,
+  FaLinkedinIn,
+  FaYoutube,
+  FaSnapchatGhost,
+  FaTelegramPlane,
+  FaDiscord,
+  FaPinterest,
+  FaRedditAlien,
+  FaPaypal,
 } from "react-icons/fa";
 import {
-  SiNetflix, SiAmazon, SiSteam, SiGoogle, SiTiktok, SiTinder,
+  SiNetflix,
+  SiAmazon,
+  SiSteam,
+  SiGoogle,
+  SiTiktok,
+  SiTinder,
 } from "react-icons/si";
 import {
-  MdMail, MdSimCard, MdPhoneIphone, MdVpnLock, MdLocalOffer,
+  MdMail,
+  MdSimCard,
+  MdPhoneIphone,
+  MdVpnLock,
+  MdLocalOffer,
 } from "react-icons/md";
 import { BiSolidPurchaseTag } from "react-icons/bi";
 
@@ -46,41 +78,145 @@ interface Item {
 type SubcatState = Record<string, string[]>;
 
 // --- Constants & Config ---
-const API_URL = process.env.REACT_APP_API_URL || "https://vps-backend-server-beta.vercel.app";
+const API_URL = process.env.REACT_APP_API_URL || "http://localhost:3200";
 
 const CATEGORY_MAP: Record<string, string[]> = {
-  "Social Media": ["Instagram", "Facebook", "TikTok", "Snapchat", "Twitter / X", "YouTube", "WhatsApp", "Telegram", "Discord", "Reddit", "Pinterest", "LinkedIn", "Gmail"],
-  "Digital Services & Boosting": ["Instagram Boost", "TikTok Boost", "YouTube Boost", "Twitter Boost", "Facebook Boost", "App Reviews"],
-  "eSIM & Mobile Services": ["eSIM (US)", "eSIM (EU)", "Roaming eSIM", "Temporary SMS", "Disposable Numbers"],
-  "Streaming & Entertainment": ["Netflix", "Spotify", "Apple Music", "Hulu", "Amazon Prime", "Disney+", "HBO Max"],
-  "Gaming Accounts": ["PlayStation", "Xbox", "Steam", "Fortnite", "PUBG", "Roblox"],
-  "Finance / Business Tools": ["PayPal", "Stripe", "CashApp", "Wise", "Business Email"],
-  "Productivity & Software": ["Office 365", "Canva Pro", "Adobe CC", "Notion", "Grammarly"],
-  "Dating & Chatting": ["Tinder", "Bumble", "Tantan", "WeChat", "Azar", "InternationalCupid"],
-  "Giftcards & Misc": ["Amazon", "Steam", "Google Play", "VPN", "Virtual Cards", "Crypto Wallets"],
-  "Others": ["Misc"],
+  "Social Media": [
+    "Instagram",
+    "Facebook",
+    "TikTok",
+    "Snapchat",
+    "Twitter / X",
+    "YouTube",
+    "WhatsApp",
+    "Telegram",
+    "Discord",
+    "Reddit",
+    "Pinterest",
+    "LinkedIn",
+    "Gmail",
+  ],
+  "Digital Services & Boosting": [
+    "Instagram Boost",
+    "TikTok Boost",
+    "YouTube Boost",
+    "Twitter Boost",
+    "Facebook Boost",
+    "App Reviews",
+  ],
+  "eSIM & Mobile Services": [
+    "eSIM (US)",
+    "eSIM (EU)",
+    "Roaming eSIM",
+    "Temporary SMS",
+    "Disposable Numbers",
+  ],
+  "Streaming & Entertainment": [
+    "Netflix",
+    "Spotify",
+    "Apple Music",
+    "Hulu",
+    "Amazon Prime",
+    "Disney+",
+    "HBO Max",
+  ],
+  "Gaming Accounts": [
+    "PlayStation",
+    "Xbox",
+    "Steam",
+    "Fortnite",
+    "PUBG",
+    "Roblox",
+  ],
+  "Finance / Business Tools": [
+    "PayPal",
+    "Stripe",
+    "CashApp",
+    "Wise",
+    "Business Email",
+  ],
+  "Productivity & Software": [
+    "Office 365",
+    "Canva Pro",
+    "Adobe CC",
+    "Notion",
+    "Grammarly",
+  ],
+  "Dating & Chatting": [
+    "Tinder",
+    "Bumble",
+    "Tantan",
+    "WeChat",
+    "Azar",
+    "InternationalCupid",
+  ],
+  "Giftcards & Misc": [
+    "Amazon",
+    "Steam",
+    "Google Play",
+    "VPN",
+    "Virtual Cards",
+    "Crypto Wallets",
+  ],
+  Others: ["Misc"],
 };
 
 const ICON_COLOR_MAP = new Map<IconType, string>([
-  [FaWhatsapp, "#25D366"], [SiNetflix, "#E50914"], [SiAmazon, "#FF9900"],
-  [FaEnvelope, "#D44638"], [FaFacebookF, "#1877F2"], [FaInstagram, "#E1306C"],
-  [FaTwitter, "#1DA1F2"], [SiSteam, "#171A21"], [SiGoogle, "#4285F4"],
-  [FaBullhorn, "#6B46C1"], [FaLock, "#0A1A3A"], [FaShoppingCart, "#FF6B6B"],
-  [FaLinkedinIn, "#0A66C2"], [FaYoutube, "#FF0000"], [FaSnapchatGhost, "#FFFC00"],
-  [SiTiktok, "#000000"], [FaTelegramPlane, "#2AABEE"], [FaDiscord, "#7289DA"],
-  [FaPinterest, "#E60023"], [FaRedditAlien, "#FF4500"], [FaPaypal, "#003087"],
-  [MdSimCard, "#00A3E0"], [MdVpnLock, "#0F172A"], [MdMail, "#D44638"],
+  [FaWhatsapp, "#25D366"],
+  [SiNetflix, "#E50914"],
+  [SiAmazon, "#FF9900"],
+  [FaEnvelope, "#D44638"],
+  [FaFacebookF, "#1877F2"],
+  [FaInstagram, "#E1306C"],
+  [FaTwitter, "#1DA1F2"],
+  [SiSteam, "#171A21"],
+  [SiGoogle, "#4285F4"],
+  [FaBullhorn, "#6B46C1"],
+  [FaLock, "#0A1A3A"],
+  [FaShoppingCart, "#FF6B6B"],
+  [FaLinkedinIn, "#0A66C2"],
+  [FaYoutube, "#FF0000"],
+  [FaSnapchatGhost, "#FFFC00"],
+  [SiTiktok, "#000000"],
+  [FaTelegramPlane, "#2AABEE"],
+  [FaDiscord, "#7289DA"],
+  [FaPinterest, "#E60023"],
+  [FaRedditAlien, "#FF4500"],
+  [FaPaypal, "#003087"],
+  [MdSimCard, "#00A3E0"],
+  [MdVpnLock, "#0F172A"],
+  [MdMail, "#D44638"],
   [SiTinder, "#FF6B6B"],
 ]);
 
 const SUBICON_MAP: Record<string, IconType> = {
-  Instagram: FaInstagram, Facebook: FaFacebookF, "Twitter / X": FaTwitter, TikTok: SiTiktok,
-  Snapchat: FaSnapchatGhost, LinkedIn: FaLinkedinIn, Pinterest: FaPinterest, YouTube: FaYoutube,
-  WhatsApp: FaWhatsapp, Telegram: FaTelegramPlane, Discord: FaDiscord, Reddit: FaRedditAlien,
-  Gmail: MdMail, Tinder: SiTinder, "eSIM (US)": MdSimCard, "eSIM (EU)": MdSimCard,
-  "Roaming eSIM": MdSimCard, "Temporary SMS": MdPhoneIphone, "Disposable Numbers": MdPhoneIphone,
-  Netflix: SiNetflix, Amazon: SiAmazon, Steam: SiSteam, PayPal: FaPaypal, VPN: MdVpnLock,
-  Shopify: FaShoppingCart, "Virtual Cards": MdLocalOffer, Others: FaBullhorn,
+  Instagram: FaInstagram,
+  Facebook: FaFacebookF,
+  "Twitter / X": FaTwitter,
+  TikTok: SiTiktok,
+  Snapchat: FaSnapchatGhost,
+  LinkedIn: FaLinkedinIn,
+  Pinterest: FaPinterest,
+  YouTube: FaYoutube,
+  WhatsApp: FaWhatsapp,
+  Telegram: FaTelegramPlane,
+  Discord: FaDiscord,
+  Reddit: FaRedditAlien,
+  Gmail: MdMail,
+  Tinder: SiTinder,
+  "eSIM (US)": MdSimCard,
+  "eSIM (EU)": MdSimCard,
+  "Roaming eSIM": MdSimCard,
+  "Temporary SMS": MdPhoneIphone,
+  "Disposable Numbers": MdPhoneIphone,
+  Netflix: SiNetflix,
+  Amazon: SiAmazon,
+  Steam: SiSteam,
+  PayPal: FaPaypal,
+  VPN: MdVpnLock,
+  Shopify: FaShoppingCart,
+  "Virtual Cards": MdLocalOffer,
+  Others: FaBullhorn,
 };
 
 const VIBRANT_GRADIENTS = [
@@ -95,7 +231,8 @@ const VIBRANT_GRADIENTS = [
 // --- Helpers ---
 const hashCode = (s: string) => {
   let h = 0;
-  for (let i = 0; i < s.length; i++) h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
+  for (let i = 0; i < s.length; i++)
+    h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
   return h;
 };
 
@@ -103,32 +240,50 @@ const hashCode = (s: string) => {
 const useLockBodyScroll = (isLocked: boolean) => {
   useEffect(() => {
     document.body.style.overflow = isLocked ? "hidden" : "";
-    return () => { document.body.style.overflow = ""; };
+    return () => {
+      document.body.style.overflow = "";
+    };
   }, [isLocked]);
 };
 
 // --- Sub-Components ---
 
-const RenderIcon = ({ icon, size = 36, realTime = false }: { icon: string | IconType; size?: number; realTime?: boolean }) => {
+const RenderIcon = ({
+  icon,
+  size = 36,
+  realTime = false,
+}: {
+  icon: string | IconType;
+  size?: number;
+  realTime?: boolean;
+}) => {
   const badgeSize = Math.max(40, size + 8);
-  
+
   // Logic to determine background color
   let bg = VIBRANT_GRADIENTS[0];
   if (typeof icon !== "string") {
-      const color = ICON_COLOR_MAP.get(icon);
-      if (color) bg = color; 
-      else bg = VIBRANT_GRADIENTS[Math.abs(hashCode(icon.toString())) % VIBRANT_GRADIENTS.length];
+    const color = ICON_COLOR_MAP.get(icon);
+    if (color) bg = color;
+    else
+      bg =
+        VIBRANT_GRADIENTS[
+          Math.abs(hashCode(icon.toString())) % VIBRANT_GRADIENTS.length
+        ];
   } else if (!icon.startsWith("http")) {
-       bg = VIBRANT_GRADIENTS[Math.abs(hashCode(icon)) % VIBRANT_GRADIENTS.length];
+    bg = VIBRANT_GRADIENTS[Math.abs(hashCode(icon)) % VIBRANT_GRADIENTS.length];
   }
 
   // FIX: TS2769 Error
   // We need to cast the icon to React.ElementType to use it as a component tag
-  const IconComponent = typeof icon !== "string" ? (icon as React.ElementType) : null;
+  const IconComponent =
+    typeof icon !== "string" ? (icon as React.ElementType) : null;
 
   if (typeof icon === "string" && icon.startsWith("http")) {
     return (
-      <div style={{ width: size + 12, height: size + 12 }} className="rounded-full overflow-hidden shadow-md">
+      <div
+        style={{ width: size + 12, height: size + 12 }}
+        className="rounded-full overflow-hidden shadow-md"
+      >
         <img src={icon} alt="" className="w-full h-full object-cover" />
       </div>
     );
@@ -146,7 +301,10 @@ const RenderIcon = ({ icon, size = 36, realTime = false }: { icon: string | Icon
         IconComponent && <IconComponent size={Math.round(size * 0.65)} />
       )}
       {realTime && (
-        <span className="absolute -right-0.5 -bottom-0.5 w-3 h-3 rounded-full bg-green-500 border-2 border-white" title="Online" />
+        <span
+          className="absolute -right-0.5 -bottom-0.5 w-3 h-3 rounded-full bg-green-500 border-2 border-white"
+          title="Online"
+        />
       )}
     </div>
   );
@@ -155,7 +313,10 @@ const RenderIcon = ({ icon, size = 36, realTime = false }: { icon: string | Icon
 const Stars: React.FC<{ value: number }> = ({ value }) => (
   <div className="flex items-center gap-1">
     {Array.from({ length: 5 }).map((_, i) => (
-      <StarIcon key={i} className={`w-3 h-3 ${i < value ? "text-yellow-400" : "text-gray-300"}`} />
+      <StarIcon
+        key={i}
+        className={`w-3 h-3 ${i < value ? "text-yellow-400" : "text-gray-300"}`}
+      />
     ))}
   </div>
 );
@@ -169,7 +330,10 @@ const CategorySelector: React.FC<{
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+      if (
+        wrapperRef.current &&
+        !wrapperRef.current.contains(event.target as Node)
+      ) {
         setOpenMain({});
       }
     };
@@ -195,8 +359,15 @@ const CategorySelector: React.FC<{
   return (
     <div ref={wrapperRef}>
       <div className="flex items-center justify-between mb-3">
-        <span className="text-sm font-semibold text-[#0A1A3A]">Account Category</span>
-        <button onClick={() => setSelectedSubcats({})} className="text-xs text-[#0A1A3A] hover:underline">Clear</button>
+        <span className="text-sm font-semibold text-[#0A1A3A]">
+          Account Category
+        </span>
+        <button
+          onClick={() => setSelectedSubcats({})}
+          className="text-xs text-[#0A1A3A] hover:underline"
+        >
+          Clear
+        </button>
       </div>
       <div className="bg-white rounded-lg border divide-y divide-gray-100">
         {Object.entries(CATEGORY_MAP).map(([main, subcats]) => (
@@ -206,27 +377,44 @@ const CategorySelector: React.FC<{
               className="w-full flex items-center justify-between px-3 py-2 hover:bg-gray-50 transition"
             >
               <div className="flex items-center gap-2">
-                <span className="font-semibold text-sm text-gray-800">{main}</span>
+                <span className="font-semibold text-sm text-gray-800">
+                  {main}
+                </span>
                 {selectedSubcats[main]?.length > 0 && (
                   <span className="text-xs px-1.5 bg-gray-100 rounded text-gray-600">
                     {selectedSubcats[main].length}
                   </span>
                 )}
               </div>
-              <svg className={`w-4 h-4 transition-transform ${openMain[main] ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              <svg
+                className={`w-4 h-4 transition-transform ${
+                  openMain[main] ? "rotate-180" : ""
+                }`}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 9l-7 7-7-7"
+                />
               </svg>
             </button>
             {openMain[main] && (
               <div className="px-3 pb-2 pt-1 space-y-1">
                 {subcats.map((sub) => {
-                   const Icon = SUBICON_MAP[sub];
-                   // FIX: Dynamic Icon Rendering
-                   const SubIconComp = Icon ? (Icon as React.ElementType) : null;
-                   
-                   const isChecked = selectedSubcats[main]?.includes(sub);
-                   return (
-                    <label key={sub} className="flex items-center justify-between cursor-pointer py-1 hover:bg-gray-50 rounded px-1">
+                  const Icon = SUBICON_MAP[sub];
+                  // FIX: Dynamic Icon Rendering
+                  const SubIconComp = Icon ? (Icon as React.ElementType) : null;
+
+                  const isChecked = selectedSubcats[main]?.includes(sub);
+                  return (
+                    <label
+                      key={sub}
+                      className="flex items-center justify-between cursor-pointer py-1 hover:bg-gray-50 rounded px-1"
+                    >
                       <div className="flex items-center gap-2">
                         <input
                           type="checkbox"
@@ -235,12 +423,18 @@ const CategorySelector: React.FC<{
                           className="w-4 h-4 rounded text-[#D4A643] focus:ring-[#D4A643]"
                         />
                         <div className="w-6 h-6 flex items-center justify-center bg-gray-100 rounded-full">
-                           {SubIconComp ? <SubIconComp size={14} className="text-gray-700"/> : <span className="text-[10px] font-bold">{sub[0]}</span>}
+                          {SubIconComp ? (
+                            <SubIconComp size={14} className="text-gray-700" />
+                          ) : (
+                            <span className="text-[10px] font-bold">
+                              {sub[0]}
+                            </span>
+                          )}
                         </div>
                         <span className="text-sm text-gray-700">{sub}</span>
                       </div>
                     </label>
-                  )
+                  );
                 })}
               </div>
             )}
@@ -263,34 +457,69 @@ const ItemCard: React.FC<{
   const isList = viewMode === "list";
 
   return (
-    <div className={`bg-white rounded-xl shadow-sm border hover:shadow-md transition p-4 ${isList ? "flex items-center gap-4" : "flex flex-col text-center"}`}>
+    <div
+      className={`bg-white rounded-xl shadow-sm border hover:shadow-md transition p-4 ${
+        isList ? "flex items-center gap-4" : "flex flex-col text-center"
+      }`}
+    >
       <div className={isList ? "" : "flex justify-center mb-3"}>
-        <RenderIcon icon={item.icon} size={isList ? 44 : 64} realTime={item.realTime} />
+        <RenderIcon
+          icon={item.icon}
+          size={isList ? 44 : 64}
+          realTime={item.realTime}
+        />
       </div>
 
       <div className="flex-1 min-w-0">
-        <h3 className="font-bold text-sm text-[#0A1A3A] truncate">{item.title}</h3>
-        <p className="text-xs text-gray-600 mt-1 line-clamp-2">{item.desc || "Premium account • Instant delivery"}</p>
+        <h3 className="font-bold text-sm text-[#0A1A3A] truncate">
+          {item.title}
+        </h3>
+        <p className="text-xs text-gray-600 mt-1 line-clamp-2">
+          {item.desc || "Premium account • Instant delivery"}
+        </p>
         <div className="text-xs text-gray-400 mt-2">
-          {item.seller} • <span className="text-green-600">{item.delivery}</span>
+          {item.seller} •{" "}
+          <span className="text-green-600">{item.delivery}</span>
         </div>
       </div>
 
-      <div className={`flex flex-col ${isList ? "items-end text-right" : "mt-4 items-center w-full"}`}>
-        <div className="text-lg font-extrabold text-[#0A1A3A] mb-2">${item.price.toFixed(2)}</div>
+      <div
+        className={`flex flex-col ${
+          isList ? "items-end text-right" : "mt-4 items-center w-full"
+        }`}
+      >
+        <div className="text-lg font-extrabold text-[#0A1A3A] mb-2">
+          ${item.price.toFixed(2)}
+        </div>
         <div className="flex items-center gap-2 w-full justify-center">
-          <button onClick={() => onAddToCart(item)} className="p-2 border rounded hover:bg-gray-50 text-gray-600" title="Add to Cart">
+          <button
+            onClick={() => onAddToCart(item)}
+            className="p-2 border rounded hover:bg-gray-50 text-gray-600"
+            title="Add to Cart"
+          >
             <ShoppingCartIcon size={16} />
           </button>
-          <button onClick={() => onView(item)} className="p-2 border rounded hover:bg-gray-50 text-gray-600" title="View Details">
+          <button
+            onClick={() => onView(item)}
+            className="p-2 border rounded hover:bg-gray-50 text-gray-600"
+            title="View Details"
+          >
             <EyeIcon size={16} />
           </button>
           <button
             onClick={() => onBuy(item)}
             disabled={isProcessing}
-            className={`px-3 py-2 text-sm font-semibold text-white rounded bg-gradient-to-r from-[#33ac6f] to-[#27b86a] hover:shadow-lg disabled:opacity-70 flex items-center gap-2 ${isList ? "" : "flex-1 justify-center"}`}
+            className={`px-3 py-2 text-sm font-semibold text-white rounded bg-gradient-to-r from-[#33ac6f] to-[#27b86a] hover:shadow-lg disabled:opacity-70 flex items-center gap-2 ${
+              isList ? "" : "flex-1 justify-center"
+            }`}
           >
-            {isProcessing ? "..." : <><PurchaseIcon size={16}/> Buy</>}
+            {isProcessing ? (
+              "..."
+            ) : (
+              <>
+                <PurchaseIcon size={16} /> Buy
+              </>
+            )}
           </button>
         </div>
       </div>
@@ -310,51 +539,89 @@ const ProductModal: React.FC<{
 
   return (
     <>
-      <div className="fixed inset-0 bg-black/60 z-40 backdrop-blur-sm" onClick={onClose} />
+      <div
+        className="fixed inset-0 bg-black/60 z-40 backdrop-blur-sm"
+        onClick={onClose}
+      />
       <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg bg-white rounded-2xl shadow-2xl z-50 overflow-hidden max-h-[90vh] flex flex-col">
         <div className="p-4 border-b flex justify-between items-center bg-gray-50">
-            <h2 className="font-bold text-gray-800">Item Details</h2>
-            <button onClick={onClose} className="p-1 hover:bg-gray-200 rounded-full"><TimesIcon/></button>
+          <h2 className="font-bold text-gray-800">Item Details</h2>
+          <button
+            onClick={onClose}
+            className="p-1 hover:bg-gray-200 rounded-full"
+          >
+            <TimesIcon />
+          </button>
         </div>
-        
+
         <div className="p-6 overflow-y-auto">
           <div className="flex justify-center mb-4">
-             <RenderIcon icon={item.icon} size={72} realTime={item.realTime} />
+            <RenderIcon icon={item.icon} size={72} realTime={item.realTime} />
           </div>
-          <h2 className="text-2xl font-bold text-center text-[#0A1A3A] mb-1">{item.title}</h2>
-          <div className="text-3xl font-extrabold text-center text-green-600 mb-6">${item.price.toFixed(2)}</div>
+          <h2 className="text-2xl font-bold text-center text-[#0A1A3A] mb-1">
+            {item.title}
+          </h2>
+          <div className="text-3xl font-extrabold text-center text-green-600 mb-6">
+            ${item.price.toFixed(2)}
+          </div>
 
           <div className="space-y-4 text-sm bg-gray-50 p-4 rounded-lg">
-             <div><span className="font-semibold text-gray-700">Description:</span> <p className="text-gray-600 mt-1">{item.desc || "No description provided."}</p></div>
-             <div className="flex justify-between">
-                <span>Seller: <span className="font-medium">{item.seller}</span></span>
-                <span>Category: <span className="font-medium">{item.category}</span></span>
-             </div>
-             <div className="flex items-center gap-2 text-yellow-500"><Stars value={5}/> <span className="text-gray-400 text-xs">(Verified)</span></div>
+            <div>
+              <span className="font-semibold text-gray-700">Description:</span>{" "}
+              <p className="text-gray-600 mt-1">
+                {item.desc || "No description provided."}
+              </p>
+            </div>
+            <div className="flex justify-between">
+              <span>
+                Seller: <span className="font-medium">{item.seller}</span>
+              </span>
+              <span>
+                Category: <span className="font-medium">{item.category}</span>
+              </span>
+            </div>
+            <div className="flex items-center gap-2 text-yellow-500">
+              <Stars value={5} />{" "}
+              <span className="text-gray-400 text-xs">(Verified)</span>
+            </div>
           </div>
 
           <div className="mt-4 flex items-start gap-3 p-3 bg-yellow-50 border border-yellow-100 rounded-lg">
-             <input type="checkbox" id="accept" checked={accepted} onChange={(e) => setAccepted(e.target.checked)} className="mt-1" />
-             <label htmlFor="accept" className="text-xs text-gray-700 cursor-pointer select-none">
-                I have verified the seller rating and description. I understand that transactions outside this platform are not protected.
-             </label>
+            <input
+              type="checkbox"
+              id="accept"
+              checked={accepted}
+              onChange={(e) => setAccepted(e.target.checked)}
+              className="mt-1"
+            />
+            <label
+              htmlFor="accept"
+              className="text-xs text-gray-700 cursor-pointer select-none"
+            >
+              I have verified the seller rating and description. I understand
+              that transactions outside this platform are not protected.
+            </label>
           </div>
         </div>
 
         <div className="p-4 border-t bg-gray-50 grid grid-cols-2 gap-3">
-             <button onClick={() => onAddToCart(item)} className="py-3 border border-gray-300 rounded-xl font-semibold hover:bg-gray-100">Add to Cart</button>
-             <button 
-                onClick={() => accepted && onBuy(item)} 
-                disabled={!accepted || isProcessing}
-
-
-
-
-                
-                className={`py-3 rounded-xl font-bold text-white transition ${accepted ? 'bg-[#33ac6f] hover:bg-[#28965e]' : 'bg-gray-300 cursor-not-allowed'}`}
-            >
-                {isProcessing ? "Processing..." : "Purchase Now"}
-             </button>
+          <button
+            onClick={() => onAddToCart(item)}
+            className="py-3 border border-gray-300 rounded-xl font-semibold hover:bg-gray-100"
+          >
+            Add to Cart
+          </button>
+          <button
+            onClick={() => accepted && onBuy(item)}
+            disabled={!accepted || isProcessing}
+            className={`py-3 rounded-xl font-bold text-white transition ${
+              accepted
+                ? "bg-[#33ac6f] hover:bg-[#28965e]"
+                : "bg-gray-300 cursor-not-allowed"
+            }`}
+          >
+            {isProcessing ? "Processing..." : "Purchase Now"}
+          </button>
         </div>
       </div>
     </>
@@ -377,7 +644,7 @@ const Marketplace: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [cartCount, setCartCount] = useState(0);
   const [processingIds, setProcessingIds] = useState<string[]>([]);
-  
+
   const itemsPerPage = 6;
   const drawerRef = useRef<HTMLDivElement>(null);
 
@@ -402,7 +669,7 @@ const Marketplace: React.FC = () => {
             seller: p.userEmail,
             delivery: "Instant",
             icon: p.categoryIcon || FaBullhorn, // fallback icon
-            category: "Social Media", 
+            category: "Social Media",
             subcategory: p.category,
             realTime: true,
           }));
@@ -432,15 +699,19 @@ const Marketplace: React.FC = () => {
 
       const mainFilters = Object.keys(selectedSubcats);
       let matchesCategory = true;
-      
+
       if (mainFilters.length > 0) {
         if (!mainFilters.includes(item.category)) {
-           matchesCategory = false; 
+          matchesCategory = false;
         } else {
-            const subs = selectedSubcats[item.category] || [];
-            if (subs.length > 0 && item.subcategory && !subs.includes(item.subcategory)) {
-                matchesCategory = false;
-            }
+          const subs = selectedSubcats[item.category] || [];
+          if (
+            subs.length > 0 &&
+            item.subcategory &&
+            !subs.includes(item.subcategory)
+          ) {
+            matchesCategory = false;
+          }
         }
       }
 
@@ -449,9 +720,15 @@ const Marketplace: React.FC = () => {
   }, [items, searchQuery, selectedSubcats, priceRange]);
 
   // Pagination Logic
-  useEffect(() => setCurrentPage(1), [searchQuery, selectedSubcats, priceRange]); 
-  
-  const totalPages = Math.max(1, Math.ceil(filteredItems.length / itemsPerPage));
+  useEffect(
+    () => setCurrentPage(1),
+    [searchQuery, selectedSubcats, priceRange]
+  );
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredItems.length / itemsPerPage)
+  );
   const paginatedItems = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
     return filteredItems.slice(start, start + itemsPerPage);
@@ -490,7 +767,9 @@ const Marketplace: React.FC = () => {
       {showBanner && (
         <div className="bg-[#33ac6f] text-white px-4 py-3 flex justify-between items-center text-sm font-medium">
           <span>Black Friday is live! All prices discounted.</span>
-          <button onClick={() => setShowBanner(false)}><TimesIcon /></button>
+          <button onClick={() => setShowBanner(false)}>
+            <TimesIcon />
+          </button>
         </div>
       )}
 
@@ -498,59 +777,110 @@ const Marketplace: React.FC = () => {
         {/* Header */}
         <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
           <div className="flex items-center gap-3">
-            <button onClick={() => setDrawerOpen(true)} className="lg:hidden p-2 bg-white border rounded-md shadow-sm">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
+            <button
+              onClick={() => setDrawerOpen(true)}
+              className="lg:hidden p-2 bg-white border rounded-md shadow-sm"
+            >
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
+              </svg>
             </button>
             <div>
-              <h1 className="text-2xl lg:text-3xl font-bold text-[#0A1A3A]">Marketplace</h1>
-              <p className="text-sm text-gray-500">Verified sellers • Instant delivery</p>
+              <h1 className="text-2xl lg:text-3xl font-bold text-[#0A1A3A]">
+                Marketplace
+              </h1>
+              <p className="text-sm text-gray-500">
+                Verified sellers • Instant delivery
+              </p>
             </div>
           </div>
 
           {/* Desktop Search */}
           <div className="hidden md:flex items-center gap-4">
-             <div className="flex bg-white rounded-lg border overflow-hidden p-1">
-                 <button onClick={() => setViewMode("list")} className={`px-3 py-1.5 rounded-md text-sm ${viewMode === 'list' ? 'bg-gray-900 text-white' : 'text-gray-600'}`}>List</button>
-                 <button onClick={() => setViewMode("grid")} className={`px-3 py-1.5 rounded-md text-sm ${viewMode === 'grid' ? 'bg-gray-900 text-white' : 'text-gray-600'}`}>Grid</button>
-             </div>
-             <div className="relative">
-                <input 
-                    type="text" 
-                    placeholder="Search accounts..." 
-                    className="pl-10 pr-4 py-2 border rounded-lg w-64 focus:outline-none focus:ring-2 focus:ring-[#33ac6f]"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                />
-                <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"/>
-             </div>
+            <div className="flex bg-white rounded-lg border overflow-hidden p-1">
+              <button
+                onClick={() => setViewMode("list")}
+                className={`px-3 py-1.5 rounded-md text-sm ${
+                  viewMode === "list"
+                    ? "bg-gray-900 text-white"
+                    : "text-gray-600"
+                }`}
+              >
+                List
+              </button>
+              <button
+                onClick={() => setViewMode("grid")}
+                className={`px-3 py-1.5 rounded-md text-sm ${
+                  viewMode === "grid"
+                    ? "bg-gray-900 text-white"
+                    : "text-gray-600"
+                }`}
+              >
+                Grid
+              </button>
+            </div>
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search accounts..."
+                className="pl-10 pr-4 py-2 border rounded-lg w-64 focus:outline-none focus:ring-2 focus:ring-[#33ac6f]"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            </div>
           </div>
 
           {/* Mobile Actions */}
           <div className="flex items-center gap-3">
-            <button onClick={() => setMobileSearchOpen(true)} className="md:hidden p-3 bg-white border rounded-lg shadow-sm"><SearchIcon /></button>
-            <Link to="/cart" className="relative p-3 bg-white border rounded-lg shadow-sm">
+            <button
+              onClick={() => setMobileSearchOpen(true)}
+              className="md:hidden p-3 bg-white border rounded-lg shadow-sm"
+            >
+              <SearchIcon />
+            </button>
+            <Link
+              to="/cart"
+              className="relative p-3 bg-white border rounded-lg shadow-sm"
+            >
               <ShoppingCartIcon />
-              {cartCount > 0 && <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full">{cartCount}</span>}
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full">
+                  {cartCount}
+                </span>
+              )}
             </Link>
           </div>
         </div>
 
         {/* Mobile Search Overlay */}
         {mobileSearchOpen && (
-             <div className="fixed inset-0 z-50 bg-white p-4">
-                 <div className="flex items-center gap-2 border-b pb-2">
-                     <SearchIcon className="text-gray-400"/>
-                     <input 
-                        type="text" 
-                        autoFocus 
-                        className="flex-1 outline-none text-lg" 
-                        placeholder="Search..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                     <button onClick={() => setMobileSearchOpen(false)}><TimesIcon size={20}/></button>
-                 </div>
-             </div>
+          <div className="fixed inset-0 z-50 bg-white p-4">
+            <div className="flex items-center gap-2 border-b pb-2">
+              <SearchIcon className="text-gray-400" />
+              <input
+                type="text"
+                autoFocus
+                className="flex-1 outline-none text-lg"
+                placeholder="Search..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              <button onClick={() => setMobileSearchOpen(false)}>
+                <TimesIcon size={20} />
+              </button>
+            </div>
+          </div>
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -558,12 +888,15 @@ const Marketplace: React.FC = () => {
           <aside className="hidden lg:block lg:col-span-3">
             <div className="bg-white rounded-xl shadow-sm border p-6 sticky top-24">
               <h3 className="text-lg font-bold mb-4">Filters</h3>
-              <CategorySelector selectedSubcats={selectedSubcats} setSelectedSubcats={setSelectedSubcats} />
-              
+              <CategorySelector
+                selectedSubcats={selectedSubcats}
+                setSelectedSubcats={setSelectedSubcats}
+              />
+
               <div className="mt-6 border-t pt-4">
                 <div className="flex justify-between text-sm font-semibold mb-2">
-                    <span>Price Range</span>
-                    <span>${priceRange}</span>
+                  <span>Price Range</span>
+                  <span>${priceRange}</span>
                 </div>
                 <input
                   type="range"
@@ -580,11 +913,21 @@ const Marketplace: React.FC = () => {
           {/* Product Grid/List */}
           <main className="lg:col-span-9">
             {loading ? (
-              <div className="flex justify-center py-20"><div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#33ac6f]"></div></div>
+              <div className="flex justify-center py-20">
+                <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#33ac6f]"></div>
+              </div>
             ) : filteredItems.length === 0 ? (
-                <div className="text-center py-20 text-gray-500 bg-white rounded-xl border">No items found matching your filters.</div>
+              <div className="text-center py-20 text-gray-500 bg-white rounded-xl border">
+                No items found matching your filters.
+              </div>
             ) : (
-              <div className={`grid gap-4 ${viewMode === "grid" ? "grid-cols-1 sm:grid-cols-2 xl:grid-cols-3" : "grid-cols-1"}`}>
+              <div
+                className={`grid gap-4 ${
+                  viewMode === "grid"
+                    ? "grid-cols-1 sm:grid-cols-2 xl:grid-cols-3"
+                    : "grid-cols-1"
+                }`}
+              >
                 {paginatedItems.map((item) => (
                   <ItemCard
                     key={item.id}
@@ -601,11 +944,25 @@ const Marketplace: React.FC = () => {
 
             {/* Pagination */}
             {totalPages > 1 && (
-                <div className="flex justify-center items-center gap-2 mt-8">
-                    <button disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)} className="px-3 py-1 border rounded disabled:opacity-50 hover:bg-white">Prev</button>
-                    <span className="text-sm font-medium">Page {currentPage} of {totalPages}</span>
-                    <button disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)} className="px-3 py-1 border rounded disabled:opacity-50 hover:bg-white">Next</button>
-                </div>
+              <div className="flex justify-center items-center gap-2 mt-8">
+                <button
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage((p) => p - 1)}
+                  className="px-3 py-1 border rounded disabled:opacity-50 hover:bg-white"
+                >
+                  Prev
+                </button>
+                <span className="text-sm font-medium">
+                  Page {currentPage} of {totalPages}
+                </span>
+                <button
+                  disabled={currentPage === totalPages}
+                  onClick={() => setCurrentPage((p) => p + 1)}
+                  className="px-3 py-1 border rounded disabled:opacity-50 hover:bg-white"
+                >
+                  Next
+                </button>
+              </div>
             )}
           </main>
         </div>
@@ -623,22 +980,46 @@ const Marketplace: React.FC = () => {
       )}
 
       {/* Mobile Drawer */}
-      <div className={`fixed inset-0 z-50 transform transition-transform duration-300 ${drawerOpen ? "translate-x-0" : "-translate-x-full"}`}>
-         <div className="absolute inset-0 bg-black/50" onClick={() => setDrawerOpen(false)}/>
-         <aside className="relative bg-white w-80 h-full overflow-y-auto p-6 shadow-xl">
-             <div className="flex justify-between items-center mb-6">
-                 <h2 className="text-xl font-bold">Filters</h2>
-                 <button onClick={() => setDrawerOpen(false)}><TimesIcon/></button>
-             </div>
-             <CategorySelector selectedSubcats={selectedSubcats} setSelectedSubcats={setSelectedSubcats} />
-             <div className="mt-8">
-                <label className="font-semibold block mb-2">Max Price: ${priceRange}</label>
-                <input type="range" min="0" max="1000" value={priceRange} onChange={e => setPriceRange(Number(e.target.value))} className="w-full accent-[#33ac6f]"/>
-             </div>
-         </aside>
+      <div
+        className={`fixed inset-0 z-50 transform transition-transform duration-300 ${
+          drawerOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <div
+          className="absolute inset-0 bg-black/50"
+          onClick={() => setDrawerOpen(false)}
+        />
+        <aside className="relative bg-white w-80 h-full overflow-y-auto p-6 shadow-xl">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-bold">Filters</h2>
+            <button onClick={() => setDrawerOpen(false)}>
+              <TimesIcon />
+            </button>
+          </div>
+          <CategorySelector
+            selectedSubcats={selectedSubcats}
+            setSelectedSubcats={setSelectedSubcats}
+          />
+          <div className="mt-8">
+            <label className="font-semibold block mb-2">
+              Max Price: ${priceRange}
+            </label>
+            <input
+              type="range"
+              min="0"
+              max="1000"
+              value={priceRange}
+              onChange={(e) => setPriceRange(Number(e.target.value))}
+              className="w-full accent-[#33ac6f]"
+            />
+          </div>
+        </aside>
       </div>
 
-      <Link to="/add-product" className="fixed bottom-6 right-6 w-14 h-14 bg-[#33ac6f] text-white rounded-full shadow-lg flex items-center justify-center hover:bg-[#28965e] transition z-40">
+      <Link
+        to="/add-product"
+        className="fixed bottom-6 right-6 w-14 h-14 bg-[#33ac6f] text-white rounded-full shadow-lg flex items-center justify-center hover:bg-[#28965e] transition z-40"
+      >
         <PlusIcon size={24} />
       </Link>
     </div>

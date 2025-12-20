@@ -47,7 +47,7 @@ const SellForm: React.FC = () => {
 
   const [platforms, setPlatforms] = useState<Platform[]>([]);
   const [loadingPlatforms, setLoadingPlatforms] = useState(true);
-  console.log(platforms)
+  console.log(platforms);
   const [formData, setFormData] = useState<FormData>({
     category: "",
     categoryIcon: "",
@@ -65,26 +65,31 @@ const SellForm: React.FC = () => {
     status: "pending",
   });
 
-useEffect(() => {
-  const fetchPlatforms = async () => {
-    try {
-      const response = await axios.get<{response: any, platforms: any, data: any}>("https://vps-backend-server-beta.vercel.app/icon-data");
-      // Adjust here depending on your API response
-      console.log(response.data.data)
-      const data = Array.isArray(response.data) ? response.data : response.data.data;
-      console.log(data)
-      setPlatforms(data || []);
-    } catch (error) {
-      toast.error("Failed to load platforms. Please try again later.");
-      console.error(error);
-    } finally {
-      setLoadingPlatforms(false);
-    }
-  };
+  useEffect(() => {
+    const fetchPlatforms = async () => {
+      try {
+        const response = await axios.get<{
+          response: any;
+          platforms: any;
+          data: any;
+        }>("http://localhost:3200/icon-data");
+        // Adjust here depending on your API response
+        console.log(response.data.data);
+        const data = Array.isArray(response.data)
+          ? response.data
+          : response.data.data;
+        console.log(data);
+        setPlatforms(data || []);
+      } catch (error) {
+        toast.error("Failed to load platforms. Please try again later.");
+        console.error(error);
+      } finally {
+        setLoadingPlatforms(false);
+      }
+    };
 
-  fetchPlatforms();
-}, []);
-
+    fetchPlatforms();
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -109,7 +114,7 @@ useEffect(() => {
     console.log("Submitted:", formData);
     try {
       const response = await axios.post<{ acknowledged: boolean }>(
-        "https://vps-backend-server-beta.vercel.app/product/sell",
+        "http://localhost:3200/product/sell",
         formData
       );
       if (response.data.acknowledged) {
@@ -126,11 +131,10 @@ useEffect(() => {
 
   const steps = ["Account Details", "Login & Info"];
 
-const getSelectedPlatform = () => {
-  if (!Array.isArray(platforms)) return null;
-  return platforms.find((p) => p.name === formData.category) || null;
-};
-
+  const getSelectedPlatform = () => {
+    if (!Array.isArray(platforms)) return null;
+    return platforms.find((p) => p.name === formData.category) || null;
+  };
 
   const getStepContent = (stepIndex: number) => {
     switch (stepIndex) {
@@ -140,7 +144,9 @@ const getSelectedPlatform = () => {
             <Typography variant="h6" gutterBottom color="text.secondary">
               Tell us about the account you're selling
             </Typography>
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 3, mt: 2 }}>
+            <Box
+              sx={{ display: "flex", flexDirection: "column", gap: 3, mt: 2 }}
+            >
               <Autocomplete
                 options={platforms}
                 getOptionLabel={(option) => option.name}
@@ -211,7 +217,9 @@ const getSelectedPlatform = () => {
                 onChange={handleChange}
                 type="number"
                 InputProps={{
-                  startAdornment: <InputAdornment position="start">$</InputAdornment>,
+                  startAdornment: (
+                    <InputAdornment position="start">$</InputAdornment>
+                  ),
                 }}
                 required
               />
@@ -225,7 +233,9 @@ const getSelectedPlatform = () => {
             <Typography variant="h6" gutterBottom color="text.secondary">
               Provide account access details
             </Typography>
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 3, mt: 2 }}>
+            <Box
+              sx={{ display: "flex", flexDirection: "column", gap: 3, mt: 2 }}
+            >
               <TextField
                 fullWidth
                 label="Username / Handle"
@@ -290,13 +300,23 @@ const getSelectedPlatform = () => {
     <Box sx={{ minHeight: "100vh", bgcolor: "#f5f7fa", py: 6 }}>
       <Paper
         elevation={8}
-        sx={{ maxWidth: 680, mx: "auto", borderRadius: 4, overflow: "hidden", bgcolor: "background.paper" }}
+        sx={{
+          maxWidth: 680,
+          mx: "auto",
+          borderRadius: 4,
+          overflow: "hidden",
+          bgcolor: "background.paper",
+        }}
       >
         <Box sx={{ bgcolor: "#D4A643", color: "white", py: 4, px: 4 }}>
           <Typography variant="h4" align="center" fontWeight="bold">
             Sell Your Social Media Account
           </Typography>
-          <Typography variant="body1" align="center" sx={{ mt: 1, opacity: 0.9 }}>
+          <Typography
+            variant="body1"
+            align="center"
+            sx={{ mt: 1, opacity: 0.9 }}
+          >
             Securely list your account for sale
           </Typography>
         </Box>
@@ -306,7 +326,10 @@ const getSelectedPlatform = () => {
             {steps.map((label, index) => (
               <Step key={label}>
                 <StepLabel>
-                  <Typography variant="subtitle1" fontWeight={step === index ? "bold" : "medium"}>
+                  <Typography
+                    variant="subtitle1"
+                    fontWeight={step === index ? "bold" : "medium"}
+                  >
                     {label}
                   </Typography>
                 </StepLabel>
@@ -317,7 +340,13 @@ const getSelectedPlatform = () => {
           {getStepContent(step)}
 
           <Box sx={{ display: "flex", justifyContent: "space-between", mt: 6 }}>
-            <Button disabled={step === 0} onClick={prevStep} size="large" variant="outlined" sx={{ px: 4 }}>
+            <Button
+              disabled={step === 0}
+              onClick={prevStep}
+              size="large"
+              variant="outlined"
+              sx={{ px: 4 }}
+            >
               Back
             </Button>
             <Button
