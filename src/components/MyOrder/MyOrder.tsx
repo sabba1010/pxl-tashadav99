@@ -217,7 +217,7 @@ const fetchMessages = async () => {
 
   try {
     const res = await axios.get(
-      `http://localhost:3200/chat/history/${buyerId}/${activeSellerId}`
+      `https://vps-backend-server-beta.vercel.app/chat/history/${buyerId}/${activeSellerId}`
     );
 
     setMessages(res.data as ChatMessage[]);
@@ -244,12 +244,12 @@ const fetchMessages = async () => {
     e.preventDefault();
     if (!typedMsg.trim() || !activeSellerId) return;
     try {
-      await axios.post("http://localhost:3200/chat/send", {
+      await axios.post("https://vps-backend-server-beta.vercel.app/chat/send", {
         senderId: buyerId,
         receiverId: activeSellerId,
         message: typedMsg,
       });
-      await axios.post("http://localhost:3200/chat/send", { senderId: buyerId, receiverId: activeSellerId, message: typedMsg });
+      await axios.post("https://vps-backend-server-beta.vercel.app/chat/send", { senderId: buyerId, receiverId: activeSellerId, message: typedMsg });
       setTypedMsg("");
       fetchMessages();
     } catch (err) {

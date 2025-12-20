@@ -195,7 +195,7 @@ const MyPurchase: React.FC = () => {
   const [activeChatSeller, setActiveChatSeller] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const buyerId = "currentBuyer123"; 
-  const CHAT_API = "http://localhost:3200/chat";
+  const CHAT_API = "https://vps-backend-server-beta.vercel.app/chat";
 
 const fetchChat = async (sId: string) => {
   try {

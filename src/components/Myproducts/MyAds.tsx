@@ -46,7 +46,7 @@ useEffect(() => {
   const fetchAds = async () => {
     try {
       const res = await axios.get<Ad[]>(
-        "http://localhost:3200/product/all-sells"
+        "https://vps-backend-server-beta.vercel.app/product/all-sells"
       );
 
    const userAds = res.data.filter(
@@ -110,7 +110,7 @@ useEffect(() => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await axios.delete(`http://localhost:3200/product/delete/${id}`);
+          await axios.delete(`https://vps-backend-server-beta.vercel.app/product/delete/${id}`);
           setItems((prev) => prev.filter((it) => it._id !== id));
           Swal.fire("Deleted!", "Your ad has been deleted.", "success");
         } catch (err) {
