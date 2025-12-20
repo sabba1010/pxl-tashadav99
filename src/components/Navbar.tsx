@@ -174,7 +174,7 @@ export default function Navbar() {
               >
                 Mypurchase
               </NavLink>
-              {loginUser ? (
+              {loginUser?.role === "seller" || loginUser?.role === "admin" ? (
                 <NavLink
                   to="/orders"
                   className="font-medium"
