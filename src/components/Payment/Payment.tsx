@@ -194,6 +194,7 @@ const Payment: React.FC = () => {
                             }),
                           }
                         );
+
                         const data = await res.json();
                         window.location.href = data.link;
                       } catch (err) {

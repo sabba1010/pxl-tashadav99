@@ -22,6 +22,7 @@ const fetchPayments = async (): Promise<DepositRequest[]> => {
   const response = await axios.get<DepositRequest[]>(
     "http://localhost:3200/payments"
   );
+
   return response.data;
 };
 

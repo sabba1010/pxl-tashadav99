@@ -32,6 +32,7 @@ export default function PaymentForm({
   endpoint = "http://localhost:3200/api/submit",
 }) {
   const user = useAuth(); // user.name, user.email
+
   const [payment, setPayment] = useState<"Kora" | "Flutterwave">("Kora");
   const [amount, setAmount] = useState("");
   const [transactionId, setTransactionId] = useState("");

@@ -212,17 +212,20 @@ const MyOrder: React.FC = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const buyerId = "current_user_123";
 
-  const fetchMessages = async () => {
-    if (!activeSellerId) return;
-    try {
-      const res = await axios.get(
-        `http://localhost:3200/chat/history/${buyerId}/${activeSellerId}`
-      );
-      setMessages(res.data as ChatMessage[]);
-    } catch (err) {
-      console.error("Chat Error:", err);
-    }
-  };
+const fetchMessages = async () => {
+  if (!activeSellerId || !buyerId) return;
+
+  try {
+    const res = await axios.get(
+      `http://localhost:3200/chat/history/${buyerId}/${activeSellerId}`
+    );
+
+    setMessages(res.data as ChatMessage[]);
+  } catch (err) {
+    console.error("Chat Error:", err);
+  }
+};
+
 
   useEffect(() => {
     let interval: any;
@@ -246,6 +249,7 @@ const MyOrder: React.FC = () => {
         receiverId: activeSellerId,
         message: typedMsg,
       });
+      await axios.post("http://localhost:3200/chat/send", { senderId: buyerId, receiverId: activeSellerId, message: typedMsg });
       setTypedMsg("");
       fetchMessages();
     } catch (err) {

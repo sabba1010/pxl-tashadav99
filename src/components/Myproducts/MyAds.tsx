@@ -42,24 +42,30 @@ const MyAds: React.FC = () => {
   const [items, setItems] = useState<Ad[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchAds = async () => {
-      try {
-        const res = await axios.get<Ad[]>(
-          "http://localhost:3200/product/all-sells"
-        );
-        const userAds = res.data.filter(
-          (ad) => ad.userEmail === user.user?.email
-        );
-        setItems(userAds);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    if (user.user?.email) fetchAds();
-  }, [user.user?.email]);
+useEffect(() => {
+  const fetchAds = async () => {
+    try {
+      const res = await axios.get<Ad[]>(
+        "http://localhost:3200/product/all-sells"
+      );
+
+      const userAds = res.data.filter(
+        (ad) => ad.userEmail === user.user?.email
+      );
+
+      setItems(userAds);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (user.user?.email) {
+    fetchAds();
+  }
+}, [user.user?.email]);
+
 
   const statusOf = (s?: string | null) => (s ? s.toString().toLowerCase() : "");
 
