@@ -51,6 +51,7 @@ import { BiSolidPurchaseTag } from "react-icons/bi";
 
 // Notification Helper
 import { sendNotification } from "../Notification/Notification";
+import { useAuth } from "../../context/AuthContext";
 
 // --- TYPE FIXES FOR REACT 18+ & REACT-ICONS ---
 // এই অংশটি TS2786 এরর ফিক্স করার জন্য। আমরা আইকনগুলোকে React.ElementType হিসেবে কাস্ট করছি।
@@ -733,6 +734,8 @@ const Marketplace: React.FC = () => {
     return filteredItems.slice(start, start + itemsPerPage);
   }, [filteredItems, currentPage]);
 
+  const user = useAuth();
+
   // Actions
 const addToCart = useCallback(async (item: Item) => {
   try {
@@ -747,7 +750,8 @@ const addToCart = useCallback(async (item: Item) => {
         price: item.price,
         image: item.icon, // আইকন বা ইমেজ
         sellerEmail: item.seller,
-        addedAt: new Date()
+        addedAt: new Date(),
+        UserEmail: user.user?.email,
       }),
     });
 
