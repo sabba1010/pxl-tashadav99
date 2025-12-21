@@ -4,6 +4,8 @@ import { FlutterwaveConfig } from "flutterwave-react-v3/dist/types";
 import { CreditCard } from "lucide-react";
 import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 interface TestPaymentProps {
   amount: number;
@@ -12,7 +14,7 @@ interface TestPaymentProps {
 const TestPayment: React.FC<TestPaymentProps> = ({ amount }) => {
   const [paymentStatus, setPaymentStatus] = useState<string | null>(null);
   const { user } = useAuth();
-
+    const navigate = useNavigate();
     console.log(user)
   // যদি user না থাকে তাহলে config-এ ডিফল্ট বা empty রাখবো (hook চলবে)
   const config: FlutterwaveConfig = {
@@ -72,7 +74,9 @@ const TestPayment: React.FC<TestPaymentProps> = ({ amount }) => {
           setPaymentStatus("Payment failed or cancelled");
         }
 
-        closePaymentModal();
+            closePaymentModal();
+            navigate('/wallet');
+            toast.success(`Payment ${response.amount} Deposit successful!`);
       },
       onClose: () => {
         setPaymentStatus("Payment cancelled by user");
