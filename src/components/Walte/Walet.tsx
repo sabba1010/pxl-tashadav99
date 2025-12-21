@@ -9,7 +9,7 @@ const FaArrowUpIcon = FaArrowUp as unknown as React.ComponentType<any>;
 
 type Tx = {
   id: string;
-  type: "deposit" | "withdraw" | "manual-deposit";
+  type: "deposit" | "withdraw";
   amount: number;
   status: "pending" | "completed" | "rejected" | "successful";
   date: string;
@@ -27,11 +27,6 @@ type ApiTransaction = {
   createdAt: string;
 };
 
-const sampleManualDeposits: Tx[] = [
-  { id: "m-1", type: "manual-deposit", amount: 50, status: "pending", date: "2025-11-25", note: "bKash trx 12345" },
-  { id: "m-2", type: "manual-deposit", amount: 100, status: "completed", date: "2025-11-18", note: "Bank transfer" },
-];
-
 const sampleWithdrawals: Tx[] = [
   { id: "w-1", type: "withdraw", amount: 20, status: "completed", date: "2025-10-01", note: "bKash" },
 ];
@@ -42,9 +37,9 @@ export default function Wallet(): React.ReactElement {
   const CHARCOAL = "#111111";
   const EMERALD = "#1BC47D";
 
-  const [activeTab, setActiveTab] = useState<"online" | "manual" | "withdraw">("manual");
+  // Manual ট্যাব সরিয়ে ফেলা হয়েছে
+  const [activeTab, setActiveTab] = useState<"online" | "withdraw">("online");
 
-  const [manualDeposits] = useState<Tx[]>(sampleManualDeposits);
   const [withdrawals] = useState<Tx[]>(sampleWithdrawals);
 
   // Online deposits from API
@@ -61,7 +56,7 @@ export default function Wallet(): React.ReactElement {
     return () => { mounted.current = false; };
   }, []);
 
-  // Fetch online deposits when component mounts or user changes
+  // Fetch online deposits
   useEffect(() => {
     if (!user?.email) {
       setLoading(false);
@@ -73,22 +68,20 @@ export default function Wallet(): React.ReactElement {
         setLoading(true);
         setError(null);
 
-        // আপনার API endpoint এখানে দিন
         const response = await fetch("http://localhost:3200/api/payments");
 
         if (!response.ok) throw new Error("Failed to fetch transactions");
 
         const data: ApiTransaction[] = await response.json();
 
-        // ফিল্টার: শুধু লগইন ইউজারের ইমেইল ম্যাচ করা ট্রানজেকশন
         const filtered = data
           .filter((tx) => tx.customerEmail.toLowerCase() === user.email.toLowerCase())
           .map((tx): Tx => ({
             id: tx._id,
             type: "deposit",
-            amount: tx.amount, // যদি USD না হয় তাহলে কনভার্ট করতে হবে
+            amount: tx.amount,
             status: tx.status === "successful" ? "completed" : tx.status === "pending" ? "pending" : "rejected",
-            date: new Date(tx.createdAt).toISOString().split("T")[0], // YYYY-MM-DD
+            date: new Date(tx.createdAt).toISOString().split("T")[0],
             note: `Tx ID: ${tx.transactionId}`,
           }));
 
@@ -110,7 +103,7 @@ export default function Wallet(): React.ReactElement {
     fetchOnlineDeposits();
   }, [user?.email]);
 
-  const tabClass = (tab: "online" | "manual" | "withdraw") =>
+  const tabClass = (tab: "online" | "withdraw") =>
     `pb-3 px-1 text-base font-medium transition-all duration-300 border-b-4 ${
       activeTab === tab
         ? "border-[#D4A643] text-[#0A1A3A]"
@@ -135,7 +128,7 @@ export default function Wallet(): React.ReactElement {
           >
             <div>
               <div className="text-lg font-semibold" style={{ color: EMPIRE_BLUE }}>
-                {t.type === "withdraw" ? "Withdrawal" : t.type === "manual-deposit" ? "Manual Deposit" : "Online Deposit"}
+                {t.type === "withdraw" ? "Withdrawal" : "Online Deposit"}
               </div>
               <div className="text-sm text-gray-500 mt-1">
                 {t.date} • {t.note || "-"}
@@ -184,8 +177,9 @@ export default function Wallet(): React.ReactElement {
       return renderList(onlineDeposits);
     }
 
-    if (activeTab === "manual") return renderList(manualDeposits);
-    if (activeTab === "withdraw") return renderList(withdrawals);
+    if (activeTab === "withdraw") {
+      return renderList(withdrawals);
+    }
 
     return null;
   };
@@ -214,24 +208,26 @@ export default function Wallet(): React.ReactElement {
             </div>
 
             {/* Premium Action Buttons */}
-            <div className="mt-8 flex flex-col sm:flex-row gap-4">
-              <Link
-                to="/payment"
-                className="flex items-center justify-center gap-3 px-8 py-5 rounded-2xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300"
-                style={{ backgroundColor: ROYAL_GOLD, color: CHARCOAL }}
-              >
-                <FaPlusIcon size={20} />
-                Deposit
-              </Link>
-              <Link
-                to="/withdraw"
-                className="flex items-center justify-center gap-3 px-8 py-5 rounded-2xl bg-white border-2 font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300"
-                style={{ borderColor: ROYAL_GOLD, color: EMPIRE_BLUE }}
-              >
-                <FaArrowUpIcon size={20} className="rotate-45" />
-                Withdraw
-              </Link>
-            </div>
+   <div className="mt-10 flex flex-col sm:flex-row gap-6">
+  {/* Deposit Button */}
+  <Link
+    to="/payment"
+    className="flex-1 flex items-center justify-center gap-3 px-8 py-5 rounded-2xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-r from-[#D4A643] to-[#E8C87A] text-[#111111] hover:from-[#E8C87A] hover:to-[#D4A643] hover:scale-105"
+  >
+    <FaPlusIcon size={22} />
+    Deposit Funds
+  </Link>
+
+  {/* Withdraw Button */}
+  <Link
+    to="/withdraw"
+    className="flex-1 flex items-center justify-center gap-3 px-8 py-5 rounded-2xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 bg-white border-2 text-[#0A1A3A] hover:bg-[#0A1A3A] hover:text-white hover:border-[#0A1A3A] hover:scale-105"
+    style={{ borderColor: ROYAL_GOLD }}
+  >
+    <FaArrowUpIcon size={22} className="rotate-45" />
+    Withdraw Funds
+  </Link>
+</div>
 
             <Link
               to="/report"
@@ -247,9 +243,6 @@ export default function Wallet(): React.ReactElement {
             <div className="flex gap-8 border-b pb-4 mb-8 overflow-x-auto">
               <button onClick={() => setActiveTab("online")} className={tabClass("online")}>
                 Online Deposit
-              </button>
-              <button onClick={() => setActiveTab("manual")} className={tabClass("manual")}>
-                Manual Deposit
               </button>
               <button onClick={() => setActiveTab("withdraw")} className={tabClass("withdraw")}>
                 Withdraw History
