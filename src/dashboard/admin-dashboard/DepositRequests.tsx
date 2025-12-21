@@ -19,10 +19,9 @@ const ITEMS_PER_PAGE = 5;
 
 /* ====================== API FUNCTIONS ====================== */
 const fetchPayments = async (): Promise<DepositRequest[]> => {
-  const response = await axios.get("https://vps-backend-server-beta.vercel.app/payments");
+  const response = await axios.get("http://localhost:3200/payments");
   return response.data as DepositRequest[];
 };
-
 
 const updatePaymentStatus = async ({
   id,
@@ -31,7 +30,7 @@ const updatePaymentStatus = async ({
   id: string;
   status: "Approved" | "Rejected";
 }) => {
-  const response = await axios.patch(`https://vps-backend-server-beta.vercel.app/payments/${id}`, {
+  const response = await axios.patch(`http://localhost:3200/payments/${id}`, {
     status,
   });
   return response.data;

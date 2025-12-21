@@ -242,7 +242,7 @@ const AllUsers: React.FC = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const response = await fetch("https://vps-backend-server-beta.vercel.app/api/user/getall");
+      const response = await fetch("http://localhost:3200/api/user/getall");
       const data = await response.json();
 
       // Ensure data is array, if your API wraps it in { users: [...] } adjust accordingly

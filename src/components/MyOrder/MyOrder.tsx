@@ -212,20 +212,19 @@ const MyOrder: React.FC = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const buyerId = "current_user_123";
 
-const fetchMessages = async () => {
-  if (!activeSellerId || !buyerId) return;
+  const fetchMessages = async () => {
+    if (!activeSellerId || !buyerId) return;
 
-  try {
-    const res = await axios.get(
-      `https://vps-backend-server-beta.vercel.app/chat/history/${buyerId}/${activeSellerId}`
-    );
+    try {
+      const res = await axios.get(
+        `http://localhost:3200/chat/history/${buyerId}/${activeSellerId}`
+      );
 
-    setMessages(res.data as ChatMessage[]);
-  } catch (err) {
-    console.error("Chat Error:", err);
-  }
-};
-
+      setMessages(res.data as ChatMessage[]);
+    } catch (err) {
+      console.error("Chat Error:", err);
+    }
+  };
 
   useEffect(() => {
     let interval: any;
@@ -244,12 +243,16 @@ const fetchMessages = async () => {
     e.preventDefault();
     if (!typedMsg.trim() || !activeSellerId) return;
     try {
-      await axios.post("https://vps-backend-server-beta.vercel.app/chat/send", {
+      await axios.post("http://localhost:3200/chat/send", {
         senderId: buyerId,
         receiverId: activeSellerId,
         message: typedMsg,
       });
-      await axios.post("https://vps-backend-server-beta.vercel.app/chat/send", { senderId: buyerId, receiverId: activeSellerId, message: typedMsg });
+      await axios.post("http://localhost:3200/chat/send", {
+        senderId: buyerId,
+        receiverId: activeSellerId,
+        message: typedMsg,
+      });
       setTypedMsg("");
       fetchMessages();
     } catch (err) {

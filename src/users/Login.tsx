@@ -22,13 +22,12 @@ const Login = () => {
 
     try {
       const res = await axios.post<{ success: any; user: any }>(
-        "https://vps-backend-server-beta.vercel.app/api/user/login",
+        "http://localhost:3200/api/user/login",
         {
           email,
           password,
         }
       );
-
 
       if (res.data?.success) {
         const isLocalhost =

@@ -42,31 +42,29 @@ const MyAds: React.FC = () => {
   const [items, setItems] = useState<Ad[]>([]);
   const [loading, setLoading] = useState(true);
 
-useEffect(() => {
-  const fetchAds = async () => {
-    try {
-      const res = await axios.get<Ad[]>(
-        "https://vps-backend-server-beta.vercel.app/product/all-sells"
-      );
+  useEffect(() => {
+    const fetchAds = async () => {
+      try {
+        const res = await axios.get<Ad[]>(
+          "http://localhost:3200/product/all-sells"
+        );
 
-   const userAds = res.data.filter(
-  (ad: { userEmail: string }) => ad.userEmail === user.user?.email
-);
+        const userAds = res.data.filter(
+          (ad: { userEmail: string }) => ad.userEmail === user.user?.email
+        );
 
+        setItems(userAds);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-      setItems(userAds);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
+    if (user.user?.email) {
+      fetchAds();
     }
-  };
-
-  if (user.user?.email) {
-    fetchAds();
-  }
-}, [user.user?.email]);
-
+  }, [user.user?.email]);
 
   const statusOf = (s?: string | null) => (s ? s.toString().toLowerCase() : "");
 
@@ -110,7 +108,7 @@ useEffect(() => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await axios.delete(`https://vps-backend-server-beta.vercel.app/product/delete/${id}`);
+          await axios.delete(`http://localhost:3200/product/delete/${id}`);
           setItems((prev) => prev.filter((it) => it._id !== id));
           Swal.fire("Deleted!", "Your ad has been deleted.", "success");
         } catch (err) {

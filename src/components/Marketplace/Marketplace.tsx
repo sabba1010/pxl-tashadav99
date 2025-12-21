@@ -80,7 +80,7 @@ interface Item {
 type SubcatState = Record<string, string[]>;
 
 // --- Constants & Config ---
-const API_URL = process.env.REACT_APP_API_URL || "https://vps-backend-server-beta.vercel.app";
+const API_URL = process.env.REACT_APP_API_URL || "http://localhost:3200";
 
 const CATEGORY_MAP: Record<string, string[]> = {
   "Social Media": [
@@ -515,11 +515,13 @@ const ItemCard: React.FC<{
               isList ? "" : "flex-1 justify-center"
             }`}
           >
-
-            {isProcessing ? "..." : <><PurchaseIcon size={16}/> Purchase</>}
-
-           
-
+            {isProcessing ? (
+              "..."
+            ) : (
+              <>
+                <PurchaseIcon size={16} /> Purchase
+              </>
+            )}
           </button>
         </div>
       </div>
@@ -737,35 +739,35 @@ const Marketplace: React.FC = () => {
   const user = useAuth();
 
   // Actions
-const addToCart = useCallback(async (item: Item) => {
-  try {
-    const response = await fetch(`${API_URL}/cart/post`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        productId: item.id,
-        name: item.title,
-        price: item.price,
-        image: item.icon, // আইকন বা ইমেজ
-        sellerEmail: item.seller,
-        addedAt: new Date(),
-        UserEmail: user.user?.email,
-      }),
-    });
+  const addToCart = useCallback(async (item: Item) => {
+    try {
+      const response = await fetch(`${API_URL}/cart/post`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          productId: item.id,
+          name: item.title,
+          price: item.price,
+          image: item.icon, // আইকন বা ইমেজ
+          sellerEmail: item.seller,
+          addedAt: new Date(),
+          UserEmail: user.user?.email,
+        }),
+      });
 
-    if (response.ok) {
-      setCartCount((prev) => prev + 1);
-      alert(`${item.title} added to cart successfully!`);
-    } else {
-      throw new Error("Failed to add to cart");
+      if (response.ok) {
+        setCartCount((prev) => prev + 1);
+        alert(`${item.title} added to cart successfully!`);
+      } else {
+        throw new Error("Failed to add to cart");
+      }
+    } catch (err: any) {
+      console.error("Cart Error:", err);
+      alert("Could not add to cart. Please try again.");
     }
-  } catch (err: any) {
-    console.error("Cart Error:", err);
-    alert("Could not add to cart. Please try again.");
-  }
-}, []);
+  }, []);
 
   const buyNow = async (item: Item) => {
     if (processingIds.includes(item.id)) return;

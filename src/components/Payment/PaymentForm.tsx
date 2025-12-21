@@ -29,7 +29,7 @@ const Spinner: FC<{ size?: number }> = ({ size = 18 }) => (
 );
 
 export default function PaymentForm({
-  endpoint = "https://vps-backend-server-beta.vercel.app/api/submit",
+  endpoint = "http://localhost:3200/api/submit",
 }) {
   const user = useAuth(); // user.name, user.email
 

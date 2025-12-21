@@ -72,7 +72,7 @@ const SellForm: React.FC = () => {
           response: any;
           platforms: any;
           data: any;
-        }>("https://vps-backend-server-beta.vercel.app/icon-data");
+        }>("http://localhost:3200/icon-data");
         // Adjust here depending on your API response
         console.log(response.data.data);
         const data = Array.isArray(response.data)
@@ -87,7 +87,6 @@ const SellForm: React.FC = () => {
         setLoadingPlatforms(false);
       }
     };
-
 
     fetchPlatforms();
   }, []);
@@ -115,7 +114,7 @@ const SellForm: React.FC = () => {
     console.log("Submitted:", formData);
     try {
       const response = await axios.post<{ acknowledged: any }>(
-        "https://vps-backend-server-beta.vercel.app/product/sell",
+        "http://localhost:3200/product/sell",
         formData
       );
       if (response.data.acknowledged) {
