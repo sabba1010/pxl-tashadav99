@@ -52,6 +52,7 @@ import { BiSolidPurchaseTag } from "react-icons/bi";
 // Notification Helper
 import { sendNotification } from "../Notification/Notification";
 import { useAuth } from "../../context/AuthContext";
+import { toast } from "sonner";
 
 // --- TYPE FIXES FOR REACT 18+ & REACT-ICONS ---
 // এই অংশটি TS2786 এরর ফিক্স করার জন্য। আমরা আইকনগুলোকে React.ElementType হিসেবে কাস্ট করছি।
@@ -759,13 +760,13 @@ const Marketplace: React.FC = () => {
 
       if (response.ok) {
         setCartCount((prev) => prev + 1);
-        alert(`${item.title} added to cart successfully!`);
+        toast.success(`${item.title} added to cart successfully!`);
       } else {
         throw new Error("Failed to add to cart");
       }
     } catch (err: any) {
       console.error("Cart Error:", err);
-      alert("Could not add to cart. Please try again.");
+      toast.error("Could not add to cart. Please try again.");
     }
   }, []);
 
@@ -783,9 +784,9 @@ const Marketplace: React.FC = () => {
       });
 
       setSelectedItem(null);
-      alert("Purchase successful! Check your notifications.");
+      toast.success("Purchase successful! Check your notifications.");
     } catch (err: any) {
-      alert("Purchase failed: " + err.message);
+      toast.error("Purchase failed: " + err.message);
     } finally {
       setProcessingIds((prev) => prev.filter((id) => id !== item.id));
     }
