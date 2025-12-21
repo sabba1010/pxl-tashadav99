@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { FaPlus, FaArrowUp } from "react-icons/fa";
 import { useAuthHook } from "../../hook/useAuthHook";
+import { useAuth } from "../../context/AuthContext";
 
 const FaPlusIcon = FaPlus as unknown as React.ComponentType<any>;
 const FaArrowUpIcon = FaArrowUp as unknown as React.ComponentType<any>;
@@ -10,21 +11,29 @@ type Tx = {
   id: string;
   type: "deposit" | "withdraw" | "manual-deposit";
   amount: number;
-  status: "pending" | "completed" | "rejected";
+  status: "pending" | "completed" | "rejected" | "successful";
   date: string;
   note?: string;
 };
 
-// const FAKE_BALANCE = loginUserData.data?.balance
+// API থেকে আসা রেসপন্সের জন্য টাইপ
+type ApiTransaction = {
+  _id: string;
+  transactionId: number;
+  amount: number;
+  currency: string;
+  status: "successful" | "pending" | "failed";
+  customerEmail: string;
+  createdAt: string;
+};
+
 const sampleManualDeposits: Tx[] = [
   { id: "m-1", type: "manual-deposit", amount: 50, status: "pending", date: "2025-11-25", note: "bKash trx 12345" },
   { id: "m-2", type: "manual-deposit", amount: 100, status: "completed", date: "2025-11-18", note: "Bank transfer" },
 ];
+
 const sampleWithdrawals: Tx[] = [
   { id: "w-1", type: "withdraw", amount: 20, status: "completed", date: "2025-10-01", note: "bKash" },
-];
-const sampleOnlineDeposits: Tx[] = [
-  { id: "o-1", type: "deposit", amount: 30, status: "completed", date: "2025-11-10", note: "Card" },
 ];
 
 export default function Wallet(): React.ReactElement {
@@ -35,16 +44,71 @@ export default function Wallet(): React.ReactElement {
 
   const [activeTab, setActiveTab] = useState<"online" | "manual" | "withdraw">("manual");
 
-  const [onlineDeposits] = useState<Tx[]>(sampleOnlineDeposits);
   const [manualDeposits] = useState<Tx[]>(sampleManualDeposits);
   const [withdrawals] = useState<Tx[]>(sampleWithdrawals);
+
+  // Online deposits from API
+  const [onlineDeposits, setOnlineDeposits] = useState<Tx[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
   const loginUserData = useAuthHook();
+  const { user } = useAuth();
 
   const mounted = useRef(true);
   useEffect(() => {
     mounted.current = true;
     return () => { mounted.current = false; };
   }, []);
+
+  // Fetch online deposits when component mounts or user changes
+  useEffect(() => {
+    if (!user?.email) {
+      setLoading(false);
+      return;
+    }
+
+    const fetchOnlineDeposits = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // আপনার API endpoint এখানে দিন
+        const response = await fetch("http://localhost:3200/api/payments");
+
+        if (!response.ok) throw new Error("Failed to fetch transactions");
+
+        const data: ApiTransaction[] = await response.json();
+
+        // ফিল্টার: শুধু লগইন ইউজারের ইমেইল ম্যাচ করা ট্রানজেকশন
+        const filtered = data
+          .filter((tx) => tx.customerEmail.toLowerCase() === user.email.toLowerCase())
+          .map((tx): Tx => ({
+            id: tx._id,
+            type: "deposit",
+            amount: tx.amount, // যদি USD না হয় তাহলে কনভার্ট করতে হবে
+            status: tx.status === "successful" ? "completed" : tx.status === "pending" ? "pending" : "rejected",
+            date: new Date(tx.createdAt).toISOString().split("T")[0], // YYYY-MM-DD
+            note: `Tx ID: ${tx.transactionId}`,
+          }));
+
+        if (mounted.current) {
+          setOnlineDeposits(filtered);
+        }
+      } catch (err) {
+        if (mounted.current) {
+          setError("Failed to load online deposits");
+          console.error(err);
+        }
+      } finally {
+        if (mounted.current) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchOnlineDeposits();
+  }, [user?.email]);
 
   const tabClass = (tab: "online" | "manual" | "withdraw") =>
     `pb-3 px-1 text-base font-medium transition-all duration-300 border-b-4 ${
@@ -85,7 +149,7 @@ export default function Wallet(): React.ReactElement {
                 className="text-sm font-medium mt-1"
                 style={{
                   color:
-                    t.status === "completed"
+                    t.status === "completed" || t.status === "successful"
                       ? EMERALD
                       : t.status === "pending"
                       ? ROYAL_GOLD
@@ -99,6 +163,31 @@ export default function Wallet(): React.ReactElement {
         ))}
       </div>
     );
+  };
+
+  const renderContent = () => {
+    if (activeTab === "online") {
+      if (loading) {
+        return (
+          <div className="h-64 flex items-center justify-center">
+            <div className="text-lg text-gray-500">Loading transactions...</div>
+          </div>
+        );
+      }
+      if (error) {
+        return (
+          <div className="h-64 flex items-center justify-center text-red-500">
+            <div className="text-lg">{error}</div>
+          </div>
+        );
+      }
+      return renderList(onlineDeposits);
+    }
+
+    if (activeTab === "manual") return renderList(manualDeposits);
+    if (activeTab === "withdraw") return renderList(withdrawals);
+
+    return null;
   };
 
   return (
@@ -119,7 +208,7 @@ export default function Wallet(): React.ReactElement {
             >
               <div className="text-lg opacity-90">Available Balance</div>
               <div className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight">
-                ${loginUserData.data?.balance}
+                ${loginUserData.data?.balance ?? "0.00"}
               </div>
               <div className="text-sm opacity-80">Updated just now</div>
             </div>
@@ -168,9 +257,7 @@ export default function Wallet(): React.ReactElement {
             </div>
 
             <div className="bg-white rounded-2xl p-6 lg:p-8 shadow-xl border border-gray-100 min-h-[28rem]">
-              {activeTab === "online" && renderList(onlineDeposits)}
-              {activeTab === "manual" && renderList(manualDeposits)}
-              {activeTab === "withdraw" && renderList(withdrawals)}
+              {renderContent()}
             </div>
           </div>
         </div>
