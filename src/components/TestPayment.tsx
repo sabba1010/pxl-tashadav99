@@ -1,101 +1,121 @@
-import { closePaymentModal, useFlutterwave } from 'flutterwave-react-v3';
-import { FlutterwaveConfig } from 'flutterwave-react-v3/dist/types';
-import React, { useState } from 'react';
+// src/components/TestPayment.tsx
+import { closePaymentModal, useFlutterwave } from "flutterwave-react-v3";
+import { FlutterwaveConfig } from "flutterwave-react-v3/dist/types";
+import { CreditCard } from "lucide-react";
+import React, { useState } from "react";
+import { useAuth } from "../context/AuthContext";
 
-const TestPayment: React.FC = () => {
+interface TestPaymentProps {
+  amount: number;
+}
+
+const TestPayment: React.FC<TestPaymentProps> = ({ amount }) => {
   const [paymentStatus, setPaymentStatus] = useState<string | null>(null);
+  const { user } = useAuth();
 
+    console.log(user)
+  // যদি user না থাকে তাহলে config-এ ডিফল্ট বা empty রাখবো (hook চলবে)
   const config: FlutterwaveConfig = {
-    public_key: 'FLWPUBK_TEST-2de87089e34448fe528b45106c0d7ceb-X', // তোমার Flutterwave TEST public key দিয়ে রাখো (FLWPUBK_TEST-...)
-    tx_ref: `test-tx-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
-    amount: 500, // ডিফল্ট টেস্ট অ্যামাউন্ট
-    currency: 'NGN',
-    payment_options: 'card,ussd,banktransfer,mobilemoney',
+    public_key: "FLWPUBK_TEST-2de87089e34448fe528b45106c0d7ceb-X",
+    tx_ref: `tx-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
+    amount,
+    currency: "NGN",
+    payment_options: "card,ussd,banktransfer,mobilemoney",
     customer: {
-      email: 'test@gmail.com',
-      phone_number: '08012345678',
-      name: 'Test User',
+      email: user?.email || "guest@example.com", // fallback
+      phone_number: "08012345678",
+      name: user?.name || "Guest User",
     },
     customizations: {
-      title: 'Test Payment',
-      description: 'Testing Flutterwave integration',
-      logo: 'https://your-logo-url.com/logo.png', // চাইলে খালি রাখতে পারো
+      title: "Payment",
+      description: "Secure payment via Flutterwave",
+      logo: "https://your-logo-url.com/logo.png",
     },
   };
 
+  // Hook টা এখানে top level-এ কল করা হচ্ছে — সবসময় চলবে
   const handleFlutterPayment = useFlutterwave(config);
 
   const handlePayment = () => {
+    // এখানে চেক করছি user আছে কিনা
+    if (!user || !user.email) {
+      setPaymentStatus("Error: You must be logged in to make a payment.");
+      return;
+    }
+
     handleFlutterPayment({
       callback: (response) => {
-        console.log('Flutterwave response:', response);
+        console.log("Flutterwave response:", response);
 
-        if (response.status === 'successful') {
+        if (response.status === "successful") {
           setPaymentStatus(`Success! Transaction ID: ${response.transaction_id}`);
 
-          
-          fetch('http://localhost:3200/api/verify-payment', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+          fetch("http://localhost:3200/api/verify-payment", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               transaction_id: response.transaction_id,
               tx_ref: response.tx_ref,
               amount: response.amount,
               currency: response.currency,
               status: response.status,
+              userEmail: user.email,
             }),
           })
             .then((res) => res.json())
-            .then((data) => console.log('Verification response:', data))
-            .catch((err) => console.error('Verification failed:', err));
+            .then((data) => console.log("Backend response:", data))
+            .catch((err) => {
+              console.error("Verification failed:", err);
+              setPaymentStatus("Server verification failed");
+            });
         } else {
-          setPaymentStatus('Payment failed or cancelled');
+          setPaymentStatus("Payment failed or cancelled");
         }
 
-        closePaymentModal(); // মোডাল বন্ধ করো
+        closePaymentModal();
       },
       onClose: () => {
-        setPaymentStatus('Payment cancelled by user');
-        console.log('Payment modal closed');
+        setPaymentStatus("Payment cancelled by user");
       },
     });
   };
 
   return (
-    <div style={{ textAlign: 'center', margin: '40px auto', maxWidth: '400px' }}>
-      <h3>Flutterwave Test Payment</h3>
-      <p>Amount: ₦500 (Fixed for testing)</p>
+    <div className="w-full flex flex-col items-center gap-6 my-8">
+      {/* লগইন না থাকলে মেসেজ দেখাও */}
+      {!user ? (
+        <div className="text-center text-red-600 font-bold text-lg">
+          Please log in to make a payment.
+        </div>
+      ) : (
+        <>
+          <div className="text-center">
+            <p className="text-gray-600">Paying as:</p>
+            <p className="font-semibold text-lg">{user.email}</p>
+            <p className="text-xl font-bold mt-2">Amount: ₦{amount}</p>
+          </div>
 
-      <button
-        type="button"
-        onClick={handlePayment}
-        style={{
-          padding: '14px 32px',
-          backgroundColor: '#f5a623',
-          color: 'white',
-          border: 'none',
-          borderRadius: '8px',
-          cursor: 'pointer',
-          fontSize: '18px',
-          fontWeight: 'bold',
-          boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
-        }}
-      >
-        Pay ₦500 with Flutterwave
-      </button>
+          <button
+            onClick={handlePayment}
+            className="flex items-center justify-center gap-4 w-full max-w-md px-10 py-5 
+                       bg-orange-500 hover:bg-orange-600 text-white text-lg font-bold 
+                       rounded-xl shadow-xl transition duration-300"
+          >
+            <CreditCard size={28} />
+            Pay ₦{amount} with Flutterwave
+          </button>
+        </>
+      )}
 
       {paymentStatus && (
         <div
-          style={{
-            marginTop: '20px',
-            padding: '16px',
-            borderRadius: '8px',
-            backgroundColor: paymentStatus.includes('Success') ? '#d4edda' : '#f8d7da',
-            color: paymentStatus.includes('Success') ? '#155724' : '#721c24',
-            border: `1px solid ${paymentStatus.includes('Success') ? '#c3e6cb' : '#f5c6cb'}`,
-          }}
+          className={`w-full max-w-md p-5 rounded-xl text-center font-bold text-lg ${
+            paymentStatus.includes("Success")
+              ? "bg-green-100 text-green-800 border-2 border-green-400"
+              : "bg-red-100 text-red-800 border-2 border-red-400"
+          }`}
         >
-          <strong>{paymentStatus}</strong>
+          {paymentStatus}
         </div>
       )}
     </div>

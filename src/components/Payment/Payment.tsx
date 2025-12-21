@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import KoraPayment from "./KoraPayment";
 import { FaChevronRight, FaChevronLeft, FaCreditCard } from "react-icons/fa";
+import TestPayment from "../TestPayment";
 
 // Helper that ensures icon returns a valid React element for TS
 const Icon = (Comp: any, props: any = {}): React.ReactElement | null => {
@@ -177,8 +178,9 @@ const Payment: React.FC = () => {
                 </div>
 
                 <div className="mt-6 grid grid-cols-1 gap-4">
+                  <TestPayment amount={finalAmount} />
                   {/* Flutterwave button (gold) */}
-                  <button
+                  {/* <button
                     onClick={async () => {
                       try {
                         // call your backend route
@@ -210,7 +212,7 @@ const Payment: React.FC = () => {
                   >
                     {Icon(FaCreditCard, { className: "opacity-90" })} Pay with
                     Flutterwave
-                  </button>
+                  </button> */}
 
                   {/* KoraPayment component */}
                   <div className="w-full">

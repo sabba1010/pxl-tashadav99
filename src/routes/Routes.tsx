@@ -174,10 +174,10 @@ const Routes = createBrowserRouter([
         path: "/post-data",
         element: <Post />,
       },
-      {
-        path: "/test",
-        element: <TestPayment />,
-      }
+      // {
+      //   path: "/test",
+      //   element: <TestPayment />,
+      // }
     ],
   },
 
