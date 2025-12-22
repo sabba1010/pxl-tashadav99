@@ -7,6 +7,7 @@ import {
 } from 'react-icons/fa';
 import { useAuth } from "../../context/AuthContext";
 import { toast } from "sonner";
+import { useAuthHook } from '../../hook/useAuthHook';
 // refetch বাদ দিচ্ছি কারণ সার্ভার আপডেট না হলে refetch করলে আগের ব্যালেন্স চলে আসবে
 // import { useAuthHook } from "../../hook/useAuthHook"; 
 
@@ -29,7 +30,7 @@ interface WithdrawFormData {
 
 const WithdrawForm: React.FC = () => {
   const { user, setUser } = useAuth(); 
-  // const { refetch } = useAuthHook(); // এটা ব্যবহার করব না
+  const { refetch } = useAuthHook(); 
 
   const [paymentMethod, setPaymentMethod] = useState<'kora' | 'flutterwave'>('kora');
   const [formData, setFormData] = useState<WithdrawFormData>({
@@ -140,7 +141,7 @@ const WithdrawForm: React.FC = () => {
             email: user?.email || '',
             note: ''
         });
-
+          refetch();
         // NOTE: refetch() কল করছি না। কারণ সার্ভার আপডেট হয়নি, 
         // তাই refetch করলে ব্যালেন্স আবার আগের মতো হয়ে যাবে।
         
