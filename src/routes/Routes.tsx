@@ -45,7 +45,7 @@ import Review from "../dashboard/buyer-dahboard/Review";
 import SellForm from "../dashboard/user-dashboard/SellForm";
 import PrivateRoute from "./PrivateRoute";
 import SellerRoute from "./SellerRoute";
-import PaymentForm from "./../components/Payment/PaymentForm";
+import PaymentForm from "../components/Payment/Withdraw";
 import AdminRoute from "./AdminRoute";
 import SellerPrivateRoute from "./SellerPrivateRoute";
 import CartPage from "../components/Cart/CartPage";
