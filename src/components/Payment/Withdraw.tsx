@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 
 const WithdrawForm = () => {
   const [paymentMethod, setPaymentMethod] = useState<'kora' | 'flutterwave'>('kora');
+
   const [formData, setFormData] = useState({
     amount: '',
     currency: 'NGN',
@@ -15,9 +16,12 @@ const WithdrawForm = () => {
 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
-  const [submitStatus, setSubmitStatus] = useState<'idle' | 'pending' | 'success' | 'error'>('idle');
+  const [submitStatus, setSubmitStatus] =
+    useState<'idle' | 'pending' | 'success' | 'error'>('idle');
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
@@ -28,69 +32,168 @@ const WithdrawForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setMessage('');
     setSubmitStatus('pending');
+    setMessage('');
 
     try {
       const response = await fetch('http://localhost:3200/withdraw/post', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          ...formData,
           paymentMethod,
-          status: 'pending',  // ডিফল্ট pending
+          ...formData,
+          status: 'pending',
           createdAt: new Date().toISOString(),
-          userId: 'current_user_id' // পরে auth থেকে নিবে
         }),
       });
 
       if (response.ok) {
         setSubmitStatus('success');
-        setMessage('উইথড্র রিকোয়েস্ট সফলভাবে জমা হয়েছে! স্ট্যাটাস: Pending ⏳');
-        // ফর্ম রিসেট
+        setMessage('Withdraw request submitted successfully. Status: Pending ⏳');
+
         setFormData({
-          amount: '', currency: 'NGN', accountNumber: '', bankCode: '',
-          fullName: '', phoneNumber: '', email: '', note: ''
+          amount: '',
+          currency: 'NGN',
+          accountNumber: '',
+          bankCode: '',
+          fullName: '',
+          phoneNumber: '',
+          email: '',
+          note: ''
         });
+
+        setPaymentMethod('kora');
       } else {
         setSubmitStatus('error');
-        setMessage('কিছু একটা ভুল হয়েছে। আবার চেষ্টা করুন।');
+        setMessage('Something went wrong. Please try again.');
       }
-    } catch (error) {
+    } catch {
       setSubmitStatus('error');
-      setMessage('নেটওয়ার্ক সমস্যা। ব্যাকএন্ড চলছে কি না চেক করুন।');
+      setMessage('Network error. Please check your server connection.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-8 bg-white rounded-xl shadow-xl">
-      <h2 className="text-3xl font-bold text-center mb-8">Withdraw Request</h2>
+    <div className="max-w-3xl mx-auto p-6 md:p-10 bg-white rounded-2xl shadow-2xl mt-10">
+      <h2 className="text-3xl md:text-4xl font-bold text-center mb-10 text-gray-800">
+        Withdraw Funds
+      </h2>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* তোমার পুরানো ফর্ম ফিল্ডগুলো এখানে (আগের মতোই) */}
-        {/* ... (Amount, Account Number, Bank Code, etc.) ... */}
+      <form onSubmit={handleSubmit} className="space-y-7">
+
+        {/* Payment Gateway */}
+        <div>
+          <label className="block text-lg font-semibold mb-2">
+            Payment Gateway <span className="text-red-500">*</span>
+          </label>
+          <select
+            value={paymentMethod}
+            onChange={handleMethodChange}
+            className="w-full px-5 py-4 border-2 rounded-xl"
+            required
+          >
+            <option value="kora">Kora (Korapay)</option>
+            <option value="flutterwave">Flutterwave</option>
+          </select>
+        </div>
+
+        {/* Amount & Currency */}
+        <div className="grid md:grid-cols-2 gap-6">
+          <input
+            type="number"
+            name="amount"
+            placeholder="Withdraw Amount"
+            value={formData.amount}
+            onChange={handleChange}
+            className="px-5 py-4 border-2 rounded-xl"
+            required
+          />
+
+          <select
+            name="currency"
+            value={formData.currency}
+            onChange={handleChange}
+            className="px-5 py-4 border-2 rounded-xl"
+          >
+            <option value="NGN">NGN – Nigerian Naira</option>
+            <option value="GHS">GHS – Ghanaian Cedi</option>
+            <option value="KES">KES – Kenyan Shilling</option>
+            <option value="USD">USD – US Dollar</option>
+          </select>
+        </div>
+
+        {/* Bank Details */}
+        <input
+          type="text"
+          name="accountNumber"
+          placeholder="Bank Account Number"
+          value={formData.accountNumber}
+          onChange={handleChange}
+          className="w-full px-5 py-4 border-2 rounded-xl"
+          required
+        />
+
+        <input
+          type="text"
+          name="bankCode"
+          placeholder="Bank Code or Bank Name"
+          value={formData.bankCode}
+          onChange={handleChange}
+          className="w-full px-5 py-4 border-2 rounded-xl"
+          required
+        />
+
+        {paymentMethod === 'flutterwave' && (
+          <input
+            type="text"
+            name="fullName"
+            placeholder="Account Holder Full Name"
+            value={formData.fullName}
+            onChange={handleChange}
+            className="w-full px-5 py-4 border-2 rounded-xl"
+            required
+          />
+        )}
+
+        {/* Contact */}
+        <input
+          type="text"
+          name="phoneNumber"
+          placeholder="e.g. +2348012345678"
+          value={formData.phoneNumber}
+          onChange={handleChange}
+          className="w-full px-5 py-4 border-2 rounded-xl"
+        />
+
+        <input
+          type="email"
+          name="email"
+          placeholder="Email address (optional)"
+          value={formData.email}
+          onChange={handleChange}
+          className="w-full px-5 py-4 border-2 rounded-xl"
+        />
+
+        <textarea
+          name="note"
+          placeholder="Additional note (optional)"
+          value={formData.note}
+          onChange={handleChange}
+          rows={4}
+          className="w-full px-5 py-4 border-2 rounded-xl"
+        />
 
         <button
-          type="submit"
           disabled={loading}
-          className={`w-full py-4 rounded-lg font-bold text-white ${
-            loading ? 'bg-yellow-500' : 'bg-blue-600 hover:bg-blue-700'
-          }`}
+          className="w-full py-5 bg-blue-600 text-white text-xl font-bold rounded-xl"
         >
-          {loading ? 'জমা হচ্ছে... ⏳' : 'Submit Request'}
+          {loading ? 'Submitting...' : 'Submit Withdraw Request'}
         </button>
 
         {message && (
-          <div className={`p-5 text-center rounded-lg font-bold text-lg border-4 ${
-            submitStatus === 'success' ? 'bg-green-100 text-green-800 border-green-500' :
-            submitStatus === 'error' ? 'bg-red-100 text-red-800 border-red-500' :
-            'bg-yellow-100 text-yellow-800 border-yellow-500'
-          }`}>
-            {submitStatus === 'success' && '✅ '}
-            {submitStatus === 'pending' && '⏳ '}
-            {submitStatus === 'error' && '❌ '}
+          <div className="mt-6 text-center font-semibold">
             {message}
           </div>
         )}
