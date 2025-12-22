@@ -1,6 +1,4 @@
 // src/components/HomeAboutSection.tsx
-import React from "react";
-import { Shield, Globe, Users, Zap, CheckCircle, Lock } from "lucide-react";
 
 export default function HomeAboutSection() {
     return (

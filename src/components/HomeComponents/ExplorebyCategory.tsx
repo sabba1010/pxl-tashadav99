@@ -1,5 +1,4 @@
 import React from "react";
-import { Link } from "react-router-dom";
 
 const ExplorebyCategory: React.FC = () => {
   const features = [
