@@ -26,7 +26,8 @@ export default function Wallet(): React.ReactElement {
   // Hooks
   const { payments, isLoading: depositLoading, isError: depositError } = useDepositByUser();
   const loginUserData = useAuthHook();
-  const userBalance = loginUserData.data?.balance ?? 0;
+  
+  const userBalance = loginUserData.data?.balance;
 
   // UI State
   const [activeTab, setActiveTab] = useState<"online" | "withdraw">("online");
@@ -97,7 +98,6 @@ export default function Wallet(): React.ReactElement {
     .filter((d) => d.status === "completed")
     .reduce((sum, d) => sum + d.amount, 0);
 
-  const displayedBalance = userBalance + successfulDepositsTotal - successfulWithdrawalsTotal;
 
   // Helpers
   const tabClass = (tab: "online" | "withdraw") =>
@@ -189,7 +189,7 @@ export default function Wallet(): React.ReactElement {
             >
               <div className="text-lg opacity-90">Available Balance</div>
               <div className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight">
-                ${displayedBalance.toFixed(2)}
+                ${loginUserData.data?.balance.toFixed(2) || "0.00"}
               </div>
               <div className="text-sm opacity-80">Updated just now</div>
             </div>

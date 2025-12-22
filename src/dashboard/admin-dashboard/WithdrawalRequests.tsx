@@ -1,548 +1,321 @@
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback, useEffect } from "react";
 
 /**
- * Interface for a single withdrawal request record
+ * Interface matching your MongoDB Document Structure
  */
 interface WithdrawalRequest {
-  id: string;
-  userId: number;
-  amountUSD: number;
-  method: "Bank Transfer" | "PayPal" | "Crypto Wallet";
-  dateRequested: string;
-  status: "Pending" | "Processed" | "Failed";
-  accountDetails: string; // Destination account info (e.g., bank last 4 digits, PayPal email, crypto address)
+  _id: string;
+  paymentMethod: string;
+  amount: string;
+  currency: string;
+  accountNumber: string;
+  bankCode: string;
+  fullName: string;
+  phoneNumber: string;
+  email: string;
+  note: string; // User's original note
+  status: string; // "pending", "success", "declined"
+  createdAt: string;
+  adminNote?: string; // If previously declined/commented
 }
 
-// --- MOCK DATA ---
-const mockRequests: WithdrawalRequest[] = [
-  {
-    id: "W001",
-    userId: 12,
-    amountUSD: 500.0,
-    method: "Bank Transfer",
-    dateRequested: "2024-07-20",
-    status: "Pending",
-    accountDetails: "Bank: ****1234 (John Doe)",
-  },
-  {
-    id: "W002",
-    userId: 25,
-    amountUSD: 150.0,
-    method: "PayPal",
-    dateRequested: "2024-07-21",
-    status: "Processed",
-    accountDetails: "paypal@example.com",
-  },
-  {
-    id: "W003",
-    userId: 33,
-    amountUSD: 1000.0,
-    method: "Crypto Wallet",
-    dateRequested: "2024-07-21",
-    status: "Pending",
-    accountDetails: "Crypto: 0xAbC...DeF",
-  },
-  {
-    id: "W004",
-    userId: 12,
-    amountUSD: 25.5,
-    method: "PayPal",
-    dateRequested: "2024-07-22",
-    status: "Failed",
-    accountDetails: "paypal@example.com",
-  },
-  {
-    id: "W005",
-    userId: 40,
-    amountUSD: 750.0,
-    method: "Bank Transfer",
-    dateRequested: "2024-07-22",
-    status: "Pending",
-    accountDetails: "Bank: ****5678 (Jane Smith)",
-  },
-  {
-    id: "W006",
-    userId: 18,
-    amountUSD: 120.0,
-    method: "PayPal",
-    dateRequested: "2024-07-23",
-    status: "Pending",
-    accountDetails: "user18@email.com",
-  },
-];
+const ITEMS_PER_PAGE = 10;
 
-const ITEMS_PER_PAGE = 5;
-
-// --- HELPER COMPONENT: WITHDRAWAL MODAL ---
+// --- COMPONENT: WITHDRAWAL MODAL ---
 
 interface WithdrawalModalProps {
   request: WithdrawalRequest | null;
   onClose: () => void;
-  onUpdateStatus: (id: string, status: "Processed" | "Failed") => void;
+  onUpdateStatus: (id: string, status: string, reason?: string) => void;
+  updating: boolean;
 }
 
 const WithdrawalModal: React.FC<WithdrawalModalProps> = ({
   request,
   onClose,
   onUpdateStatus,
+  updating
 }) => {
+  const [selectedStatus, setSelectedStatus] = useState<string>("");
+  const [declineReason, setDeclineReason] = useState<string>("");
+
+  // Initialize state when modal opens
+  useEffect(() => {
+    if (request) {
+      // If status is 'success', show 'approved' in dropdown so user understands
+      setSelectedStatus(request.status === 'success' ? 'approved' : request.status);
+      setDeclineReason(request.adminNote || ""); 
+    }
+  }, [request]);
+
   if (!request) return null;
 
-  // Helper for currency formatting
-  const formatCurrency = (amount: number) =>
-    new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(amount);
-
-  const getStatusColor = (status: WithdrawalRequest["status"]) => {
-    switch (status) {
-      case "Processed":
-        return "bg-green-100 text-green-800";
-      case "Pending":
-        return "bg-yellow-100 text-yellow-800";
-      case "Failed":
-        return "bg-red-100 text-red-800";
-    }
+  const handleSave = () => {
+    onUpdateStatus(request._id, selectedStatus, declineReason);
   };
 
   const DetailRow: React.FC<{ label: string; value: React.ReactNode }> = ({
     label,
     value,
   }) => (
-    <div className="flex justify-between items-center py-2 border-b border-gray-100">
-      <span className="text-sm font-medium text-gray-600">{label}</span>
-      <span className="text-sm font-semibold text-gray-800">{value}</span>
+    <div className="flex justify-between items-start py-3 border-b border-gray-100 last:border-0">
+      <span className="text-sm font-medium text-gray-500 w-1/3">{label}</span>
+      <span className="text-sm font-semibold text-gray-800 w-2/3 text-right break-words">{value}</span>
     </div>
   );
 
   return (
-    // Backdrop
-    <div className="fixed inset-0 bg-gray-900 bg-opacity-75 z-50 flex justify-center items-center p-4">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-md transform transition-all duration-300">
+    <div className="fixed inset-0 bg-gray-900 bg-opacity-60 z-50 flex justify-center items-center p-4 backdrop-blur-sm">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg transform transition-all flex flex-col max-h-[90vh]">
+        
         {/* Modal Header */}
-        <div className="p-6 border-b flex justify-between items-center bg-purple-50 rounded-t-xl">
-          <h3 className="text-xl font-bold text-purple-800">
-            Review Withdrawal: {request.id}
+        <div className="px-6 py-4 border-b flex justify-between items-center bg-gray-50 rounded-t-2xl">
+          <h3 className="text-lg font-bold text-gray-800">
+            Review Request
           </h3>
-          <button
-            onClick={onClose}
-            className="text-purple-400 hover:text-purple-600"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
+          <button onClick={onClose} className="text-gray-400 hover:text-red-500 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
 
-        {/* Modal Body (Details) */}
-        <div className="p-6 space-y-2">
-          <DetailRow
-            label="User ID"
-            value={<span className="font-mono">User {request.userId}</span>}
-          />
+        {/* Modal Body */}
+        <div className="p-6 overflow-y-auto custom-scrollbar">
+          
+          <div className="bg-purple-50 p-4 rounded-xl mb-6 text-center border border-purple-100">
+             <p className="text-xs text-purple-600 uppercase tracking-wider font-bold">Requested Amount</p>
+             <p className="text-3xl font-extrabold text-purple-900 mt-1">
+                {request.amount} <span className="text-lg font-medium">{request.currency}</span>
+             </p>
+          </div>
 
-          <DetailRow
-            label="Status"
-            value={
-              <span
-                className={`px-3 py-1 text-xs leading-5 font-semibold rounded-full ${getStatusColor(
-                  request.status
-                )}`}
-              >
-                {request.status}
-              </span>
-            }
-          />
+          <div className="space-y-1">
+            <DetailRow label="Transaction ID" value={<span className="font-mono text-xs bg-gray-100 px-2 py-1 rounded">{request._id}</span>} />
+            <DetailRow label="User Email" value={request.email} />
+            <DetailRow label="Full Name" value={request.fullName || "N/A"} />
+            
+            <div className="py-3 border-b border-gray-100">
+               <p className="text-sm font-medium text-gray-500 mb-2">Banking Details</p>
+               <div className="bg-blue-50 p-3 rounded-lg text-sm text-blue-900 border border-blue-100">
+                  <p><span className="font-bold">Method:</span> {request.paymentMethod}</p>
+                  <p><span className="font-bold">Acc Num:</span> {request.accountNumber}</p>
+                  <p><span className="font-bold">Bank Code:</span> {request.bankCode}</p>
+               </div>
+            </div>
 
-          <DetailRow
-            label="Amount"
-            value={
-              <span className="text-lg font-extrabold text-gray-900">
-                {formatCurrency(request.amountUSD)}
-              </span>
-            }
-          />
+            <DetailRow label="Submitted At" value={new Date(request.createdAt).toLocaleString()} />
+          </div>
 
-          <DetailRow label="Method" value={request.method} />
-          <DetailRow label="Date Requested" value={request.dateRequested} />
-
-          <div className="pt-4">
-            <p className="text-sm font-medium text-gray-600 mb-1">
-              Destination Account/Address:
-            </p>
-            <p className="text-base text-gray-900 bg-gray-50 p-3 rounded-lg border border-gray-200 font-mono break-all">
-              {request.accountDetails}
-            </p>
-            <p className="text-xs text-gray-500 mt-2 italic">
-              (Verify funds availability and transfer this amount before setting
-              status to 'Processed'.)
+          {/* --- ACTION SECTION --- */}
+          <div className="mt-6 pt-4 border-t border-gray-200">
+            <label className="block text-sm font-bold text-gray-700 mb-2">
+              Update Status
+            </label>
+            <select
+              value={selectedStatus}
+              onChange={(e) => setSelectedStatus(e.target.value)}
+              className="block w-full px-4 py-3 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent sm:text-sm transition-shadow"
+            >
+              <option value="pending">Pending</option>
+              <option value="approved">Approved</option> {/* User selects Approved */}
+              <option value="declined">Declined</option>
+            </select>
+            <p className="text-xs text-gray-400 mt-1 ml-1">
+               Select "Approved" to mark as Success.
             </p>
           </div>
+
+          {/* --- DECLINE REASON BOX --- */}
+          {(selectedStatus === "declined" || selectedStatus === "Declined") && (
+            <div className="mt-4 animate-fadeIn">
+                <label className="block text-sm font-bold text-red-600 mb-2">
+                    Reason for Rejection <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                    required
+                    value={declineReason}
+                    onChange={(e) => setDeclineReason(e.target.value)}
+                    placeholder="Explain why..."
+                    className="w-full p-3 border border-red-200 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm h-24 resize-none bg-red-50"
+                />
+            </div>
+          )}
         </div>
 
-        {/* Modal Footer (Actions) */}
-        <div className="p-6 bg-gray-50 flex justify-end space-x-3 rounded-b-xl">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 transition duration-150"
-          >
-            {request.status === "Pending" ? "Close Review" : "Close"}
+        {/* Modal Footer */}
+        <div className="p-4 bg-gray-50 flex justify-end space-x-3 rounded-b-2xl border-t border-gray-200">
+          <button onClick={onClose} className="px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100">
+            Cancel
           </button>
-
-          {request.status === "Pending" && (
-            <>
-              <button
-                onClick={() => onUpdateStatus(request.id, "Failed")}
-                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition duration-150 shadow-md"
-              >
-                Mark as Failed
-              </button>
-              <button
-                onClick={() => onUpdateStatus(request.id, "Processed")}
-                className="px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-lg hover:bg-purple-700 transition duration-150 shadow-md"
-              >
-                Mark as Processed
-              </button>
-            </>
-          )}
+          <button
+            onClick={handleSave}
+            disabled={updating || (selectedStatus === "declined" && !declineReason.trim())}
+            className={`px-5 py-2.5 text-sm font-medium text-white rounded-lg shadow-sm transition-all flex items-center
+                ${(selectedStatus === "declined" && !declineReason.trim()) ? 'bg-gray-400 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700'}`}
+          >
+            {updating ? "Saving..." : "Save Changes"}
+          </button>
         </div>
       </div>
     </div>
   );
 };
 
-// --- MAIN COMPONENT: WITHDRAWAL REQUESTS ---
+// --- MAIN PAGE COMPONENT ---
 
 const WithdrawalRequests: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>("");
-  const [requests, setRequests] = useState<WithdrawalRequest[]>(mockRequests);
-  const [sortBy, setSortBy] = useState<
-    "dateRequested" | "amountUSD" | "status" | "userId"
-  >("dateRequested");
-  const [sortOrder, setSortOrder] = useState<"desc" | "asc">("desc");
-
-  // Modal State
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedRequest, setSelectedRequest] =
-    useState<WithdrawalRequest | null>(null);
-
-  // Pagination State
+  const [requests, setRequests] = useState<WithdrawalRequest[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [actionLoading, setActionLoading] = useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedRequest, setSelectedRequest] = useState<WithdrawalRequest | null>(null);
 
-  // Helper for currency formatting
-  const formatCurrency = (amount: number) =>
-    new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(amount);
+  const fetchRequests = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch("http://localhost:3200/withdraw/getall");
+      const data = await response.json();
+      if(Array.isArray(data)) setRequests(data);
+    } catch (error) {
+      console.error("Error fetching requests:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  // --- Core Handlers ---
+  useEffect(() => { fetchRequests(); }, []);
+
+  // --- CORE LOGIC: SEND 'success' TO BACKEND ---
   const handleUpdateStatus = useCallback(
-    (id: string, newStatus: "Processed" | "Failed") => {
-      setRequests((prevRequests) =>
-        prevRequests.map((r) => (r.id === id ? { ...r, status: newStatus } : r))
-      );
-      // Optionally update the selected request status in the modal
-      setSelectedRequest((prev) =>
-        prev ? { ...prev, status: newStatus } : null
-      );
-      setIsModalOpen(false); // Close modal on action
+    async (id: string, newStatus: string, reason?: string) => {
+      setActionLoading(true);
+      
+      // LOGIC FIX: If user selected "approved", we change payload to "success"
+      const statusPayload = newStatus === "approved" ? "success" : newStatus;
+
+      try {
+        console.log(`Sending to Backend -> ID: ${id}, Status: ${statusPayload}`);
+        
+        const response = await fetch(`http://localhost:3200/withdraw/update-status/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                status: statusPayload, // Sending "success" directly to backend
+                note: reason 
+            })
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            // Update Local State with 'success'
+            setRequests((prevRequests) =>
+                prevRequests.map((r) =>
+                    r._id === id ? { ...r, status: statusPayload, adminNote: reason } : r
+                )
+            );
+            setIsModalOpen(false);
+        } else {
+            alert(`Failed: ${result.message}`);
+        }
+      } catch (error) {
+        console.error("Error updating status:", error);
+        alert("Network error.");
+      } finally {
+        setActionLoading(false);
+      }
     },
     []
   );
 
-  const openModal = (request: WithdrawalRequest) => {
-    setSelectedRequest(request);
-    setIsModalOpen(true);
-  };
+  const openModal = (request: WithdrawalRequest) => { setSelectedRequest(request); setIsModalOpen(true); };
+  const closeModal = () => { setSelectedRequest(null); setIsModalOpen(false); };
 
-  const closeModal = () => {
-    setSelectedRequest(null);
-    setIsModalOpen(false);
-  };
-
-  const handleSort = (
-    column: "dateRequested" | "amountUSD" | "status" | "userId"
-  ) => {
-    setSortBy((prevCol) => {
-      if (prevCol === column) {
-        setSortOrder((prevOrder) => (prevOrder === "asc" ? "desc" : "asc"));
-      } else {
-        setSortOrder(column === "dateRequested" ? "desc" : "asc");
-      }
-      return column;
-    });
-  };
-
-  // --- Filtering and Sorting Logic ---
-  const filteredAndSortedRequests = useMemo(() => {
-    let result = requests.filter(
-      (r) =>
-        r.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        r.accountDetails.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        r.method.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        r.status.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredRequests = useMemo(() => {
+    return requests.filter(r => 
+        (r._id && r._id.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (r.email && r.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (r.status && r.status.toLowerCase().includes(searchTerm.toLowerCase()))
     );
+  }, [requests, searchTerm]);
 
-    result.sort((a, b) => {
-      let comparison = 0;
-      switch (sortBy) {
-        case "amountUSD":
-          comparison = a.amountUSD - b.amountUSD;
-          break;
-        case "status":
-          comparison = a.status.localeCompare(b.status);
-          break;
-        case "userId":
-          comparison = a.userId - b.userId;
-          break;
-        default: // 'dateRequested'
-          comparison = a.dateRequested.localeCompare(b.dateRequested);
-          break;
-      }
-      return sortOrder === "asc" ? comparison : -comparison;
-    });
-
-    const newTotalPages = Math.ceil(result.length / ITEMS_PER_PAGE);
-    if (currentPage > newTotalPages && newTotalPages > 0) {
-      setCurrentPage(newTotalPages);
-    } else if (newTotalPages === 0) {
-      setCurrentPage(1);
-    }
-
-    return result;
-  }, [requests, searchTerm, sortBy, sortOrder, currentPage]);
-
-  // --- Pagination Logic ---
   const paginatedRequests = useMemo(() => {
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-    const endIndex = startIndex + ITEMS_PER_PAGE;
-    return filteredAndSortedRequests.slice(startIndex, endIndex);
-  }, [filteredAndSortedRequests, currentPage]);
+    return filteredRequests.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [filteredRequests, currentPage]);
 
-  const SortIndicator = ({
-    column,
-  }: {
-    column: "dateRequested" | "amountUSD" | "status" | "userId";
-  }) => {
-    if (sortBy !== column) return null;
-    return sortOrder === "asc" ? <span>&uarr;</span> : <span>&darr;</span>;
+  const totalPages = Math.ceil(filteredRequests.length / ITEMS_PER_PAGE);
+
+  const getStatusColor = (status: string) => {
+    const s = status.toLowerCase();
+    if (s === "approved" || s === "success") return "bg-green-100 text-green-700 border-green-200";
+    if (s === "declined" || s === "failed") return "bg-red-100 text-red-700 border-red-200";
+    return "bg-yellow-100 text-yellow-700 border-yellow-200";
   };
-
-  const getStatusColor = (status: WithdrawalRequest["status"]) => {
-    switch (status) {
-      case "Processed":
-        return "bg-green-100 text-green-800";
-      case "Pending":
-        return "bg-yellow-100 text-yellow-800";
-      case "Failed":
-        return "bg-red-100 text-red-800";
-    }
-  };
-
-  const currentTotalPages = Math.ceil(
-    filteredAndSortedRequests.length / ITEMS_PER_PAGE
-  );
 
   return (
-    <div className="p-4 space-y-6">
-      {/* Search and Action Bar */}
-      <div className="flex flex-col sm:flex-row justify-between items-center bg-gray-50 p-4 rounded-xl shadow-inner border border-gray-200">
-        <h3 className="text-xl font-semibold text-gray-800 mb-2 sm:mb-0">
-          Withdrawal Requests Queue ({filteredAndSortedRequests.length} total)
-        </h3>
-        <input
-          type="text"
-          placeholder="Search ID, method, or account details..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="p-2 border border-gray-300 rounded-lg w-full sm:w-1/3 focus:ring-purple-500 focus:border-purple-500 transition duration-150"
-        />
-      </div>
-
-      {/* Requests Table */}
-      <div className="overflow-x-auto bg-white rounded-xl shadow-lg border">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              {/* Define headers with explicit alignment for consistency */}
-              {[
-                { title: "Req ID", column: "", align: "text-left" },
-                { title: "Date", column: "dateRequested", align: "text-left" },
-                { title: "User ID", column: "userId", align: "text-left" },
-                { title: "Method", column: "", align: "text-left" },
-                {
-                  title: "Amount (USD)",
-                  column: "amountUSD",
-                  align: "text-right",
-                },
-                { title: "Status", column: "status", align: "text-center" },
-                { title: "Actions", column: "", align: "text-center" },
-              ].map((header) => (
-                <th
-                  key={header.title}
-                  className={`px-6 py-3 ${
-                    header.align
-                  } text-xs font-medium text-gray-500 uppercase tracking-wider ${
-                    header.column ? "cursor-pointer hover:bg-gray-100" : ""
-                  }`}
-                  onClick={() =>
-                    header.column &&
-                    handleSort(
-                      header.column as
-                        | "dateRequested"
-                        | "amountUSD"
-                        | "status"
-                        | "userId"
-                    )
-                  }
-                >
-                  {header.title}{" "}
-                  {header.column && (
-                    <SortIndicator
-                      column={
-                        header.column as
-                          | "dateRequested"
-                          | "amountUSD"
-                          | "status"
-                          | "userId"
-                      }
-                    />
-                  )}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {paginatedRequests.length > 0 ? (
-              paginatedRequests.map((r) => (
-                <tr
-                  key={r.id}
-                  className="hover:bg-purple-50/50 transition duration-75"
-                >
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 font-mono">
-                    {r.id}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                    {r.dateRequested}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    User {r.userId}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                    {r.method}
-                  </td>
-
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-right">
-                    {formatCurrency(r.amountUSD)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
-                    <span
-                      className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(
-                        r.status
-                      )}`}
-                    >
-                      {r.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium space-x-2">
-                    <button
-                      onClick={() => openModal(r)}
-                      className="text-white bg-[#D1A148] hover:bg-[#00183C] px-3 py-1 rounded-lg text-xs font-medium transition duration-150 shadow-md"
-                    >
-                      Review
-                    </button>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan={7} className="text-center py-10 text-gray-500">
-                  No withdrawal requests found matching "{searchTerm}".
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Pagination Controls */}
-      {filteredAndSortedRequests.length > ITEMS_PER_PAGE && (
-        <div className="flex justify-between items-center px-4 py-3 bg-white rounded-xl shadow-md border border-gray-100">
-          <p className="text-sm text-gray-700">
-            Showing{" "}
-            <span className="font-medium">
-              {(currentPage - 1) * ITEMS_PER_PAGE + 1}
-            </span>{" "}
-            to{" "}
-            <span className="font-medium">
-              {Math.min(
-                currentPage * ITEMS_PER_PAGE,
-                filteredAndSortedRequests.length
-              )}
-            </span>{" "}
-            of{" "}
-            <span className="font-medium">
-              {filteredAndSortedRequests.length}
-            </span>{" "}
-            results
-          </p>
-          <div className="flex space-x-2">
-            <button
-              onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-              disabled={currentPage === 1}
-              className="px-3 py-1 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-200 transition duration-150"
-            >
-              Previous
-            </button>
-            {/* Show page numbers for better navigation experience */}
-            {[...Array(currentTotalPages)].map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentPage(index + 1)}
-                className={`px-3 py-1 text-sm font-medium rounded-lg transition duration-150 
-                        ${
-                          currentPage === index + 1
-                            ? "bg-[#D1A148] text-white"
-                            : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                        }`}
-              >
-                {index + 1}
-              </button>
-            ))}
-            <button
-              onClick={() =>
-                setCurrentPage((prev) => Math.min(currentTotalPages, prev + 1))
-              }
-              disabled={currentPage === currentTotalPages}
-              className="px-3 py-1 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-200 transition duration-150"
-            >
-              Next
-            </button>
-          </div>
+    <div className="p-6 bg-gray-50 min-h-screen font-sans">
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row justify-between items-center bg-white p-5 rounded-xl shadow-sm border border-gray-200">
+            <div><h1 className="text-2xl font-bold text-gray-800">Withdrawals</h1></div>
+            <div className="relative mt-4 md:mt-0 w-full md:w-96">
+                <input type="text" placeholder="Search..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none" />
+            </div>
         </div>
-      )}
 
-      {/* Withdrawal Modal */}
-      {isModalOpen && selectedRequest && (
-        <WithdrawalModal
-          request={selectedRequest}
-          onClose={closeModal}
-          onUpdateStatus={handleUpdateStatus}
-        />
-      )}
+        {/* Table */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            {loading ? <div className="p-10 text-center">Loading...</div> : (
+            <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                    <tr>
+                    {["Date", "User", "Method", "Amount", "Status", "Action"].map(h => (
+                        <th key={h} className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">{h}</th>
+                    ))}
+                    </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                    {paginatedRequests.map((r) => (
+                        <tr key={r._id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 text-sm text-gray-500">{new Date(r.createdAt).toLocaleDateString()}</td>
+                        <td className="px-6 py-4 text-sm font-medium text-gray-900">{r.email}</td>
+                        <td className="px-6 py-4 text-sm text-gray-500">{r.paymentMethod}</td>
+                        <td className="px-6 py-4 text-sm font-bold">{r.amount} {r.currency}</td>
+                        <td className="px-6 py-4">
+                            <span className={`px-3 py-1 text-xs font-semibold rounded-full border ${getStatusColor(r.status)}`}>
+                            {r.status.toUpperCase()}
+                            </span>
+                        </td>
+                        <td className="px-6 py-4">
+                            <button onClick={() => openModal(r)} className="text-purple-600 hover:bg-purple-50 px-3 py-1 rounded border border-purple-200 text-xs font-medium">Review</button>
+                        </td>
+                        </tr>
+                    ))}
+                </tbody>
+                </table>
+            </div>
+            )}
+        </div>
+        
+        {/* Pagination */}
+        {filteredRequests.length > ITEMS_PER_PAGE && (
+            <div className="flex justify-between p-4 bg-white rounded-xl shadow-sm border">
+                <span>Page {currentPage} of {totalPages}</span>
+                <div className="space-x-2">
+                    <button onClick={() => setCurrentPage(p => Math.max(1, p-1))} disabled={currentPage===1} className="px-3 py-1 border rounded disabled:opacity-50">Prev</button>
+                    <button onClick={() => setCurrentPage(p => Math.min(totalPages, p+1))} disabled={currentPage===totalPages} className="px-3 py-1 border rounded disabled:opacity-50">Next</button>
+                </div>
+            </div>
+        )}
+
+        {isModalOpen && <WithdrawalModal request={selectedRequest} onClose={closeModal} onUpdateStatus={handleUpdateStatus} updating={actionLoading} />}
+      </div>
     </div>
   );
 };
