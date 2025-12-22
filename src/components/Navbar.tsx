@@ -7,19 +7,22 @@ import { toast } from "sonner";
 import { useAuth } from "../context/AuthContext";
 
 import { getAllNotifications } from "../components/Notification/Notification";
-import headerlogo from "../assets/headerlogo.png" // make sure this file exists
+import headerlogo from "../assets/headerlogo.png"; // make sure this file exists
 import { useAuthHook } from "../hook/useAuthHook";
 
 // FIX: TypeScript error fix for FaBreadSlice
 const FaBreadSliceIcon = FaBreadSlice as unknown as React.ComponentType<any>;
 
+// FIX: Added 'description' to the type definition
 type NItem = {
   _id?: string;
   type?: string;
   title: string;
   message?: string;
+  description?: string; // <--- This line fixes the TS error
   read?: boolean;
   createdAt?: string;
+  userEmail?: string;
   data?: any;
 };
 
@@ -32,7 +35,10 @@ export default function Navbar() {
   const loginUser = user.user;
   const navigate = useNavigate();
 
+  // --- CURRENT USER IDENTIFICATION ---
   const loginUserData = useAuthHook();
+  // ১. বর্তমান ইউজারের ইমেইল নেওয়া (হুক অথবা লোকাল স্টোরেজ থেকে)
+  const currentUserEmail = loginUserData.data?.email || localStorage.getItem("userEmail");
 
   // Notification state
   const [notifOpen, setNotifOpen] = useState(false);
@@ -71,14 +77,27 @@ export default function Navbar() {
     navigate("/");
   };
 
-  // Fetch notifications
+  // --- FETCH NOTIFICATIONS (FILTERED BY USER) ---
   const fetchNotifications = async () => {
+    // যদি ইউজার লগইন না থাকে, কল করার দরকার নেই
+    if (!currentUserEmail) return;
+
     try {
       setLoadingNotifs(true);
       const res = await getAllNotifications();
-      // Only show 'buy' notifications for now (filter here if backend returns mixed types)
-      const arr = Array.isArray(res) ? res.filter((n) => n.type === "buy") : [];
-      setNotifications(arr);
+      
+      // ২. এখানে ডাটা ফিল্টার করা হচ্ছে (Current User Email অনুযায়ী)
+      // টাইপ ঠিক করার ফলে এখন আর এরর আসবে না
+      const myNotifs = Array.isArray(res) 
+        ? res.filter((n: NItem) => n.userEmail === currentUserEmail) 
+        : [];
+        
+      // তারিখ অনুযায়ী সর্ট করা (নতুন আগে)
+      const sortedNotifs = myNotifs.sort((a, b) => 
+        new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
+      );
+
+      setNotifications(sortedNotifs);
     } catch (err) {
       console.error("Failed to fetch notifications:", err);
     } finally {
@@ -88,12 +107,13 @@ export default function Navbar() {
 
   // Poll notifications while logged in
   useEffect(() => {
-    if (!user?.user) return;
+    if (!currentUserEmail) return;
+    
     fetchNotifications();
-    const id = setInterval(fetchNotifications, 8000);
+    const id = setInterval(fetchNotifications, 8000); // প্রতি ৮ সেকেন্ড পর রিফ্রেশ হবে
     return () => clearInterval(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.user]);
+  }, [currentUserEmail]);
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
@@ -255,8 +275,8 @@ export default function Navbar() {
 
                     <div className="max-h-72 overflow-auto divide-y">
                       {notifications.length === 0 && !loadingNotifs && (
-                        <div className="p-4 text-sm text-gray-500">
-                          No buy notifications
+                        <div className="p-4 text-center text-sm text-gray-500">
+                           No notifications found for <br/> <span className="font-semibold">{currentUserEmail}</span>
                         </div>
                       )}
 
@@ -264,37 +284,40 @@ export default function Navbar() {
                         <div
                           key={n._id || `${n.title}-${n.createdAt}`}
                           className={`p-3 hover:bg-gray-50 ${
-                            n.read ? "" : "bg-gray-50"
+                            n.read ? "" : "bg-blue-50/50"
                           }`}
                         >
                           <div className="flex items-start justify-between gap-3">
                             <div className="flex-1">
-                              <div className="font-medium text-sm">
+                              <div className="font-medium text-sm text-[#0A1A3A]">
                                 {n.title}
                               </div>
                               <div className="text-xs text-gray-600 mt-1 line-clamp-2">
-                                {n.message}
+                                {/* Now 'description' is a valid property */}
+                                {n.message || n.description || "No description"}
                               </div>
-                              <div className="text-[11px] text-gray-400 mt-1">
-                                {n.createdAt
-                                  ? new Date(n.createdAt).toLocaleString()
-                                  : ""}
+                              <div className="text-[10px] text-gray-400 mt-1 flex justify-between">
+                                <span>
+                                    {n.createdAt
+                                    ? new Date(n.createdAt).toLocaleString()
+                                    : ""}
+                                </span>
                               </div>
                             </div>
                             {!n.read && (
-                              <div className="ml-2 w-2 h-2 rounded-full bg-green-500 mt-1" />
+                              <div className="ml-2 w-2 h-2 rounded-full bg-blue-500 mt-1" />
                             )}
                           </div>
                         </div>
                       ))}
                     </div>
 
-                    <div className="px-3 py-2 border-t text-right">
+                    <div className="px-3 py-2 border-t text-right bg-gray-50">
                       <button
                         onClick={() => fetchNotifications()}
-                        className="px-3 py-1 text-sm border rounded"
+                        className="text-xs text-blue-600 hover:underline font-medium"
                       >
-                        Refresh
+                        Refresh List
                       </button>
                     </div>
                   </div>
@@ -314,124 +337,45 @@ export default function Navbar() {
                         background: `linear-gradient(90deg, ${EMPIRE_BLUE} 0%, ${ROYAL_GOLD} 100%)`,
                       }}
                     >
-                      A
+                      {loginUser?.name ? loginUser.name[0].toUpperCase() : "A"}
                     </div>
                   </button>
                 ) : (
                   <>
-                    {/* Mobile (top) */}
-
-                    {/* Desktop */}
-                    {/* Avatar / Auth */}
-                    <div className="relative" ref={dropdownRef}>
-                      {user?.user ? (
-                        /* ================= Logged In ================= */
-                        <button
-                          onClick={() => setOpen((o) => !o)}
-                          className="flex items-center p-1 rounded-full hover:bg-gray-100 transition"
-                        >
-                          <div
-                            className="h-9 w-9 rounded-full flex items-center justify-center text-white font-bold text-sm"
-                            style={{
-                              background: `linear-gradient(90deg, ${EMPIRE_BLUE} 0%, ${ROYAL_GOLD} 100%)`,
+                    {/* Desktop Auth Buttons */}
+                    <div className="hidden md:flex gap-2">
+                        <Link to="/login">
+                          <Button
+                            variant="contained"
+                            sx={{
+                              px: 4,
+                              borderRadius: "10px",
+                              textTransform: "none",
+                              fontWeight: 600,
+                              backgroundColor: ROYAL_GOLD,
                             }}
                           >
-                            A
-                          </div>
-                        </button>
-                      ) : (
-                        /* ================= Logged Out ================= */
-                        <>
-                          {/* Mobile */}
-                          <div className="flex md:hidden gap-2">
-                            <Link to="/login">
-                              <Button
-                                variant="contained"
-                                size="small"
-                                sx={{
-                                  borderRadius: "8px",
-                                  textTransform: "none",
-                                  fontWeight: 600,
-                                  backgroundColor: ROYAL_GOLD,
-                                }}
-                              >
-                                Login
-                              </Button>
-                            </Link>
+                            Login
+                          </Button>
+                        </Link>
 
-                            <Link to="/register">
-                              <Button
-                                variant="outlined"
-                                size="small"
-                                sx={{
-                                  borderRadius: "8px",
-                                  textTransform: "none",
-                                  fontWeight: 600,
-                                  borderWidth: "2px",
-                                }}
-                              >
-                                Register
-                              </Button>
-                            </Link>
-                          </div>
-
-                          {/* Desktop */}
-                          <div className="hidden md:flex gap-2">
-                            <Link to="/login">
-                              <Button
-                                variant="contained"
-                                sx={{
-                                  px: 4,
-                                  borderRadius: "10px",
-                                  textTransform: "none",
-                                  fontWeight: 600,
-                                  backgroundColor: ROYAL_GOLD,
-                                }}
-                              >
-                                Login
-                              </Button>
-                            </Link>
-
-                            <Link to="/register">
-                              <Button
-                                variant="outlined"
-                                sx={{
-                                  px: 4,
-                                  borderRadius: "10px",
-                                  textTransform: "none",
-                                  fontWeight: 600,
-                                  borderWidth: "2px",
-                                }}
-                              >
-                                Register
-                              </Button>
-                            </Link>
-                          </div>
-                        </>
-                      )}
-
-                      {/* Avatar Dropdown (শুধু logged in হলে) */}
-                      {open && user?.user && (
-                        <div className="absolute right-0 mt-2 w-80 rounded-xl shadow-2xl z-50">
-                          {/* তোমার আগের dropdown content এখানেই থাকবে */}
-                        </div>
-                      )}
-                    </div>
+                        <Link to="/register">
+                          <Button
+                            variant="outlined"
+                            sx={{
+                              px: 4,
+                              borderRadius: "10px",
+                              textTransform: "none",
+                              fontWeight: 600,
+                              borderWidth: "2px",
+                            }}
+                          >
+                            Register
+                          </Button>
+                        </Link>
+                      </div>
                   </>
                 )}
-                {/* <div className="md:flex hidden gap-2">
-                    <Link to="/login">
-                      <Button variant="contained" sx={{ paddingX: 4, paddingY: 0.4, borderRadius: "10px", textTransform: "none", fontSize: "16px", fontWeight: 600, backgroundColor: ROYAL_GOLD }}>
-                        Login
-                      </Button>
-                    </Link>
-
-                    <Link to="/register">
-                      <Button variant="outlined" sx={{ paddingX: 4, paddingY: 0.4, borderRadius: "10px", textTransform: "none", fontSize: "16px", fontWeight: 600, borderWidth: "2px", "&:hover": { borderWidth: "2px" } }}>
-                        Register
-                      </Button>
-                    </Link>
-                  </div> */}
 
                 {/* Avatar Dropdown Menu */}
                 {open && (
@@ -474,7 +418,7 @@ export default function Navbar() {
                         <div className="relative z-10">
                           <div className="text-sm opacity-90">Your Balance</div>
                           <div className="text-3xl font-bold mt-2">
-                            ${loginUserData.data?.balance}
+                            ${loginUserData.data?.balance?.toFixed(2) || "0.00"}
                           </div>
                         </div>
                         <NavLink

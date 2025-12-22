@@ -55,7 +55,6 @@ import { useAuth } from "../../context/AuthContext";
 import { toast } from "sonner";
 
 // --- TYPE FIXES FOR REACT 18+ & REACT-ICONS ---
-// এই অংশটি TS2786 এরর ফিক্স করার জন্য। আমরা আইকনগুলোকে React.ElementType হিসেবে কাস্ট করছি।
 const StarIcon = FaStar as React.ElementType;
 const ShoppingCartIcon = FaShoppingCart as React.ElementType;
 const EyeIcon = FaEye as React.ElementType;
@@ -239,7 +238,6 @@ const hashCode = (s: string) => {
   return h;
 };
 
-// Use this hook to lock body scroll when modal is open
 const useLockBodyScroll = (isLocked: boolean) => {
   useEffect(() => {
     document.body.style.overflow = isLocked ? "hidden" : "";
@@ -262,7 +260,6 @@ const RenderIcon = ({
 }) => {
   const badgeSize = Math.max(40, size + 8);
 
-  // Logic to determine background color
   let bg = VIBRANT_GRADIENTS[0];
   if (typeof icon !== "string") {
     const color = ICON_COLOR_MAP.get(icon);
@@ -276,8 +273,6 @@ const RenderIcon = ({
     bg = VIBRANT_GRADIENTS[Math.abs(hashCode(icon)) % VIBRANT_GRADIENTS.length];
   }
 
-  // FIX: TS2769 Error
-  // We need to cast the icon to React.ElementType to use it as a component tag
   const IconComponent =
     typeof icon !== "string" ? (icon as React.ElementType) : null;
 
@@ -300,7 +295,6 @@ const RenderIcon = ({
       {typeof icon === "string" ? (
         <span style={{ fontSize: Math.round(size * 0.6) }}>{icon}</span>
       ) : (
-        // Correct usage of component rendering
         IconComponent && <IconComponent size={Math.round(size * 0.65)} />
       )}
       {realTime && (
@@ -409,7 +403,6 @@ const CategorySelector: React.FC<{
               <div className="px-3 pb-2 pt-1 space-y-1">
                 {subcats.map((sub) => {
                   const Icon = SUBICON_MAP[sub];
-                  // FIX: Dynamic Icon Rendering
                   const SubIconComp = Icon ? (Icon as React.ElementType) : null;
 
                   const isChecked = selectedSubcats[main]?.includes(sub);
@@ -651,10 +644,8 @@ const Marketplace: React.FC = () => {
   const itemsPerPage = 6;
   const drawerRef = useRef<HTMLDivElement>(null);
 
-  // Lock scroll when overlays are active
   useLockBodyScroll(drawerOpen || !!selectedItem || mobileSearchOpen);
 
-  // Fetch Items
   useEffect(() => {
     const fetchItems = async () => {
       try {
@@ -671,7 +662,7 @@ const Marketplace: React.FC = () => {
             price: Number(p.price) || 0,
             seller: p.userEmail,
             delivery: "Instant",
-            icon: p.categoryIcon || FaBullhorn, // fallback icon
+            icon: p.categoryIcon || FaBullhorn,
             category: "Social Media",
             subcategory: p.category,
             realTime: true,
@@ -722,7 +713,6 @@ const Marketplace: React.FC = () => {
     });
   }, [items, searchQuery, selectedSubcats, priceRange]);
 
-  // Pagination Logic
   useEffect(
     () => setCurrentPage(1),
     [searchQuery, selectedSubcats, priceRange]
@@ -751,7 +741,7 @@ const Marketplace: React.FC = () => {
           productId: item.id,
           name: item.title,
           price: item.price,
-          image: item.icon, // আইকন বা ইমেজ
+          image: item.icon,
           sellerEmail: item.seller,
           addedAt: new Date(),
           UserEmail: user.user?.email,
@@ -771,17 +761,26 @@ const Marketplace: React.FC = () => {
   }, []);
 
   const buyNow = async (item: Item) => {
+    const currentUserEmail = user.user?.email;
+
+    if (!currentUserEmail) {
+      toast.error("Please log in to purchase items!");
+      return;
+    }
+
     if (processingIds.includes(item.id)) return;
     setProcessingIds((prev) => [...prev, item.id]);
 
     try {
-      // Notification
+      // FIX: TS2345 - 'as any' ব্যবহার করে টাইপ এরর বাইপাস করা হলো
+      // যাতে 'userEmail' ফিল্ডটি পাঠানো যায়।
       await sendNotification({
         type: "buy",
         title: `Purchase Successful`,
         message: `You bought ${item.title} for $${item.price.toFixed(2)}.`,
         data: { itemId: item.id, price: item.price },
-      });
+        userEmail: currentUserEmail, 
+      } as any);
 
       setSelectedItem(null);
       toast.success("Purchase successful! Check your notifications.");
@@ -794,7 +793,6 @@ const Marketplace: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#F7F5F4] pb-10">
-      {/* Top Banner */}
       {showBanner && (
         <div className="bg-[#33ac6f] text-white px-4 py-3 flex justify-between items-center text-sm font-medium">
           <span>Black Friday is live! All prices discounted.</span>
@@ -805,7 +803,6 @@ const Marketplace: React.FC = () => {
       )}
 
       <div className="max-w-screen-2xl mx-auto px-4 py-6">
-        {/* Header */}
         <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
           <div className="flex items-center gap-3">
             <button
@@ -836,7 +833,6 @@ const Marketplace: React.FC = () => {
             </div>
           </div>
 
-          {/* Desktop Search */}
           <div className="hidden md:flex items-center gap-4">
             <div className="flex bg-white rounded-lg border overflow-hidden p-1">
               <button
@@ -872,7 +868,6 @@ const Marketplace: React.FC = () => {
             </div>
           </div>
 
-          {/* Mobile Actions */}
           <div className="flex items-center gap-3">
             <button
               onClick={() => setMobileSearchOpen(true)}
@@ -894,7 +889,6 @@ const Marketplace: React.FC = () => {
           </div>
         </div>
 
-        {/* Mobile Search Overlay */}
         {mobileSearchOpen && (
           <div className="fixed inset-0 z-50 bg-white p-4">
             <div className="flex items-center gap-2 border-b pb-2">
@@ -915,7 +909,6 @@ const Marketplace: React.FC = () => {
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* Sidebar Filter */}
           <aside className="hidden lg:block lg:col-span-3">
             <div className="bg-white rounded-xl shadow-sm border p-6 sticky top-24">
               <h3 className="text-lg font-bold mb-4">Filters</h3>
@@ -941,7 +934,6 @@ const Marketplace: React.FC = () => {
             </div>
           </aside>
 
-          {/* Product Grid/List */}
           <main className="lg:col-span-9">
             {loading ? (
               <div className="flex justify-center py-20">
@@ -973,7 +965,6 @@ const Marketplace: React.FC = () => {
               </div>
             )}
 
-            {/* Pagination */}
             {totalPages > 1 && (
               <div className="flex justify-center items-center gap-2 mt-8">
                 <button
@@ -999,7 +990,6 @@ const Marketplace: React.FC = () => {
         </div>
       </div>
 
-      {/* Modals */}
       {selectedItem && (
         <ProductModal
           item={selectedItem}
@@ -1010,7 +1000,6 @@ const Marketplace: React.FC = () => {
         />
       )}
 
-      {/* Mobile Drawer */}
       <div
         className={`fixed inset-0 z-50 transform transition-transform duration-300 ${
           drawerOpen ? "translate-x-0" : "-translate-x-full"
@@ -1038,7 +1027,7 @@ const Marketplace: React.FC = () => {
             <input
               type="range"
               min="0"
-              max="1000"
+              max={1000}
               value={priceRange}
               onChange={(e) => setPriceRange(Number(e.target.value))}
               className="w-full accent-[#33ac6f]"
