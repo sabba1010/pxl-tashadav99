@@ -38,6 +38,7 @@ interface FormData {
   userEmail: string;
   userRole: string;
   status: string;
+  createdAt: Date;
 }
 
 const SellForm: React.FC = () => {
@@ -63,6 +64,7 @@ const SellForm: React.FC = () => {
     userEmail: user?.user?.email || "",
     userRole: user?.user?.role || "",
     status: "pending",
+    createdAt: new Date()
   });
 
   useEffect(() => {
