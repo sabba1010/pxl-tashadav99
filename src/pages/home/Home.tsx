@@ -1,7 +1,6 @@
 import React from "react";
 
 import HeroBannerSection from "../../components/HomeComponents/HeroBannerSection";
-import StandoutAccounts from "../../components/HomeComponents/StandoutAccounts";
 import WhyChooseUs from "../../components/HomeComponents/WhyChooseUs";
 import HowItWorks from "../../components/HomeComponents/HowItWorks";
 import ReportTransaction from "../../components/HomeComponents/ReportTransaction";
