@@ -5,7 +5,10 @@ import {
   FaShoppingCart,
   FaShieldAlt,
 } from "react-icons/fa";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+import { toast } from "sonner";
+import { useAuthHook } from "../../hook/useAuthHook";
 
 // TS2786 FIX
 const ArrowLeftIcon = FaArrowLeft as React.ElementType;
@@ -18,6 +21,7 @@ interface CartItem {
   name: string;
   price: number;
   sellerEmail: string;
+  UserEmail: string;
 }
 
 const API_URL = "http://localhost:3200";
@@ -25,12 +29,24 @@ const API_URL = "http://localhost:3200";
 const CartPage: React.FC = () => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { refetch } = useAuthHook();
 
+  // Fetch cart items from backend
   const fetchCartData = async () => {
+    if (!user?.email) return;
+    setLoading(true);
+
     try {
-      const res = await fetch(`${API_URL}/cart/getall`);
-      const data = await res.json();
-      setCartItems(data);
+      const res = await fetch(`${API_URL}/cart/getall?email=${user.email}`);
+      const data: CartItem[] = await res.json();
+
+      // Optional: Frontend filter if backend doesn't filter
+      const userCartItems = data.filter(
+        (item) => item.UserEmail === user.email
+      );
+      setCartItems(userCartItems);
     } catch (err) {
       console.error(err);
     } finally {
@@ -40,21 +56,22 @@ const CartPage: React.FC = () => {
 
   useEffect(() => {
     fetchCartData();
-  }, []);
+  }, [user?.email]);
 
+  // Delete item from cart
   const handleDelete = async (id: string) => {
-    if (window.confirm("Remove this item?")) {
-      try {
-        const response = await fetch(`${API_URL}/cart/delete/${id}`, {
-          method: "DELETE",
-        });
-        const result = await response.json();
-        if (result.success) {
-          setCartItems((prev) => prev.filter((item) => item._id !== id));
-        }
-      } catch (err) {
-        console.error(err);
+    if (!window.confirm("Remove this item?")) return;
+
+    try {
+      const response = await fetch(`${API_URL}/cart/delete/${id}`, {
+        method: "DELETE",
+      });
+      const result = await response.json();
+      if (result.success) {
+        setCartItems((prev) => prev.filter((item) => item._id !== id));
       }
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -62,6 +79,40 @@ const CartPage: React.FC = () => {
     (acc, item) => acc + (Number(item.price) || 0),
     0
   );
+
+  // handel puschase
+
+ const handlePurchase = async () => {
+  if (!user?.email || cartItems.length === 0) return;
+
+
+  try {
+    const res = await fetch(`${API_URL}/purchase/post`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: user.email }),
+    });
+
+    const result = await res.json();
+
+    if (result.success) {
+      toast.success(`Success! $${result.totalDeducted} deducted. Status: ${result.purchaseStatus}`);
+      setCartItems([]); // clear cart
+      // optional: refetch user balance or redirect
+      refetch();
+      navigate("/purchases");
+    } else {
+      if (result.message.includes("Insufficient")) {
+        toast.error(`Insufficient balance! You need $${result.required}, you have $${result.available}`);
+      } else {
+        toast.error("Purchase failed: " + result.message);
+      }
+    }
+  } catch (err) {
+    console.error(err);
+    alert("Network error");
+  }
+};
 
   if (loading)
     return (
@@ -76,7 +127,7 @@ const CartPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#F9FBFC] text-[#0A1D37]">
       <div className="max-w-6xl mx-auto px-6 py-12">
-        {/* Modern Breadcrumb & Title */}
+        {/* Breadcrumb & Title */}
         <div className="mb-10">
           <Link
             to="/"
@@ -118,18 +169,16 @@ const CartPage: React.FC = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-            {/* Elegant Item List */}
+            {/* Item List */}
             <div className="lg:col-span-8 space-y-6">
               {cartItems.map((item) => (
                 <div
                   key={item._id}
                   className="group bg-white p-6 rounded-[24px] border border-gray-100 shadow-sm hover:shadow-xl hover:shadow-gray-100 transition-all flex items-center gap-6"
                 >
-                  {/* Item Icon with Gradient */}
                   <div className="w-20 h-20 bg-gradient-to-br from-[#0A1D37] to-[#1a3a63] rounded-2xl flex items-center justify-center text-white text-2xl font-bold shadow-lg">
                     {item.name[0]}
                   </div>
-
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="px-2 py-0.5 bg-green-50 text-green-600 text-[10px] font-bold uppercase rounded">
@@ -143,7 +192,6 @@ const CartPage: React.FC = () => {
                       Verified Seller: {item.sellerEmail}
                     </p>
                   </div>
-
                   <div className="text-right flex flex-col items-end gap-3">
                     <p className="text-2xl font-black text-[#0A1D37]">
                       ${Number(item.price).toFixed(2)}
@@ -159,7 +207,7 @@ const CartPage: React.FC = () => {
               ))}
             </div>
 
-            {/* Premium Checkout Sidebar */}
+            {/* Checkout Sidebar */}
             <div className="lg:col-span-4">
               <div className="bg-[#0A1D37] p-8 rounded-[32px] text-white shadow-2xl shadow-blue-900/20 sticky top-10">
                 <h2 className="text-2xl font-bold mb-8 flex items-center gap-2">
@@ -193,7 +241,10 @@ const CartPage: React.FC = () => {
                   </p>
                 </div>
 
-                <button className="w-full bg-[#D4A017] text-[#0A1D37] py-5 rounded-2xl font-black text-lg shadow-lg hover:shadow-[#D4A017]/40 transition-all hover:scale-[1.02] active:scale-95">
+                <button
+                  onClick={handlePurchase}
+                  className="w-full bg-[#D4A017] text-[#0A1D37] py-5 rounded-2xl font-black text-lg shadow-lg hover:shadow-[#D4A017]/40 transition-all hover:scale-[1.02] active:scale-95"
+                >
                   PURCHASE NOW
                 </button>
 
