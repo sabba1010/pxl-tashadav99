@@ -1,6 +1,7 @@
 // src/components/Footer.tsx
 import React from "react";
 import { NavLink } from "react-router-dom";
+import headerlogo from "../assets/headerlogo.png";
 import { 
   Mail, 
   Phone, 
@@ -29,9 +30,14 @@ export default function Footer({ theme = "dark" }: Props) {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-8">
           {/* Brand Column */}
           <div className="space-y-5">
-            <h2 className={`text-2xl font-bold ${isDark ? "text-white" : "text-gray-900"}`}>
-              AcctEmpire
-            </h2>
+            <div className="flex items-center gap-3">
+              <NavLink to="/" aria-label="Home">
+                <img src={headerlogo} alt="AcctEmpire" className="h-20 md:h-24 lg:h-28 w-auto" />
+              </NavLink>
+              <h2 className={`text-xl font-bold ${isDark ? "text-white" : "text-gray-900"}`}>
+                AcctEmpire
+              </h2>
+            </div>
             <p className="text-sm leading-relaxed max-w-xs">
               Your trusted marketplace for premium CCTV cameras, NVRs, DVRs, and complete security solutions in Bangladesh.
             </p>

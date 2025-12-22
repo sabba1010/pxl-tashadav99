@@ -6,7 +6,8 @@ import { Link, NavLink, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuth } from "../context/AuthContext";
 
-import { getAllNotifications } from "../components/Notification/Notification"; // make sure this file exists
+import { getAllNotifications } from "../components/Notification/Notification";
+import headerlogo from "../assets/headerlogo.png" // make sure this file exists
 import { useAuthHook } from "../hook/useAuthHook";
 
 // FIX: TypeScript error fix for FaBreadSlice
@@ -104,7 +105,7 @@ export default function Navbar() {
         style={{ backgroundColor: CLEAN_WHITE }}
       >
         <nav className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+          <div className="flex items-center justify-between h-14 md:h-16">
             {/* Left: Hamburger + Logo */}
             <div className="flex items-center">
               <button
@@ -144,10 +145,10 @@ export default function Navbar() {
               </button>
 
               <NavLink to="/" className="flex items-center gap-3">
-                <img src="/logo.png" alt="AcctEmpire" className="h-9 w-auto" />
+                <img src={headerlogo} alt="AcctEmpire" className="h-12 md:h-14 lg:h-16 w-auto" />
                 <span
-                  className="hidden sm:inline font-bold text-xl"
-                  style={{ color: EMPIRE_BLUE }}
+                  className="hidden sm:inline font-extrabold text-lg md:text-xl"
+                  style={{ color: EMPIRE_BLUE, letterSpacing: '0.2px' }}
                 >
                   AcctEmpire
                 </span>
