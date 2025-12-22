@@ -7,7 +7,6 @@ import {
   FileText,
   Upload,
   Info,
-  CheckCircle,
   AlertTriangle,
   ArrowRight,
 } from "lucide-react";

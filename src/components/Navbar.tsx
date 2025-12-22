@@ -144,14 +144,8 @@ export default function Navbar() {
                 )}
               </button>
 
-              <NavLink to="/" className="flex items-center gap-3">
-                <img src={headerlogo} alt="AcctEmpire" className="h-12 md:h-14 lg:h-16 w-auto" />
-                <span
-                  className="hidden sm:inline font-extrabold text-lg md:text-xl"
-                  style={{ color: EMPIRE_BLUE, letterSpacing: '0.2px' }}
-                >
-                  AcctEmpire
-                </span>
+              <NavLink to="/" className="flex items-center gap-3 pr-4">
+                <img src={headerlogo} alt="AcctEmpire" className="h-14 md:h-16 lg:h-18 w-auto" />
               </NavLink>
             </div>
 
