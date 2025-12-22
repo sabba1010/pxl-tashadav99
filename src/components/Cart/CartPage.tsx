@@ -9,6 +9,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { toast } from "sonner";
 import { useAuthHook } from "../../hook/useAuthHook";
+// Notification Import
+import { sendNotification } from "../../components/Notification/Notification";
 
 // TS2786 FIX
 const ArrowLeftIcon = FaArrowLeft as React.ElementType;
@@ -80,39 +82,55 @@ const CartPage: React.FC = () => {
     0
   );
 
-  // handel puschase
+  // Handle Purchase with Notification
+  const handlePurchase = async () => {
+    if (!user?.email || cartItems.length === 0) return;
 
- const handlePurchase = async () => {
-  if (!user?.email || cartItems.length === 0) return;
+    try {
+      const res = await fetch(`${API_URL}/purchase/post`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: user.email }),
+      });
 
+      const result = await res.json();
 
-  try {
-    const res = await fetch(`${API_URL}/purchase/post`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: user.email }),
-    });
+      if (result.success) {
+        // --- SEND NOTIFICATION START ---
+        try {
+            await sendNotification({
+                type: "buy",
+                title: "Cart Checkout Successful",
+                message: `You successfully purchased ${cartItems.length} items for $${total.toFixed(2)}.`,
+                data: { 
+                    totalAmount: total, 
+                    itemCount: cartItems.length 
+                },
+                userEmail: user.email, // Send notification to current user
+            } as any);
+        } catch (notifErr) {
+            console.error("Failed to send notification", notifErr);
+        }
+        // --- SEND NOTIFICATION END ---
 
-    const result = await res.json();
-
-    if (result.success) {
-      toast.success(`Success! $${result.totalDeducted} deducted. Status: ${result.purchaseStatus}`);
-      setCartItems([]); // clear cart
-      // optional: refetch user balance or redirect
-      refetch();
-      navigate("/purchases");
-    } else {
-      if (result.message.includes("Insufficient")) {
-        toast.error(`Insufficient balance! You need $${result.required}, you have $${result.available}`);
+        toast.success(`Success! $${result.totalDeducted} deducted. Status: ${result.purchaseStatus}`);
+        setCartItems([]); // clear cart
+        
+        // Refetch user balance and redirect
+        refetch();
+        navigate("/purchases");
       } else {
-        toast.error("Purchase failed: " + result.message);
+        if (result.message.includes("Insufficient")) {
+          toast.error(`Insufficient balance! You need $${result.required}, you have $${result.available}`);
+        } else {
+          toast.error("Purchase failed: " + result.message);
+        }
       }
+    } catch (err) {
+      console.error(err);
+      alert("Network error");
     }
-  } catch (err) {
-    console.error(err);
-    alert("Network error");
-  }
-};
+  };
 
   if (loading)
     return (
