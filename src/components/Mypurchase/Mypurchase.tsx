@@ -1,8 +1,10 @@
 import React, { useMemo, useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
-// Wallet এর মতো হুক ইমপোর্ট করা হলো
 import { useAuthHook } from "../../hook/useAuthHook"; 
+import { sendNotification } from "../Notification/Notification";
+import { toast } from "sonner"; 
+
 import type { IconType } from "react-icons";
 import {
   FaInstagram,
@@ -43,6 +45,8 @@ const vibrantGradients = [
   "linear-gradient(135deg,#84fab0 0%,#8fd3f4 100%)",
 ];
 
+const NOTIFICATION_SOUND = "https://assets.mixkit.co/sfx/preview/mixkit-software-interface-start-2574.mp3";
+
 /* ---------------------------------------------
    Types
 ---------------------------------------------- */
@@ -76,6 +80,7 @@ interface IMessage {
   senderId: string;
   receiverId: string;
   message: string;
+  orderId?: string; // New Field to separate chats
 }
 
 /* ---------------------------------------------
@@ -156,26 +161,34 @@ const MyPurchase: React.FC = () => {
   const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // --- Wallet এর মতো User Data Hook ব্যবহার করা হলো ---
   const loginUserData = useAuthHook();
-  
-  // Wallet এর মতো ইমেইল বের করা (প্রথমে হুক থেকে, না পেলে লোকাল স্টোরেজ থেকে)
   const buyerId = loginUserData.data?.email || localStorage.getItem("userEmail");
 
   // Chat States
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [chatMessages, setChatMessages] = useState<IMessage[]>([]);
   const [typedMessage, setTypedMessage] = useState("");
+  
+  // Specific Chat Identifiers
   const [activeChatSellerEmail, setActiveChatSellerEmail] = useState<string | null>(null);
+  const [activeChatOrderId, setActiveChatOrderId] = useState<string | null>(null); // NEW: Track distinct order ID
+  const [activeChatProductTitle, setActiveChatProductTitle] = useState<string>(""); // NEW: For UI display
+
   const scrollRef = useRef<HTMLDivElement>(null);
+  const chatLengthRef = useRef(0);
 
   const PURCHASE_API = "http://localhost:3200/purchase";
   const CHAT_API = "http://localhost:3200/chat";
 
-  /* -------- Fetch Data (Filtered by User) -------- */
+  // --- Audio Player ---
+  const playNotificationSound = () => {
+    const audio = new Audio(NOTIFICATION_SOUND);
+    audio.play().catch((err) => console.log("Audio play failed:", err));
+  };
+
+  /* -------- Fetch Data -------- */
   useEffect(() => {
     const fetchPurchases = async () => {
-      // ইমেইল না থাকলে কল হবে না
       if (!buyerId) {
          setIsLoading(false);
          return;
@@ -183,18 +196,11 @@ const MyPurchase: React.FC = () => {
 
       try {
         setIsLoading(true);
-        console.log(`Fetching purchase data for: ${buyerId}`);
-
-        // সব ডাটা আনা হচ্ছে
         const res = await axios.get(`${PURCHASE_API}/getall`); 
         
-        // *** Wallet এর মতো ফিল্টারিং ***
-        // ব্যাকএন্ড থেকে আসা ডাটার 'buyerEmail' এর সাথে বর্তমান ইউজারের 'buyerId' মিলানো হচ্ছে
         const myData = (res.data as ApiPurchase[]).filter(
             (item) => item.buyerEmail === buyerId
         );
-
-        console.log("Filtered Purchases:", myData);
 
         const mapped = myData.map((item) => ({
           id: item._id,
@@ -216,13 +222,37 @@ const MyPurchase: React.FC = () => {
     };
 
     fetchPurchases();
-  }, [buyerId]); // buyerId পরিবর্তন হলে আবার কল হবে
+  }, [buyerId]);
 
   /* -------- Status Actions -------- */
   const handleUpdateStatus = async (status: "completed" | "cancelled") => {
-    if (!selected) return;
+    if (!selected || !buyerId) return;
+
     try {
       await axios.patch(`${PURCHASE_API}/update-status/${selected.id}`, { status });
+
+      try {
+        if (status === "completed") {
+            await sendNotification({
+                type: "buy",
+                title: "Order Confirmed",
+                message: `You have confirmed receipt of ${selected.title}.`,
+                data: { orderId: selected.id, price: selected.price },
+                userEmail: buyerId,
+            } as any);
+        } else if (status === "cancelled") {
+            await sendNotification({
+                type: "alert",
+                title: "Order Cancelled",
+                message: `You have cancelled the order for ${selected.title}.`,
+                data: { orderId: selected.id },
+                userEmail: buyerId,
+            } as any);
+        }
+      } catch (notifErr) {
+        console.error("Failed to send notification", notifErr);
+      }
+
       setPurchases((prev) =>
         prev.map((p) =>
           p.id === selected.id ? { ...p, status: (status.charAt(0).toUpperCase() + status.slice(1)) as PurchaseStatus } : p
@@ -235,37 +265,69 @@ const MyPurchase: React.FC = () => {
     }
   };
 
-  /* -------- Chat Logic -------- */
-  const fetchChat = async (sellerEmail: string) => {
-    if (!buyerId || !sellerEmail) return;
+  /* -------- Chat Logic (Separated by Order ID) -------- */
+  const fetchChat = async (sellerEmail: string, orderId: string) => {
+    if (!buyerId || !sellerEmail || !orderId) return;
+    
     try {
-      const res = await axios.get(`${CHAT_API}/history/${buyerId}/${sellerEmail}`);
-      setChatMessages(res.data as IMessage[]);
+      // NOTE: We are passing orderId as a query parameter to separate chats
+      const res = await axios.get(`${CHAT_API}/history/${buyerId}/${sellerEmail}`, {
+          params: { orderId: orderId } 
+      });
+      
+      const newData = res.data as IMessage[];
+      
+      // New Message Detection
+      if (newData.length > chatLengthRef.current && chatLengthRef.current !== 0) {
+          const lastMsg = newData[newData.length - 1];
+          if (lastMsg.senderId !== buyerId) {
+              playNotificationSound();
+              toast.info(`New message on order: ${activeChatProductTitle}`);
+              
+              await sendNotification({
+                  type: "message",
+                  title: "New Message",
+                  message: `Regarding ${activeChatProductTitle}: ${lastMsg.message}`,
+                  data: { seller: sellerEmail, orderId: orderId },
+                  userEmail: buyerId,
+              } as any);
+          }
+      }
+
+      chatLengthRef.current = newData.length;
+      setChatMessages(newData);
+
     } catch (err) {
       console.error("Chat fetch error:", err);
     }
   };
 
   useEffect(() => {
+      chatLengthRef.current = 0; 
+  }, [isChatOpen, activeChatOrderId]);
+
+  useEffect(() => {
     let timer: any;
-    if (isChatOpen && activeChatSellerEmail) {
-      fetchChat(activeChatSellerEmail);
-      timer = setInterval(() => fetchChat(activeChatSellerEmail), 3000);
+    if (isChatOpen && activeChatSellerEmail && activeChatOrderId) {
+      fetchChat(activeChatSellerEmail, activeChatOrderId);
+      timer = setInterval(() => fetchChat(activeChatSellerEmail, activeChatOrderId), 3000);
     }
     return () => clearInterval(timer);
-  }, [isChatOpen, activeChatSellerEmail, buyerId]);
+  }, [isChatOpen, activeChatSellerEmail, activeChatOrderId, buyerId]);
 
   const sendChat = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!typedMessage.trim() || !activeChatSellerEmail || !buyerId) return;
+    if (!typedMessage.trim() || !activeChatSellerEmail || !buyerId || !activeChatOrderId) return;
+    
     try {
       await axios.post(`${CHAT_API}/send`, {
         senderId: buyerId,
         receiverId: activeChatSellerEmail,
         message: typedMessage,
+        orderId: activeChatOrderId, // Sending Order ID to separate chat
       });
       setTypedMessage("");
-      fetchChat(activeChatSellerEmail);
+      fetchChat(activeChatSellerEmail, activeChatOrderId);
     } catch (err) {
       alert("Failed to send message");
     }
@@ -287,10 +349,7 @@ const MyPurchase: React.FC = () => {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-3">
             <div>
               <h1 className="text-xl sm:text-3xl font-bold text-[#0A1A3A]">My Purchase</h1>
-              <p className="text-xs sm:text-sm text-gray-600 mt-1">
-                 {/* বর্তমানে কোন ইউজার লগইন আছে তা দেখাচ্ছে */}
-                 Logged in as: <span className="font-semibold text-blue-600">{buyerId || "Guest"}</span>
-              </p>
+            
             </div>
           </div>
 
@@ -348,7 +407,14 @@ const MyPurchase: React.FC = () => {
                         <div className="text-[10px] text-gray-400">{p.date}</div>
                         <div className="flex gap-1">
                           <button onClick={() => setSelected(p)} className="p-1.5 border rounded bg-white hover:bg-gray-50"><FaEyeIcon size={14} /></button>
-                          <button onClick={() => { setActiveChatSellerEmail(p.sellerEmail); setIsChatOpen(true); }} className="p-1.5 border rounded bg-white hover:bg-blue-50 text-blue-600"><FaCommentsIcon size={14} /></button>
+                          
+                          {/* Chat Button: Sets Unique Order ID */}
+                          <button onClick={() => { 
+                              setActiveChatSellerEmail(p.sellerEmail); 
+                              setActiveChatOrderId(p.id); // UNIQUE ID
+                              setActiveChatProductTitle(p.title);
+                              setIsChatOpen(true); 
+                          }} className="p-1.5 border rounded bg-white hover:bg-blue-50 text-blue-600"><FaCommentsIcon size={14} /></button>
                         </div>
                       </div>
                     </div>
@@ -470,6 +536,8 @@ const MyPurchase: React.FC = () => {
                     onClick={() => {
                       setSelected(null);
                       setActiveChatSellerEmail(selected.sellerEmail);
+                      setActiveChatOrderId(selected.id); // Unique ID
+                      setActiveChatProductTitle(selected.title);
                       setIsChatOpen(true);
                     }}
                     className="flex-1 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded font-medium transition"
@@ -504,7 +572,10 @@ const MyPurchase: React.FC = () => {
                 </div>
                 <div>
                   <h3 className="font-bold text-sm truncate max-w-[150px]">{activeChatSellerEmail}</h3>
-                  <p className="text-[10px] text-green-400">Seller Support</p>
+                  {/* Shows which product is being discussed */}
+                  <p className="text-[10px] text-green-400 truncate w-40">
+                      Ref: {activeChatProductTitle}
+                  </p>
                 </div>
               </div>
               <button onClick={() => setIsChatOpen(false)}>
