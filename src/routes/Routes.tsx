@@ -95,7 +95,7 @@ const Routes = createBrowserRouter([
         element: <Plan />,
       },
       {
-        path: "/payment-done",
+        path: "/withdraw",
         element: <PaymentForm />,
       },
       {
