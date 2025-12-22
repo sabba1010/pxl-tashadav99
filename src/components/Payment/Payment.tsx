@@ -1,8 +1,8 @@
 // src/components/Payment/Payment.tsx
 import React, { useState } from "react";
-import KoraPayment from "./KoraPayment";
-import { FaChevronRight, FaChevronLeft, FaCreditCard } from "react-icons/fa";
+import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import TestPayment from "../TestPayment";
+import KoraPayment from "./KoraPayment";
 
 // Helper that ensures icon returns a valid React element for TS
 const Icon = (Comp: any, props: any = {}): React.ReactElement | null => {

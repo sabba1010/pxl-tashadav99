@@ -6,6 +6,7 @@ import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { useDepositByUser } from "../hook/useDepositByUser";
 
 interface TestPaymentProps {
   amount: number;
@@ -13,10 +14,13 @@ interface TestPaymentProps {
 
 const TestPayment: React.FC<TestPaymentProps> = ({ amount }) => {
   const [paymentStatus, setPaymentStatus] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const { refetch } = useDepositByUser();
+
   const { user } = useAuth();
-    const navigate = useNavigate();
-    console.log(user)
-  // যদি user না থাকে তাহলে config-এ ডিফল্ট বা empty রাখবো (hook চলবে)
+  const navigate = useNavigate();
+
+  // Config তৈরি করি — user না থাকলে fallback দিয়ে (hook চলবে)
   const config: FlutterwaveConfig = {
     public_key: "FLWPUBK_TEST-2de87089e34448fe528b45106c0d7ceb-X",
     tx_ref: `tx-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
@@ -24,97 +28,136 @@ const TestPayment: React.FC<TestPaymentProps> = ({ amount }) => {
     currency: "NGN",
     payment_options: "card,ussd,banktransfer,mobilemoney",
     customer: {
-      email: user?.email || "guest@example.com", // fallback
+      email: user?.email || "guest@example.com",
       phone_number: "08012345678",
       name: user?.name || "Guest User",
     },
     customizations: {
-      title: "Payment",
+      title: "Top Up Wallet",
       description: "Secure payment via Flutterwave",
       logo: "https://your-logo-url.com/logo.png",
     },
   };
 
-  // Hook টা এখানে top level-এ কল করা হচ্ছে — সবসময় চলবে
+  // Hook টা এখানে top-level-এ কল করা হচ্ছে — সবসময় চলবে
   const handleFlutterPayment = useFlutterwave(config);
 
   const handlePayment = () => {
-    // এখানে চেক করছি user আছে কিনা
+    // লগইন চেক — না থাকলে শুধু মেসেজ দেখাও
     if (!user || !user.email) {
-      setPaymentStatus("Error: You must be logged in to make a payment.");
+      toast.error("Please log in to make a payment.");
       return;
     }
 
+    setPaymentStatus(null);
+    setIsProcessing(true);
+
     handleFlutterPayment({
-      callback: (response) => {
+      callback: async (response) => {
         console.log("Flutterwave response:", response);
 
         if (response.status === "successful") {
-          setPaymentStatus(`Success! Transaction ID: ${response.transaction_id}`);
+          const transaction_id = response.transaction_id;
 
-          fetch("http://localhost:3200/api/verify-payment", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              transaction_id: response.transaction_id,
-              tx_ref: response.tx_ref,
-              amount: response.amount,
-              currency: response.currency,
-              status: response.status,
-              userEmail: user.email,
-            }),
-          })
-            .then((res) => res.json())
-            .then((data) => console.log("Backend response:", data))
-            .catch((err) => {
-              console.error("Verification failed:", err);
-              setPaymentStatus("Server verification failed");
+          try {
+            // Backend-এ verify করি
+            const verifyRes = await fetch("http://localhost:3200/api/verify-payment", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                transaction_id,
+                userEmail: user.email,
+              }),
             });
+
+            const verifyData = await verifyRes.json();
+
+            if (verifyRes.ok) {
+              setPaymentStatus(`Success! ₦${amount} verified.`);
+
+              // Balance update
+              const balanceRes = await fetch("http://localhost:3200/api/update-balance", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email: user.email }),
+              });
+
+              const balanceData = await balanceRes.json();
+
+              if (balanceRes.ok) {
+                const added = balanceData.totalAdded || 0;
+                if (added > 0) {
+                  toast.success(`₦${added} added to your wallet!`);
+                } else {
+                  toast.info("Payment already credited.");
+                }
+                refetch();
+                navigate("/wallet");
+              } else {
+                toast.error("Failed to update balance: " + balanceData.message);
+              }
+            } else {
+              setPaymentStatus("Verification failed: " + verifyData.message);
+              toast.error("Payment verification failed");
+            }
+          } catch (err) {
+            console.error(err);
+            setPaymentStatus("Server error");
+            toast.error("Something went wrong. Try again.");
+          }
         } else {
           setPaymentStatus("Payment failed or cancelled");
+          toast.error("Payment not completed");
         }
 
-            closePaymentModal();
-            navigate('/wallet');
-            toast.success(`Payment ${response.amount} Deposit successful!`);
+        closePaymentModal();
+        setIsProcessing(false);
       },
       onClose: () => {
-        setPaymentStatus("Payment cancelled by user");
+        setPaymentStatus("Payment cancelled");
+        setIsProcessing(false);
+        toast.info("Payment cancelled");
       },
     });
   };
 
-  return (
-    <div className="w-full flex flex-col items-center gap-6 my-8">
-      {/* লগইন না থাকলে মেসেজ দেখাও */}
-      {!user ? (
+  // UI: লগইন না থাকলে disable মেসেজ
+  if (!user || !user.email) {
+    return (
+      <div className="w-full flex flex-col items-center gap-6 my-8">
         <div className="text-center text-red-600 font-bold text-lg">
           Please log in to make a payment.
         </div>
-      ) : (
-        <>
-          <div className="text-center">
-            <p className="text-gray-600">Paying as:</p>
-            <p className="font-semibold text-lg">{user.email}</p>
-            <p className="text-xl font-bold mt-2">Amount: ₦{amount}</p>
-          </div>
+      </div>
+    );
+  }
 
-          <button
-            onClick={handlePayment}
-            className="flex items-center justify-center gap-4 w-full max-w-md px-10 py-5 
-                       bg-orange-500 hover:bg-orange-600 text-white text-lg font-bold 
-                       rounded-xl shadow-xl transition duration-300"
-          >
-            <CreditCard size={28} />
-            Pay ₦{amount} with Flutterwave
-          </button>
-        </>
-      )}
+  return (
+    <div className="w-full flex flex-col items-center gap-6 my-8">
+      <div className="text-center">
+        <p className="text-gray-600">Paying as:</p>
+        <p className="font-semibold text-lg">{user.email}</p>
+        <p className="text-xl font-bold mt-2">Amount: ₦{amount}</p>
+      </div>
+
+      <button
+        onClick={handlePayment}
+        disabled={isProcessing}
+        className={`flex items-center justify-center gap-4 w-full max-w-md px-10 py-5 
+          text-white text-lg font-bold rounded-xl shadow-xl transition duration-300
+          ${isProcessing 
+            ? "bg-gray-500 cursor-not-allowed" 
+            : "bg-orange-500 hover:bg-orange-600"
+          }`}
+      >
+        <CreditCard size={28} />
+        {isProcessing ? "Processing..." : `Pay ₦${amount} with Flutterwave`}
+      </button>
 
       {paymentStatus && (
         <div
           className={`w-full max-w-md p-5 rounded-xl text-center font-bold text-lg ${
-            paymentStatus.includes("Success")
+            paymentStatus.includes("Success") || paymentStatus.includes("verified")
               ? "bg-green-100 text-green-800 border-2 border-green-400"
               : "bg-red-100 text-red-800 border-2 border-red-400"
           }`}
