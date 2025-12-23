@@ -25,7 +25,7 @@ const TestPayment: React.FC<TestPaymentProps> = ({ amount }) => {
     public_key: "FLWPUBK_TEST-2de87089e34448fe528b45106c0d7ceb-X",
     tx_ref: `tx-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
     amount,
-    currency: "NGN",
+    currency: "USD",
     payment_options: "card,ussd,banktransfer,mobilemoney",
     customer: {
       email: user?.email || "guest@example.com",
@@ -33,9 +33,9 @@ const TestPayment: React.FC<TestPaymentProps> = ({ amount }) => {
       name: user?.name || "Guest User",
     },
     customizations: {
-      title: "Top Up Wallet",
+      title: "AcctEmpire Deposit",
       description: "Secure payment via Flutterwave",
-      logo: "https://your-logo-url.com/logo.png",
+      logo: "https://i.ibb.co.com/tT25FD1K/headerlogo-e65b8413760c38578ce6.png",
     },
   };
 
@@ -134,12 +134,6 @@ const TestPayment: React.FC<TestPaymentProps> = ({ amount }) => {
 
   return (
     <div className="w-full flex flex-col items-center gap-6 my-8">
-      <div className="text-center">
-        <p className="text-gray-600">Paying as:</p>
-        <p className="font-semibold text-lg">{user.email}</p>
-        <p className="text-xl font-bold mt-2">Amount: ₦{amount}</p>
-      </div>
-
       <button
         onClick={handlePayment}
         disabled={isProcessing}
@@ -151,7 +145,7 @@ const TestPayment: React.FC<TestPaymentProps> = ({ amount }) => {
           }`}
       >
         <CreditCard size={28} />
-        {isProcessing ? "Processing..." : `Pay ₦${amount} with Flutterwave`}
+        {isProcessing ? "Processing..." : `Pay with Flutterwave`}
       </button>
 
       {paymentStatus && (

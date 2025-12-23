@@ -1,46 +1,33 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import axios from "axios";
 import { toast } from "sonner";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 /* ====================== TYPES ====================== */
-interface DepositRequest {
+interface Payment {
   _id: string;
-  name: string;
-  amount?: number;
-  paymentMethod: string;
-  submittedAt: string;
-  status: "Pending" | "Approved" | "Rejected";
-  transactionId: string;
-  message?: string;
+  transactionId: number | string;
+  amount: number;
+  currency: string;
+  status: string; // e.g., "successful"
+  customerEmail: string;
+  createdAt: string;
+  credited: boolean;
 }
 
 const ITEMS_PER_PAGE = 5;
 
 /* ====================== API FUNCTIONS ====================== */
-const fetchPayments = async (): Promise<DepositRequest[]> => {
-  const response = await axios.get("http://localhost:3200/payments");
-  return response.data as DepositRequest[];
-};
-
-const updatePaymentStatus = async ({
-  id,
-  status,
-}: {
-  id: string;
-  status: "Approved" | "Rejected";
-}) => {
-  const response = await axios.patch(`http://localhost:3200/payments/${id}`, {
-    status,
-  });
-  return response.data;
+const fetchPayments = async (): Promise<Payment[]> => {
+  const response = await axios.get("http://localhost:3200/api/payments");
+  return response.data as Payment[]; // assuming the endpoint returns an array directly
 };
 
 /* ====================== LOADING COMPONENT ====================== */
 const Loading: React.FC = () => {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50">
-      <div className="text-center">
+      <div className="">
         <div className="relative mx-auto mb-8 h-24 w-24">
           <div className="absolute inset-0 rounded-full border-8 border-green-200"></div>
           <div className="absolute inset-0 animate-spin rounded-full border-8 border-transparent border-t-green-500"></div>
@@ -83,216 +70,32 @@ const Loading: React.FC = () => {
   );
 };
 
-/* ====================== MODAL COMPONENT ====================== */
-const DepositModal: React.FC<{
-  request: DepositRequest | null;
-  onClose: () => void;
-  onUpdateStatus: (id: string, status: "Approved" | "Rejected") => void;
-}> = ({ request, onClose, onUpdateStatus }) => {
-  if (!request) return null;
-
-  const formatCurrency = (amount: number = 0) =>
-    new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(amount);
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Approved":
-        return "bg-green-100 text-green-800";
-      case "Pending":
-        return "bg-yellow-100 text-yellow-800";
-      case "Rejected":
-        return "bg-red-100 text-red-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
-
-  const DetailRow: React.FC<{ label: string; value: React.ReactNode }> = ({
-    label,
-    value,
-  }) => (
-    <div className="flex justify-between items-center py-2 border-b border-gray-100">
-      <span className="text-sm font-medium text-gray-600">{label}</span>
-      <span className="text-sm font-semibold text-gray-800 text-right max-w-[60%] break-words">
-        {value}
-      </span>
-    </div>
-  );
-
-  return (
-    <div className="fixed inset-0 bg-gray-900 bg-opacity-75 z-50 flex justify-center items-center p-4">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-md">
-        <div className="p-6 border-b flex justify-between items-center bg-indigo-50 rounded-t-xl">
-          <h3 className="text-xl font-bold text-indigo-800 truncate pr-4">
-            Review: {request.name}
-          </h3>
-          <button
-            onClick={onClose}
-            className="text-indigo-400 hover:text-indigo-600"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
-        </div>
-
-        <div className="p-6 space-y-2">
-          <DetailRow
-            label="Request ID"
-            value={<span className="font-mono text-xs">{request._id}</span>}
-          />
-          <DetailRow label="User Name" value={request.name} />
-          <DetailRow
-            label="Status"
-            value={
-              <span
-                className={`px-3 py-1 text-xs font-semibold rounded-full ${getStatusColor(
-                  request.status
-                )}`}
-              >
-                {request.status}
-              </span>
-            }
-          />
-          <DetailRow
-            label="Amount"
-            value={
-              <span className="text-lg font-extrabold text-gray-900">
-                {formatCurrency(request.amount || 0)}
-              </span>
-            }
-          />
-          <DetailRow label="Payment Method" value={request.paymentMethod} />
-          <DetailRow
-            label="Date Submitted"
-            value={new Date(request.submittedAt).toLocaleDateString()}
-          />
-
-          {request.message && (
-            <div className="pt-2">
-              <p className="text-sm font-medium text-gray-600 mb-1">Message:</p>
-              <p className="text-sm text-gray-800 bg-yellow-50 p-2 rounded border border-yellow-100 italic">
-                "{request.message}"
-              </p>
-            </div>
-          )}
-
-          <div className="pt-4">
-            <p className="text-sm font-medium text-gray-600 mb-1">
-              Transaction ID:
-            </p>
-            <p className="text-base text-gray-900 bg-gray-50 p-3 rounded-lg border border-gray-200 font-mono break-all">
-              {request.transactionId}
-            </p>
-          </div>
-        </div>
-
-        <div className="p-6 bg-gray-50 flex justify-end space-x-3 rounded-b-xl">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100"
-          >
-            {request.status === "Pending" ? "Cancel" : "Close"}
-          </button>
-
-          {request.status === "Pending" && (
-            <>
-              <button
-                onClick={() => onUpdateStatus(request._id, "Rejected")}
-                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 shadow-md"
-              >
-                Reject
-              </button>
-              <button
-                onClick={() => onUpdateStatus(request._id, "Approved")}
-                className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 shadow-md"
-              >
-                Approve
-              </button>
-            </>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-};
-
 /* ====================== MAIN COMPONENT ====================== */
 const DepositRequests: React.FC = () => {
   const queryClient = useQueryClient();
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortBy, setSortBy] = useState<
-    "submittedAt" | "amount" | "status" | "name"
-  >("submittedAt");
+  const [sortBy, setSortBy] = useState<"createdAt" | "amount" | "status" | "customerEmail">("createdAt");
   const [sortOrder, setSortOrder] = useState<"desc" | "asc">("desc");
   const [currentPage, setCurrentPage] = useState(1);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedRequest, setSelectedRequest] = useState<DepositRequest | null>(
-    null
-  );
 
   // Fetch data
   const {
-    data: requests = [],
+    data: payments = [],
     isLoading,
     isError,
     error,
-  } = useQuery<DepositRequest[]>({
+  } = useQuery<Payment[]>({
     queryKey: ["payments"],
     queryFn: fetchPayments,
   });
-
-  // Mutation
-  const mutation = useMutation({
-    mutationFn: updatePaymentStatus,
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["payments"] });
-      toast.success(`Payment ${variables.status.toLowerCase()} successfully`);
-      closeModal();
-    },
-    onError: () => {
-      toast.error("Failed to update status");
-    },
-  });
-
-  const handleUpdateStatus = useCallback(
-    (id: string, status: "Approved" | "Rejected") => {
-      mutation.mutate({ id, status });
-    },
-    [mutation]
-  );
-
-  const openModal = (request: DepositRequest) => {
-    setSelectedRequest(request);
-    setIsModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setSelectedRequest(null);
-    setIsModalOpen(false);
-  };
 
   const handleSort = (column: typeof sortBy) => {
     setSortBy((prev) => {
       if (prev === column) {
         setSortOrder((o) => (o === "asc" ? "desc" : "asc"));
       } else {
-        setSortOrder(column === "submittedAt" ? "desc" : "asc");
+        setSortOrder(column === "createdAt" ? "desc" : "asc");
       }
       return column;
     });
@@ -300,37 +103,34 @@ const DepositRequests: React.FC = () => {
 
   // Client-side filtering & sorting
   const filteredAndSorted = useMemo(() => {
-    let filtered = requests.filter(
-      (r) =>
-        r._id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        r.transactionId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        r.paymentMethod.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        r.status.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        r.name.toLowerCase().includes(searchTerm.toLowerCase())
+    let filtered = payments.filter(
+      (p) =>
+        p._id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        String(p.transactionId).toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.customerEmail.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.status.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     filtered.sort((a, b) => {
       let comp = 0;
       switch (sortBy) {
         case "amount":
-          comp = (a.amount || 0) - (b.amount || 0);
+          comp = a.amount - b.amount;
           break;
         case "status":
           comp = a.status.localeCompare(b.status);
           break;
-        case "name":
-          comp = a.name.localeCompare(b.name);
+        case "customerEmail":
+          comp = a.customerEmail.localeCompare(b.customerEmail);
           break;
         default:
-          comp =
-            new Date(b.submittedAt).getTime() -
-            new Date(a.submittedAt).getTime();
+          comp = new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       }
       return sortOrder === "asc" ? comp : -comp;
     });
 
     return filtered;
-  }, [requests, searchTerm, sortBy, sortOrder]);
+  }, [payments, searchTerm, sortBy, sortOrder]);
 
   const paginated = useMemo(() => {
     const start = (currentPage - 1) * ITEMS_PER_PAGE;
@@ -339,23 +139,17 @@ const DepositRequests: React.FC = () => {
 
   const totalPages = Math.ceil(filteredAndSorted.length / ITEMS_PER_PAGE);
 
-  const formatCurrency = (amount = 0) =>
+  const formatCurrency = (amount: number, currency: string = "USD") =>
     new Intl.NumberFormat("en-US", {
       style: "currency",
-      currency: "USD",
+      currency,
     }).format(amount);
 
   const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Approved":
-        return "bg-green-100 text-green-800";
-      case "Pending":
-        return "bg-yellow-100 text-yellow-800";
-      case "Rejected":
-        return "bg-red-100 text-red-800";
-      default:
-        return "bg-gray-100 text-gray-800";
+    if (status.toLowerCase() === "successful") {
+      return "bg-green-100 text-green-800";
     }
+    return "bg-gray-100 text-gray-800";
   };
 
   const SortIndicator = ({ column }: { column: typeof sortBy }) =>
@@ -369,13 +163,13 @@ const DepositRequests: React.FC = () => {
 
   if (isError) {
     return (
-      <div className="p-10 text-center text-red-600">
+      <div className="p-10  text-red-600">
         Error: {(error as Error)?.message}
       </div>
     );
   }
 
-  if (isLoading && requests.length === 0) {
+  if (isLoading && payments.length === 0) {
     return <Loading />;
   }
 
@@ -384,21 +178,19 @@ const DepositRequests: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-center bg-gray-50 p-4 rounded-xl shadow-inner border border-gray-200">
         <h3 className="text-xl font-semibold text-gray-800 mb-2 sm:mb-0">
-          Payment Requests ({filteredAndSorted.length})
+          Payments ({filteredAndSorted.length})
         </h3>
         <div className="flex gap-2 w-full sm:w-auto">
           <button
-            onClick={() =>
-              queryClient.refetchQueries({ queryKey: ["payments"] })
-            }
+            onClick={() => queryClient.refetchQueries({ queryKey: ["payments"] })}
             className="bg-white border p-2 rounded-lg hover:bg-gray-100 text-gray-600"
             disabled={isLoading}
           >
-            ↻
+            ↻ Refresh
           </button>
           <input
             type="text"
-            placeholder="Search ID, method, name..."
+            placeholder="Search ID, Trx ID, email..."
             value={searchTerm}
             onChange={(e) => {
               setSearchTerm(e.target.value);
@@ -415,13 +207,12 @@ const DepositRequests: React.FC = () => {
           <thead className="bg-gray-50">
             <tr>
               {[
-                { title: "User Name", col: "name" },
-                { title: "Submitted", col: "submittedAt" },
-                { title: "Method", col: "" },
+                { title: "Customer Email", col: "customerEmail" },
+                { title: "Submitted", col: "createdAt" },
                 { title: "Trx ID", col: "" },
                 { title: "Amount", col: "amount" },
                 { title: "Status", col: "status" },
-                { title: "Actions", col: "" },
+                { title: "Credited", col: "" },
               ].map((h) => (
                 <th
                   key={h.title}
@@ -438,46 +229,42 @@ const DepositRequests: React.FC = () => {
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {paginated.length > 0 ? (
-              paginated.map((r) => (
-                <tr key={r._id} className="hover:bg-indigo-50/50">
+              paginated.map((p) => (
+                <tr key={p._id} className="hover:bg-indigo-50/50">
                   <td className="px-6 py-4 text-sm font-medium text-gray-900">
-                    {r.name}
+                    {p.customerEmail}
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-700">
-                    {new Date(r.submittedAt).toLocaleDateString()}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-700">
-                    {r.paymentMethod}
+                    {new Date(p.createdAt).toLocaleString()}
                   </td>
                   <td className="px-6 py-4 text-xs text-gray-500 font-mono">
-                    {r.transactionId.substring(0, 8)}...
+                    {String(p.transactionId)}
                   </td>
-                  <td className="px-6 py-4 text-sm font-bold text-right">
-                    {formatCurrency(r.amount || 0)}
+                  <td className="px-6 py-4 text-sm font-bold text-left">
+                    {formatCurrency(p.amount, p.currency)}
                   </td>
-                  <td className="px-6 py-4 text-center">
+                  <td className="px-6 py-4 ">
                     <span
                       className={`px-3 py-1 text-xs font-semibold rounded-full ${getStatusColor(
-                        r.status
+                        p.status
                       )}`}
                     >
-                      {r.status}
+                      {p.status}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-center">
-                    <button
-                      onClick={() => openModal(r)}
-                      className="text-white bg-[#D1A148] hover:bg-[#00183C] px-3 py-1 rounded-lg text-xs font-medium shadow-md"
-                    >
-                      Review
-                    </button>
+                  <td className="px-6 py-4  text-sm">
+                    {p.credited ? (
+                      <span className="text-green-600 font-semibold">Yes</span>
+                    ) : (
+                      <span className="text-red-600 font-semibold">No</span>
+                    )}
                   </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan={7} className="text-center py-10 text-gray-500">
-                  No requests found.
+                <td colSpan={6} className=" py-10 text-gray-500">
+                  No payments found.
                 </td>
               </tr>
             )}
@@ -516,15 +303,6 @@ const DepositRequests: React.FC = () => {
             Next
           </button>
         </div>
-      )}
-
-      {/* Modal */}
-      {isModalOpen && selectedRequest && (
-        <DepositModal
-          request={selectedRequest}
-          onClose={closeModal}
-          onUpdateStatus={handleUpdateStatus}
-        />
       )}
     </div>
   );
