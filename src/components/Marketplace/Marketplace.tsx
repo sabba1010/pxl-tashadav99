@@ -10,7 +10,7 @@ import { IconType } from "react-icons";
 import {
   FaWhatsapp, FaEnvelope, FaPlus, FaBullhorn, FaFacebookF, FaInstagram, FaTwitter, FaLock,
   FaShoppingCart, FaTimes, FaSearch, FaStar, FaEye, FaLinkedinIn, FaYoutube, FaSnapchatGhost,
-  FaTelegramPlane, FaDiscord, FaPinterest, FaRedditAlien, FaPaypal, FaCheck, // FaCheck ইমপোর্ট করা হয়েছে
+  FaTelegramPlane, FaDiscord, FaPinterest, FaRedditAlien, FaPaypal, FaCheck,
 } from "react-icons/fa";
 import { SiNetflix, SiAmazon, SiSteam, SiGoogle, SiTiktok, SiTinder } from "react-icons/si";
 import { MdMail, MdSimCard, MdPhoneIphone, MdVpnLock, MdLocalOffer } from "react-icons/md";
@@ -30,14 +30,14 @@ const TimesIcon = FaTimes as React.ElementType;
 const SearchIcon = FaSearch as React.ElementType;
 const PlusIcon = FaPlus as React.ElementType;
 const PurchaseIcon = BiSolidPurchaseTag as React.ElementType;
-const CheckIcon = FaCheck as React.ElementType; // টিক চিহ্নের জন্য
+const CheckIcon = FaCheck as React.ElementType;
 
 interface Item {
   id: string;
   title: string;
   desc?: string;
   price: number;
-  seller: string;
+  seller: string; // ইমেইল এখানে লজিকের জন্য থাকবে
   delivery: string;
   icon: string | IconType;
   category: string;
@@ -205,7 +205,7 @@ const CategorySelector: React.FC<{ selectedSubcats: SubcatState; setSelectedSubc
   );
 };
 
-// --- Item Card (UPDATED with isAdded prop) ---
+// --- Item Card (UPDATED to Hide Email) ---
 const ItemCard: React.FC<{ 
     item: Item; 
     viewMode: "list" | "grid"; 
@@ -213,7 +213,7 @@ const ItemCard: React.FC<{
     onView: (item: Item) => void; 
     onBuy: (item: Item) => void; 
     isProcessing: boolean; 
-    isAdded: boolean; // NEW PROP: Indicates if item is in cart
+    isAdded: boolean;
 }> = ({ item, viewMode, onAddToCart, onView, onBuy, isProcessing, isAdded }) => {
   const isList = viewMode === "list";
   return (
@@ -224,19 +224,23 @@ const ItemCard: React.FC<{
       <div className="flex-1 min-w-0">
         <h3 className="font-bold text-sm text-[#0A1A3A] truncate">{item.title}</h3>
         <p className="text-xs text-gray-600 mt-1 line-clamp-2">{item.desc || "Premium account • Instant delivery"}</p>
-        <div className="text-xs text-gray-400 mt-2">{item.seller} • <span className="text-green-600">{item.delivery}</span></div>
+        
+        {/* === UPDATE START: Email Hidden === */}
+        <div className="text-xs text-gray-400 mt-2">
+           Verified Seller • <span className="text-green-600">{item.delivery}</span>
+        </div>
+        {/* === UPDATE END === */}
+        
       </div>
       <div className={`flex flex-col ${isList ? "items-end text-right" : "mt-4 items-center w-full"}`}>
         <div className="text-lg font-extrabold text-[#0A1A3A] mb-2">${item.price.toFixed(2)}</div>
         <div className="flex items-center gap-2 w-full justify-center">
-          
-          {/* --- UPDATED CART BUTTON --- */}
           <button 
             onClick={() => onAddToCart(item)} 
-            disabled={isAdded} // Disable if already added
+            disabled={isAdded}
             className={`p-2 border rounded transition-all duration-200 
               ${isAdded 
-                ? "bg-green-100 text-green-600 border-green-200 cursor-default" // Style for added state
+                ? "bg-green-100 text-green-600 border-green-200 cursor-default"
                 : "hover:bg-gray-50 text-gray-600"
               }`} 
             title={isAdded ? "Already in cart" : "Add to Cart"}
@@ -254,14 +258,14 @@ const ItemCard: React.FC<{
   );
 };
 
-// --- Product Modal (UPDATED with isAdded prop) ---
+// --- Product Modal (UPDATED to Hide Email) ---
 const ProductModal: React.FC<{ 
     item: Item; 
     onClose: () => void; 
     onBuy: (item: Item) => void; 
     onAddToCart: (item: Item) => void; 
     isProcessing: boolean;
-    isAdded: boolean; // NEW PROP
+    isAdded: boolean;
 }> = ({ item, onClose, onBuy, onAddToCart, isProcessing, isAdded }) => {
   const [accepted, setAccepted] = useState(false);
   return (
@@ -278,7 +282,14 @@ const ProductModal: React.FC<{
           <div className="text-3xl font-extrabold text-center text-green-600 mb-6">${item.price.toFixed(2)}</div>
           <div className="space-y-4 text-sm bg-gray-50 p-4 rounded-lg">
             <div><span className="font-semibold text-gray-700">Description:</span> <p className="text-gray-600 mt-1">{item.desc || "No description provided."}</p></div>
-            <div className="flex justify-between"><span>Seller: <span className="font-medium">{item.seller}</span></span><span>Category: <span className="font-medium">{item.category}</span></span></div>
+            
+            {/* === UPDATE START: Email Hidden === */}
+            <div className="flex justify-between">
+                <span>Seller: <span className="font-medium">Verified Seller</span></span>
+                <span>Category: <span className="font-medium">{item.category}</span></span>
+            </div>
+            {/* === UPDATE END === */}
+            
             <div className="flex items-center gap-2 text-yellow-500"><Stars value={5} /> <span className="text-gray-400 text-xs">(Verified)</span></div>
           </div>
           <div className="mt-4 flex items-start gap-3 p-3 bg-yellow-50 border border-yellow-100 rounded-lg">
@@ -289,7 +300,7 @@ const ProductModal: React.FC<{
         <div className="p-4 border-t bg-gray-50 grid grid-cols-2 gap-3">
           <button 
             onClick={() => onAddToCart(item)} 
-            disabled={isAdded} // Disable
+            disabled={isAdded}
             className={`py-3 border border-gray-300 rounded-xl font-semibold transition ${isAdded ? "bg-green-50 text-green-600 cursor-not-allowed" : "hover:bg-gray-100"}`}
           >
             {isAdded ? "Added to Cart" : "Add to Cart"}
@@ -319,8 +330,6 @@ const Marketplace: React.FC = () => {
   const [cartCount, setCartCount] = useState(0);
   const [processingIds, setProcessingIds] = useState<string[]>([]);
   
-  // --- NO RELOAD STATE ---
-  // এই স্টেটটি কার্টে থাকা সব প্রোডাক্টের আইডি ধরে রাখবে
   const [cartItemIds, setCartItemIds] = useState<string[]>([]);
 
   const itemsPerPage = 6;
@@ -344,6 +353,7 @@ const Marketplace: React.FC = () => {
             title: p.name,
             desc: p.description,
             price: Number(p.price) || 0,
+            seller: p.userEmail, // লজিকের জন্য সেলারের ইমেইল এখানে লোড হচ্ছে
             delivery: "Instant",
             icon: p.categoryIcon || FaBullhorn,
             category: "Social Media",
@@ -357,19 +367,14 @@ const Marketplace: React.FC = () => {
   }, []);
 
   // 2. --- EXISTING CART ITEMS CHECK ---
-  // লগইন করার সাথে সাথে চেক করবে ইউজার আগে কী অ্যাড করেছে
   useEffect(() => {
     const fetchCartItems = async () => {
       if (!user.user?.email) return;
       try {
         const res = await fetch(`${API_URL}/cart?email=${user.user.email}`); 
-        
         if (res.ok) {
           const data = await res.json();
-          // ডাটা ফরম্যাট হ্যান্ডেল করা (সরাসরি অ্যারে নাকি ডাটা অবজেক্টের ভিতরে)
           const items = Array.isArray(data) ? data : (data.data || []);
-          
-          // আইডিগুলো আলাদা করে স্টেটে রাখা
           const ids = items.map((item: any) => item.productId);
           setCartItemIds(ids);
           setCartCount(items.length);
@@ -403,16 +408,13 @@ const Marketplace: React.FC = () => {
   const totalPages = Math.max(1, Math.ceil(filteredItems.length / itemsPerPage));
   const paginatedItems = useMemo(() => { const start = (currentPage - 1) * itemsPerPage; return filteredItems.slice(start, start + itemsPerPage); }, [filteredItems, currentPage]);
 
-  // --- 3. Add to Cart (UPDATED FOR NO RELOAD) ---
+  // --- 3. Add to Cart ---
   const addToCart = useCallback(async (item: Item) => {
-    
-    // Check 1: যদি ইউজার লগইন না থাকে
     if (!user.user?.email) {
         toast.error("Please login first!");
         return;
     }
 
-    // Check 2: যদি ইতিমধ্যে লিস্টে থাকে (Duplicate Prevent)
     if (cartItemIds.includes(item.id)) {
         toast.warning("This item is already in your cart!");
         return;
@@ -427,16 +429,15 @@ const Marketplace: React.FC = () => {
             name: item.title, 
             price: item.price, 
             image: item.icon, 
-            sellerEmail: item.seller, 
+            sellerEmail: item.seller, // এখানে লজিকের জন্য ইমেইল ব্যবহার করা হচ্ছে
             addedAt: new Date(), 
             UserEmail: user.user?.email, 
         }),
       });
 
       if (response.ok) { 
-          // SUCCESS: পেজ রিলোড না করে লোকাল স্টেট আপডেট করুন
           setCartCount((prev) => prev + 1); 
-          setCartItemIds(prev => [...prev, item.id]); // আইডি লিস্টে অ্যাড হলো
+          setCartItemIds(prev => [...prev, item.id]);
           toast.success(`${item.title} added to cart!`); 
       } else { 
           throw new Error("Failed"); 
@@ -446,7 +447,6 @@ const Marketplace: React.FC = () => {
         toast.error("Could not add to cart."); 
     }
   }, [user.user?.email, cartItemIds]);
-
 
   // --- INSTANT PURCHASE LOGIC ---
   const buyNow = async (item: Item) => {
@@ -466,7 +466,7 @@ const Marketplace: React.FC = () => {
           name: item.title,
           price: item.price,
           image: item.icon,
-          sellerEmail: item.seller,
+          sellerEmail: item.seller, // এখানে লজিকের জন্য ইমেইল ব্যবহার করা হচ্ছে
           addedAt: new Date(),
           UserEmail: currentUserEmail,
         }),
@@ -585,7 +585,7 @@ const Marketplace: React.FC = () => {
                     onView={setSelectedItem} 
                     onBuy={buyNow} 
                     isProcessing={processingIds.includes(item.id)} 
-                    isAdded={cartItemIds.includes(item.id)} // PASSING STATE
+                    isAdded={cartItemIds.includes(item.id)}
                 />
                 ))}
               </div>
@@ -608,7 +608,7 @@ const Marketplace: React.FC = () => {
             onBuy={buyNow} 
             onAddToCart={addToCart} 
             isProcessing={processingIds.includes(selectedItem.id)}
-            isAdded={cartItemIds.includes(selectedItem.id)} // PASSING STATE
+            isAdded={cartItemIds.includes(selectedItem.id)}
         />
       )}
       
