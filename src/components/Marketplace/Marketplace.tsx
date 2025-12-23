@@ -37,7 +37,7 @@ interface Item {
   title: string;
   desc?: string;
   price: number;
-  seller: string; // ইমেইল এখানে লজিকের জন্য থাকবে
+  seller: string; 
   delivery: string;
   icon: string | IconType;
   category: string;
@@ -205,7 +205,7 @@ const CategorySelector: React.FC<{ selectedSubcats: SubcatState; setSelectedSubc
   );
 };
 
-// --- Item Card (UPDATED to Hide Email) ---
+// --- Item Card ---
 const ItemCard: React.FC<{ 
     item: Item; 
     viewMode: "list" | "grid"; 
@@ -225,11 +225,9 @@ const ItemCard: React.FC<{
         <h3 className="font-bold text-sm text-[#0A1A3A] truncate">{item.title}</h3>
         <p className="text-xs text-gray-600 mt-1 line-clamp-2">{item.desc || "Premium account • Instant delivery"}</p>
         
-        {/* === UPDATE START: Email Hidden === */}
         <div className="text-xs text-gray-400 mt-2">
            Verified Seller • <span className="text-green-600">{item.delivery}</span>
         </div>
-        {/* === UPDATE END === */}
         
       </div>
       <div className={`flex flex-col ${isList ? "items-end text-right" : "mt-4 items-center w-full"}`}>
@@ -258,7 +256,7 @@ const ItemCard: React.FC<{
   );
 };
 
-// --- Product Modal (UPDATED to Hide Email) ---
+// --- Product Modal ---
 const ProductModal: React.FC<{ 
     item: Item; 
     onClose: () => void; 
@@ -283,12 +281,10 @@ const ProductModal: React.FC<{
           <div className="space-y-4 text-sm bg-gray-50 p-4 rounded-lg">
             <div><span className="font-semibold text-gray-700">Description:</span> <p className="text-gray-600 mt-1">{item.desc || "No description provided."}</p></div>
             
-            {/* === UPDATE START: Email Hidden === */}
             <div className="flex justify-between">
                 <span>Seller: <span className="font-medium">Verified Seller</span></span>
                 <span>Category: <span className="font-medium">{item.category}</span></span>
             </div>
-            {/* === UPDATE END === */}
             
             <div className="flex items-center gap-2 text-yellow-500"><Stars value={5} /> <span className="text-gray-400 text-xs">(Verified)</span></div>
           </div>
@@ -429,7 +425,7 @@ const Marketplace: React.FC = () => {
             name: item.title, 
             price: item.price, 
             image: item.icon, 
-            sellerEmail: item.seller, // এখানে লজিকের জন্য ইমেইল ব্যবহার করা হচ্ছে
+            sellerEmail: item.seller, 
             addedAt: new Date(), 
             UserEmail: user.user?.email, 
         }),
@@ -448,50 +444,38 @@ const Marketplace: React.FC = () => {
     }
   }, [user.user?.email, cartItemIds]);
 
-  // --- INSTANT PURCHASE LOGIC ---
+  // --- INSTANT PURCHASE LOGIC (FIXED) ---
   const buyNow = async (item: Item) => {
     const currentUserEmail = user.user?.email;
-    if (!currentUserEmail) { toast.error("Please log in to purchase!"); return; }
+    
+    if (!currentUserEmail) { 
+        toast.error("Please log in to purchase!"); 
+        return; 
+    }
+    
     if (processingIds.includes(item.id)) return;
-
     setProcessingIds((prev) => [...prev, item.id]);
 
     try {
-      // Step 1: SILENT ADD TO CART
-      const addToCartRes = await fetch(`${API_URL}/cart/post`, {
+      // Backend এর সাথে নাম মিলিয়ে Payload পাঠানো হচ্ছে
+      const payload = {
+        buyerEmail: currentUserEmail,
+        productName: item.title,
+        price: item.price,
+        sellerEmail: item.seller, // যদি এটা খালি থাকে তাহলে এরর আসবে
+        productId: item.id
+      };
+
+      const res = await fetch(`${API_URL}/purchase/single-purchase`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          productId: item.id,
-          name: item.title,
-          price: item.price,
-          image: item.icon,
-          sellerEmail: item.seller, // এখানে লজিকের জন্য ইমেইল ব্যবহার করা হচ্ছে
-          addedAt: new Date(),
-          UserEmail: currentUserEmail,
-        }),
+        body: JSON.stringify(payload),
       });
 
-      const addedItemData = await addToCartRes.json();
-      const cartItemId = addedItemData._id || (addedItemData.data && addedItemData.data._id);
-
-      if (!cartItemId) {
-        throw new Error("Could not prepare item for purchase (Cart ID missing).");
-      }
-
-      // Step 2: PURCHASE
-      const purchaseRes = await fetch(`${API_URL}/purchase/post`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            email: currentUserEmail,
-            itemIds: [cartItemId]
-        }),
-      });
-
-      const result = await purchaseRes.json();
+      const result = await res.json();
 
       if (result.success) {
+        // Notification
         try {
           await sendNotification({
             type: "buy",
@@ -502,17 +486,14 @@ const Marketplace: React.FC = () => {
           } as any);
         } catch (notifErr) { console.error("Notification failed", notifErr); }
 
-        toast.success(`Purchase Successful! $${result.totalDeducted} deducted.`);
+        toast.success(`Purchase Successful! New Balance: $${result.newBuyerBalance}`);
         setSelectedItem(null);
         refetch(); 
         navigate("/purchases"); 
       } else {
-        if (result.message && result.message.includes("Insufficient")) {
-            toast.error(`Insufficient Balance! Needed: $${result.required}, Available: $${result.available}`);
-        } else {
-            toast.error("Purchase failed: " + result.message);
-        }
+          toast.error(result.message || "Purchase failed");
       }
+
     } catch (err: any) {
       console.error(err);
       toast.error("Transaction Error: " + (err.message || "Network Error"));
