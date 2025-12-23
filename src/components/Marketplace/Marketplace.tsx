@@ -246,7 +246,7 @@ const ItemCard: React.FC<{
           
           <button onClick={() => onView(item)} className="p-2 border rounded hover:bg-gray-50 text-gray-600" title="View Details"><EyeIcon size={16} /></button>
           <button onClick={() => onBuy(item)} disabled={isProcessing} className={`px-3 py-2 text-sm font-semibold text-white rounded bg-gradient-to-r from-[#33ac6f] to-[#27b86a] hover:shadow-lg disabled:opacity-70 flex items-center gap-2 ${isList ? "" : "flex-1 justify-center"}`}>
-            {isProcessing ? "..." : <><PurchaseIcon size={16} /> Purchase</>}
+            {isProcessing ? "..." : <><PurchaseIcon size={16} /> </>}
           </button>
         </div>
       </div>
@@ -344,7 +344,6 @@ const Marketplace: React.FC = () => {
             title: p.name,
             desc: p.description,
             price: Number(p.price) || 0,
-            seller: p.userEmail,
             delivery: "Instant",
             icon: p.categoryIcon || FaBullhorn,
             category: "Social Media",
