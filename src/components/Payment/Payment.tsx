@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import TestPayment from "../TestPayment";
 import KoraPayment from "./KoraPayment";
+import { toast } from "sonner";
 
 // Helper that ensures icon returns a valid React element for TS
 const Icon = (Comp: any, props: any = {}): React.ReactElement | null => {
@@ -23,8 +24,8 @@ const Payment: React.FC = () => {
 
   const handleNext = () => {
     const num = parseFloat(amount);
-    if (isNaN(num) || num <= 0) {
-      alert("Please enter a valid amount");
+    if (isNaN(num) || num <= 1) {
+      toast.error("Please enter a valid amount");
       return;
     }
     setFinalAmount(num);
