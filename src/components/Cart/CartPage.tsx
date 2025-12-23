@@ -22,7 +22,7 @@ interface CartItem {
   _id: string;
   name: string;
   price: number;
-  sellerEmail: string;
+  sellerEmail: string; // লজিকের জন্য থাকছে, কিন্তু ডিসপ্লে হবে না
   UserEmail: string;
 }
 
@@ -211,12 +211,13 @@ const CartPage: React.FC = () => {
                     
                     {/* Mobile Title logic */}
                     <div className="flex-1 sm:hidden">
-                       <h3 className="font-bold text-lg leading-tight group-hover:text-[#D4A017] transition-colors line-clamp-1">
-                        {item.name}
-                      </h3>
-                      <p className="text-[10px] text-gray-400 font-medium truncate">
-                        {item.sellerEmail}
-                      </p>
+                        <h3 className="font-bold text-lg leading-tight group-hover:text-[#D4A017] transition-colors line-clamp-1">
+                          {item.name}
+                        </h3>
+                        {/* UPDATE: ইমেইল হাইড করা হয়েছে */}
+                        <p className="text-[10px] text-gray-400 font-medium truncate">
+                          Verified Seller
+                        </p>
                     </div>
                   </div>
 
@@ -229,18 +230,19 @@ const CartPage: React.FC = () => {
                     <h3 className="hidden sm:block font-bold text-lg md:text-xl group-hover:text-[#D4A017] transition-colors">
                       {item.name}
                     </h3>
+                    {/* UPDATE: ইমেইল হাইড করা হয়েছে */}
                     <p className="hidden sm:block text-xs text-gray-400 font-medium">
-                      Verified Seller: {item.sellerEmail}
+                      Verified Seller
                     </p>
                   </div>
 
                   {/* Price & Action Section: Row on Mobile, Column on Desktop */}
                   <div className="w-full sm:w-auto flex flex-row justify-between sm:flex-col sm:items-end gap-2 md:gap-3 mt-2 sm:mt-0 pt-3 sm:pt-0 border-t sm:border-0 border-gray-100">
                     <div className="sm:text-right">
-                       <span className="block sm:hidden text-[10px] text-gray-400 uppercase font-bold">Price</span>
-                       <p className="text-xl md:text-2xl font-black text-[#0A1D37]">
-                         ${Number(item.price).toFixed(2)}
-                       </p>
+                        <span className="block sm:hidden text-[10px] text-gray-400 uppercase font-bold">Price</span>
+                        <p className="text-xl md:text-2xl font-black text-[#0A1D37]">
+                          ${Number(item.price).toFixed(2)}
+                        </p>
                     </div>
                     <button
                       onClick={() => handleDelete(item._id)}
