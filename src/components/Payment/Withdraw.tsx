@@ -30,7 +30,7 @@ interface WithdrawFormData {
 
 const WithdrawForm: React.FC = () => {
   const { user, setUser } = useAuth(); 
-  const { refetch } = useAuthHook(); 
+  const { refetch, data } = useAuthHook(); 
 
   const [paymentMethod, setPaymentMethod] = useState<'kora' | 'flutterwave'>('kora');
   const [formData, setFormData] = useState<WithdrawFormData>({
@@ -40,7 +40,7 @@ const WithdrawForm: React.FC = () => {
     bankCode: '',
     fullName: '',
     phoneNumber: '',
-    email: user?.email || '',
+    email: data?.email || '',
     note: ''
   });
 
@@ -71,13 +71,14 @@ const WithdrawForm: React.FC = () => {
       return;
     }
 
-    if (!user?._id) {
+    if (!data?._id) {
       toast.error("Please login first");
       return;
     }
 
     // 🛑 STEP 1: Frontend Balance Check
-    const currentBalance = (user as any).balance || 0;
+    const currentBalance = (data as any).balance || 0;
+    console.log(data)
 
     if (currentBalance < amountNum) {
         toast.error("Insufficient Balance!");
@@ -91,7 +92,7 @@ const WithdrawForm: React.FC = () => {
     try {
       // 🚀 STEP 2: Submit Withdraw Request (এটা ঠিক আছে)
       const requestBody = {
-        userId: user._id,
+        userId: data._id,
         paymentMethod,
         amount: amountNum,
         currency: formData.currency,
@@ -138,7 +139,7 @@ const WithdrawForm: React.FC = () => {
             bankCode: '',
             fullName: '',
             phoneNumber: '',
-            email: user?.email || '',
+            email: data?.email || '',
             note: ''
         });
           refetch();
