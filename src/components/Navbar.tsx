@@ -1,25 +1,28 @@
 // src/components/Navbar.tsx
 import { Button } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
-import { FaBreadSlice } from "react-icons/fa";
+import { FaBreadSlice, FaTrash } from "react-icons/fa"; 
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuth } from "../context/AuthContext";
+import axios from "axios"; 
 
 import { getAllNotifications } from "../components/Notification/Notification";
-import headerlogo from "../assets/headerlogo.png"; // make sure this file exists
+import headerlogo from "../assets/headerlogo.png"; 
 import { useAuthHook } from "../hook/useAuthHook";
 
-// FIX: TypeScript error fix for FaBreadSlice
 const FaBreadSliceIcon = FaBreadSlice as unknown as React.ComponentType<any>;
+const FaTrashIcon = FaTrash as unknown as React.ComponentType<any>;
 
-// FIX: Added 'description' to the type definition
+// API URL 
+const API_URL = "http://localhost:3200/api/notification";
+
 type NItem = {
   _id?: string;
   type?: string;
   title: string;
   message?: string;
-  description?: string; // <--- This line fixes the TS error
+  description?: string; 
   read?: boolean;
   createdAt?: string;
   userEmail?: string;
@@ -27,7 +30,7 @@ type NItem = {
 };
 
 export default function Navbar() {
-  const [open, setOpen] = useState(false); // Avatar dropdown
+  const [open, setOpen] = useState(false); 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const notifRef = useRef<HTMLDivElement | null>(null);
@@ -35,12 +38,9 @@ export default function Navbar() {
   const loginUser = user.user;
   const navigate = useNavigate();
 
-  // --- CURRENT USER IDENTIFICATION ---
   const loginUserData = useAuthHook();
-  // ১. বর্তমান ইউজারের ইমেইল নেওয়া (হুক অথবা লোকাল স্টোরেজ থেকে)
   const currentUserEmail = loginUserData.data?.email || localStorage.getItem("userEmail");
 
-  // Notification state
   const [notifOpen, setNotifOpen] = useState(false);
   const [notifications, setNotifications] = useState<NItem[]>([]);
   const [loadingNotifs, setLoadingNotifs] = useState(false);
@@ -48,16 +48,10 @@ export default function Navbar() {
   // Close dropdowns on outside click
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setOpen(false);
       }
-      if (
-        notifRef.current &&
-        !notifRef.current.contains(event.target as Node)
-      ) {
+      if (notifRef.current && !notifRef.current.contains(event.target as Node)) {
         setNotifOpen(false);
       }
     };
@@ -65,7 +59,6 @@ export default function Navbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Brand Colors
   const EMPIRE_BLUE = "#0A1A3A";
   const ROYAL_GOLD = "#D4A643";
   const CHARCOAL = "#111111";
@@ -77,22 +70,19 @@ export default function Navbar() {
     navigate("/");
   };
 
-  // --- FETCH NOTIFICATIONS (FILTERED BY USER) ---
+  // --- FETCH NOTIFICATIONS ---
   const fetchNotifications = async () => {
-    // যদি ইউজার লগইন না থাকে, কল করার দরকার নেই
     if (!currentUserEmail) return;
 
     try {
-      setLoadingNotifs(true);
+      if (!notifications.length && !notifOpen) setLoadingNotifs(true);
+      
       const res = await getAllNotifications();
       
-      // ২. এখানে ডাটা ফিল্টার করা হচ্ছে (Current User Email অনুযায়ী)
-      // টাইপ ঠিক করার ফলে এখন আর এরর আসবে না
       const myNotifs = Array.isArray(res) 
         ? res.filter((n: NItem) => n.userEmail === currentUserEmail) 
         : [];
         
-      // তারিখ অনুযায়ী সর্ট করা (নতুন আগে)
       const sortedNotifs = myNotifs.sort((a, b) => 
         new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
       );
@@ -105,61 +95,75 @@ export default function Navbar() {
     }
   };
 
-  // Poll notifications while logged in
-  useEffect(() => {
+  // --- CLICK HANDLER (MARK READ) ---
+  const handleShowNotifications = async () => {
+    setNotifOpen((prev) => !prev);
+
+    if (!notifOpen && notifications.length > 0) {
+        // Frontend Update
+        const readNotifications = notifications.map(n => ({ ...n, read: true }));
+        setNotifications(readNotifications);
+
+        // Backend Update
+        if (currentUserEmail) {
+            try {
+                await axios.post(`${API_URL}/mark-read`, { email: currentUserEmail });
+            } catch (error) {
+                console.error("Failed to mark notifications as read on server", error);
+            }
+        }
+    }
+  };
+
+  // --- CLEAR ALL NOTIFICATIONS FUNCTION ---
+  const clearAllNotifications = async () => {
     if (!currentUserEmail) return;
     
+    if(!window.confirm("Are you sure you want to clear all notifications?")) return;
+
+    try {
+        await axios.delete(`${API_URL}/clear-all/${currentUserEmail}`);
+        setNotifications([]);
+        toast.success("All notifications cleared!");
+    } catch (error) {
+        console.error("Failed to clear notifications", error);
+        toast.error("Failed to clear notifications");
+    }
+  };
+
+  // Poll notifications
+  useEffect(() => {
+    if (!currentUserEmail) return;
     fetchNotifications();
-    const id = setInterval(fetchNotifications, 8000); // প্রতি ৮ সেকেন্ড পর রিফ্রেশ হবে
+    const id = setInterval(fetchNotifications, 8000); 
     return () => clearInterval(id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUserEmail]);
 
+  // Count only unread notifications
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   return (
     <>
-      {/* Top Navbar - Sticky */}
       <header
         className="sticky top-0 z-40 w-full bg-white border-b border-gray-200 shadow-sm"
         style={{ backgroundColor: CLEAN_WHITE }}
       >
         <nav className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-14 md:h-16">
-            {/* Left: Hamburger + Logo */}
+            
+            {/* Logo Section */}
             <div className="flex items-center">
               <button
                 onClick={() => setMobileMenuOpen((s) => !s)}
                 className="hidden p-2 rounded-md hover:bg-gray-100 transition"
-                aria-label="Toggle menu"
               >
                 {mobileMenuOpen ? (
-                  <svg
-                    className="w-6 h-6"
-                    fill="none"
-                    stroke={EMPIRE_BLUE}
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
+                  <svg className="w-6 h-6" fill="none" stroke={EMPIRE_BLUE} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 ) : (
-                  <svg
-                    className="w-6 h-6"
-                    fill="none"
-                    stroke={EMPIRE_BLUE}
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M4 6h16M4 12h16M4 18h16"
-                    />
+                  <svg className="w-6 h-6" fill="none" stroke={EMPIRE_BLUE} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                   </svg>
                 )}
               </button>
@@ -171,105 +175,45 @@ export default function Navbar() {
 
             {/* Desktop Menu */}
             <div className="hidden lg:flex items-center gap-8">
-              <NavLink
-                to="/marketplace"
-                className="font-medium"
-                style={({ isActive }) => ({
-                  color: isActive ? ROYAL_GOLD : CHARCOAL,
-                })}
-              >
-                Marketplace
-              </NavLink>
-              <NavLink
-                to="/purchases"
-                className="font-medium"
-                style={({ isActive }) => ({
-                  color: isActive ? ROYAL_GOLD : CHARCOAL,
-                })}
-              >
-                Mypurchase
-              </NavLink>
+              <NavLink to="/marketplace" className="font-medium" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}>Marketplace</NavLink>
+              <NavLink to="/purchases" className="font-medium" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}>Mypurchase</NavLink>
               {loginUser?.role === "seller" || loginUser?.role === "admin" ? (
-                <NavLink
-                  to="/orders"
-                  className="font-medium"
-                  style={({ isActive }) => ({
-                    color: isActive ? ROYAL_GOLD : CHARCOAL,
-                  })}
-                >
-                  Orders
-                </NavLink>
-              ) : (
-                ""
-              )}
-        
+                <NavLink to="/orders" className="font-medium" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}>Orders</NavLink>
+              ) : ""}
               {loginUser ? (
-                <NavLink
-                  to="/wallet"
-                  className="font-medium"
-                  style={({ isActive }) => ({
-                    color: isActive ? ROYAL_GOLD : CHARCOAL,
-                  })}
-                >
-                  Wallet
-                </NavLink>
-              ) : (
-                ""
-              )}
-              <NavLink
-                to="/selling-form"
-                className="px-6 py-2.5 rounded-lg font-medium text-white shadow-sm"
-                style={{ backgroundColor: ROYAL_GOLD }}
-              >
-                Sell Product
-              </NavLink>
+                <NavLink to="/wallet" className="font-medium" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}>Wallet</NavLink>
+              ) : ""}
+              <NavLink to="/selling-form" className="px-6 py-2.5 rounded-lg font-medium text-white shadow-sm" style={{ backgroundColor: ROYAL_GOLD }}>Sell Product</NavLink>
             </div>
 
             {/* Right Icons */}
             <div className="flex items-center gap-1">
+              
               {/* Notifications Icon */}
               <div className="relative" ref={notifRef}>
                 <button
-                  onClick={() => {
-                    setNotifOpen((o) => !o);
-                    if (!notifOpen) fetchNotifications();
-                  }}
+                  onClick={handleShowNotifications} 
                   className="p-2 rounded-md hover:bg-gray-100 transition relative"
-                  aria-label="Notifications"
                 >
-                  <svg
-                    className="w-6 h-6"
-                    fill="none"
-                    stroke={EMPIRE_BLUE}
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-                    />
+                  <svg className="w-6 h-6" fill="none" stroke={EMPIRE_BLUE} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                   </svg>
 
+                  {/* Red Badge (Solid Color) */}
                   {unreadCount > 0 && (
-                    <span className="absolute -top-1 -right-1 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-600 rounded-full">
+                    <span className="absolute -top-1 -right-1 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-600 rounded-full shadow-sm border border-white">
                       {unreadCount}
                     </span>
                   )}
                 </button>
 
-                {/* Notifications Dropdown */}
+                {/* Dropdown */}
                 {notifOpen && (
-                  <div
-                    className="absolute right-0 mt-2 w-96 bg-white border rounded-xl shadow-2xl z-50 overflow-hidden"
-                    style={{ backgroundColor: CLEAN_WHITE }}
-                  >
+                  <div className="absolute right-0 mt-2 w-96 bg-white border rounded-xl shadow-2xl z-50 overflow-hidden" style={{ backgroundColor: CLEAN_WHITE }}>
                     <div className="px-4 py-3 border-b flex items-center justify-between">
-                      <div className="font-semibold">Notifications</div>
-                      <div className="text-xs text-gray-500">
-                        {loadingNotifs
-                          ? "Loading..."
-                          : `${notifications.length} total`}
+                      <div className="font-bold text-gray-900">Notifications</div>
+                      <div className="text-xs font-semibold text-gray-600">
+                        {loadingNotifs ? "Loading..." : `${notifications.length} total`}
                       </div>
                     </div>
 
@@ -283,39 +227,50 @@ export default function Navbar() {
                       {notifications.map((n) => (
                         <div
                           key={n._id || `${n.title}-${n.createdAt}`}
-                          className={`p-3 hover:bg-gray-50 ${
-                            n.read ? "" : "bg-blue-50/50"
+                          className={`p-3 hover:bg-gray-50 transition-colors ${
+                            n.read 
+                            ? "bg-white" 
+                            : "bg-blue-50 border-l-4 border-blue-600"
                           }`}
                         >
                           <div className="flex items-start justify-between gap-3">
                             <div className="flex-1">
-                              <div className="font-medium text-sm text-[#0A1A3A]">
+                              {/* TITLE: Bold Black */}
+                              <div className="text-sm font-bold text-black">
                                 {n.title}
                               </div>
-                              <div className="text-xs text-gray-600 mt-1 line-clamp-2">
-                                {/* Now 'description' is a valid property */}
+                              {/* MESSAGE: Dark Gray & Medium Weight */}
+                              <div className="text-xs text-gray-800 font-medium mt-1 line-clamp-2 leading-relaxed">
                                 {n.message || n.description || "No description"}
                               </div>
-                              <div className="text-[10px] text-gray-400 mt-1 flex justify-between">
+                              {/* DATE: Darker Gray */}
+                              <div className="text-[10px] text-gray-600 font-semibold mt-1 flex justify-between">
                                 <span>
-                                    {n.createdAt
-                                    ? new Date(n.createdAt).toLocaleString()
-                                    : ""}
+                                    {n.createdAt ? new Date(n.createdAt).toLocaleString() : ""}
                                 </span>
                               </div>
                             </div>
                             {!n.read && (
-                              <div className="ml-2 w-2 h-2 rounded-full bg-blue-500 mt-1" />
+                              <div className="ml-2 w-2.5 h-2.5 rounded-full bg-blue-600 mt-1 shadow-sm" />
                             )}
                           </div>
                         </div>
                       ))}
                     </div>
 
-                    <div className="px-3 py-2 border-t text-right bg-gray-50">
+                    {/* Footer Actions */}
+                    <div className="px-4 py-3 border-t bg-gray-50 flex justify-between items-center">
+                      <button
+                        onClick={clearAllNotifications}
+                        className="text-xs text-red-600 hover:text-red-800 hover:underline font-bold flex items-center gap-1"
+                        disabled={notifications.length === 0}
+                      >
+                        <FaTrashIcon /> Clear All
+                      </button>
+
                       <button
                         onClick={() => fetchNotifications()}
-                        className="text-xs text-blue-600 hover:underline font-medium"
+                        className="text-xs text-blue-700 hover:underline font-bold"
                       >
                         Refresh List
                       </button>
@@ -327,273 +282,48 @@ export default function Navbar() {
               {/* Avatar Dropdown */}
               <div className="relative" ref={dropdownRef}>
                 {user.user ? (
-                  <button
-                    onClick={() => setOpen((o) => !o)}
-                    className="flex items-center p-1 rounded-full hover:bg-gray-100 transition"
-                  >
-                    <div
-                      className="h-9 w-9 rounded-full flex items-center justify-center text-white font-bold text-sm"
-                      style={{
-                        background: `linear-gradient(90deg, ${EMPIRE_BLUE} 0%, ${ROYAL_GOLD} 100%)`,
-                      }}
-                    >
+                  <button onClick={() => setOpen((o) => !o)} className="flex items-center p-1 rounded-full hover:bg-gray-100 transition">
+                    <div className="h-9 w-9 rounded-full flex items-center justify-center text-white font-bold text-sm" style={{ background: `linear-gradient(90deg, ${EMPIRE_BLUE} 0%, ${ROYAL_GOLD} 100%)` }}>
                       {loginUser?.name ? loginUser.name[0].toUpperCase() : "A"}
                     </div>
                   </button>
                 ) : (
-                  <>
-                    {/* Desktop Auth Buttons */}
-                    <div className="hidden md:flex gap-2">
-                        <Link to="/login">
-                          <Button
-                            variant="contained"
-                            sx={{
-                              px: 4,
-                              borderRadius: "10px",
-                              textTransform: "none",
-                              fontWeight: 600,
-                              backgroundColor: ROYAL_GOLD,
-                            }}
-                          >
-                            Login
-                          </Button>
-                        </Link>
-
-                        <Link to="/register">
-                          <Button
-                            variant="outlined"
-                            sx={{
-                              px: 4,
-                              borderRadius: "10px",
-                              textTransform: "none",
-                              fontWeight: 600,
-                              borderWidth: "2px",
-                            }}
-                          >
-                            Register
-                          </Button>
-                        </Link>
-                      </div>
-                  </>
+                  <div className="hidden md:flex gap-2">
+                      <Link to="/login"><Button variant="contained" sx={{ px: 4, borderRadius: "10px", textTransform: "none", fontWeight: 600, backgroundColor: ROYAL_GOLD }}>Login</Button></Link>
+                      <Link to="/register"><Button variant="outlined" sx={{ px: 4, borderRadius: "10px", textTransform: "none", fontWeight: 600, borderWidth: "2px" }}>Register</Button></Link>
+                  </div>
                 )}
 
-                {/* Avatar Dropdown Menu */}
                 {open && (
-                  <div
-                    className="absolute right-0 mt-2 w-80 rounded-xl shadow-2xl border border-gray-200 overflow-hidden z-50"
-                    style={{ backgroundColor: CLEAN_WHITE }}
-                  >
-                    {/* User Info */}
-                    <div
-                      className="px-6 py-5 border-b"
-                      style={{ backgroundColor: "#F9FAFB" }}
-                    >
-                      <div
-                        className="font-bold text-lg"
-                        style={{ color: EMPIRE_BLUE }}
-                      >
-                        {loginUser?.name}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        {loginUser?.email}
-                      </div>
+                  <div className="absolute right-0 mt-2 w-80 rounded-xl shadow-2xl border border-gray-200 overflow-hidden z-50" style={{ backgroundColor: CLEAN_WHITE }}>
+                    <div className="px-6 py-5 border-b" style={{ backgroundColor: "#F9FAFB" }}>
+                      <div className="font-bold text-lg" style={{ color: EMPIRE_BLUE }}>{loginUser?.name}</div>
+                      <div className="text-sm text-gray-500">{loginUser?.email}</div>
                     </div>
-
-                    {/* Wallet Balance Card */}
                     <div className="px-6 py-4 border-b">
-                      <div
-                        className="rounded-xl p-5 text-white relative overflow-hidden"
-                        style={{
-                          background: `linear-gradient(135deg, ${EMPIRE_BLUE} 0%, #1a3a6e 100%)`,
-                        }}
-                      >
-                        <div className="absolute inset-0 opacity-20">
-                          <div
-                            className="absolute inset-0"
-                            style={{
-                              backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,.1) 10px, rgba(255,255,255,.1) 20px)`,
-                            }}
-                          />
-                        </div>
+                      <div className="rounded-xl p-5 text-white relative overflow-hidden" style={{ background: `linear-gradient(135deg, ${EMPIRE_BLUE} 0%, #1a3a6e 100%)` }}>
+                        <div className="absolute inset-0 opacity-20"><div className="absolute inset-0" style={{ backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,.1) 10px, rgba(255,255,255,.1) 20px)` }} /></div>
                         <div className="relative z-10">
                           <div className="text-sm opacity-90">Your Balance</div>
-                          <div className="text-3xl font-bold mt-2">
-                            ${loginUserData.data?.balance?.toFixed(2) || "0.00"}
-                          </div>
+                          <div className="text-3xl font-bold mt-2">${loginUserData.data?.balance?.toFixed(2) || "0.00"}</div>
                         </div>
-                        <NavLink
-                          to="/wallet"
-                          onClick={() => setOpen(false)}
-                          className="absolute bottom-4 right-4 text-sm underline opacity-90"
-                        >
-                          View Wallet →
-                        </NavLink>
+                        <NavLink to="/wallet" onClick={() => setOpen(false)} className="absolute bottom-4 right-4 text-sm underline opacity-90">View Wallet →</NavLink>
                       </div>
                     </div>
-
-                    {/* Menu Items */}
                     <div className="py-2">
-                      {/* Dashboard */}
-                      {loginUser?.role === "admin" ? (
-                        <>
-                          {" "}
-                          <NavLink
-                            to="/admin-dashboard"
-                            onClick={() => setOpen(false)}
-                            className="flex items-center gap-4 px-6 py-3 hover:bg-gray-50 transition"
-                            style={{ color: CHARCOAL }}
-                          >
-                            <svg
-                              className="w-5 h-5"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                              />
-                            </svg>
-                            <span className="text-sm font-medium">
-                              My Account Dashboard
-                            </span>
+                      {loginUser?.role === "admin" && (
+                          <NavLink to="/admin-dashboard" onClick={() => setOpen(false)} className="flex items-center gap-4 px-6 py-3 hover:bg-gray-50 transition" style={{ color: CHARCOAL }}>
+                            <span className="text-sm font-medium">My Account Dashboard</span>
                           </NavLink>
-                        </>
-                      ) : (
-                        ""
                       )}
-
-                      {/* Referral */}
-                      <NavLink
-                        to="/referral"
-                        onClick={() => setOpen(false)}
-                        className="flex items-center gap-4 px-6 py-3 hover:bg-gray-50 transition"
-                        style={{ color: CHARCOAL }}
-                      >
-                        <svg
-                          className="w-5 h-5"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1M9 10h.01M15 10h.01"
-                          />
-                        </svg>
-                        <span className="text-sm font-medium">Referral</span>
-                      </NavLink>
-
-                      {/* Plans */}
-                      <NavLink
-                        to="/plans"
-                        onClick={() => setOpen(false)}
-                        className="flex items-center gap-4 px-6 py-3 hover:bg-gray-50 transition"
-                        style={{ color: CHARCOAL }}
-                      >
-                        <svg
-                          className="w-5 h-5"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.884 5.794a1 1 0 00.951.69h6.083c.969 0 .689 1.24-.289 1.043l-4.923 3.578a1 1 0 00-.364 1.118l1.884 5.794c.3.921-.755.688-1.239.303L12 17.727l-4.923 3.578c-.484.385-1.539.618-1.239-.303l1.884-5.794a1 1 0 00-.364-1.118L2.435 10.454c-.978-.197-.258-1.437.711-1.043h6.083a1 1 0 00.951-.69l1.884-5.794z"
-                          />
-                        </svg>
-                        <span className="text-sm font-medium">Plans</span>
-                      </NavLink>
-
-                      {/* Purchases */}
-                      <NavLink
-                        to="/purchases"
-                        onClick={() => setOpen(false)}
-                        className="flex items-center gap-4 px-6 py-3 hover:bg-gray-50 transition"
-                        style={{ color: CHARCOAL }}
-                      >
-                        <svg
-                          className="w-5 h-5"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
-                          />
-                        </svg>
-                        <span className="text-sm font-medium">
-                          My Purchases
-                        </span>
-                      </NavLink>
-
-                      {/* Account Settings */}
-                      <NavLink
-                        to="/account-settings"
-                        onClick={() => setOpen(false)}
-                        className="flex items-center gap-4 px-6 py-3 hover:bg-gray-50 transition"
-                        style={{ color: CHARCOAL }}
-                      >
-                        <svg
-                          className="w-5 h-5"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065zM15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                          />
-                        </svg>
-                        <span className="text-sm font-medium">
-                          Account Settings
-                        </span>
-                      </NavLink>
-
-                      {/* Logout */}
-                      <button
-                        onClick={handelLougt}
-                        className="w-full flex items-center gap-4 px-6 py-3 hover:bg-yellow-50 transition text-left"
-                        style={{ color: "#B45309" }}
-                      >
-                        <svg
-                          className="w-5 h-5"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                          />
-                        </svg>
-                        <span className="text-sm font-medium">Log out</span>
-                      </button>
+                      <NavLink to="/referral" onClick={() => setOpen(false)} className="flex items-center gap-4 px-6 py-3 hover:bg-gray-50 transition" style={{ color: CHARCOAL }}><span className="text-sm font-medium">Referral</span></NavLink>
+                      <NavLink to="/plans" onClick={() => setOpen(false)} className="flex items-center gap-4 px-6 py-3 hover:bg-gray-50 transition" style={{ color: CHARCOAL }}><span className="text-sm font-medium">Plans</span></NavLink>
+                      <NavLink to="/purchases" onClick={() => setOpen(false)} className="flex items-center gap-4 px-6 py-3 hover:bg-gray-50 transition" style={{ color: CHARCOAL }}><span className="text-sm font-medium">My Purchases</span></NavLink>
+                      <NavLink to="/account-settings" onClick={() => setOpen(false)} className="flex items-center gap-4 px-6 py-3 hover:bg-gray-50 transition" style={{ color: CHARCOAL }}><span className="text-sm font-medium">Account Settings</span></NavLink>
+                      <button onClick={handelLougt} className="w-full flex items-center gap-4 px-6 py-3 hover:bg-yellow-50 transition text-left" style={{ color: "#B45309" }}><span className="text-sm font-medium">Log out</span></button>
                     </div>
-
-                    {/* Sell Button */}
                     <div className="px-6 py-4">
-                      <NavLink
-                        to="/selling-form"
-                        onClick={() => setOpen(false)}
-                        className="block w-full text-center py-3 rounded-lg font-semibold text-white"
-                        style={{ backgroundColor: ROYAL_GOLD }}
-                      >
-                        Sell Product
-                      </NavLink>
+                      <NavLink to="/selling-form" onClick={() => setOpen(false)} className="block w-full text-center py-3 rounded-lg font-semibold text-white" style={{ backgroundColor: ROYAL_GOLD }}>Sell Product</NavLink>
                     </div>
                   </div>
                 )}
@@ -603,118 +333,15 @@ export default function Navbar() {
         </nav>
       </header>
 
-      {/* Mobile Bottom Navigation - Fixed */}
+      {/* Mobile Bottom Nav */}
       <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 lg:hidden">
         <div className="relative max-w-screen-xl mx-auto">
           <div className="flex items-end justify-between h-20 px-4">
-            {/* Market */}
-            <NavLink
-              to="/marketplace"
-              className="flex flex-col items-center justify-center flex-1 pt-3 pb-5"
-              style={({ isActive }) => ({
-                color: isActive ? ROYAL_GOLD : CHARCOAL,
-              })}
-            >
-              <svg
-                className="w-5 h-5 mb-1 sm:w-6 sm:h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M3 3h2l.4 2M5.4 5h15.2l-1.5 9H7.9L6.4 5zM9 20.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM19 20.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"
-                />
-              </svg>
-              <span className="text-xs">Market</span>
-            </NavLink>
-
-            {/* My Purchases */}
-            <NavLink
-              to="/purchases"
-              className="flex flex-col items-center justify-center flex-1 pt-3 pb-5"
-              style={({ isActive }) => ({
-                color: isActive ? ROYAL_GOLD : CHARCOAL,
-              })}
-            >
-              <svg
-                className="w-5 h-5 mb-1 sm:w-6 sm:h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
-                />
-              </svg>
-              <span className="text-xs">Purchases</span>
-            </NavLink>
-
-            {/* Orders */}
-            <NavLink
-              to="/orders"
-              className="flex flex-col items-center justify-center flex-1 pt-3 pb-5"
-              style={({ isActive }) => ({
-                color: isActive ? ROYAL_GOLD : CHARCOAL,
-              })}
-            >
-              <svg
-                className="w-5 h-5 mb-1 sm:w-6 sm:h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                />
-              </svg>
-              <span className="text-xs">Orders</span>
-            </NavLink>
-
-            {/* Ads */}
-            <NavLink
-              to="/myproducts"
-              className="flex flex-col items-center justify-center flex-1 pt-3 pb-5"
-              style={({ isActive }) => ({
-                color: isActive ? ROYAL_GOLD : CHARCOAL,
-              })}
-            >
-              {/* Replaced FaBreadSlice with the casted variable */}
-              <FaBreadSliceIcon className="w-5 h-5 mb-1 sm:w-6 sm:h-6" />
-              <span className="text-xs">My Ads</span>
-            </NavLink>
-
-            {/* Wallet */}
-            <NavLink
-              to="/wallet"
-              className="flex flex-col items-center justify-center flex-1 pt-3 pb-5"
-              style={({ isActive }) => ({
-                color: isActive ? ROYAL_GOLD : CHARCOAL,
-              })}
-            >
-              <svg
-                className="w-5 h-5 mb-1 sm:w-6 sm:h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3v-6a3 3 0 00-3-3H7a3 3 0 00-3 3v6a3 3 0 003 3z"
-                />
-              </svg>
-              <span className="text-xs">Wallet</span>
-            </NavLink>
+            <NavLink to="/marketplace" className="flex flex-col items-center justify-center flex-1 pt-3 pb-5" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}><span className="text-xs">Market</span></NavLink>
+            <NavLink to="/purchases" className="flex flex-col items-center justify-center flex-1 pt-3 pb-5" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}><span className="text-xs">Purchases</span></NavLink>
+            <NavLink to="/orders" className="flex flex-col items-center justify-center flex-1 pt-3 pb-5" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}><span className="text-xs">Orders</span></NavLink>
+            <NavLink to="/myproducts" className="flex flex-col items-center justify-center flex-1 pt-3 pb-5" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}><FaBreadSliceIcon className="w-5 h-5 mb-1" /><span className="text-xs">My Ads</span></NavLink>
+            <NavLink to="/wallet" className="flex flex-col items-center justify-center flex-1 pt-3 pb-5" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}><span className="text-xs">Wallet</span></NavLink>
           </div>
         </div>
       </nav>
