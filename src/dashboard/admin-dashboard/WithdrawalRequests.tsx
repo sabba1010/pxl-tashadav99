@@ -199,7 +199,7 @@ const WithdrawalRequests: React.FC = () => {
       try {
         console.log(`Sending to Backend -> ID: ${id}, Status: ${statusPayload}`);
         
-        const response = await fetch(`http://localhost:3200/withdraw/update-status/${id}`, {
+        const response = await fetch(`http://localhost:3200/withdraw/approve/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
