@@ -10,19 +10,19 @@ import { IconType } from "react-icons";
 import {
   FaWhatsapp, FaEnvelope, FaPlus, FaBullhorn, FaFacebookF, FaInstagram, FaTwitter, FaLock,
   FaShoppingCart, FaTimes, FaSearch, FaStar, FaEye, FaLinkedinIn, FaYoutube, FaSnapchatGhost,
-  FaTelegramPlane, FaDiscord, FaPinterest, FaRedditAlien, FaPaypal,
+  FaTelegramPlane, FaDiscord, FaPinterest, FaRedditAlien, FaPaypal, FaCheck, // FaCheck ইমপোর্ট করা হয়েছে
 } from "react-icons/fa";
 import { SiNetflix, SiAmazon, SiSteam, SiGoogle, SiTiktok, SiTinder } from "react-icons/si";
 import { MdMail, MdSimCard, MdPhoneIphone, MdVpnLock, MdLocalOffer } from "react-icons/md";
 import { BiSolidPurchaseTag } from "react-icons/bi";
 
-// Notification Helper
+// Notification Helper & Context
 import { sendNotification } from "../Notification/Notification";
 import { useAuth } from "../../context/AuthContext";
 import { toast } from "sonner";
-import { useAuthHook } from "../../hook/useAuthHook"; 
+import { useAuthHook } from "../../hook/useAuthHook";
 
-// --- TYPE FIXES ---
+// --- ICONS & TYPES ---
 const StarIcon = FaStar as React.ElementType;
 const ShoppingCartIcon = FaShoppingCart as React.ElementType;
 const EyeIcon = FaEye as React.ElementType;
@@ -30,8 +30,8 @@ const TimesIcon = FaTimes as React.ElementType;
 const SearchIcon = FaSearch as React.ElementType;
 const PlusIcon = FaPlus as React.ElementType;
 const PurchaseIcon = BiSolidPurchaseTag as React.ElementType;
+const CheckIcon = FaCheck as React.ElementType; // টিক চিহ্নের জন্য
 
-// --- Types ---
 interface Item {
   id: string;
   title: string;
@@ -205,8 +205,16 @@ const CategorySelector: React.FC<{ selectedSubcats: SubcatState; setSelectedSubc
   );
 };
 
-// --- Item Card ---
-const ItemCard: React.FC<{ item: Item; viewMode: "list" | "grid"; onAddToCart: (item: Item) => void; onView: (item: Item) => void; onBuy: (item: Item) => void; isProcessing: boolean; }> = ({ item, viewMode, onAddToCart, onView, onBuy, isProcessing }) => {
+// --- Item Card (UPDATED with isAdded prop) ---
+const ItemCard: React.FC<{ 
+    item: Item; 
+    viewMode: "list" | "grid"; 
+    onAddToCart: (item: Item) => void; 
+    onView: (item: Item) => void; 
+    onBuy: (item: Item) => void; 
+    isProcessing: boolean; 
+    isAdded: boolean; // NEW PROP: Indicates if item is in cart
+}> = ({ item, viewMode, onAddToCart, onView, onBuy, isProcessing, isAdded }) => {
   const isList = viewMode === "list";
   return (
     <div className={`bg-white rounded-xl shadow-sm border hover:shadow-md transition p-4 ${isList ? "flex items-center gap-4" : "flex flex-col text-center"}`}>
@@ -221,7 +229,21 @@ const ItemCard: React.FC<{ item: Item; viewMode: "list" | "grid"; onAddToCart: (
       <div className={`flex flex-col ${isList ? "items-end text-right" : "mt-4 items-center w-full"}`}>
         <div className="text-lg font-extrabold text-[#0A1A3A] mb-2">${item.price.toFixed(2)}</div>
         <div className="flex items-center gap-2 w-full justify-center">
-          <button onClick={() => onAddToCart(item)} className="p-2 border rounded hover:bg-gray-50 text-gray-600" title="Add to Cart"><ShoppingCartIcon size={16} /></button>
+          
+          {/* --- UPDATED CART BUTTON --- */}
+          <button 
+            onClick={() => onAddToCart(item)} 
+            disabled={isAdded} // Disable if already added
+            className={`p-2 border rounded transition-all duration-200 
+              ${isAdded 
+                ? "bg-green-100 text-green-600 border-green-200 cursor-default" // Style for added state
+                : "hover:bg-gray-50 text-gray-600"
+              }`} 
+            title={isAdded ? "Already in cart" : "Add to Cart"}
+          >
+            {isAdded ? <CheckIcon size={16} /> : <ShoppingCartIcon size={16} />}
+          </button>
+          
           <button onClick={() => onView(item)} className="p-2 border rounded hover:bg-gray-50 text-gray-600" title="View Details"><EyeIcon size={16} /></button>
           <button onClick={() => onBuy(item)} disabled={isProcessing} className={`px-3 py-2 text-sm font-semibold text-white rounded bg-gradient-to-r from-[#33ac6f] to-[#27b86a] hover:shadow-lg disabled:opacity-70 flex items-center gap-2 ${isList ? "" : "flex-1 justify-center"}`}>
             {isProcessing ? "..." : <><PurchaseIcon size={16} /> Purchase</>}
@@ -232,8 +254,15 @@ const ItemCard: React.FC<{ item: Item; viewMode: "list" | "grid"; onAddToCart: (
   );
 };
 
-// --- Product Modal ---
-const ProductModal: React.FC<{ item: Item; onClose: () => void; onBuy: (item: Item) => void; onAddToCart: (item: Item) => void; isProcessing: boolean; }> = ({ item, onClose, onBuy, onAddToCart, isProcessing }) => {
+// --- Product Modal (UPDATED with isAdded prop) ---
+const ProductModal: React.FC<{ 
+    item: Item; 
+    onClose: () => void; 
+    onBuy: (item: Item) => void; 
+    onAddToCart: (item: Item) => void; 
+    isProcessing: boolean;
+    isAdded: boolean; // NEW PROP
+}> = ({ item, onClose, onBuy, onAddToCart, isProcessing, isAdded }) => {
   const [accepted, setAccepted] = useState(false);
   return (
     <>
@@ -258,7 +287,13 @@ const ProductModal: React.FC<{ item: Item; onClose: () => void; onBuy: (item: It
           </div>
         </div>
         <div className="p-4 border-t bg-gray-50 grid grid-cols-2 gap-3">
-          <button onClick={() => onAddToCart(item)} className="py-3 border border-gray-300 rounded-xl font-semibold hover:bg-gray-100">Add to Cart</button>
+          <button 
+            onClick={() => onAddToCart(item)} 
+            disabled={isAdded} // Disable
+            className={`py-3 border border-gray-300 rounded-xl font-semibold transition ${isAdded ? "bg-green-50 text-green-600 cursor-not-allowed" : "hover:bg-gray-100"}`}
+          >
+            {isAdded ? "Added to Cart" : "Add to Cart"}
+          </button>
           <button onClick={() => accepted && onBuy(item)} disabled={!accepted || isProcessing} className={`py-3 rounded-xl font-bold text-white transition ${accepted ? "bg-[#33ac6f] hover:bg-[#28965e]" : "bg-gray-300 cursor-not-allowed"}`}>
             {isProcessing ? "Processing..." : "Purchase Now"}
           </button>
@@ -283,6 +318,10 @@ const Marketplace: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [cartCount, setCartCount] = useState(0);
   const [processingIds, setProcessingIds] = useState<string[]>([]);
+  
+  // --- NO RELOAD STATE ---
+  // এই স্টেটটি কার্টে থাকা সব প্রোডাক্টের আইডি ধরে রাখবে
+  const [cartItemIds, setCartItemIds] = useState<string[]>([]);
 
   const itemsPerPage = 6;
   const navigate = useNavigate();
@@ -291,6 +330,7 @@ const Marketplace: React.FC = () => {
 
   useLockBodyScroll(drawerOpen || !!selectedItem || mobileSearchOpen);
 
+  // 1. পণ্য লোড করা
   useEffect(() => {
     const fetchItems = async () => {
       try {
@@ -317,6 +357,31 @@ const Marketplace: React.FC = () => {
     fetchItems();
   }, []);
 
+  // 2. --- EXISTING CART ITEMS CHECK ---
+  // লগইন করার সাথে সাথে চেক করবে ইউজার আগে কী অ্যাড করেছে
+  useEffect(() => {
+    const fetchCartItems = async () => {
+      if (!user.user?.email) return;
+      try {
+        const res = await fetch(`${API_URL}/cart?email=${user.user.email}`); 
+        
+        if (res.ok) {
+          const data = await res.json();
+          // ডাটা ফরম্যাট হ্যান্ডেল করা (সরাসরি অ্যারে নাকি ডাটা অবজেক্টের ভিতরে)
+          const items = Array.isArray(data) ? data : (data.data || []);
+          
+          // আইডিগুলো আলাদা করে স্টেটে রাখা
+          const ids = items.map((item: any) => item.productId);
+          setCartItemIds(ids);
+          setCartCount(items.length);
+        }
+      } catch (err) {
+        console.error("Failed to load existing cart items", err);
+      }
+    };
+    fetchCartItems();
+  }, [user.user?.email]);
+
   const filteredItems = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     return items.filter((item) => {
@@ -339,20 +404,52 @@ const Marketplace: React.FC = () => {
   const totalPages = Math.max(1, Math.ceil(filteredItems.length / itemsPerPage));
   const paginatedItems = useMemo(() => { const start = (currentPage - 1) * itemsPerPage; return filteredItems.slice(start, start + itemsPerPage); }, [filteredItems, currentPage]);
 
-  // --- Add to Cart (Normal) ---
+  // --- 3. Add to Cart (UPDATED FOR NO RELOAD) ---
   const addToCart = useCallback(async (item: Item) => {
+    
+    // Check 1: যদি ইউজার লগইন না থাকে
+    if (!user.user?.email) {
+        toast.error("Please login first!");
+        return;
+    }
+
+    // Check 2: যদি ইতিমধ্যে লিস্টে থাকে (Duplicate Prevent)
+    if (cartItemIds.includes(item.id)) {
+        toast.warning("This item is already in your cart!");
+        return;
+    }
+
     try {
       const response = await fetch(`${API_URL}/cart/post`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ productId: item.id, name: item.title, price: item.price, image: item.icon, sellerEmail: item.seller, addedAt: new Date(), UserEmail: user.user?.email, }),
+        body: JSON.stringify({ 
+            productId: item.id, 
+            name: item.title, 
+            price: item.price, 
+            image: item.icon, 
+            sellerEmail: item.seller, 
+            addedAt: new Date(), 
+            UserEmail: user.user?.email, 
+        }),
       });
-      if (response.ok) { setCartCount((prev) => prev + 1); toast.success(`${item.title} added to cart!`); } else { throw new Error("Failed"); }
-    } catch (err: any) { console.error("Cart Error:", err); toast.error("Could not add to cart."); }
-  }, [user.user?.email]);
+
+      if (response.ok) { 
+          // SUCCESS: পেজ রিলোড না করে লোকাল স্টেট আপডেট করুন
+          setCartCount((prev) => prev + 1); 
+          setCartItemIds(prev => [...prev, item.id]); // আইডি লিস্টে অ্যাড হলো
+          toast.success(`${item.title} added to cart!`); 
+      } else { 
+          throw new Error("Failed"); 
+      }
+    } catch (err: any) { 
+        console.error("Cart Error:", err); 
+        toast.error("Could not add to cart."); 
+    }
+  }, [user.user?.email, cartItemIds]);
 
 
-  // --- INSTANT PURCHASE LOGIC (Silent Add -> Buy) ---
+  // --- INSTANT PURCHASE LOGIC ---
   const buyNow = async (item: Item) => {
     const currentUserEmail = user.user?.email;
     if (!currentUserEmail) { toast.error("Please log in to purchase!"); return; }
@@ -361,7 +458,7 @@ const Marketplace: React.FC = () => {
     setProcessingIds((prev) => [...prev, item.id]);
 
     try {
-      // Step 1: SILENT ADD TO CART to generate a Cart ID
+      // Step 1: SILENT ADD TO CART
       const addToCartRes = await fetch(`${API_URL}/cart/post`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -377,29 +474,25 @@ const Marketplace: React.FC = () => {
       });
 
       const addedItemData = await addToCartRes.json();
-      
-      // Determine the new Cart Item ID
-      // Some backends return the object directly, others wrap it in a 'data' field
       const cartItemId = addedItemData._id || (addedItemData.data && addedItemData.data._id);
 
       if (!cartItemId) {
         throw new Error("Could not prepare item for purchase (Cart ID missing).");
       }
 
-      // Step 2: PURCHASE using the new Cart ID
+      // Step 2: PURCHASE
       const purchaseRes = await fetch(`${API_URL}/purchase/post`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
             email: currentUserEmail,
-            itemIds: [cartItemId] // Correct ID type for backend
+            itemIds: [cartItemId]
         }),
       });
 
       const result = await purchaseRes.json();
 
       if (result.success) {
-        // Step 3: Success handling
         try {
           await sendNotification({
             type: "buy",
@@ -412,10 +505,9 @@ const Marketplace: React.FC = () => {
 
         toast.success(`Purchase Successful! $${result.totalDeducted} deducted.`);
         setSelectedItem(null);
-        refetch(); // Update Balance
-        navigate("/purchases"); // Redirect
+        refetch(); 
+        navigate("/purchases"); 
       } else {
-        // Step 4: Handle Purchase Failure
         if (result.message && result.message.includes("Insufficient")) {
             toast.error(`Insufficient Balance! Needed: $${result.required}, Available: $${result.available}`);
         } else {
@@ -486,7 +578,16 @@ const Marketplace: React.FC = () => {
             {loading ? <div className="flex justify-center py-20"><div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#33ac6f]"></div></div> : filteredItems.length === 0 ? <div className="text-center py-20 text-gray-500 bg-white rounded-xl border">No items found matching your filters.</div> : (
               <div className={`grid gap-4 ${viewMode === "grid" ? "grid-cols-1 sm:grid-cols-2 xl:grid-cols-3" : "grid-cols-1"}`}>
                 {paginatedItems.map((item) => (
-                  <ItemCard key={item.id} item={item} viewMode={viewMode} onAddToCart={addToCart} onView={setSelectedItem} onBuy={buyNow} isProcessing={processingIds.includes(item.id)} />
+                  <ItemCard 
+                    key={item.id} 
+                    item={item} 
+                    viewMode={viewMode} 
+                    onAddToCart={addToCart} 
+                    onView={setSelectedItem} 
+                    onBuy={buyNow} 
+                    isProcessing={processingIds.includes(item.id)} 
+                    isAdded={cartItemIds.includes(item.id)} // PASSING STATE
+                />
                 ))}
               </div>
             )}
@@ -501,7 +602,16 @@ const Marketplace: React.FC = () => {
         </div>
       </div>
 
-      {selectedItem && <ProductModal item={selectedItem} onClose={() => setSelectedItem(null)} onBuy={buyNow} onAddToCart={addToCart} isProcessing={processingIds.includes(selectedItem.id)} />}
+      {selectedItem && (
+        <ProductModal 
+            item={selectedItem} 
+            onClose={() => setSelectedItem(null)} 
+            onBuy={buyNow} 
+            onAddToCart={addToCart} 
+            isProcessing={processingIds.includes(selectedItem.id)}
+            isAdded={cartItemIds.includes(selectedItem.id)} // PASSING STATE
+        />
+      )}
       
       <div className={`fixed inset-0 z-50 transform transition-transform duration-300 ${drawerOpen ? "translate-x-0" : "-translate-x-full"}`}>
         <div className="absolute inset-0 bg-black/50" onClick={() => setDrawerOpen(false)} />
