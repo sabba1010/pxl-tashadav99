@@ -10,6 +10,7 @@ import axios from "axios";
 import { getAllNotifications } from "../components/Notification/Notification";
 import headerlogo from "../assets/headerlogo.png";
 import { useAuthHook } from "../hook/useAuthHook";
+import { ListCheck, ShoppingBag, ShoppingCart, WalletMinimal } from "lucide-react";
 
 const FaBreadSliceIcon = FaBreadSlice as unknown as React.ComponentType<any>;
 const FaTrashIcon = FaTrash as unknown as React.ComponentType<any>;
@@ -580,7 +581,8 @@ export default function Navbar() {
                 color: isActive ? ROYAL_GOLD : CHARCOAL,
               })}
             >
-              <span className="text-xs">Market</span>
+              <ShoppingBag/>
+              <span className="text-xs">Marke</span>
             </NavLink>
             <NavLink
               to="/purchases"
@@ -589,6 +591,7 @@ export default function Navbar() {
                 color: isActive ? ROYAL_GOLD : CHARCOAL,
               })}
             >
+              <ShoppingCart/>
               <span className="text-xs">Purchases</span>
             </NavLink>
             <NavLink
@@ -598,6 +601,7 @@ export default function Navbar() {
                 color: isActive ? ROYAL_GOLD : CHARCOAL,
               })}
             >
+              <ListCheck/>
               <span className="text-xs">Orders</span>
             </NavLink>
             <NavLink
@@ -617,6 +621,7 @@ export default function Navbar() {
                 color: isActive ? ROYAL_GOLD : CHARCOAL,
               })}
             >
+              <WalletMinimal/>
               <span className="text-xs">Wallet</span>
             </NavLink>
           </div>
