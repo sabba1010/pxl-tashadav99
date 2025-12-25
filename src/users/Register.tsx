@@ -32,6 +32,7 @@ const Register = () => {
   const [isCountryOpen, setIsCountryOpen] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState(countries[0]);
   const navigate = useNavigate();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -53,6 +54,7 @@ const Register = () => {
       balance: 0,
     };
 
+    // Basic Form Validation
     if (
       !formData.name ||
       !formData.email ||
@@ -73,29 +75,50 @@ const Register = () => {
         "https://vps-backend-server-beta.vercel.app/api/user/register",
         formData
       );
+
+      // Successful Registration
       if (res?.data?.insertedId) {
-        toast.success("🎉 User registered successfully!");
+        toast.success("🎉 Account created successfully!");
+        
         const savedUser = {
           _id: res.data.insertedId,
           name: formData.name,
           email: formData.email,
           role: formData.role,
         };
+
+        // Save Cookie securely
         Cookies.set("aAcctEmpire_2XLD", JSON.stringify(savedUser), {
           expires: 7,
           secure: true,
           sameSite: "strict",
         });
-        navigate("/login");
-        window.location.reload();
+
+        // Clear Form
+        form.reset();
+
+        // Redirect to Marketplace immediately (No Reload)
+        navigate("/marketplace");
       }
 
-      form.reset();
     } catch (err: any) {
+      // Error Handling for Duplicate Emails
       if (err.response) {
-        toast.error("Error: " + err.response.data.error);
+        const errorData = err.response.data;
+        const errorMessage = errorData.error || errorData.message || "";
+        
+        // Check if error message contains keywords related to duplicate email
+        if (
+          errorMessage.toLowerCase().includes("exist") || 
+          errorMessage.toLowerCase().includes("duplicate") ||
+          errorMessage.toLowerCase().includes("email")
+        ) {
+           toast.error("⚠️ This email is already registered! Please Login.");
+        } else {
+           toast.error(`Error: ${errorMessage}`);
+        }
       } else {
-        toast.error("❌ Something went wrong! Please try again.");
+        toast.error("❌ Network error! Please try again later.");
       }
     }
   };
@@ -369,20 +392,6 @@ const Register = () => {
                     Only lowercase, numeric and symbols allowed
                   </p>
                 </div>
-
-                {/* Terms Checkbox */}
-                {/* <div className="flex items-center gap-3">
-                  <input
-                    type="checkbox"
-                    id="terms"
-                    checked={agreed}
-                    className="w-5 h-5 text-orange-500 rounded focus:ring-orange-500 bg-gray-800 border-gray-600"
-                  />
-                  <label htmlFor="terms" className="text-sm text-gray-400">
-                    By clicking on this, I give consent to AAcctEmpire Privacy
-                    Policy and Terms of Use
-                  </label>
-                </div> */}
 
                 {/* Sign Up Button */}
                 <motion.button

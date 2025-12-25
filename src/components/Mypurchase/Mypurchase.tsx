@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 import { useAuthHook } from "../../hook/useAuthHook"; 
 import { sendNotification } from "../Notification/Notification";
-import { toast } from "sonner"; 
+import { toast } from "sonner"; // Toast Import
 
 import type { IconType } from "react-icons";
 import {
@@ -213,7 +213,7 @@ const MyPurchase: React.FC = () => {
   const chatLengthRef = useRef(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // UPDATED API URLs
+  // API URLs
   const PURCHASE_API = "https://vps-backend-server-beta.vercel.app/purchase";
   const CHAT_API = "https://vps-backend-server-beta.vercel.app/chat";
   const USER_API = "https://vps-backend-server-beta.vercel.app/user"; 
@@ -260,12 +260,11 @@ const MyPurchase: React.FC = () => {
     fetchPurchases();
   }, [buyerId]);
 
-  /* -------- Fetch Seller Names (FIXED CRASH) -------- */
+  /* -------- Fetch Seller Names -------- */
   useEffect(() => {
     const fetchNames = async () => {
       if (purchases.length === 0) return;
 
-      // Filter out null/undefined emails BEFORE processing
       const uniqueEmails = Array.from(new Set(purchases.map(p => p.sellerEmail))).filter(email => email && email !== "Unknown");
       
       const newNames: Record<string, string> = {};
@@ -280,11 +279,9 @@ const MyPurchase: React.FC = () => {
           if (res.data && res.data.name) {
             newNames[email] = res.data.name;
           } else {
-            // Safe split
             newNames[email] = email.includes("@") ? email.split('@')[0] : email; 
           }
         } catch (error) {
-           // Safe split fallback
            newNames[email] = email.includes("@") ? email.split('@')[0] : email; 
         }
       }));
@@ -311,7 +308,6 @@ const MyPurchase: React.FC = () => {
           const msgs = res.data as IMessage[];
           if (msgs.length > 0) {
             const lastMsg = msgs[msgs.length - 1];
-            // Safe check for senderId
             if (lastMsg.senderId && buyerId && lastMsg.senderId.toLowerCase() !== buyerId.toLowerCase()) {
                 if (newUnreadMap[p.id] !== true) {
                     newUnreadMap[p.id] = true;
@@ -331,7 +327,7 @@ const MyPurchase: React.FC = () => {
     }
   }, [purchases, buyerId, isChatOpen, activeChatOrderId]);
 
-  /* -------- Status Actions -------- */
+  /* -------- Status Actions (WITH TOAST) -------- */
   const handleUpdateStatus = async (status: "completed" | "cancelled") => {
     if (!selected || !buyerId) return;
     try {
@@ -341,9 +337,19 @@ const MyPurchase: React.FC = () => {
           p.id === selected.id ? { ...p, status: (status.charAt(0).toUpperCase() + status.slice(1)) as PurchaseStatus } : p
         )
       );
-      setSelected(null);
-      alert(`Order ${status} successfully!`);
-    } catch (err) { alert("Failed to update status"); }
+      
+      setSelected(prev => prev ? { ...prev, status: (status.charAt(0).toUpperCase() + status.slice(1)) as PurchaseStatus } : null);
+      
+      // TOAST ALERT
+      if (status === "completed") {
+          toast.success("Order received and confirmed successfully!");
+      } else {
+          toast.success("Order cancelled successfully.");
+      }
+
+    } catch (err) { 
+        toast.error("Failed to update status. Please try again.");
+    }
   };
 
   /* -------- Auto Delete Function -------- */
@@ -393,6 +399,7 @@ const MyPurchase: React.FC = () => {
           const lastMsg = newData[newData.length - 1];
           if (lastMsg.senderId && buyerId && lastMsg.senderId.toLowerCase() !== buyerId.toLowerCase()) {
               playNotificationSound();
+              toast.info(`New message from ${getSellerDisplayName(sellerEmail)}`);
           }
       }
       chatLengthRef.current = newData.length;
@@ -425,7 +432,9 @@ const MyPurchase: React.FC = () => {
       setTypedMessage("");
       setShowEmojiPicker(false); 
       fetchChat(activeChatSellerEmail, activeChatOrderId);
-    } catch (err) { alert("Failed to send message"); }
+    } catch (err) { 
+        toast.error("Failed to send message"); 
+    }
   };
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -550,7 +559,26 @@ const MyPurchase: React.FC = () => {
                   <div><p className="text-gray-500">Seller</p><p className="font-medium text-gray-900">{getSellerDisplayName(selected.sellerEmail)}</p></div>
                   <div><p className="text-gray-500">Description</p><p className="text-sm text-gray-600">{selected.desc ?? "No additional details."}</p></div>
                 </div>
-                <div className="mt-6 flex gap-2">
+
+                {/* --- RESTORED CONFIRM & CANCEL BUTTONS --- */}
+                {selected.status === "Pending" && (
+                   <div className="grid grid-cols-2 gap-2 mt-6">
+                    <button
+                        onClick={() => handleUpdateStatus("completed")}
+                        className="py-2.5 bg-[#33ac6f] hover:bg-[#2aa46a] text-white rounded-lg font-medium transition shadow-sm"
+                    >
+                        Confirm Received
+                    </button>
+                    <button 
+                        onClick={() => handleUpdateStatus("cancelled")} 
+                        className="py-2.5 bg-red-50 text-red-600 rounded-lg font-bold text-sm hover:bg-red-100 transition border border-red-100"
+                    >
+                        Cancel Order
+                    </button>
+                  </div>
+                )}
+
+                <div className="mt-2 flex gap-2">
                    <button onClick={() => { setSelected(null); handleOpenChat(selected); }} className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2 relative">
                      <FaCommentsIcon/> Chat Seller
                      {unreadState[selected.id] && <span className="ml-2 bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full animate-pulse">New</span>}
@@ -576,7 +604,6 @@ const MyPurchase: React.FC = () => {
                     </div>
                 </div>
                 <div className="flex flex-col">
-                  {/* --- DISPLAY NAME ONLY --- */}
                   <h3 className="font-bold text-gray-800 text-sm truncate max-w-[160px]">
                     {getSellerDisplayName(activeChatSellerEmail)}
                   </h3>
@@ -588,7 +615,7 @@ const MyPurchase: React.FC = () => {
             <div className="flex-1 overflow-y-auto p-4 space-y-3" style={{ backgroundImage: "radial-gradient(#cbd5e1 1px, transparent 1px)", backgroundSize: "20px 20px" }}>
               <div className="text-center my-4"><span className="text-[10px] bg-gray-200/60 px-3 py-1 rounded-full text-gray-500 font-medium">Today</span></div>
               {chatMessages.map((m, i) => {
-                const isMe = m.senderId && buyerId ? m.senderId.toLowerCase() === buyerId.toLowerCase() : false;
+                const isMe = m.senderId.toLowerCase() === buyerId?.toLowerCase();
                 const timeLabel = timeAgo(m.createdAt); 
                 return (
                     <div key={i} className={`flex w-full ${isMe ? "justify-end" : "justify-start"}`}>

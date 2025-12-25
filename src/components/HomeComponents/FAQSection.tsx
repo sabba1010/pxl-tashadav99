@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
 
 const FAQSection: React.FC = () => {
@@ -47,8 +47,8 @@ const FAQSection: React.FC = () => {
       a: 'A security system automatically detects fraud, and our support team investigates all disputes.',
     },
     {
-      q: 'How can I get refund?',
-      a: 'Yes. Admin has full control to update seller plans, activation fees, and referral bonuses.',
+      q: 'How can I get a refund?', // Fixed typo: added 'a'
+      a: 'Refunds are issued to your wallet if a dispute is resolved in your favor or if an order is cancelled before delivery.', // Fixed: Answer was wrong previously
     },
     {
       q: 'What products can I sell?',
@@ -90,8 +90,8 @@ const FAQSection: React.FC = () => {
           </p>
         </motion.div>
 
-        {/* Two-column grid on md+ screens */}
-        <div className="grid md:grid-cols-2 gap-6 lg:gap-8">
+        {/* Added 'items-start' to prevent stretching of adjacent items */}
+        <div className="grid md:grid-cols-2 gap-6 lg:gap-8 items-start">
           {faqs.map((faq, index) => (
             <motion.div
               key={index}
@@ -101,7 +101,7 @@ const FAQSection: React.FC = () => {
               transition={{ delay: index * 0.05, duration: 0.5 }}
               className="group"
             >
-              <div className="bg-zinc-900/50 backdrop-blur-md border border-zinc-800 rounded-2xl overflow-hidden shadow-xl hover:border-[#daab4c]/30 transition-all duration-300 h-full">
+              <div className="bg-zinc-900/50 backdrop-blur-md border border-zinc-800 rounded-2xl overflow-hidden shadow-xl hover:border-[#daab4c]/30 transition-all duration-300">
                 <button
                   onClick={() => toggleFaq(index)}
                   className="w-full px-6 py-5 md:py-6 flex justify-between items-center text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[#daab4c]/50"
@@ -119,23 +119,22 @@ const FAQSection: React.FC = () => {
                   </motion.div>
                 </button>
 
-                <motion.div
-                  id={`faq-answer-${index}`}
-                  initial={false}
-                  animate={{
-                    height: openIndex === index ? 'auto' : 0,
-                    opacity: openIndex === index ? 1 : 0,
-                  }}
-                  transition={{
-                    height: { duration: 0.4, ease: [0.4, 0, 0.2, 1] },
-                    opacity: { duration: 0.3 },
-                  }}
-                  className="overflow-hidden"
-                >
-                  <div className="px-6 pb-6 pt-2 text-gray-200 leading-relaxed">
-                    {faq.a}
-                  </div>
-                </motion.div>
+                <AnimatePresence initial={false}>
+                  {openIndex === index && (
+                    <motion.div
+                      id={`faq-answer-${index}`}
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.3, ease: 'easeInOut' }}
+                      className="overflow-hidden"
+                    >
+                      <div className="px-6 pb-6 pt-2 text-gray-200 leading-relaxed border-t border-zinc-800/50">
+                        {faq.a}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </motion.div>
           ))}
