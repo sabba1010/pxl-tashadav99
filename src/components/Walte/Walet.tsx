@@ -182,7 +182,8 @@ export default function Wallet(): React.ReactElement {
           {/* Left */}
           <div className="col-span-12 lg:col-span-5">
             <div
-              className="rounded-3xl overflow-hidden relative text-white h-72 sm:h-80 lg:h-96 p-8 flex flex-col justify-between shadow-2xl"
+              className="rounded-3xl overflow-hidden relative text-white h-52 sm:h-80 lg:h-96 p-8 flex flex-col justify-between
+               shadow-2xl"
               style={{
                 background: `linear-gradient(135deg, ${EMPIRE_BLUE} 0%, #152850 50%, ${ROYAL_GOLD} 100%)`,
               }}
