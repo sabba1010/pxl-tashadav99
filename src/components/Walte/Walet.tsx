@@ -38,16 +38,24 @@ export default function Wallet(): React.ReactElement {
 
   // Fetch withdrawals
   const fetchWithdrawals = async () => {
+    // ইউজার ডাটা লোড না হওয়া পর্যন্ত অপেক্ষা করা বা রিটার্ন করা
+    if (!loginUserData?.data?.email) return;
+
     try {
       setWithdrawLoading(true);
       const response = await fetch("https://vps-backend-server-beta.vercel.app/withdraw/getall");
       if (!response.ok) throw new Error("Failed to fetch");
       const data = await response.json();
 
-      const mapped: Tx[] = data.map((wd: any) => ({
+      // === ফিল্টারিং লজিক ===
+      const currentUserEmail = loginUserData.data.email;
+      
+      // শুধুমাত্র কারেন্ট ইউজারের ইমেইলের সাথে মেলা ডাটাগুলো ফিল্টার করা হচ্ছে
+      const filteredData = data.filter((wd: any) => wd.email === currentUserEmail);
+
+      const mapped: Tx[] = filteredData.map((wd: any) => ({
         id: wd._id,
         type: "withdraw",
-        // এখানে amount কে number-এ কনভার্ট করা হয়েছে (ফিক্স!)
         amount: Number(wd.amount) || 0,
         status: wd.status === "success" ? "completed" : wd.status || "pending",
         date: new Date(wd.createdAt).toISOString().split("T")[0],
@@ -71,9 +79,9 @@ export default function Wallet(): React.ReactElement {
       const interval = setInterval(fetchWithdrawals, 10000);
       return () => clearInterval(interval);
     }
-  }, [activeTab]);
+  }, [activeTab, loginUserData?.data?.email]); // ডিপেনডেন্সিতে email যোগ করা হয়েছে
 
-  // Map deposits - amount কে number করা (নিরাপত্তার জন্য)
+  // Map deposits
   const onlineDeposits: Tx[] = payments.map((tx) => ({
     id: tx._id,
     type: "deposit",
@@ -87,16 +95,6 @@ export default function Wallet(): React.ReactElement {
     date: new Date(tx.createdAt).toISOString().split("T")[0],
     note: `Tx ID: ${tx.transactionId}`,
   }));
-
-  // Calculate balance
-  const successfulWithdrawalsTotal = withdrawals
-    .filter((w) => w.status === "completed")
-    .reduce((sum, w) => sum + w.amount, 0);
-
-  const successfulDepositsTotal = onlineDeposits
-    .filter((d) => d.status === "completed")
-    .reduce((sum, d) => sum + d.amount, 0);
-
 
   // Helpers
   const tabClass = (tab: "online" | "withdraw") =>
@@ -139,7 +137,7 @@ export default function Wallet(): React.ReactElement {
 
             <div className="text-right mt-4 sm:mt-0">
               <div className="text-2xl font-bold" style={{ color: EMPIRE_BLUE }}>
-                ${t.amount.toFixed(2)} {/* এখন নিরাপদ, কারণ amount number */}
+                ${t.amount.toFixed(2)}
               </div>
               <div
                 className="text-sm font-medium mt-1"
@@ -182,7 +180,7 @@ export default function Wallet(): React.ReactElement {
           <div className="col-span-12 lg:col-span-5">
             <div
               className="rounded-3xl overflow-hidden relative text-white h-52 sm:h-80 lg:h-96 p-8 flex flex-col justify-between
-               shadow-2xl"
+                shadow-2xl"
               style={{
                 background: `linear-gradient(135deg, ${EMPIRE_BLUE} 0%, #152850 50%, ${ROYAL_GOLD} 100%)`,
               }}
@@ -223,6 +221,8 @@ export default function Wallet(): React.ReactElement {
               <button
                 onClick={() => {
                   setActiveTab("withdraw");
+                  // fetchWithdrawals এখানে কল না করলেও চলবে কারণ useEffect হ্যান্ডেল করবে, 
+                  // তবুও রাখা যেতে পারে instant call এর জন্য
                   fetchWithdrawals();
                 }}
                 className={tabClass("withdraw")}
