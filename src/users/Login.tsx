@@ -15,10 +15,10 @@ const Login = () => {
   const navigate = useNavigate();
   const { user } = useAuth()
   
-  if (user) {
-    toast.info("You are already logged in");
-     navigate("/marketplace");
-  }
+  // if (user) {
+  //   toast.info("You are already logged in");
+  //    navigate("/marketplace");
+  // }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,7 +54,8 @@ const Login = () => {
         // ---------------------------------------------------------
         // CHANGE: Redirect to /marketplace instead of /
         // ---------------------------------------------------------
-        navigate("/marketplace", { replace: true });
+        navigate("/");
+        window.location.reload();
         
       } else {
         toast.error("Invalid credentials");
