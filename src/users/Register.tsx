@@ -24,7 +24,6 @@ interface RegisterResponse {
 }
 
 
-
 interface UserFromDB {
   _id: string;
   email: string;
