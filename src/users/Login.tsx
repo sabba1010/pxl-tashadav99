@@ -5,12 +5,20 @@ import { Eye, EyeOff, Lock, LogIn, Mail, Sparkles } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
+import { useAuth } from "../context/AuthContext";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState(false as any);
+  // Fixed initial state type for password (was boolean, should be string)
+  const [password, setPassword] = useState(""); 
   const navigate = useNavigate();
+  const { user } = useAuth()
+  
+  if (user) {
+    toast.info("You are already logged in");
+     navigate("/marketplace");
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,8 +50,12 @@ const Login = () => {
         });
 
         toast.success("Login successful");
-        navigate("/", { replace: true });
-        window.location.reload();
+        
+        // ---------------------------------------------------------
+        // CHANGE: Redirect to /marketplace instead of /
+        // ---------------------------------------------------------
+        navigate("/marketplace", { replace: true });
+        
       } else {
         toast.error("Invalid credentials");
       }
