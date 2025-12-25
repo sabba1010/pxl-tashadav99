@@ -15,10 +15,10 @@ const Login = () => {
   const navigate = useNavigate();
   const { user } = useAuth()
   
-  // if (user) {
-  //   toast.info("You are already logged in");
-  //    navigate("/marketplace");
-  // }
+  if (user) {
+    toast.info("You are already logged in");
+     navigate("/marketplace");
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

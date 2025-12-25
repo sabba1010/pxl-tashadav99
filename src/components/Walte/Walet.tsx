@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import { FaArrowUp, FaPlus } from "react-icons/fa";
 import { Link } from "react-router-dom";
-import { FaPlus, FaArrowUp } from "react-icons/fa";
 import { useAuthHook } from "../../hook/useAuthHook";
 import { useDepositByUser } from "../../hook/useDepositByUser";
 
@@ -27,7 +27,6 @@ export default function Wallet(): React.ReactElement {
   const { payments, isLoading: depositLoading, isError: depositError } = useDepositByUser();
   const loginUserData = useAuthHook();
   
-  const userBalance = loginUserData.data?.balance;
 
   // UI State
   const [activeTab, setActiveTab] = useState<"online" | "withdraw">("online");
