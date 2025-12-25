@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 import { useAuthHook } from "../../hook/useAuthHook"; 
 import { sendNotification } from "../Notification/Notification";
-import { toast } from "sonner"; 
+import { toast } from "sonner"; // Toaster import remove kora hoyeche
 
 import type { IconType } from "react-icons";
 import {
@@ -80,7 +80,7 @@ interface IMessage {
   senderId: string;
   receiverId: string;
   message: string;
-  orderId?: string; // New Field to separate chats
+  orderId?: string; 
 }
 
 /* ---------------------------------------------
@@ -171,8 +171,8 @@ const MyPurchase: React.FC = () => {
   
   // Specific Chat Identifiers
   const [activeChatSellerEmail, setActiveChatSellerEmail] = useState<string | null>(null);
-  const [activeChatOrderId, setActiveChatOrderId] = useState<string | null>(null); // NEW: Track distinct order ID
-  const [activeChatProductTitle, setActiveChatProductTitle] = useState<string>(""); // NEW: For UI display
+  const [activeChatOrderId, setActiveChatOrderId] = useState<string | null>(null); 
+  const [activeChatProductTitle, setActiveChatProductTitle] = useState<string>(""); 
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const chatLengthRef = useRef(0);
@@ -216,6 +216,9 @@ const MyPurchase: React.FC = () => {
         setPurchases(mapped);
       } catch (err) {
         console.error("Fetch error:", err);
+        // Toast error
+        toast.dismiss(); 
+        toast.error("Failed to load purchase history.");
       } finally {
         setIsLoading(false);
       }
@@ -259,9 +262,15 @@ const MyPurchase: React.FC = () => {
         )
       );
       setSelected(null);
-      alert(`Order ${status} successfully!`);
+      
+      // Toast Success
+      toast.dismiss();
+      toast.success(`Order ${status} successfully!`);
+      
     } catch (err) {
-      alert("Failed to update status");
+      // Toast Error
+      toast.dismiss();
+      toast.error("Failed to update status. Please try again.");
     }
   };
 
@@ -270,18 +279,19 @@ const MyPurchase: React.FC = () => {
     if (!buyerId || !sellerEmail || !orderId) return;
     
     try {
-      // NOTE: We are passing orderId as a query parameter to separate chats
       const res = await axios.get(`${CHAT_API}/history/${buyerId}/${sellerEmail}`, {
           params: { orderId: orderId } 
       });
       
       const newData = res.data as IMessage[];
       
-      // New Message Detection
       if (newData.length > chatLengthRef.current && chatLengthRef.current !== 0) {
           const lastMsg = newData[newData.length - 1];
           if (lastMsg.senderId !== buyerId) {
               playNotificationSound();
+              
+              // Notification
+              toast.dismiss();
               toast.info(`New message on order: ${activeChatProductTitle}`);
               
               await sendNotification({
@@ -324,12 +334,13 @@ const MyPurchase: React.FC = () => {
         senderId: buyerId,
         receiverId: activeChatSellerEmail,
         message: typedMessage,
-        orderId: activeChatOrderId, // Sending Order ID to separate chat
+        orderId: activeChatOrderId, 
       });
       setTypedMessage("");
       fetchChat(activeChatSellerEmail, activeChatOrderId);
     } catch (err) {
-      alert("Failed to send message");
+      toast.dismiss();
+      toast.error("Failed to send message");
     }
   };
 
@@ -344,6 +355,11 @@ const MyPurchase: React.FC = () => {
 
   return (
     <>
+      {/* REMOVED <Toaster /> 
+         Only the global toaster in your App.js/Layout.js will work now, 
+         preventing duplicates.
+      */}
+
       <div className="min-h-screen bg-[#F3EFEE] pt-16 pb-20">
         <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-3">
@@ -408,10 +424,9 @@ const MyPurchase: React.FC = () => {
                         <div className="flex gap-1">
                           <button onClick={() => setSelected(p)} className="p-1.5 border rounded bg-white hover:bg-gray-50"><FaEyeIcon size={14} /></button>
                           
-                          {/* Chat Button: Sets Unique Order ID */}
                           <button onClick={() => { 
                               setActiveChatSellerEmail(p.sellerEmail); 
-                              setActiveChatOrderId(p.id); // UNIQUE ID
+                              setActiveChatOrderId(p.id); 
                               setActiveChatProductTitle(p.title);
                               setIsChatOpen(true); 
                           }} className="p-1.5 border rounded bg-white hover:bg-blue-50 text-blue-600"><FaCommentsIcon size={14} /></button>
@@ -536,7 +551,7 @@ const MyPurchase: React.FC = () => {
                     onClick={() => {
                       setSelected(null);
                       setActiveChatSellerEmail(selected.sellerEmail);
-                      setActiveChatOrderId(selected.id); // Unique ID
+                      setActiveChatOrderId(selected.id); 
                       setActiveChatProductTitle(selected.title);
                       setIsChatOpen(true);
                     }}
@@ -572,7 +587,6 @@ const MyPurchase: React.FC = () => {
                 </div>
                 <div>
                   <h3 className="font-bold text-sm truncate max-w-[150px]">{activeChatSellerEmail}</h3>
-                  {/* Shows which product is being discussed */}
                   <p className="text-[10px] text-green-400 truncate w-40">
                       Ref: {activeChatProductTitle}
                   </p>
