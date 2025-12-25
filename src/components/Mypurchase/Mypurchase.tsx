@@ -207,7 +207,8 @@ const MyPurchase: React.FC = () => {
   const [unreadState, setUnreadState] = useState<Record<string, boolean>>({});
   const scrollRef = useRef<HTMLDivElement>(null);
   const chatLengthRef = useRef(0);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+ 
+  
 
   const PURCHASE_API = "http://localhost:3200/purchase";
   const CHAT_API = "http://localhost:3200/chat";
@@ -414,16 +415,7 @@ const MyPurchase: React.FC = () => {
     } catch (err) { alert("Failed to send message"); }
   };
 
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-        setTypedMessage((prev) => prev + ` [File: ${file.name}] `);
-        toast.success(`File "${file.name}" attached!`);
-    }
-    if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-    }
-  };
+  
 
   const handleAddEmoji = (emoji: string) => {
     setTypedMessage((prev) => prev + emoji);
@@ -601,9 +593,8 @@ const MyPurchase: React.FC = () => {
             )}
 
             <form onSubmit={sendChat} className="p-3 bg-white border-t flex gap-2 items-center z-20">
-               <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileSelect} />
-               <button type="button" onClick={() => fileInputRef.current?.click()} className="p-2 text-gray-400 hover:text-blue-500 transition"><FaPlusIcon /></button>
-               
+             
+              
                <div className="flex-1 relative">
                     <input value={typedMessage} onChange={(e) => setTypedMessage(e.target.value)} placeholder="Type a message..." className="w-full bg-gray-100 text-gray-800 rounded-full pl-4 pr-10 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#33ac6f]/50 transition-all placeholder:text-gray-400"/>
                     <button type="button" onClick={() => setShowEmojiPicker(!showEmojiPicker)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-yellow-500 transition"><FaSmileIcon /></button>
