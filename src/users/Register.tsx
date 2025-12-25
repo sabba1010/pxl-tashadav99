@@ -70,7 +70,7 @@ const Register = () => {
 
     try {
       const res = await axios.post<{ insertedId: string }>(
-        "http://localhost:3200/api/user/register",
+        "https://vps-backend-server-beta.vercel.app/api/user/register",
         formData
       );
       if (res?.data?.insertedId) {

@@ -73,7 +73,7 @@ const SellForm: React.FC = () => {
   useEffect(() => {
     const fetchPlatforms = async () => {
       try {
-        const response = await axios.get<{data: any, platforms: any}>("http://localhost:3200/icon-data");
+        const response = await axios.get<{data: any, platforms: any}>("https://vps-backend-server-beta.vercel.app/icon-data");
         const data = Array.isArray(response.data)
           ? response.data
           : response.data.data || response.data.platforms || [];
@@ -148,7 +148,7 @@ const SellForm: React.FC = () => {
     if (!validateStep1()) return;
 
     try {
-      const response = await axios.post<{ acknowledged: boolean }>("http://localhost:3200/product/sell", formData);
+      const response = await axios.post<{ acknowledged: boolean }>("https://vps-backend-server-beta.vercel.app/product/sell", formData);
       if (response.data.acknowledged || response.status === 201) {
         toast.success("Your account has been listed successfully!");
         navigate("/myproducts");

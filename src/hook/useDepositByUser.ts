@@ -23,7 +23,7 @@ const fetchPaymentsByEmail = async (
   email: string
 ): Promise<Payment[]> => {
   const res = await axios.get<Payment[]>(
-    "http://localhost:3200/api/payments"
+    "https://vps-backend-server-beta.vercel.app/api/payments"
   );
 
   return res.data.filter(

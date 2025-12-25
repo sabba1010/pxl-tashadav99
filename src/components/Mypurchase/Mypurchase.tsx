@@ -20,7 +20,8 @@ import {
   FaGlobe,
   FaPaperPlane,
   FaSmile,
-  FaPaperclip
+  FaPaperclip,
+  FaCircle
 } from "react-icons/fa";
 
 /* ---------------------------------------------
@@ -35,6 +36,7 @@ const FaGlobeIcon = FaGlobe as unknown as React.ComponentType<any>;
 const FaPaperPlaneIcon = FaPaperPlane as unknown as React.ComponentType<any>;
 const FaSmileIcon = FaSmile as unknown as React.ComponentType<any>;
 const FaPaperclipIcon = FaPaperclip as unknown as React.ComponentType<any>;
+const FaCircleIcon = FaCircle as unknown as React.ComponentType<any>;
 
 const ICON_COLOR_MAP = new Map<IconType, string>([
   [FaInstagram, "#E1306C"],
@@ -104,7 +106,7 @@ interface ApiUser {
    Helpers
 ---------------------------------------------- */
 const inferPlatform = (name: string): PlatformType => {
-  const n = name.toLowerCase();
+  const n = name ? name.toLowerCase() : "";
   if (n.includes("instagram")) return "instagram";
   if (n.includes("facebook")) return "facebook";
   if (n.includes("twitter")) return "twitter";
@@ -124,14 +126,16 @@ const getPlatformIcon = (platform: PlatformType): IconType => {
   }
 };
 
-const formatDate = (d: string) =>
-  new Date(d).toLocaleString("en-US", {
+const formatDate = (d: string) => {
+  if (!d) return "N/A";
+  return new Date(d).toLocaleString("en-US", {
     month: "short",
     day: "numeric",
     year: "numeric",
     hour: "2-digit",
     minute: "2-digit",
   });
+};
 
 // --- Time Helper ---
 const timeAgo = (dateString?: string) => {
@@ -207,12 +211,12 @@ const MyPurchase: React.FC = () => {
   const [unreadState, setUnreadState] = useState<Record<string, boolean>>({});
   const scrollRef = useRef<HTMLDivElement>(null);
   const chatLengthRef = useRef(0);
- 
-  
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const PURCHASE_API = "http://localhost:3200/purchase";
-  const CHAT_API = "http://localhost:3200/chat";
-  const USER_API = "http://localhost:3200/user"; 
+  // UPDATED API URLs
+  const PURCHASE_API = "https://vps-backend-server-beta.vercel.app/purchase";
+  const CHAT_API = "https://vps-backend-server-beta.vercel.app/chat";
+  const USER_API = "https://vps-backend-server-beta.vercel.app/user"; 
 
   const playNotificationSound = () => {
     const audio = new Audio(NOTIFICATION_SOUND);
@@ -229,18 +233,21 @@ const MyPurchase: React.FC = () => {
       try {
         setIsLoading(true);
         const res = await axios.get(`${PURCHASE_API}/getall`); 
+        
+        // Filter: Get only items where I am the BUYER
         const myData = (res.data as ApiPurchase[]).filter(
             (item) => item.buyerEmail === buyerId
         );
+
         const mapped = myData.map((item) => ({
           id: item._id,
           platform: inferPlatform(item.productName),
-          title: item.productName,
+          title: item.productName || "Untitled Product",
           desc: `Product ID: ${item.productId}`,
-          sellerEmail: item.sellerEmail,
-          price: item.price,
+          sellerEmail: item.sellerEmail || "Unknown",
+          price: item.price || 0,
           date: formatDate(item.purchaseDate),
-          status: (item.status.charAt(0).toUpperCase() + item.status.slice(1)) as PurchaseStatus,
+          status: (item.status ? (item.status.charAt(0).toUpperCase() + item.status.slice(1)) : "Pending") as PurchaseStatus,
           purchaseNumber: `ORD-${item._id.slice(-6).toUpperCase()}`
         }));
         setPurchases(mapped);
@@ -253,29 +260,32 @@ const MyPurchase: React.FC = () => {
     fetchPurchases();
   }, [buyerId]);
 
-  /* -------- Fetch Seller Names -------- */
+  /* -------- Fetch Seller Names (FIXED CRASH) -------- */
   useEffect(() => {
     const fetchNames = async () => {
       if (purchases.length === 0) return;
-      const uniqueEmails = Array.from(new Set(purchases.map(p => p.sellerEmail)));
+
+      // Filter out null/undefined emails BEFORE processing
+      const uniqueEmails = Array.from(new Set(purchases.map(p => p.sellerEmail))).filter(email => email && email !== "Unknown");
+      
       const newNames: Record<string, string> = {};
       const emailsToFetch = uniqueEmails.filter(email => !sellerNames[email]);
 
       if (emailsToFetch.length === 0) return;
 
       await Promise.all(emailsToFetch.map(async (email) => {
+        if (!email) return; 
         try {
-          // Fetch user info
           const res = await axios.get<ApiUser>(`${USER_API}/${email}`); 
           if (res.data && res.data.name) {
             newNames[email] = res.data.name;
           } else {
-            // Fallback: If no name found in DB, use prefix
-            newNames[email] = email.split('@')[0]; 
+            // Safe split
+            newNames[email] = email.includes("@") ? email.split('@')[0] : email; 
           }
         } catch (error) {
-           // Fallback on error
-           newNames[email] = email.split('@')[0]; 
+           // Safe split fallback
+           newNames[email] = email.includes("@") ? email.split('@')[0] : email; 
         }
       }));
       setSellerNames(prev => ({ ...prev, ...newNames }));
@@ -292,6 +302,8 @@ const MyPurchase: React.FC = () => {
 
       await Promise.all(purchases.map(async (p) => {
         if (isChatOpen && activeChatOrderId === p.id) return;
+        if (!p.sellerEmail || p.sellerEmail === "Unknown") return;
+
         try {
           const res = await axios.get(`${CHAT_API}/history/${buyerId}/${p.sellerEmail}`, {
             params: { orderId: p.id }
@@ -299,7 +311,8 @@ const MyPurchase: React.FC = () => {
           const msgs = res.data as IMessage[];
           if (msgs.length > 0) {
             const lastMsg = msgs[msgs.length - 1];
-            if (lastMsg.senderId.toLowerCase() !== buyerId.toLowerCase()) {
+            // Safe check for senderId
+            if (lastMsg.senderId && buyerId && lastMsg.senderId.toLowerCase() !== buyerId.toLowerCase()) {
                 if (newUnreadMap[p.id] !== true) {
                     newUnreadMap[p.id] = true;
                     hasChange = true;
@@ -378,7 +391,7 @@ const MyPurchase: React.FC = () => {
       
       if (newData.length > chatLengthRef.current && chatLengthRef.current !== 0) {
           const lastMsg = newData[newData.length - 1];
-          if (lastMsg.senderId.toLowerCase() !== buyerId.toLowerCase()) {
+          if (lastMsg.senderId && buyerId && lastMsg.senderId.toLowerCase() !== buyerId.toLowerCase()) {
               playNotificationSound();
           }
       }
@@ -415,7 +428,16 @@ const MyPurchase: React.FC = () => {
     } catch (err) { alert("Failed to send message"); }
   };
 
-  
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+        setTypedMessage((prev) => prev + ` [File: ${file.name}] `);
+        toast.success(`File "${file.name}" attached!`);
+    }
+    if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+    }
+  };
 
   const handleAddEmoji = (emoji: string) => {
     setTypedMessage((prev) => prev + emoji);
@@ -436,14 +458,10 @@ const MyPurchase: React.FC = () => {
       setIsChatOpen(true); 
   };
 
-  // --- UPDATED HELPER: Never shows full email ---
   const getSellerDisplayName = (email: string | null) => {
-      if (!email) return "Unknown";
-      // If we found a name from DB, use it
+      if (!email || email === "Unknown") return "Unknown Seller";
       if (sellerNames[email]) return sellerNames[email];
-      
-      // FALLBACK: Use part before '@'
-      return email.split('@')[0]; 
+      return email.includes("@") ? email.split('@')[0] : email; 
   };
 
   return (
@@ -570,7 +588,7 @@ const MyPurchase: React.FC = () => {
             <div className="flex-1 overflow-y-auto p-4 space-y-3" style={{ backgroundImage: "radial-gradient(#cbd5e1 1px, transparent 1px)", backgroundSize: "20px 20px" }}>
               <div className="text-center my-4"><span className="text-[10px] bg-gray-200/60 px-3 py-1 rounded-full text-gray-500 font-medium">Today</span></div>
               {chatMessages.map((m, i) => {
-                const isMe = m.senderId.toLowerCase() === buyerId?.toLowerCase();
+                const isMe = m.senderId && buyerId ? m.senderId.toLowerCase() === buyerId.toLowerCase() : false;
                 const timeLabel = timeAgo(m.createdAt); 
                 return (
                     <div key={i} className={`flex w-full ${isMe ? "justify-end" : "justify-start"}`}>
@@ -593,8 +611,9 @@ const MyPurchase: React.FC = () => {
             )}
 
             <form onSubmit={sendChat} className="p-3 bg-white border-t flex gap-2 items-center z-20">
-             
-              
+               <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileSelect} />
+               <button type="button" onClick={() => fileInputRef.current?.click()} className="p-2 text-gray-400 hover:text-blue-500 transition"><FaPlusIcon /></button>
+               
                <div className="flex-1 relative">
                     <input value={typedMessage} onChange={(e) => setTypedMessage(e.target.value)} placeholder="Type a message..." className="w-full bg-gray-100 text-gray-800 rounded-full pl-4 pr-10 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#33ac6f]/50 transition-all placeholder:text-gray-400"/>
                     <button type="button" onClick={() => setShowEmojiPicker(!showEmojiPicker)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-yellow-500 transition"><FaSmileIcon /></button>
