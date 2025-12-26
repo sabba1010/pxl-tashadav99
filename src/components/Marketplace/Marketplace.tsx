@@ -219,7 +219,7 @@ const ItemCard: React.FC<{
   return (
     <div className={`bg-white rounded-xl shadow-sm border hover:shadow-md transition p-4 ${isList ? "flex items-center gap-4" : "flex flex-col text-center"}`}>
       <div className={isList ? "" : "flex justify-center mb-3"}>
-        <RenderIcon icon={item.icon} size={isList ? 44 : 64} realTime={item.realTime} />
+        <RenderIcon icon={item.icon} size={isList ? 40 : 56} realTime={item.realTime} />
       </div>
       <div className="flex-1 min-w-0">
         <h3 className="font-bold text-sm text-[#0A1A3A] truncate">{item.title}</h3>
@@ -230,25 +230,25 @@ const ItemCard: React.FC<{
         </div>
         
       </div>
-      <div className={`flex flex-col ${isList ? "items-end text-right" : "mt-4 items-center w-full"}`}>
-        <div className="text-lg font-extrabold text-[#0A1A3A] mb-2">${item.price.toFixed(2)}</div>
-        <div className="flex items-center gap-2 w-full justify-center">
+        <div className={`flex flex-col ${isList ? "items-end text-right" : "mt-4 items-center w-full"}`}>
+        <div className="text-base font-bold text-[#0A1A3A] mb-1">${item.price.toFixed(2)}</div>
+        <div className="flex items-center gap-1 w-full justify-center">
           <button 
             onClick={() => onAddToCart(item)} 
             disabled={isAdded}
-            className={`p-2 border rounded transition-all duration-200 
+            className={`p-1.5 border rounded-md transition-all duration-200 flex items-center justify-center
               ${isAdded 
                 ? "bg-green-100 text-green-600 border-green-200 cursor-default"
                 : "hover:bg-gray-50 text-gray-600"
               }`} 
             title={isAdded ? "Already in cart" : "Add to Cart"}
           >
-            {isAdded ? <CheckIcon size={16} /> : <ShoppingCartIcon size={16} />}
+            {isAdded ? <CheckIcon size={14} /> : <ShoppingCartIcon size={14} />}
           </button>
-          
-          <button onClick={() => onView(item)} className="p-2 border rounded hover:bg-gray-50 text-gray-600" title="View Details"><EyeIcon size={16} /></button>
-          <button onClick={() => onBuy(item)} disabled={isProcessing} className={`px-3 py-2 text-sm font-semibold text-white rounded bg-gradient-to-r from-[#33ac6f] to-[#27b86a] hover:shadow-lg disabled:opacity-70 flex items-center gap-2 ${isList ? "" : "flex-1 justify-center"}`}>
-            {isProcessing ? "..." : <><PurchaseIcon size={16} /> </>}
+
+          <button onClick={() => onView(item)} className="p-1.5 border rounded-md hover:bg-gray-50 text-gray-600 flex items-center justify-center" title="View Details"><EyeIcon size={14} /></button>
+          <button onClick={() => onBuy(item)} disabled={isProcessing} className={`px-2 py-1.5 text-sm font-semibold text-white rounded bg-gradient-to-r from-[#33ac6f] to-[#27b86a] hover:shadow-lg disabled:opacity-70 flex items-center gap-2 ${isList ? "" : "flex-1 justify-center"}`}>
+            {isProcessing ? "..." : <><PurchaseIcon size={14} /> </>}
           </button>
         </div>
       </div>
