@@ -198,7 +198,7 @@ const MyAds: React.FC = () => {
             </p>
           </div>
           <Link
-            to="/add-product"
+            to="/selling-form"
             className="flex items-center justify-center gap-2 bg-[#0A1A3A] hover:bg-[#162a52] text-white px-6 py-3 rounded-full font-semibold transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
           >
             <Plus size={18} />
