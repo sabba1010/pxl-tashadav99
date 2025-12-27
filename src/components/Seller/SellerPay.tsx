@@ -1,11 +1,17 @@
 import React, { useState } from 'react';
 import { CreditCard, Bitcoin, Wallet, FileText, PlusCircle, CheckSquare, Search } from 'lucide-react';
 
+// Make sure these paths match where your files are located
+import TestPayment from "../TestPayment"; 
+import KoraPayment from "../../components/Payment/KoraPayment"; 
+
 const SellerPay = () => {
   const [selectedMethod, setSelectedMethod] = useState('bank');
+  
+  // Fixed amount as requested
+  const fixedAmount = 15;
 
   return (
-    // Container: Mobile e padding kom (p-4), Desktop e beshi (md:p-8)
     <div className="min-h-screen bg-gray-50 font-sans text-gray-800 p-4 md:p-8">
       
       {/* Header Section */}
@@ -27,7 +33,7 @@ const SellerPay = () => {
               <span className="text-[10px] md:text-xs text-orange-500 font-medium whitespace-nowrap">Make Payment</span>
             </div>
             
-            {/* Connector Line (Hidden on very small screens, visible on md+) */}
+            {/* Connector Line */}
             <div className="hidden sm:block w-8 md:w-16 h-[2px] bg-orange-200 -mt-6 mx-1"></div>
 
             {/* Step 2: Add account */}
@@ -66,7 +72,9 @@ const SellerPay = () => {
       {/* Main Card Content */}
       <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-sm p-5 md:p-10 min-h-[400px] md:min-h-[500px] flex flex-col items-center">
         
-        <h2 className="text-xl md:text-2xl font-semibold text-gray-900 mb-6 md:mb-10 text-center">Make A One Time Payment</h2>
+        <h2 className="text-xl md:text-2xl font-semibold text-gray-900 mb-6 md:mb-10 text-center">
+            Make A One Time Payment: ${fixedAmount}
+        </h2>
 
         <div className="w-full max-w-2xl space-y-4">
           
@@ -105,7 +113,7 @@ const SellerPay = () => {
             </div>
             <div className="flex-1">
               <h3 className="font-semibold text-gray-900 text-sm md:text-base">Crypto Deposit</h3>
-              <p className="text-xs md:text-sm text-gray-500 mt-1">Fund your wallet with popular cryptocurrencies like USDT, ETH, BNB, SOL and more.</p>
+              <p className="text-xs md:text-sm text-gray-500 mt-1">Fund your wallet with popular cryptocurrencies like USDT, ETH, BNB, SOL.</p>
             </div>
           </div>
 
@@ -129,10 +137,24 @@ const SellerPay = () => {
 
         </div>
 
-        {/* Action Button */}
-        <button className="mt-8 md:mt-10 bg-orange-500 hover:bg-orange-600 text-white font-medium py-3 px-12 rounded shadow-md transition-colors w-full md:w-auto text-sm md:text-base">
-          Pay $15
-        </button>
+        {/* PAYMENT ACTIONS */}
+        <div className="mt-8 md:mt-10 w-full max-w-2xl">
+          {selectedMethod === 'bank' ? (
+            <div className="flex flex-col gap-4">
+               {/* Passed fixedAmount ($15) to your payment components */}
+               <TestPayment amount={fixedAmount} />
+               
+               <div className="w-full">
+                 <KoraPayment amount={fixedAmount} />
+               </div>
+            </div>
+          ) : (
+            // Placeholder button for Crypto/Wallet since logic wasn't provided
+            <button className="bg-orange-500 hover:bg-orange-600 text-white font-medium py-3 px-12 rounded shadow-md transition-colors w-full text-sm md:text-base">
+               Pay ${fixedAmount}
+            </button>
+          )}
+        </div>
 
       </div>
     </div>
