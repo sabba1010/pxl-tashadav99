@@ -79,6 +79,8 @@ const Register = () => {
       accountCreationDate: new Date(),
       referralCode: Math.random().toString(36).substring(2, 10),
       balance: 0,
+      salesCredit: 10,
+      subscribedPlan: "free",
     };
 
     // 2. সাধারণ ভ্যালিডেশন

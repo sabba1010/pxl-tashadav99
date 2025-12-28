@@ -2,6 +2,7 @@ import {
   Autocomplete,
   Box,
   Button,
+  CircularProgress,
   InputAdornment,
   Paper,
   Step,
@@ -9,13 +10,12 @@ import {
   Stepper,
   TextField,
   Typography,
-  CircularProgress,
 } from "@mui/material";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { useAuth } from "../../context/AuthContext";
+import { useAuthHook } from "../../hook/useAuthHook";
 
 interface Platform {
   _id: string;
@@ -45,10 +45,17 @@ interface FormData {
 const SellForm: React.FC = () => {
   const [step, setStep] = useState(0);
   const navigate = useNavigate();
-  const user = useAuth();
+  const { data } = useAuthHook();
+  const user = data;
+  console.log(user?.email)
 
   const [platforms, setPlatforms] = useState<Platform[]>([]);
   const [loadingPlatforms, setLoadingPlatforms] = useState(true);
+
+  // Sales Credit State
+  const [salesCredit, setSalesCredit] = useState<number | null>(null);
+  const [loadingCredit, setLoadingCredit] = useState(true);
+  const [hasNoCredit, setHasNoCredit] = useState(false);
 
   const [formData, setFormData] = useState<FormData>({
     category: "",
@@ -62,23 +69,22 @@ const SellForm: React.FC = () => {
     email: "",
     password: "",
     additionalInfo: "",
-    userEmail: user?.user?.email || "",
-    userRole: user?.user?.role || "",
+    userEmail: `${user?.email}`,
+    userRole: user?.role || "",
     status: "pending",
     createdAt: new Date(),
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // Fetch Platforms
   useEffect(() => {
     const fetchPlatforms = async () => {
       try {
-        const response = await axios.get<{ data: any; platforms: any }>(
-          "http://localhost:3200/icon-data"
-        );
+        const response = await axios.get<{ data: Platform[] }>("http://localhost:3200/icon-data");
         const data = Array.isArray(response.data)
           ? response.data
-          : response.data.data || response.data.platforms || [];
+          : response.data.data || [];
         setPlatforms(data);
       } catch (error) {
         toast.error("Failed to load platforms.");
@@ -91,10 +97,36 @@ const SellForm: React.FC = () => {
     fetchPlatforms();
   }, []);
 
+  // Fetch User's Sales Credit
+  useEffect(() => {
+    const fetchSalesCredit = async () => {
+      if (!user?.email) {
+        setLoadingCredit(false);
+        return;
+      }
+
+      try {
+        const response = await axios.get<{ salesCredit: number }>(
+          `http://localhost:3200/product/credit?email=${encodeURIComponent(user.email)}`
+        );
+        const credit = response.data.salesCredit ?? 0;
+        setSalesCredit(credit);
+        setHasNoCredit(credit <= 0);
+      } catch (error: any) {
+        toast.error("Failed to load listing credits.");
+        console.error(error);
+        setHasNoCredit(true);
+      } finally {
+        setLoadingCredit(false);
+      }
+    };
+
+    fetchSalesCredit();
+  }, [user?.email]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
-    // Clear error when user starts typing
     if (errors[name]) {
       setErrors({ ...errors, [name]: "" });
     }
@@ -113,7 +145,7 @@ const SellForm: React.FC = () => {
     }
   };
 
-  // Validation for Step 0
+  // Validation Step 0
   const validateStep0 = () => {
     const newErrors: Record<string, string> = {};
     if (!formData.category) newErrors.category = "Platform is required";
@@ -127,7 +159,7 @@ const SellForm: React.FC = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  // Validation for Step 1
+  // Validation Step 1
   const validateStep1 = () => {
     const newErrors: Record<string, string> = {};
     if (!formData.username.trim()) newErrors.username = "Username is required";
@@ -142,6 +174,14 @@ const SellForm: React.FC = () => {
     if (step === 0 && validateStep0()) {
       setStep(step + 1);
     } else if (step === 1 && validateStep1()) {
+      if (loadingCredit) {
+        toast.info("Loading your credits...");
+        return;
+      }
+      if (hasNoCredit) {
+        toast.error("You have no listing credits left. Purchase more to list an account.");
+        return;
+      }
       handleSubmit();
     }
   };
@@ -152,18 +192,28 @@ const SellForm: React.FC = () => {
     if (!validateStep1()) return;
 
     try {
-      const response = await axios.post<{ acknowledged: boolean }>(
+      const response = await axios.post(
         "http://localhost:3200/product/sell",
         formData
       );
-      if (response.data.acknowledged || response.status === 201) {
+
+      if (response.status === 201 || response.status === 200) {
         toast.success("Your account has been listed successfully!");
+
+        // Update local credit count
+        if (salesCredit !== null && salesCredit > 0) {
+          const newCredit = salesCredit - 1;
+          setSalesCredit(newCredit);
+          setHasNoCredit(newCredit <= 0);
+        }
+
         navigate("/myproducts");
       }
     } catch (error: any) {
-      toast.error(
-        error.response?.data?.message || "Failed to list account. Try again."
-      );
+      const msg =
+        error.response?.data?.message ||
+        "Failed to list account. Try again.";
+      toast.error(msg);
       console.error(error);
     }
   };
@@ -172,6 +222,61 @@ const SellForm: React.FC = () => {
 
   const getSelectedPlatform = () => {
     return platforms.find((p) => p.name === formData.category) || null;
+  };
+
+  const renderCreditBanner = () => {
+    if (loadingCredit) {
+      return (
+        <Box sx={{ textAlign: "center", py: 2 }}>
+          <CircularProgress size={24} />
+          <Typography variant="body2" ml={1} component="span">
+            Loading credits...
+          </Typography>
+        </Box>
+      );
+    }
+
+    if (hasNoCredit) {
+      return (
+        <Box
+          sx={{
+            bgcolor: "error.light",
+            color: "error.contrastText",
+            p: 3,
+            borderRadius: 2,
+            mb: 4,
+            textAlign: "center",
+          }}
+        >
+          <Typography variant="h6" fontWeight="bold">
+            ⚠️ No Listing Credits Available
+          </Typography>
+          <Typography variant="body1" mt={1}>
+            You currently have 0 credits. You cannot list new accounts until you purchase more listing credits.
+          </Typography>
+        </Box>
+      );
+    }
+
+    return (
+      <Box
+        sx={{
+          bgcolor: "success.light",
+          color: "success.contrastText",
+          p: 2,
+          borderRadius: 2,
+          mb: 4,
+          textAlign: "center",
+        }}
+      >
+        <Typography variant="body1">
+          <strong>Remaining Listing Credits: {salesCredit}</strong>
+        </Typography>
+        <Typography variant="body2" mt={0.5}>
+          Each new listing consumes 1 credit.
+        </Typography>
+      </Box>
+    );
   };
 
   const getStepContent = (stepIndex: number) => {
@@ -293,7 +398,7 @@ const SellForm: React.FC = () => {
               />
             </Box>
           </>
-        ); // ← THIS WAS MISSING!
+        );
 
       case 1:
         return (
@@ -400,21 +505,18 @@ const SellForm: React.FC = () => {
               textAlign: "center",
             }}
           >
-            <Typography
-              variant="h3"
-              fontWeight="bold"
-              gutterBottom
-              color="black"
-            >
+            <Typography variant="h3" fontWeight="bold" gutterBottom color="black">
               Sell Your Account
             </Typography>
-            <p className="md:w-2/3 md:mx-auto text-center text-black text-xl">
-              List your social media or gaming account securely and reach
-              thousands of buyers
-            </p>
+            <Typography className="md:w-2/3 md:mx-auto text-center text-black text-xl">
+              List your social media or gaming account securely and reach thousands of buyers
+            </Typography>
           </Box>
 
           <Box sx={{ p: { xs: 4, md: 6 } }}>
+            {/* Credit Banner */}
+            {renderCreditBanner()}
+
             <Stepper activeStep={step} alternativeLabel sx={{ mb: 8 }}>
               {steps.map((label, index) => (
                 <Step key={label}>
@@ -455,6 +557,7 @@ const SellForm: React.FC = () => {
 
               <Button
                 onClick={nextStep}
+                disabled={loadingCredit || hasNoCredit}
                 size="large"
                 variant="contained"
                 sx={{

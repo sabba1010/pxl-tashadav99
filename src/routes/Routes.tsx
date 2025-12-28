@@ -48,6 +48,8 @@ import SellForm from "../dashboard/user-dashboard/SellForm";
 import AdminRoute from "./AdminRoute";
 import PrivateRoute from "./PrivateRoute";
 import SellerPrivateRoute from "./SellerPrivateRoute";
+import SubscriptionPayment from "../components/Payment/SubscriptionPayment";
+import Test from "../components/Test";
 
 const Routes = createBrowserRouter([
   {
@@ -172,10 +174,10 @@ const Routes = createBrowserRouter([
         path: "/post-data",
         element: <Post />,
       },
-      // {
-      //   path: "/test",
-      //   element: <TestPayment />,
-      // }
+      {
+        path: "/test",
+        element: <Test />,
+      }
     ],
   },
 
