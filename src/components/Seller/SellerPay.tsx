@@ -5,14 +5,10 @@ import {
   CheckCircle2,
   X,
   Lock,
-  RefreshCw,
-  ShieldCheck,
-  LogOut,
-  AlertTriangle,
-  CreditCard
+  RefreshCw
 } from "lucide-react";
-import { toast } from "sonner"; // Toast Library
 import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2"; // SweetAlert Import
 
 // Hooks
 import { useAuth } from "../../context/AuthContext"; 
@@ -53,72 +49,62 @@ const SellerPay = () => {
     navigate("/login");
   };
 
-  // --- PAYMENT CLICK HANDLER ---
-  const handleWalletPayment = () => {
+  // --- PAYMENT LOGIC ---
+  const handleWalletPayment = async () => {
     // 1. User Check
     if (!userEmail) {
-      toast.error("User not found! Please login again.");
+      Swal.fire({
+        icon: "error",
+        title: "User not found",
+        text: "Please login again to continue.",
+      });
       return;
     }
 
-    // 2. Balance Check (Beautiful Alert)
+    // 2. Balance Check (SweetAlert Error)
     if (currentBalance < activationFee) {
-      toast.custom((t) => (
-        <div className="bg-white border border-red-100 shadow-2xl rounded-2xl p-4 flex items-start gap-3 w-full max-w-sm animate-slideIn">
-           <div className="bg-red-50 p-2 rounded-full text-red-500">
-             <AlertTriangle size={20} />
-           </div>
-           <div className="flex-1">
-             <h3 className="font-bold text-gray-800 text-sm">Insufficient Funds</h3>
-             <p className="text-xs text-gray-500 mt-1">
-               Required: <span className="font-bold text-gray-800">${activationFee.toFixed(2)}</span>
-               <br />
-               Available: <span className="font-bold text-red-500">${currentBalance.toFixed(2)}</span>
-             </p>
-           </div>
-           <button onClick={() => toast.dismiss(t)} className="text-gray-400 hover:text-gray-600"><X size={16} /></button>
-        </div>
-      ));
+      Swal.fire({
+        icon: "error",
+        title: "Insufficient Funds",
+        html: `
+          <div style="text-align: left; font-size: 14px;">
+            <p>You need: <b>$${activationFee.toFixed(2)}</b></p>
+            <p style="color: red;">Available: <b>$${currentBalance.toFixed(2)}</b></p>
+            <br/>
+            Please deposit funds first.
+          </div>
+        `,
+        confirmButtonColor: "#d33",
+        confirmButtonText: "Close"
+      });
       return;
     }
 
-    // 3. Confirmation Toast
-    toast.custom((t) => (
-      <div className="bg-white border border-gray-100 shadow-2xl rounded-2xl p-5 w-full max-w-sm animate-slideIn">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="bg-blue-50 p-2 rounded-full text-[#0A1A3A]">
-            <CreditCard size={20} />
-          </div>
-          <h3 className="font-bold text-gray-800">Confirm Payment?</h3>
-        </div>
-        <p className="text-sm text-gray-500 mb-4">
-          You are about to pay <span className="font-bold text-[#0A1A3A]">${activationFee}</span> to become a Seller.
-        </p>
-        <div className="flex gap-2 justify-end">
-          <button 
-            onClick={() => toast.dismiss(t)}
-            className="px-3 py-1.5 text-xs font-bold text-gray-500 hover:bg-gray-100 rounded-lg transition"
-          >
-            Cancel
-          </button>
-          <button 
-            onClick={() => {
-              toast.dismiss(t);
-              processPayment(); // Confirm Payment Call
-            }}
-            className="px-4 py-1.5 text-xs font-bold text-white bg-[#0A1A3A] hover:bg-[#1a2e4d] rounded-lg shadow-md transition"
-          >
-            Confirm Pay
-          </button>
-        </div>
-      </div>
-    ), { duration: 10000 });
-  };
+    // 3. Confirmation (SweetAlert Confirm)
+    const confirmResult = await Swal.fire({
+      title: 'Are you sure?',
+      text: `You are about to pay $${activationFee} to become a Seller.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#0A1A3A',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, Pay Now!'
+    });
 
-  // --- API CALL ---
-  const processPayment = async () => {
+    if (!confirmResult.isConfirmed) return;
+
+    // 4. Processing
     setLoading(true);
-    const toastId = toast.loading("Processing payment...");
+    
+    // Show Loading Alert
+    Swal.fire({
+      title: 'Processing Payment...',
+      html: 'Please wait while we upgrade your account.',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
 
     try {
       const res = await fetch(`${API_URL}/api/user/become-seller`, {
@@ -131,7 +117,6 @@ const SellerPay = () => {
       });
 
       const result = await res.json();
-      toast.dismiss(toastId);
 
       if (result.success) {
         // Notification
@@ -145,42 +130,39 @@ const SellerPay = () => {
           } as any);
         } catch (e) { console.error(e); }
 
-        // Success Alert
-        toast.custom((t) => (
-          <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-green-100 p-5 flex items-start gap-4 relative overflow-hidden animate-slideIn">
-             <div className="absolute top-0 right-0 w-20 h-20 bg-green-50 rounded-bl-full -z-10" />
-             <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 text-green-600 shadow-sm">
-               <ShieldCheck size={26} strokeWidth={2.5} />
-             </div>
-             <div className="flex-1">
-               <h3 className="text-lg font-bold text-gray-900">Upgrade Successful!</h3>
-               <p className="text-sm text-gray-500 mt-1">
-                 You are now a Seller. <span className="text-orange-600 font-bold">Logging out...</span>
-               </p>
-               <div className="mt-2 flex gap-2">
-                 <span className="text-[10px] font-bold bg-green-50 text-green-700 px-2 py-1 rounded border border-green-100">
-                   PAID: ${activationFee}
-                 </span>
-               </div>
-             </div>
-             <button onClick={() => toast.dismiss(t)} className="text-gray-400 hover:text-gray-600"><X size={18} /></button>
-          </div>
-        ), { duration: 4000 });
-
         setIsPaymentModalOpen(false);
-        
-        // Logout & Redirect
-        setTimeout(() => {
-            handleSafeLogout();
-        }, 2000);
+
+        // 5. Success Alert (Auto Close)
+        await Swal.fire({
+          icon: 'success',
+          title: 'Upgrade Successful!',
+          html: `
+            <p>You are now a Seller!</p>
+            <p style="color: orange; font-weight: bold; margin-top: 10px;">Logging out to apply changes...</p>
+          `,
+          timer: 3000,
+          timerProgressBar: true,
+          showConfirmButton: false,
+          willClose: () => {
+             // Alert বন্ধ হওয়ার পর লগআউট
+             handleSafeLogout();
+          }
+        });
 
       } else {
-        toast.error(result.message || "Activation Failed");
+        Swal.fire({
+          icon: "error",
+          title: "Failed",
+          text: result.message || "Activation Failed",
+        });
       }
     } catch (err) {
-      toast.dismiss(toastId);
       console.error(err);
-      toast.error("Connection Error. Check Backend.");
+      Swal.fire({
+        icon: "error",
+        title: "Network Error",
+        text: "Could not connect to the server.",
+      });
     } finally {
       setLoading(false);
     }
