@@ -748,12 +748,12 @@ const MyPurchase: React.FC = () => {
                   >
                     Confirm Received
                   </button>
-                  <button
+                  {/* <button
                     onClick={() => handleUpdateStatus("cancelled")}
                     className="py-2.5 bg-red-50 text-red-600 rounded-lg font-bold text-sm hover:bg-red-100 transition border border-red-100"
                   >
                     Cancel Order
-                  </button>
+                  </button> */}
                 </div>
               )}
 
