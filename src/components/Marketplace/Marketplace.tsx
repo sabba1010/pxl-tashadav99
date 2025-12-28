@@ -247,9 +247,9 @@ const ItemCard: React.FC<{
           </button>
 
           <button onClick={() => onView(item)} className="p-1.5 border rounded-md hover:bg-gray-50 text-gray-600 flex items-center justify-center" title="View Details"><EyeIcon size={14} /></button>
-          <button onClick={() => onBuy(item)} disabled={isProcessing} className={`px-2 py-1.5 text-sm font-semibold text-white rounded bg-gradient-to-r from-[#33ac6f] to-[#27b86a] hover:shadow-lg disabled:opacity-70 flex items-center gap-2 ${isList ? "" : "flex-1 justify-center"}`}>
+          {/* <button onClick={() => onBuy(item)} disabled={isProcessing} className={`px-2 py-1.5 text-sm font-semibold text-white rounded bg-gradient-to-r from-[#33ac6f] to-[#27b86a] hover:shadow-lg disabled:opacity-70 flex items-center gap-2 ${isList ? "" : "flex-1 justify-center"}`}>
             {isProcessing ? "..." : <><PurchaseIcon size={14} /> </>}
-          </button>
+          </button> */}
         </div>
       </div>
     </div>
