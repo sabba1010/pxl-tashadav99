@@ -80,8 +80,7 @@ const MetricCard: React.FC<{
             </div>
           )}
         </div>
-
-        <p className={`text-4xl font-black ${textColor[variant]} mb-2`}>
+        <p className={`text-3xl font-black ${textColor[variant]} mb-2`}>
           {value}
         </p>
 
@@ -123,9 +122,6 @@ const DashboardOverview: React.FC = () => {
     <div className="space-y-12 py-4">
       {/* Header */}
       <div>
-        <h1 className="text-4xl font-black bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
-          Dashboard Overview
-        </h1>
         <p className="text-gray-600 mt-3 text-lg">
           Real-time insights into platform health, revenue, and operations
         </p>
@@ -133,7 +129,7 @@ const DashboardOverview: React.FC = () => {
 
       {/* Financial Snapshot */}
       <section>
-        <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
+        <h2 className="text-3xl font-bold text-gray-800 mb-6 flex items-center gap-3">
           <DollarSignIcon className="text-[#33ac6f]" />
           Financial Overview
         </h2>
@@ -142,7 +138,7 @@ const DashboardOverview: React.FC = () => {
             title="Escrow Balance"
             value={formatCurrency(metrics.escrowBalanceUSD)}
             subtitle="Funds held in escrow for active deals"
-            icon={<ShoppingBag fontSize="small" className="text-[#33ac6f]" />}
+            icon={<ShoppingBag fontSize="small" className="text-[#33ac6f] text-2xl" />}
             variant="success"
           />
 

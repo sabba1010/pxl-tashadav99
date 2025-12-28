@@ -21,7 +21,7 @@ interface User {
   // UI Specific fields (Optional or Defaults applied in UI)
   isActive?: boolean;
   activationFeePaid?: boolean;
-  walletBalanceUSD?: number;
+  balance?: number;
 }
 
 const ITEMS_PER_PAGE = 10;
@@ -52,7 +52,7 @@ const UserModal: React.FC<{
 
     if (type === "checkbox") {
       finalValue = (e.target as HTMLInputElement).checked;
-    } else if (name === "walletBalanceUSD") {
+    } else if (name === "balance") {
       finalValue = parseFloat(value) || 0;
     } else if (name === "isActive") {
       finalValue = value === "true";
@@ -154,8 +154,8 @@ const UserModal: React.FC<{
             {isEditMode ? (
               <input
                 type="number"
-                name="walletBalanceUSD"
-                value={formData.walletBalanceUSD || 0}
+                name="balance"
+                value={formData.balance || 0}
                 onChange={handleChange}
                 step="0.01"
                 className="w-full p-3 border border-gray-300 rounded-xl focus:ring-[#33ac6f] focus:border-[#33ac6f] transition"
@@ -165,7 +165,7 @@ const UserModal: React.FC<{
                 {new Intl.NumberFormat("en-US", {
                   style: "currency",
                   currency: "USD",
-                }).format(user.walletBalanceUSD || 0)}
+                }).format(user.balance || 0)}
               </p>
             )}
           </div>
@@ -230,7 +230,7 @@ const AllUsers: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [sortBy, setSortBy] = useState<
-    "_id" | "name" | "role" | "walletBalanceUSD"
+    "_id" | "name" | "role" | "balance"
   >("_id");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [modalOpen, setModalOpen] = useState(false);
@@ -286,8 +286,8 @@ const AllUsers: React.FC = () => {
         case "role":
           comp = a.role.localeCompare(b.role);
           break;
-        case "walletBalanceUSD":
-          comp = (a.walletBalanceUSD || 0) - (b.walletBalanceUSD || 0);
+        case "balance":
+          comp = (a.balance || 0) - (b.balance || 0);
           break;
         default: // _id
           comp = a._id.localeCompare(b._id);
@@ -413,10 +413,10 @@ const AllUsers: React.FC = () => {
                 </th>
                 <th
                   className="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase cursor-pointer"
-                  onClick={() => handleSort("walletBalanceUSD")}
+                  onClick={() => handleSort("balance")}
                 >
                   Balance{" "}
-                  {sortBy === "walletBalanceUSD" &&
+                  {sortBy === "balance" &&
                     (sortOrder === "asc" ? (
                       <ArrowUpward fontSize="small" />
                     ) : (
@@ -431,7 +431,7 @@ const AllUsers: React.FC = () => {
             <tbody>
               {paginatedUsers.map((user) => (
                 <tr key={user._id} className="hover:bg-gray-50/50 transition">
-                  <td className="px-6 py-4 text-sm text-gray-700 font-mono text-xs">
+                  <td className="px-6 py-4 text-sm text-gray-700 font-mono">
                     {user._id.substring(0, 8)}...
                   </td>
                   <td className="px-6 py-4">
@@ -482,10 +482,7 @@ const AllUsers: React.FC = () => {
                     )}
                   </td>
                   <td className="px-6 py-4 text-right font-semibold text-gray-900">
-                    {new Intl.NumberFormat("en-US", {
-                      style: "currency",
-                      currency: "USD",
-                    }).format(user.walletBalanceUSD || 0)}
+                    {user.balance?.toFixed(1)}
                   </td>
                   <td className="px-6 py-4 text-center space-x-2">
                     <Tooltip title="View">

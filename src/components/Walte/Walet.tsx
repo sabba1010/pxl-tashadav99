@@ -201,14 +201,14 @@ export default function Wallet(): React.ReactElement {
                 Deposit Funds
               </Link>
 
-              <Link
+          {loginUserData.data?.role !== "buyer" ?     <Link
                 to="/withdraw"
                 className="flex-1 flex items-center justify-center gap-3 px-8 py-5 rounded-2xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 bg-white border-2 text-[#0A1A3A] hover:bg-[#0A1A3A] hover:text-white hover:scale-105"
                 style={{ borderColor: ROYAL_GOLD }}
               >
                 <FaArrowUpIcon size={22} className="rotate-45" />
                 Withdraw Funds
-              </Link>
+              </Link> : null}
             </div>
           </div>
 
