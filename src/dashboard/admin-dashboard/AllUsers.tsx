@@ -1,24 +1,22 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Avatar, Tooltip, CircularProgress } from "@mui/material";
 import {
-  Edit,
-  Visibility,
-  Search,
-  ArrowUpward,
   ArrowDownward,
+  ArrowUpward,
+  Edit,
+  Search,
+  Visibility,
 } from "@mui/icons-material";
+import { Tooltip, CircularProgress, Avatar } from "@mui/material";
+import React, { useEffect, useMemo, useState } from "react";
 
-// User Interface based on your API Response
 interface User {
-  _id: string; // Changed from id: number
+  _id: string;
   name: string;
   email: string;
   phone: string;
   countryCode: string;
-  role: string; // "seller" or "buyer"
-  accountCreationDate: string; // ISO Date string
+  role: string;
+  accountCreationDate: string;
   referralCode?: string;
-  // UI Specific fields (Optional or Defaults applied in UI)
   isActive?: boolean;
   activationFeePaid?: boolean;
   balance?: number;
@@ -26,85 +24,46 @@ interface User {
 
 const ITEMS_PER_PAGE = 10;
 
-// User Modal (Upgraded with Glassmorphism)
 const UserModal: React.FC<{
-  user: User | null;
+  user: User;
   mode: "view" | "edit";
   onClose: () => void;
-  onSave: (updatedUser: User) => void;
+  onSave: (user: User) => void;
 }> = ({ user, mode, onClose, onSave }) => {
-  const [formData, setFormData] = useState<User | null>(
-    user ? { ...user } : null
-  );
-
-  if (!user || !formData) return null;
-
-  const isEditMode = mode === "edit";
-
-  // Helper to handle role case sensitivity
+  const [formData, setFormData] = useState(user);
+  const isEdit = mode === "edit";
   const isSeller = user.role.toLowerCase() === "seller";
+  const roleColor = isSeller ? "#D1A148" : "#33ac6f";
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
-    const { name, value, type } = e.target;
-    let finalValue: string | number | boolean = value;
-
-    if (type === "checkbox") {
-      finalValue = (e.target as HTMLInputElement).checked;
-    } else if (name === "balance") {
-      finalValue = parseFloat(value) || 0;
-    } else if (name === "isActive") {
-      finalValue = value === "true";
-    }
-
-    setFormData((prev) =>
-      prev ? ({ ...prev, [name]: finalValue } as User) : null
-    );
-  };
-
-  const handleSave = () => {
-    if (formData) onSave(formData);
+    const { name, value, type, checked } = e.target as any;
+    setFormData((prev) => ({
+      ...prev,
+      [name]:
+        type === "checkbox" ? checked : name === "balance" ? +value : value,
+    }));
   };
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
-      <div className="bg-white/90 backdrop-blur-2xl rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden border border-white/20 transform transition-all duration-300 scale-100">
-        {/* Header */}
-        <div className="p-6 border-b border-gray-200/50 flex justify-between items-center bg-gradient-to-r from-gray-50 to-white">
-          <h3 className="text-2xl font-bold text-gray-800">
-            {mode === "edit" ? `Edit ${user.name}` : `View ${user.name}`}
+      <div className="bg-white/90 backdrop-blur-2xl rounded-3xl shadow-2xl max-w-lg w-full border border-white/20">
+        <div className="p-6 border-b flex justify-between items-center bg-gradient-to-r from-gray-50 to-white">
+          <h3 className="text-2xl font-bold">
+            {isEdit ? "Edit" : "View"} {user.name}
           </h3>
           <button
             onClick={onClose}
-            className="p-2 rounded-full hover:bg-gray-100 transition"
+            className="p-2 hover:bg-gray-100 rounded-full"
           >
-            <svg
-              className="h-6 w-6 text-gray-600"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
+            ✕
           </button>
         </div>
 
-        {/* Body */}
         <div className="p-6 space-y-6">
           <div className="flex items-center gap-4">
-            <Avatar
-              sx={{
-                width: 56,
-                height: 56,
-                bgcolor: isSeller ? "#D1A148" : "#33ac6f",
-              }}
-            >
+            <Avatar sx={{ width: 56, height: 56, bgcolor: roleColor }}>
               {user.name[0]?.toUpperCase()}
             </Avatar>
             <div>
@@ -118,25 +77,21 @@ const UserModal: React.FC<{
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-600 mb-1">
-                Role
-              </label>
+              <label className="text-sm font-medium text-gray-600">Role</label>
               <p
-                className={`px-3 py-1 rounded-full text-xs font-semibold inline-block capitalize ${
-                  isSeller
-                    ? "bg-[#D1A148]/20 text-[#D1A148]"
-                    : "bg-[#33ac6f]/20 text-[#33ac6f]"
-                }`}
+                className={`mt-1 px-3 py-1 rounded-full text-xs font-semibold inline-block capitalize bg-${
+                  isSeller ? "[#D1A148]" : "[#33ac6f]"
+                }/20 text-${isSeller ? "[#D1A148]" : "[#33ac6f]"}`}
               >
                 {user.role}
               </p>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-600 mb-1">
+              <label className="text-sm font-medium text-gray-600">
                 Status
               </label>
               <p
-                className={`px-3 py-1 rounded-full text-xs font-semibold inline-block ${
+                className={`mt-1 px-3 py-1 rounded-full text-xs font-semibold ${
                   user.isActive !== false
                     ? "bg-[#33ac6f]/20 text-[#33ac6f]"
                     : "bg-red-100 text-red-800"
@@ -148,44 +103,41 @@ const UserModal: React.FC<{
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-600 mb-1">
+            <label className="text-sm font-medium text-gray-600">
               Wallet Balance (USD)
             </label>
-            {isEditMode ? (
+            {isEdit ? (
               <input
                 type="number"
                 name="balance"
                 value={formData.balance || 0}
                 onChange={handleChange}
                 step="0.01"
-                className="w-full p-3 border border-gray-300 rounded-xl focus:ring-[#33ac6f] focus:border-[#33ac6f] transition"
+                className="w-full mt-1 p-3 border rounded-xl focus:ring-[#33ac6f] focus:border-[#33ac6f]"
               />
             ) : (
-              <p className="text-xl font-bold text-gray-800">
-                {new Intl.NumberFormat("en-US", {
-                  style: "currency",
-                  currency: "USD",
-                }).format(user.balance || 0)}
+              <p className="text-xl font-bold mt-1">
+                ${(user.balance || 0).toFixed(2)}
               </p>
             )}
           </div>
 
           {isSeller && (
             <div>
-              <label className="block text-sm font-medium text-gray-600 mb-1">
+              <label className="text-sm font-medium text-gray-600">
                 Activation Fee Paid
               </label>
-              {isEditMode ? (
+              {isEdit ? (
                 <input
                   type="checkbox"
                   name="activationFeePaid"
                   checked={formData.activationFeePaid || false}
                   onChange={handleChange}
-                  className="h-5 w-5 text-[#33ac6f] border-gray-300 rounded focus:ring-[#33ac6f]"
+                  className="ml-3 h-5 w-5 text-[#33ac6f] rounded"
                 />
               ) : (
                 <p
-                  className={`font-semibold ${
+                  className={`font-semibold mt-1 ${
                     user.activationFeePaid ? "text-[#33ac6f]" : "text-red-600"
                   }`}
                 >
@@ -195,27 +147,26 @@ const UserModal: React.FC<{
             </div>
           )}
 
-          <div className="pt-2 text-xs text-gray-400">
-            Account Created:{" "}
-            {new Date(user.accountCreationDate).toLocaleDateString()} <br />
-            User ID: <span className="font-mono">{user._id}</span>
+          <div className="text-xs text-gray-400 pt-2">
+            Created: {new Date(user.accountCreationDate).toLocaleDateString()}
+            <br />
+            ID: <span className="font-mono">{user._id}</span>
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="p-6 bg-gray-50/80 flex justify-end space-x-4 border-t border-gray-200/50">
+        <div className="p-6 bg-gray-50/80 border-t flex justify-end gap-3">
           <button
             onClick={onClose}
-            className="px-6 py-3 text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition"
+            className="px-6 py-3 border rounded-xl hover:bg-gray-100"
           >
-            {isEditMode ? "Cancel" : "Close"}
+            {isEdit ? "Cancel" : "Close"}
           </button>
-          {isEditMode && (
+          {isEdit && (
             <button
-              onClick={handleSave}
-              className="px-6 py-3 text-white bg-gradient-to-r from-[#33ac6f] to-[#2d8f5a] rounded-xl hover:opacity-90 transition shadow-md"
+              onClick={() => onSave(formData)}
+              className="px-6 py-3 bg-[#33ac6f] text-white rounded-xl hover:opacity-90"
             >
-              Save Changes
+              Save
             </button>
           )}
         </div>
@@ -224,292 +175,232 @@ const UserModal: React.FC<{
   );
 };
 
-// Main AllUsers Component
 const AllUsers: React.FC = () => {
-  const [searchTerm, setSearchTerm] = useState("");
   const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [sortBy, setSortBy] = useState<
-    "_id" | "name" | "role" | "balance"
-  >("_id");
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortBy, setSortBy] = useState<keyof User | "balance">("_id");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
-  const [modalOpen, setModalOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [modalMode, setModalMode] = useState<"view" | "edit">("view");
   const [currentPage, setCurrentPage] = useState(1);
-
-  // --- FETCH DATA ---
-  const fetchUsers = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch("https://vps-backend-server-beta.vercel.app/api/user/getall");
-      const data = await response.json();
-
-      // Ensure data is array, if your API wraps it in { users: [...] } adjust accordingly
-      if (Array.isArray(data)) {
-        setUsers(data);
-      } else if (data.users && Array.isArray(data.users)) {
-        setUsers(data.users);
-      } else {
-        console.error("Unexpected API response format", data);
-        setUsers([]);
-      }
-    } catch (error) {
-      console.error("Error fetching users:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [modal, setModal] = useState<{
+    user: User;
+    mode: "view" | "edit";
+  } | null>(null);
 
   useEffect(() => {
-    fetchUsers();
+    fetch("http://localhost:3200/api/user/getall")
+      .then((r) => r.json())
+      .then((data) => setUsers(Array.isArray(data) ? data : data.users || []))
+      .catch(console.error)
+      .finally(() => setLoading(false));
   }, []);
 
-  const filteredUsers = useMemo(
-    () =>
-      users.filter(
-        (u) =>
-          u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          u.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          u.phone.includes(searchTerm)
-      ),
-    [users, searchTerm]
-  );
+  const filteredAndSorted = useMemo(() => {
+    let result = users.filter(
+      (u) =>
+        u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        u.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        u.phone.includes(searchTerm)
+    );
 
-  const sortedUsers = useMemo(() => {
-    return [...filteredUsers].sort((a, b) => {
-      let comp = 0;
-      switch (sortBy) {
-        case "name":
-          comp = a.name.localeCompare(b.name);
-          break;
-        case "role":
-          comp = a.role.localeCompare(b.role);
-          break;
-        case "balance":
-          comp = (a.balance || 0) - (b.balance || 0);
-          break;
-        default: // _id
-          comp = a._id.localeCompare(b._id);
+    result.sort((a, b) => {
+      let av = a[sortBy as keyof User] ?? 0;
+      let bv = b[sortBy as keyof User] ?? 0;
+      if (sortBy === "balance") {
+        av = a.balance || 0;
+        bv = b.balance || 0;
       }
-      return sortOrder === "asc" ? comp : -comp;
+      if (typeof av === "string")
+        return sortOrder === "asc"
+          ? av.localeCompare(bv as string)
+          : (bv as string).localeCompare(av);
+      return sortOrder === "asc"
+        ? (av as number) - (bv as number)
+        : (bv as number) - (av as number);
     });
-  }, [filteredUsers, sortBy, sortOrder]);
 
-  const paginatedUsers = useMemo(() => {
+    return result;
+  }, [users, searchTerm, sortBy, sortOrder]);
+
+  const paginated = useMemo(() => {
     const start = (currentPage - 1) * ITEMS_PER_PAGE;
-    return sortedUsers.slice(start, start + ITEMS_PER_PAGE);
-  }, [sortedUsers, currentPage]);
+    return filteredAndSorted.slice(start, start + ITEMS_PER_PAGE);
+  }, [filteredAndSorted, currentPage]);
 
-  const totalPages = Math.ceil(sortedUsers.length / ITEMS_PER_PAGE);
+  const totalPages = Math.ceil(filteredAndSorted.length / ITEMS_PER_PAGE);
 
-  const handleSort = (column: typeof sortBy) => {
-    if (sortBy === column) {
-      setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
-    } else {
-      setSortBy(column);
+  const toggleSort = (key: typeof sortBy) => {
+    if (sortBy === key) setSortOrder((o) => (o === "asc" ? "desc" : "asc"));
+    else {
+      setSortBy(key);
       setSortOrder("asc");
     }
   };
 
-  const openModal = (user: User, mode: "view" | "edit") => {
-    setSelectedUser(user);
-    setModalMode(mode);
-    setModalOpen(true);
+  const refresh = () => {
+    setLoading(true);
+    fetch("http://localhost:3200/api/user/getall")
+      .then((r) => r.json())
+      .then((data) => setUsers(Array.isArray(data) ? data : data.users || []))
+      .finally(() => setLoading(false));
   };
 
-  const handleSave = useCallback((updated: User) => {
-    // In real app, call API update here (e.g., PUT /api/user/update)
-    // For now, update local state
+  const handleSave = (updated: User) => {
     setUsers((prev) => prev.map((u) => (u._id === updated._id ? updated : u)));
-    setModalOpen(false);
-  }, []);
+    setModal(null);
+  };
 
-  // Helper for role color logic
-  const getRoleColor = (role: string) =>
+  const roleColor = (role: string) =>
     role.toLowerCase() === "seller" ? "#D1A148" : "#33ac6f";
-  const isSeller = (role: string) => role.toLowerCase() === "seller";
 
   return (
     <div className="space-y-6">
-      {/* Search Bar */}
-      <div className="flex justify-between items-center bg-white/80 backdrop-blur-md p-4 rounded-2xl shadow-md border border-white/20">
-        <h2 className="text-xl font-bold text-gray-800">
-          All Users ({sortedUsers.length})
+      <div className="flex justify-between items-center p-4 rounded-2xl">
+        <h2 className="text-xl font-bold">
+          All Users ({filteredAndSorted.length})
         </h2>
-
-        <div className="flex gap-2">
+        <div className="flex gap-3">
           <button
-            onClick={fetchUsers}
-            className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 transition"
-            title="Refresh Data"
+            onClick={refresh}
+            className="p-2 rounded-lg hover:bg-gray-200"
           >
             ↻
           </button>
-          <div className="relative w-64">
+          <div className="relative">
             <Search
               className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
               fontSize="small"
             />
             <input
-              type="text"
-              placeholder="Search name, email, phone..."
+              placeholder="Search..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-xl focus:ring-[#33ac6f] focus:border-[#33ac6f] transition"
+              className="pl-10 pr-4 py-2 border rounded-xl focus:ring-[#33ac6f] focus:border-[#33ac6f] w-64"
             />
           </div>
         </div>
       </div>
 
-      {/* Table */}
-      <div className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 overflow-hidden min-h-[400px]">
+      <div className="">
         {loading ? (
-          <div className="flex justify-center items-center h-64">
+          <div className="flex justify-center py-20">
             <CircularProgress style={{ color: "#33ac6f" }} />
           </div>
         ) : (
           <table className="w-full">
-            <thead className="bg-gradient-to-r from-gray-50 to-white">
+            <thead className="bg-gray-50">
               <tr>
-                <th
-                  className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase cursor-pointer"
-                  onClick={() => handleSort("_id")}
-                >
-                  ID{" "}
-                  {sortBy === "_id" &&
-                    (sortOrder === "asc" ? (
-                      <ArrowUpward fontSize="small" />
-                    ) : (
-                      <ArrowDownward fontSize="small" />
-                    ))}
-                </th>
-                <th
-                  className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase cursor-pointer"
-                  onClick={() => handleSort("name")}
-                >
-                  User Info{" "}
-                  {sortBy === "name" &&
-                    (sortOrder === "asc" ? (
-                      <ArrowUpward fontSize="small" />
-                    ) : (
-                      <ArrowDownward fontSize="small" />
-                    ))}
-                </th>
-                <th
-                  className="px-6 py-4 text-center text-xs font-semibold text-gray-500 uppercase cursor-pointer"
-                  onClick={() => handleSort("role")}
-                >
-                  Role{" "}
-                  {sortBy === "role" &&
-                    (sortOrder === "asc" ? (
-                      <ArrowUpward fontSize="small" />
-                    ) : (
-                      <ArrowDownward fontSize="small" />
-                    ))}
-                </th>
-                <th className="px-6 py-4 text-center text-xs font-semibold text-gray-500 uppercase">
-                  Fee Paid
-                </th>
-                <th
-                  className="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase cursor-pointer"
-                  onClick={() => handleSort("balance")}
-                >
-                  Balance{" "}
-                  {sortBy === "balance" &&
-                    (sortOrder === "asc" ? (
-                      <ArrowUpward fontSize="small" />
-                    ) : (
-                      <ArrowDownward fontSize="small" />
-                    ))}
-                </th>
-                <th className="px-6 py-4 text-center text-xs font-semibold text-gray-500 uppercase">
-                  Actions
-                </th>
+                {[
+                  "ID",
+                  "User Info",
+                  "Role",
+                  "Fee Paid",
+                  "Balance",
+                  "Actions",
+                ].map((header, i) => {
+                  const key = ["_id", "name", "role", null, "balance", null][
+                    i
+                  ] as typeof sortBy;
+                  return (
+                    <th
+                      key={header}
+                      className={`px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase ${
+                        key ? "cursor-pointer" : ""
+                      }`}
+                      onClick={() => key && toggleSort(key)}
+                    >
+                      {header}
+                      {key &&
+                        sortBy === key &&
+                        (sortOrder === "asc" ? (
+                          <ArrowUpward fontSize="small" />
+                        ) : (
+                          <ArrowDownward fontSize="small" />
+                        ))}
+                    </th>
+                  );
+                })}
               </tr>
             </thead>
             <tbody>
-              {paginatedUsers.map((user) => (
-                <tr key={user._id} className="hover:bg-gray-50/50 transition">
-                  <td className="px-6 py-4 text-sm text-gray-700 font-mono">
-                    {user._id.substring(0, 8)}...
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <Avatar
-                        sx={{
-                          width: 32,
-                          height: 32,
-                          bgcolor: getRoleColor(user.role),
-                        }}
-                      >
-                        {user.name[0]?.toUpperCase()}
-                      </Avatar>
-                      <div>
-                        <p className="font-medium text-gray-900">{user.name}</p>
-                        <p className="text-xs text-gray-500">{user.email}</p>
+              {paginated.map((user) => {
+                const isSeller = user.role.toLowerCase() === "seller";
+                return (
+                  <tr key={user._id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 text-sm font-mono">
+                      {user._id.slice(0, 8)}...
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <Avatar
+                          sx={{
+                            width: 32,
+                            height: 32,
+                            bgcolor: roleColor(user.role),
+                          }}
+                        >
+                          {user.name[0]?.toUpperCase()}
+                        </Avatar>
+                        <div>
+                          <p className="font-medium">{user.name}</p>
+                          <p className="text-xs text-gray-500">{user.email}</p>
+                        </div>
                       </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-center">
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-semibold capitalize ${
-                        isSeller(user.role)
-                          ? "bg-[#D1A148]/20 text-[#D1A148]"
-                          : "bg-[#33ac6f]/20 text-[#33ac6f]"
-                      }`}
-                    >
-                      {user.role}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-center">
-                    {isSeller(user.role) ? (
-                      <Tooltip
-                        title={user.activationFeePaid ? "Paid" : "Pending"}
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-semibold capitalize bg-${roleColor(
+                          user.role
+                        )}/20 text-[${roleColor(user.role)}]`}
                       >
+                        {user.role}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      {isSeller ? (
                         <span
-                          className={`font-semibold ${
+                          className={
                             user.activationFeePaid
                               ? "text-[#33ac6f]"
                               : "text-red-500"
-                          }`}
+                          }
                         >
-                          {user.activationFeePaid ? "Yes" : "No"}
+                          ●
                         </span>
+                      ) : (
+                        "—"
+                      )}
+                    </td>
+                    <td className="px-6 py-4 text-right font-semibold">
+                      ${(user.balance || 0).toFixed(1)}
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <Tooltip title="View">
+                        <button
+                          onClick={() => setModal({ user, mode: "view" })}
+                          className="p-2 rounded hover:bg-[#33ac6f]/20"
+                        >
+                          <Visibility
+                            fontSize="small"
+                            className="text-[#33ac6f]"
+                          />
+                        </button>
                       </Tooltip>
-                    ) : (
-                      <span className="text-gray-400">—</span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 text-right font-semibold text-gray-900">
-                    {user.balance?.toFixed(1)}
-                  </td>
-                  <td className="px-6 py-4 text-center space-x-2">
-                    <Tooltip title="View">
-                      <button
-                        onClick={() => openModal(user, "view")}
-                        className="p-2 rounded-lg bg-[#33ac6f]/10 hover:bg-[#33ac6f]/20 transition"
-                      >
-                        <Visibility
-                          fontSize="small"
-                          className="text-[#33ac6f]"
-                        />
-                      </button>
-                    </Tooltip>
-                    <Tooltip title="Edit">
-                      <button
-                        onClick={() => openModal(user, "edit")}
-                        className="p-2 rounded-lg bg-[#D1A148]/10 hover:bg-[#D1A148]/20 transition"
-                      >
-                        <Edit fontSize="small" className="text-[#D1A148]" />
-                      </button>
-                    </Tooltip>
-                  </td>
-                </tr>
-              ))}
-              {paginatedUsers.length === 0 && (
+                      <Tooltip title="Edit">
+                        <button
+                          onClick={() => setModal({ user, mode: "edit" })}
+                          className="p-2 rounded hover:bg-[#D1A148]/20"
+                        >
+                          <Edit fontSize="small" className="text-[#D1A148]" />
+                        </button>
+                      </Tooltip>
+                    </td>
+                  </tr>
+                );
+              })}
+              {paginated.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="text-center py-8 text-gray-500">
+                  <td colSpan={6} className="text-center py-12 text-gray-500">
                     No users found.
                   </td>
                 </tr>
@@ -519,52 +410,43 @@ const AllUsers: React.FC = () => {
         )}
       </div>
 
-      {/* Pagination */}
-      {!loading && totalPages > 1 && (
-        <div className="flex justify-between items-center bg-white/80 backdrop-blur-md p-4 rounded-2xl shadow-md border border-white/20">
-          <p className="text-sm text-gray-600">
-            Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1} -{" "}
-            {Math.min(currentPage * ITEMS_PER_PAGE, sortedUsers.length)} of{" "}
-            {sortedUsers.length}
-          </p>
-          <div className="flex space-x-2">
+      {totalPages > 1 && (
+        <div className="flex justify-center gap-2 bg-white/80 backdrop-blur p-4 rounded-2xl">
+          <button
+            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+            className="px-4 py-2 rounded-xl bg-gray-100 disabled:opacity-50"
+          >
+            Prev
+          </button>
+          {Array.from({ length: totalPages }, (_, i) => (
             <button
-              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
-              className="px-4 py-2 rounded-xl bg-gray-100 disabled:opacity-50 hover:bg-gray-200 transition"
+              key={i}
+              onClick={() => setCurrentPage(i + 1)}
+              className={`px-4 py-2 rounded-xl ${
+                currentPage === i + 1
+                  ? "bg-[#33ac6f] text-white"
+                  : "bg-gray-100"
+              }`}
             >
-              Prev
+              {i + 1}
             </button>
-            {Array.from({ length: totalPages }).map((_, i) => (
-              <button
-                key={i}
-                onClick={() => setCurrentPage(i + 1)}
-                className={`px-4 py-2 rounded-xl ${
-                  currentPage === i + 1
-                    ? "bg-[#33ac6f] text-white"
-                    : "bg-gray-100 hover:bg-gray-200"
-                } transition`}
-              >
-                {i + 1}
-              </button>
-            ))}
-            <button
-              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-              disabled={currentPage === totalPages}
-              className="px-4 py-2 rounded-xl bg-gray-100 disabled:opacity-50 hover:bg-gray-200 transition"
-            >
-              Next
-            </button>
-          </div>
+          ))}
+          <button
+            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+            disabled={currentPage === totalPages}
+            className="px-4 py-2 rounded-xl bg-gray-100 disabled:opacity-50"
+          >
+            Next
+          </button>
         </div>
       )}
 
-      {/* Modal */}
-      {modalOpen && selectedUser && (
+      {modal && (
         <UserModal
-          user={selectedUser}
-          mode={modalMode}
-          onClose={() => setModalOpen(false)}
+          user={modal.user}
+          mode={modal.mode}
+          onClose={() => setModal(null)}
           onSave={handleSave}
         />
       )}

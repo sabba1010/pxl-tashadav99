@@ -19,16 +19,10 @@ export interface Payment {
    Fetch Function
    ❌ NO hooks here
 ========================= */
-const fetchPaymentsByEmail = async (
-  email: string
-): Promise<Payment[]> => {
-  const res = await axios.get<Payment[]>(
-    "https://vps-backend-server-beta.vercel.app/api/payments"
-  );
+const fetchPaymentsByEmail = async (email: string): Promise<Payment[]> => {
+  const res = await axios.get<Payment[]>("http://localhost:3200/api/payments");
 
-  return res.data.filter(
-    (payment) => payment.customerEmail === email
-  );
+  return res.data.filter((payment) => payment.customerEmail === email);
 };
 
 /* =========================
@@ -37,15 +31,9 @@ const fetchPaymentsByEmail = async (
 export const useDepositByUser = () => {
   const { user } = useAuth();
 
-  const {
-    data,
-    isLoading,
-    isError,
-    refetch,
-  } = useQuery<Payment[]>({
+  const { data, isLoading, isError, refetch } = useQuery<Payment[]>({
     queryKey: ["payments", user?.email],
-    queryFn: () =>
-      fetchPaymentsByEmail(user!.email),
+    queryFn: () => fetchPaymentsByEmail(user!.email),
     enabled: !!user?.email,
   });
 

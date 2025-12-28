@@ -45,7 +45,7 @@ interface FormData {
 const SellForm: React.FC = () => {
   const [step, setStep] = useState(0);
   const navigate = useNavigate();
-  const  user  = useAuth();
+  const user = useAuth();
 
   const [platforms, setPlatforms] = useState<Platform[]>([]);
   const [loadingPlatforms, setLoadingPlatforms] = useState(true);
@@ -73,7 +73,9 @@ const SellForm: React.FC = () => {
   useEffect(() => {
     const fetchPlatforms = async () => {
       try {
-        const response = await axios.get<{data: any, platforms: any}>("https://vps-backend-server-beta.vercel.app/icon-data");
+        const response = await axios.get<{ data: any; platforms: any }>(
+          "http://localhost:3200/icon-data"
+        );
         const data = Array.isArray(response.data)
           ? response.data
           : response.data.data || response.data.platforms || [];
@@ -116,7 +118,8 @@ const SellForm: React.FC = () => {
     const newErrors: Record<string, string> = {};
     if (!formData.category) newErrors.category = "Platform is required";
     if (!formData.name.trim()) newErrors.name = "Account name is required";
-    if (!formData.description.trim()) newErrors.description = "Description is required";
+    if (!formData.description.trim())
+      newErrors.description = "Description is required";
     if (!formData.price || Number(formData.price) <= 0)
       newErrors.price = "Valid price is required";
 
@@ -128,7 +131,8 @@ const SellForm: React.FC = () => {
   const validateStep1 = () => {
     const newErrors: Record<string, string> = {};
     if (!formData.username.trim()) newErrors.username = "Username is required";
-    if (!formData.accountPass) newErrors.accountPass = "Account password is required";
+    if (!formData.accountPass)
+      newErrors.accountPass = "Account password is required";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -148,13 +152,18 @@ const SellForm: React.FC = () => {
     if (!validateStep1()) return;
 
     try {
-      const response = await axios.post<{ acknowledged: boolean }>("https://vps-backend-server-beta.vercel.app/product/sell", formData);
+      const response = await axios.post<{ acknowledged: boolean }>(
+        "http://localhost:3200/product/sell",
+        formData
+      );
       if (response.data.acknowledged || response.status === 201) {
         toast.success("Your account has been listed successfully!");
         navigate("/myproducts");
       }
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to list account. Try again.");
+      toast.error(
+        error.response?.data?.message || "Failed to list account. Try again."
+      );
       console.error(error);
     }
   };
@@ -165,187 +174,209 @@ const SellForm: React.FC = () => {
     return platforms.find((p) => p.name === formData.category) || null;
   };
 
-const getStepContent = (stepIndex: number) => {
-  switch (stepIndex) {
-    case 0:
-      return (
-        <>
-          <Typography variant="h5" fontWeight="600" gutterBottom>
-            Tell us about the account you're selling
-          </Typography>
-          <Typography variant="body1" color="text.secondary" mb={4}>
-            Provide clear and accurate details to attract buyers faster.
-          </Typography>
+  const getStepContent = (stepIndex: number) => {
+    switch (stepIndex) {
+      case 0:
+        return (
+          <>
+            <Typography variant="h5" fontWeight="600" gutterBottom>
+              Tell us about the account you're selling
+            </Typography>
+            <Typography variant="body1" color="text.secondary" mb={4}>
+              Provide clear and accurate details to attract buyers faster.
+            </Typography>
 
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-            <Autocomplete
-              options={platforms}
-              getOptionLabel={(option) => option.name}
-              value={getSelectedPlatform()}
-              onChange={handleCategoryChange}
-              loading={loadingPlatforms}
-              disableClearable={!!formData.category}
-              renderOption={(props, option) => (
-                <Box component="li" {...props} sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                  <img src={option.link} alt={option.name} width={32} height={32} style={{ objectFit: "contain" }} />
-                  <Typography>{option.name}</Typography>
-                </Box>
-              )}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Platform / Category"
-                  required
-                  error={!!errors.category}
-                  helperText={errors.category}
-                  InputProps={{
-                    ...params.InputProps,
-                    startAdornment: formData.categoryIcon ? (
-                      <InputAdornment position="start">
-                        <img
-                          src={formData.categoryIcon}
-                          alt={formData.category}
-                          width={32}
-                          height={32}
-                          style={{ objectFit: "contain" }}
-                        />
-                      </InputAdornment>
-                    ) : null,
-                    endAdornment: (
-                      <>
-                        {loadingPlatforms && <CircularProgress color="inherit" size={20} />}
-                        {params.InputProps.endAdornment}
-                      </>
-                    ),
-                  }}
-                />
-              )}
-            />
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+              <Autocomplete
+                options={platforms}
+                getOptionLabel={(option) => option.name}
+                value={getSelectedPlatform()}
+                onChange={handleCategoryChange}
+                loading={loadingPlatforms}
+                disableClearable={!!formData.category}
+                renderOption={(props, option) => (
+                  <Box
+                    component="li"
+                    {...props}
+                    sx={{ display: "flex", alignItems: "center", gap: 2 }}
+                  >
+                    <img
+                      src={option.link}
+                      alt={option.name}
+                      width={32}
+                      height={32}
+                      style={{ objectFit: "contain" }}
+                    />
+                    <Typography>{option.name}</Typography>
+                  </Box>
+                )}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Platform / Category"
+                    required
+                    error={!!errors.category}
+                    helperText={errors.category}
+                    InputProps={{
+                      ...params.InputProps,
+                      startAdornment: formData.categoryIcon ? (
+                        <InputAdornment position="start">
+                          <img
+                            src={formData.categoryIcon}
+                            alt={formData.category}
+                            width={32}
+                            height={32}
+                            style={{ objectFit: "contain" }}
+                          />
+                        </InputAdornment>
+                      ) : null,
+                      endAdornment: (
+                        <>
+                          {loadingPlatforms && (
+                            <CircularProgress color="inherit" size={20} />
+                          )}
+                          {params.InputProps.endAdornment}
+                        </>
+                      ),
+                    }}
+                  />
+                )}
+              />
 
-            <TextField
-              fullWidth
-              label="Account Title"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              required
-              error={!!errors.name}
-              helperText={errors.name || "e.g., Gaming Instagram with 50K Followers"}
-            />
+              <TextField
+                fullWidth
+                label="Account Title"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                required
+                error={!!errors.name}
+                helperText={
+                  errors.name || "e.g., Gaming Instagram with 50K Followers"
+                }
+              />
 
-            <TextField
-              fullWidth
-              label="Description"
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              multiline
-              rows={5}
-              required
-              error={!!errors.description}
-              helperText={errors.description || "Include followers, niche, engagement rate, revenue, etc."}
-            />
+              <TextField
+                fullWidth
+                label="Description"
+                name="description"
+                value={formData.description}
+                onChange={handleChange}
+                multiline
+                rows={5}
+                required
+                error={!!errors.description}
+                helperText={
+                  errors.description ||
+                  "Include followers, niche, engagement rate, revenue, etc."
+                }
+              />
 
-            <TextField
-              fullWidth
-              label="Price"
-              name="price"
-              value={formData.price}
-              onChange={handleChange}
-              type="number"
-              required
-              error={!!errors.price}
-              helperText={errors.price}
-              InputProps={{
-                startAdornment: <InputAdornment position="start">$</InputAdornment>,
-                endAdornment: <InputAdornment position="end">USD</InputAdornment>,
-              }}
-            />
-          </Box>
-        </>
-      ); // ← THIS WAS MISSING!
+              <TextField
+                fullWidth
+                label="Price"
+                name="price"
+                value={formData.price}
+                onChange={handleChange}
+                type="number"
+                required
+                error={!!errors.price}
+                helperText={errors.price}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">$</InputAdornment>
+                  ),
+                  endAdornment: (
+                    <InputAdornment position="end">USD</InputAdornment>
+                  ),
+                }}
+              />
+            </Box>
+          </>
+        ); // ← THIS WAS MISSING!
 
-    case 1:
-      return (
-        <>
-          <Typography variant="h5" fontWeight="600" gutterBottom>
-            Account Access Details
-          </Typography>
-          <Typography variant="body1" color="text.secondary" mb={4}>
-            Provide login credentials securely. This information is encrypted and only shown to buyers after purchase.
-          </Typography>
+      case 1:
+        return (
+          <>
+            <Typography variant="h5" fontWeight="600" gutterBottom>
+              Account Access Details
+            </Typography>
+            <Typography variant="body1" color="text.secondary" mb={4}>
+              Provide login credentials securely. This information is encrypted
+              and only shown to buyers after purchase.
+            </Typography>
 
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-            <TextField
-              fullWidth
-              label="Username / Handle"
-              name="username"
-              value={formData.username}
-              onChange={handleChange}
-              required
-              error={!!errors.username}
-              helperText={errors.username}
-            />
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+              <TextField
+                fullWidth
+                label="Username / Handle"
+                name="username"
+                value={formData.username}
+                onChange={handleChange}
+                required
+                error={!!errors.username}
+                helperText={errors.username}
+              />
 
-            <TextField
-              fullWidth
-              label="Account Password"
-              name="accountPass"
-              value={formData.accountPass}
-              onChange={handleChange}
-              type="password"
-              required
-              error={!!errors.accountPass}
-              helperText={errors.accountPass || "Current login password"}
-            />
+              <TextField
+                fullWidth
+                label="Account Password"
+                name="accountPass"
+                value={formData.accountPass}
+                onChange={handleChange}
+                type="password"
+                required
+                error={!!errors.accountPass}
+                helperText={errors.accountPass || "Current login password"}
+              />
 
-            <TextField
-              fullWidth
-              label="Recovery Email (if any)"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              type="email"
-              placeholder="recovery@example.com"
-            />
+              <TextField
+                fullWidth
+                label="Recovery Email (if any)"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                type="email"
+                placeholder="recovery@example.com"
+              />
 
-            <TextField
-              fullWidth
-              label="Recovery Email Password (if different)"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              type="password"
-            />
+              <TextField
+                fullWidth
+                label="Recovery Email Password (if different)"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                type="password"
+              />
 
-            <TextField
-              fullWidth
-              label="Profile Preview Link"
-              name="previewLink"
-              value={formData.previewLink}
-              onChange={handleChange}
-              placeholder="https://instagram.com/username"
-              helperText="Public link to view the account (highly recommended)"
-            />
+              <TextField
+                fullWidth
+                label="Profile Preview Link"
+                name="previewLink"
+                value={formData.previewLink}
+                onChange={handleChange}
+                placeholder="https://instagram.com/username"
+                helperText="Public link to view the account (highly recommended)"
+              />
 
-            <TextField
-              fullWidth
-              label="Additional Notes"
-              name="additionalInfo"
-              value={formData.additionalInfo}
-              onChange={handleChange}
-              multiline
-              rows={4}
-              placeholder="2FA status, original email included, monetization details, etc."
-            />
-          </Box>
-        </>
-      );
+              <TextField
+                fullWidth
+                label="Additional Notes"
+                name="additionalInfo"
+                value={formData.additionalInfo}
+                onChange={handleChange}
+                multiline
+                rows={4}
+                placeholder="2FA status, original email included, monetization details, etc."
+              />
+            </Box>
+          </>
+        );
 
-    default:
-      return null;
-  }
-};
+      default:
+        return null;
+    }
+  };
 
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "#f8fafc", py: { xs: 4, md: 8 } }}>
@@ -369,11 +400,17 @@ const getStepContent = (stepIndex: number) => {
               textAlign: "center",
             }}
           >
-            <Typography variant="h3" fontWeight="bold" gutterBottom color="black">
+            <Typography
+              variant="h3"
+              fontWeight="bold"
+              gutterBottom
+              color="black"
+            >
               Sell Your Account
             </Typography>
-            <p  className="md:w-2/3 md:mx-auto text-center text-black text-xl">
-              List your social media or gaming account securely and reach thousands of buyers
+            <p className="md:w-2/3 md:mx-auto text-center text-black text-xl">
+              List your social media or gaming account securely and reach
+              thousands of buyers
             </p>
           </Box>
 
@@ -397,7 +434,9 @@ const getStepContent = (stepIndex: number) => {
             {getStepContent(step)}
 
             {/* Navigation Buttons */}
-            <Box sx={{ display: "flex", justifyContent: "space-between", mt: 8 }}>
+            <Box
+              sx={{ display: "flex", justifyContent: "space-between", mt: 8 }}
+            >
               <Button
                 onClick={prevStep}
                 disabled={step === 0}
@@ -425,7 +464,8 @@ const getStepContent = (stepIndex: number) => {
                   textTransform: "none",
                   fontSize: "1.1rem",
                   fontWeight: 600,
-                  background: "linear-gradient(90deg, rgb(10, 26, 58) 0%, rgb(212, 166, 67) 100%)",
+                  background:
+                    "linear-gradient(90deg, rgb(10, 26, 58) 0%, rgb(212, 166, 67) 100%)",
                   boxShadow: "0 8px 20px rgba(102, 126, 234, 0.3)",
                   "&:hover": {
                     boxShadow: "0 12px 25px rgba(102, 126, 234, 0.4)",

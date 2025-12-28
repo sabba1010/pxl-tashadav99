@@ -58,7 +58,7 @@ const MyAds: React.FC = () => {
     const fetchAds = async () => {
       try {
         const res = await axios.get<Ad[]>(
-          "https://vps-backend-server-beta.vercel.app/product/all-sells"
+          "http://localhost:3200/product/all-sells"
         );
 
         const userAds = res.data.filter(
@@ -129,9 +129,9 @@ const MyAds: React.FC = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await axios.delete(`https://vps-backend-server-beta.vercel.app/product/delete/${id}`);
+          await axios.delete(`http://localhost:3200/product/delete/${id}`);
           setItems((prev) => prev.filter((it) => it._id !== id));
-          
+
           // Single Alert Logic
           toast.dismiss();
           toast.success("Ad deleted successfully");
@@ -159,8 +159,7 @@ const MyAds: React.FC = () => {
     const st = statusOf(s);
     if (st === "approved" || st === "active")
       return "bg-emerald-50 text-emerald-700 border-emerald-100";
-    if (st === "pending")
-      return "bg-amber-50 text-amber-700 border-amber-100";
+    if (st === "pending") return "bg-amber-50 text-amber-700 border-amber-100";
     if (st === "denied" || st === "reject")
       return "bg-rose-50 text-rose-700 border-rose-100";
     return "bg-gray-50 text-gray-600 border-gray-100";
@@ -186,7 +185,6 @@ const MyAds: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#F3EFEE] pt-20 pb-24">
       <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
-        
         {/* Page Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
           <div>
@@ -245,7 +243,7 @@ const MyAds: React.FC = () => {
               </div>
               <h3 className="text-lg font-bold text-[#0A1A3A]">No ads found</h3>
               <p className="text-gray-500 text-sm mt-1 max-w-xs mx-auto">
-                {activeTab === "All" 
+                {activeTab === "All"
                   ? "You haven't listed any products yet."
                   : `You don't have any items in the "${activeTab}" category.`}
               </p>
@@ -266,7 +264,6 @@ const MyAds: React.FC = () => {
                   className="group bg-white rounded-2xl p-4 sm:p-5 border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200"
                 >
                   <div className="flex flex-col sm:flex-row gap-5">
-                    
                     {/* Icon / Image Section */}
                     <div className="flex-shrink-0 flex items-start justify-between sm:justify-start">
                       <div className="w-16 h-16 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center p-2 group-hover:scale-105 transition-transform">
@@ -276,7 +273,7 @@ const MyAds: React.FC = () => {
                           className="w-full h-full object-contain opacity-90"
                         />
                       </div>
-                      
+
                       {/* Mobile Status Badge (Visible only on small screens) */}
                       <span
                         className={`sm:hidden px-2.5 py-1 rounded-full text-[10px] uppercase font-bold tracking-wide border ${getStatusColor(
@@ -303,7 +300,7 @@ const MyAds: React.FC = () => {
                             {prettyStatusLabel(item.status)}
                           </span>
                         </div>
-                        
+
                         <p className="text-sm text-gray-500 mt-1 line-clamp-2">
                           {item.description}
                         </p>
@@ -318,7 +315,9 @@ const MyAds: React.FC = () => {
                                 className="text-red-500 mt-0.5 flex-shrink-0"
                               />
                               <div>
-                                <p className="text-xs font-bold text-red-800 uppercase">Action Required</p>
+                                <p className="text-xs font-bold text-red-800 uppercase">
+                                  Action Required
+                                </p>
                                 <p className="text-xs text-red-600 mt-0.5">
                                   {item.rejectReason}
                                 </p>
@@ -330,15 +329,17 @@ const MyAds: React.FC = () => {
                       {/* Footer: Price & Actions */}
                       <div className="mt-4 pt-4 border-t border-gray-100 flex flex-wrap items-center justify-between gap-3">
                         <div className="flex flex-col">
-                           <span className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Price</span>
-                           <span className="text-xl font-bold text-[#0A1A3A]">
-                             ${item.price}
-                           </span>
+                          <span className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">
+                            Price
+                          </span>
+                          <span className="text-xl font-bold text-[#0A1A3A]">
+                            ${item.price}
+                          </span>
                         </div>
 
                         <div className="flex items-center gap-2">
-                           {/* Restore Button */}
-                           {statusOf(item.status) === "restore" && (
+                          {/* Restore Button */}
+                          {statusOf(item.status) === "restore" && (
                             <button
                               onClick={() => handleRestore(item._id)}
                               className="flex items-center gap-1.5 px-3 py-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 rounded-lg text-sm font-semibold transition"
@@ -350,21 +351,21 @@ const MyAds: React.FC = () => {
 
                           {/* Action Buttons */}
                           <div className="flex items-center gap-1 bg-gray-50 p-1 rounded-lg border border-gray-100">
-                             <button
-                               onClick={() => handleEdit(item._id)}
-                               className="p-2 text-gray-500 hover:text-blue-600 hover:bg-white rounded-md transition-all shadow-sm hover:shadow"
-                               title="Edit Ad"
-                             >
-                               <Edit size={16} />
-                             </button>
-                             <div className="w-px h-4 bg-gray-300 mx-0.5"></div>
-                             <button
-                               onClick={() => handleDelete(item._id)}
-                               className="p-2 text-gray-500 hover:text-red-600 hover:bg-white rounded-md transition-all shadow-sm hover:shadow"
-                               title="Delete Ad"
-                             >
-                               <Trash2 size={16} />
-                             </button>
+                            <button
+                              onClick={() => handleEdit(item._id)}
+                              className="p-2 text-gray-500 hover:text-blue-600 hover:bg-white rounded-md transition-all shadow-sm hover:shadow"
+                              title="Edit Ad"
+                            >
+                              <Edit size={16} />
+                            </button>
+                            <div className="w-px h-4 bg-gray-300 mx-0.5"></div>
+                            <button
+                              onClick={() => handleDelete(item._id)}
+                              className="p-2 text-gray-500 hover:text-red-600 hover:bg-white rounded-md transition-all shadow-sm hover:shadow"
+                              title="Delete Ad"
+                            >
+                              <Trash2 size={16} />
+                            </button>
                           </div>
                         </div>
                       </div>

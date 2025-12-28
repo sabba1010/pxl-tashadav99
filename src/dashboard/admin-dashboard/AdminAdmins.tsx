@@ -72,7 +72,7 @@ const AdminAdmins: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-screen">
       {/* Sidebar */}
       <aside
         className={`${
@@ -198,7 +198,7 @@ const AdminAdmins: React.FC = () => {
           </h2>
         </header>
 
-        <div className="bg-white p-6 rounded-lg shadow-lg min-h-[calc(100vh-150px)]">
+        <div className="p-6 min-h-[calc(100vh-150px)]">
           <Outlet />
         </div>
       </main>

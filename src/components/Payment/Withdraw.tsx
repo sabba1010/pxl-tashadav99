@@ -1,15 +1,15 @@
-import React, { useState, ChangeEvent, FormEvent } from 'react';
-import { 
-  FaCreditCard, 
-  FaMoneyBillWave, 
-  FaUniversity, 
-  FaStickyNote 
-} from 'react-icons/fa';
+import React, { useState, ChangeEvent, FormEvent } from "react";
+import {
+  FaCreditCard,
+  FaMoneyBillWave,
+  FaUniversity,
+  FaStickyNote,
+} from "react-icons/fa";
 import { useAuth } from "../../context/AuthContext";
 import { toast } from "sonner";
-import { useAuthHook } from '../../hook/useAuthHook';
+import { useAuthHook } from "../../hook/useAuthHook";
 // refetch বাদ দিচ্ছি কারণ সার্ভার আপডেট না হলে refetch করলে আগের ব্যালেন্স চলে আসবে
-// import { useAuthHook } from "../../hook/useAuthHook"; 
+// import { useAuthHook } from "../../hook/useAuthHook";
 
 // react-icons v5+ TypeScript fix
 const CreditCardIcon = FaCreditCard as React.ElementType;
@@ -29,45 +29,52 @@ interface WithdrawFormData {
 }
 
 const WithdrawForm: React.FC = () => {
-  const { user, setUser } = useAuth(); 
-  const { refetch, data } = useAuthHook(); 
+  const { user, setUser } = useAuth();
+  const { refetch, data } = useAuthHook();
 
-  const [paymentMethod, setPaymentMethod] = useState<'kora' | 'flutterwave'>('kora');
+  const [paymentMethod, setPaymentMethod] = useState<"kora" | "flutterwave">(
+    "kora"
+  );
   const [formData, setFormData] = useState<WithdrawFormData>({
-    amount: '',
-    currency: 'NGN',
-    accountNumber: '',
-    bankCode: '',
-    fullName: '',
-    phoneNumber: '',
-    email: data?.email || '',
-    note: ''
+    amount: "",
+    currency: "NGN",
+    accountNumber: "",
+    bankCode: "",
+    fullName: "",
+    phoneNumber: "",
+    email: data?.email || "",
+    note: "",
   });
 
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' }>({ text: '', type: 'success' });
+  const [message, setMessage] = useState<{
+    text: string;
+    type: "success" | "error";
+  }>({ text: "", type: "success" });
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleMethodChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    setPaymentMethod(e.target.value as 'kora' | 'flutterwave');
+    setPaymentMethod(e.target.value as "kora" | "flutterwave");
   };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
     const amountNum = Number(formData.amount);
-    
+
     // Validation
     if (!amountNum || amountNum <= 0) {
-      setMessage({ text: 'Amount must be greater than 0', type: 'error' });
+      setMessage({ text: "Amount must be greater than 0", type: "error" });
       return;
     }
 
     if (!formData.accountNumber || !formData.bankCode || !formData.fullName) {
-      setMessage({ text: 'Bank account details are required', type: 'error' });
+      setMessage({ text: "Bank account details are required", type: "error" });
       return;
     }
 
@@ -78,16 +85,19 @@ const WithdrawForm: React.FC = () => {
 
     // 🛑 STEP 1: Frontend Balance Check
     const currentBalance = (data as any).balance || 0;
-    console.log(data)
+    console.log(data);
 
     if (currentBalance < amountNum) {
-        toast.error("Insufficient Balance!");
-        setMessage({ text: `Insufficient Balance! You have $${currentBalance}`, type: 'error' });
-        return;
+      toast.error("Insufficient Balance!");
+      setMessage({
+        text: `Insufficient Balance! You have $${currentBalance}`,
+        type: "error",
+      });
+      return;
     }
 
     setLoading(true);
-    setMessage({ text: '', type: 'success' });
+    setMessage({ text: "", type: "success" });
 
     try {
       // 🚀 STEP 2: Submit Withdraw Request (এটা ঠিক আছে)
@@ -105,58 +115,61 @@ const WithdrawForm: React.FC = () => {
       };
 
       // আপনার withdraw রাউট যদি কাজ করে তবে এটা থাকবে
-      const withdrawResponse = await fetch('https://vps-backend-server-beta.vercel.app/withdraw/post', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody),
-      });
+      const withdrawResponse = await fetch(
+        "http://localhost:3200/withdraw/post",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(requestBody),
+        }
+      );
 
       const withdrawData = await withdrawResponse.json();
 
       if (withdrawResponse.ok) {
-        
         // 🚀 STEP 3: ONLY Visual Update (No Backend Call)
         // আমরা ব্যাকএন্ডে আপডেট রিকোয়েস্ট পাঠাব না, কারণ রাউট নেই।
-        
+
         const newBalance = currentBalance - amountNum;
-        
+
         // শুধুমাত্র লোকাল স্টেট আপডেট করছি যাতে ইউজার সাথে সাথে ব্যালেন্স কমা দেখে
-        if(setUser) {
-            setUser({ ...user, balance: newBalance } as any);
+        if (setUser) {
+          setUser({ ...user, balance: newBalance } as any);
         }
 
         toast.success(`Request submitted & $${amountNum} deducted (Visually)!`);
         setMessage({
-            text: `Success! $${amountNum} deducted. New Balance: $${newBalance}`,
-            type: 'success'
+          text: `Success! $${amountNum} deducted. New Balance: $${newBalance}`,
+          type: "success",
         });
 
         // Form Reset
         setFormData({
-            amount: '',
-            currency: 'NGN',
-            accountNumber: '',
-            bankCode: '',
-            fullName: '',
-            phoneNumber: '',
-            email: data?.email || '',
-            note: ''
+          amount: "",
+          currency: "NGN",
+          accountNumber: "",
+          bankCode: "",
+          fullName: "",
+          phoneNumber: "",
+          email: data?.email || "",
+          note: "",
         });
-          refetch();
-        // NOTE: refetch() কল করছি না। কারণ সার্ভার আপডেট হয়নি, 
+        refetch();
+        // NOTE: refetch() কল করছি না। কারণ সার্ভার আপডেট হয়নি,
         // তাই refetch করলে ব্যালেন্স আবার আগের মতো হয়ে যাবে।
-        
       } else {
         // Withdraw request failed
-        const errorMsg = withdrawData.message || 'Request failed';
+        const errorMsg = withdrawData.message || "Request failed";
         toast.error(errorMsg);
-        setMessage({ text: errorMsg, type: 'error' });
+        setMessage({ text: errorMsg, type: "error" });
       }
-
     } catch (error) {
       console.error("Withdraw error:", error);
       toast.error("Network error. Try again later.");
-      setMessage({ text: 'Connection failed. Please try again.', type: 'error' });
+      setMessage({
+        text: "Connection failed. Please try again.",
+        type: "error",
+      });
     } finally {
       setLoading(false);
     }
@@ -170,18 +183,20 @@ const WithdrawForm: React.FC = () => {
 
       {/* Alert Message */}
       {message.text && (
-        <div className={`mb-8 p-6 rounded-2xl text-center font-bold text-lg shadow-md ${
-          message.type === 'success' 
-            ? 'bg-green-50 text-green-700 border-2 border-green-200' 
-            : 'bg-red-50 text-red-700 border-2 border-red-200'
-        }`}>
+        <div
+          className={`mb-8 p-6 rounded-2xl text-center font-bold text-lg shadow-md ${
+            message.type === "success"
+              ? "bg-green-50 text-green-700 border-2 border-green-200"
+              : "bg-red-50 text-red-700 border-2 border-red-200"
+          }`}
+        >
           {message.text}
         </div>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-8">
         {/* ... বাকি ফর্ম ডিজাইন আগের মতোই থাকবে ... */}
-        
+
         {/* Payment Gateway */}
         <div className="bg-[#0A1D37] p-8 rounded-2xl text-white">
           <label className="block text-xl font-bold mb-4 flex items-center gap-3">
@@ -217,7 +232,9 @@ const WithdrawForm: React.FC = () => {
             />
           </div>
           <div>
-            <label className="block text-xl font-bold text-[#0A1D37] mb-3">Currency</label>
+            <label className="block text-xl font-bold text-[#0A1D37] mb-3">
+              Currency
+            </label>
             <select
               name="currency"
               value={formData.currency}
@@ -264,7 +281,9 @@ const WithdrawForm: React.FC = () => {
             </div>
           </div>
           <div className="mt-6">
-            <label className="block font-medium mb-2">Account Holder Name *</label>
+            <label className="block font-medium mb-2">
+              Account Holder Name *
+            </label>
             <input
               type="text"
               name="fullName"
@@ -280,7 +299,9 @@ const WithdrawForm: React.FC = () => {
         {/* Contact */}
         <div className="grid md:grid-cols-2 gap-6">
           <div>
-            <label className="block font-medium mb-2">Phone Number (Optional)</label>
+            <label className="block font-medium mb-2">
+              Phone Number (Optional)
+            </label>
             <input
               type="text"
               name="phoneNumber"
@@ -323,18 +344,18 @@ const WithdrawForm: React.FC = () => {
           type="submit"
           disabled={loading}
           className={`w-full py-6 text-white text-2xl font-black rounded-2xl shadow-2xl transition-all transform hover:scale-[1.02] active:scale-98 ${
-            loading 
-              ? 'bg-gray-500 cursor-not-allowed' 
-              : 'bg-gradient-to-r from-[#0A1D37] to-[#1a3a63] hover:from-[#D4A017] hover:to-[#f0b90b] hover:text-[#0A1D37]'
+            loading
+              ? "bg-gray-500 cursor-not-allowed"
+              : "bg-gradient-to-r from-[#0A1D37] to-[#1a3a63] hover:from-[#D4A017] hover:to-[#f0b90b] hover:text-[#0A1D37]"
           }`}
         >
-          {loading ? 'Processing...' : 'SUBMIT WITHDRAWAL REQUEST'}
+          {loading ? "Processing..." : "SUBMIT WITHDRAWAL REQUEST"}
         </button>
 
         <p className="text-center text-sm text-gray-500 mt-8 uppercase tracking-wider font-medium">
-          Funds will be held securely until admin approval • Instant payout after approval
+          Funds will be held securely until admin approval • Instant payout
+          after approval
         </p>
-
       </form>
     </div>
   );

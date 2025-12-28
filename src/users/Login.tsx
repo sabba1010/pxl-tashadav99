@@ -11,13 +11,13 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   // Fixed initial state type for password (was boolean, should be string)
-  const [password, setPassword] = useState(""); 
+  const [password, setPassword] = useState("");
   const navigate = useNavigate();
-  const { user } = useAuth()
-  
+  const { user } = useAuth();
+
   if (user) {
     toast.info("You are already logged in");
-     navigate("/marketplace");
+    navigate("/marketplace");
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -30,7 +30,7 @@ const Login = () => {
 
     try {
       const res = await axios.post<{ success: any; user: any }>(
-        "https://vps-backend-server-beta.vercel.app/api/user/login",
+        "http://localhost:3200/api/user/login",
         {
           email,
           password,
@@ -50,13 +50,12 @@ const Login = () => {
         });
 
         toast.success("Login successful");
-        
+
         // ---------------------------------------------------------
         // CHANGE: Redirect to /marketplace instead of /
         // ---------------------------------------------------------
         navigate("/");
         window.location.reload();
-        
       } else {
         toast.error("Invalid credentials");
       }

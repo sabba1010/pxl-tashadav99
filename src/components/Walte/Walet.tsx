@@ -24,9 +24,12 @@ export default function Wallet(): React.ReactElement {
   const REJECTED_COLOR = "#DC2626";
 
   // Hooks
-  const { payments, isLoading: depositLoading, isError: depositError } = useDepositByUser();
+  const {
+    payments,
+    isLoading: depositLoading,
+    isError: depositError,
+  } = useDepositByUser();
   const loginUserData = useAuthHook();
-  
 
   // UI State
   const [activeTab, setActiveTab] = useState<"online" | "withdraw">("online");
@@ -43,15 +46,17 @@ export default function Wallet(): React.ReactElement {
 
     try {
       setWithdrawLoading(true);
-      const response = await fetch("https://vps-backend-server-beta.vercel.app/withdraw/getall");
+      const response = await fetch("http://localhost:3200/withdraw/getall");
       if (!response.ok) throw new Error("Failed to fetch");
       const data = await response.json();
 
       // === ফিল্টারিং লজিক ===
       const currentUserEmail = loginUserData.data.email;
-      
+
       // শুধুমাত্র কারেন্ট ইউজারের ইমেইলের সাথে মেলা ডাটাগুলো ফিল্টার করা হচ্ছে
-      const filteredData = data.filter((wd: any) => wd.email === currentUserEmail);
+      const filteredData = data.filter(
+        (wd: any) => wd.email === currentUserEmail
+      );
 
       const mapped: Tx[] = filteredData.map((wd: any) => ({
         id: wd._id,
@@ -59,7 +64,9 @@ export default function Wallet(): React.ReactElement {
         amount: Number(wd.amount) || 0,
         status: wd.status === "success" ? "completed" : wd.status || "pending",
         date: new Date(wd.createdAt).toISOString().split("T")[0],
-        note: wd.note || `${wd.paymentMethod?.toUpperCase() || ""} • ${wd.bankCode || ""}`,
+        note:
+          wd.note ||
+          `${wd.paymentMethod?.toUpperCase() || ""} • ${wd.bankCode || ""}`,
       }));
 
       setWithdrawals(mapped);
@@ -127,7 +134,10 @@ export default function Wallet(): React.ReactElement {
             className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-5 rounded-2xl bg-white shadow-lg border border-gray-100 hover:shadow-xl transition-shadow duration-300"
           >
             <div>
-              <div className="text-lg font-semibold" style={{ color: EMPIRE_BLUE }}>
+              <div
+                className="text-lg font-semibold"
+                style={{ color: EMPIRE_BLUE }}
+              >
                 {t.type === "withdraw" ? "Withdrawal" : "Online Deposit"}
               </div>
               <div className="text-sm text-gray-500 mt-1">
@@ -136,7 +146,10 @@ export default function Wallet(): React.ReactElement {
             </div>
 
             <div className="text-right mt-4 sm:mt-0">
-              <div className="text-2xl font-bold" style={{ color: EMPIRE_BLUE }}>
+              <div
+                className="text-2xl font-bold"
+                style={{ color: EMPIRE_BLUE }}
+              >
                 ${t.amount.toFixed(2)}
               </div>
               <div
@@ -154,14 +167,34 @@ export default function Wallet(): React.ReactElement {
 
   const renderContent = () => {
     if (activeTab === "online") {
-      if (depositLoading) return <div className="h-64 flex items-center justify-center text-gray-500">Loading deposits...</div>;
-      if (depositError) return <div className="h-64 flex items-center justify-center text-red-500">Failed to load deposits</div>;
+      if (depositLoading)
+        return (
+          <div className="h-64 flex items-center justify-center text-gray-500">
+            Loading deposits...
+          </div>
+        );
+      if (depositError)
+        return (
+          <div className="h-64 flex items-center justify-center text-red-500">
+            Failed to load deposits
+          </div>
+        );
       return renderList(onlineDeposits);
     }
 
     if (activeTab === "withdraw") {
-      if (withdrawLoading) return <div className="h-64 flex items-center justify-center text-gray-500">Loading withdrawals...</div>;
-      if (withdrawError) return <div className="h-64 flex items-center justify-center text-red-500">Failed to load withdrawals</div>;
+      if (withdrawLoading)
+        return (
+          <div className="h-64 flex items-center justify-center text-gray-500">
+            Loading withdrawals...
+          </div>
+        );
+      if (withdrawError)
+        return (
+          <div className="h-64 flex items-center justify-center text-red-500">
+            Failed to load withdrawals
+          </div>
+        );
       return renderList(withdrawals);
     }
 
@@ -171,7 +204,10 @@ export default function Wallet(): React.ReactElement {
   return (
     <div className="min-h-[85vh] p-4 sm:p-6 lg:p-8 bg-[#f3efee]">
       <div className="max-w-7xl mx-auto">
-        <h2 className="text-3xl sm:text-4xl font-bold mb-8" style={{ color: EMPIRE_BLUE }}>
+        <h2
+          className="text-3xl sm:text-4xl font-bold mb-8"
+          style={{ color: EMPIRE_BLUE }}
+        >
           Your Wallet
         </h2>
 
@@ -201,27 +237,32 @@ export default function Wallet(): React.ReactElement {
                 Deposit Funds
               </Link>
 
-          {loginUserData.data?.role !== "buyer" ?     <Link
-                to="/withdraw"
-                className="flex-1 flex items-center justify-center gap-3 px-8 py-5 rounded-2xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 bg-white border-2 text-[#0A1A3A] hover:bg-[#0A1A3A] hover:text-white hover:scale-105"
-                style={{ borderColor: ROYAL_GOLD }}
-              >
-                <FaArrowUpIcon size={22} className="rotate-45" />
-                Withdraw Funds
-              </Link> : null}
+              {loginUserData.data?.role !== "buyer" ? (
+                <Link
+                  to="/withdraw"
+                  className="flex-1 flex items-center justify-center gap-3 px-8 py-5 rounded-2xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 bg-white border-2 text-[#0A1A3A] hover:bg-[#0A1A3A] hover:text-white hover:scale-105"
+                  style={{ borderColor: ROYAL_GOLD }}
+                >
+                  <FaArrowUpIcon size={22} className="rotate-45" />
+                  Withdraw Funds
+                </Link>
+              ) : null}
             </div>
           </div>
 
           {/* Right */}
           <div className="col-span-12 lg:col-span-7">
             <div className="flex gap-8 border-b pb-4 mb-8 overflow-x-auto">
-              <button onClick={() => setActiveTab("online")} className={tabClass("online")}>
+              <button
+                onClick={() => setActiveTab("online")}
+                className={tabClass("online")}
+              >
                 Online Deposit
               </button>
               <button
                 onClick={() => {
                   setActiveTab("withdraw");
-                  // fetchWithdrawals এখানে কল না করলেও চলবে কারণ useEffect হ্যান্ডেল করবে, 
+                  // fetchWithdrawals এখানে কল না করলেও চলবে কারণ useEffect হ্যান্ডেল করবে,
                   // তবুও রাখা যেতে পারে instant call এর জন্য
                   fetchWithdrawals();
                 }}

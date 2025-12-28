@@ -10,13 +10,18 @@ import axios from "axios";
 import { getAllNotifications } from "../components/Notification/Notification";
 import headerlogo from "../assets/headerlogo.png";
 import { useAuthHook } from "../hook/useAuthHook";
-import { ListCheck, ShoppingBag, ShoppingCart, WalletMinimal } from "lucide-react";
+import {
+  ListCheck,
+  ShoppingBag,
+  ShoppingCart,
+  WalletMinimal,
+} from "lucide-react";
 
 const FaBreadSliceIcon = FaBreadSlice as unknown as React.ComponentType<any>;
 const FaTrashIcon = FaTrash as unknown as React.ComponentType<any>;
 
 // API URL
-const API_URL = "https://vps-backend-server-beta.vercel.app/api/notification";
+const API_URL = "http://localhost:3200/api/notification";
 
 type NItem = {
   _id?: string;
@@ -259,21 +264,19 @@ export default function Navbar() {
               ) : (
                 ""
               )}
-              {
-                loginUser?.role === "seller" || loginUser?.role === "admin" ? (
-                  <NavLink
-                    to="/myproducts"
-                    className="font-medium"
-                    style={({ isActive }) => ({
-                      color: isActive ? ROYAL_GOLD : CHARCOAL,
-                    })}
-                  >
-                    My Ads
-                  </NavLink>
-                ) : (
-                  ""
-                )
-              }
+              {loginUser?.role === "seller" || loginUser?.role === "admin" ? (
+                <NavLink
+                  to="/myproducts"
+                  className="font-medium"
+                  style={({ isActive }) => ({
+                    color: isActive ? ROYAL_GOLD : CHARCOAL,
+                  })}
+                >
+                  My Ads
+                </NavLink>
+              ) : (
+                ""
+              )}
               <NavLink
                 to="/selling-form"
                 className="px-6 py-2.5 rounded-lg font-medium text-white shadow-sm"
@@ -581,7 +584,7 @@ export default function Navbar() {
                 color: isActive ? ROYAL_GOLD : CHARCOAL,
               })}
             >
-              <ShoppingBag/>
+              <ShoppingBag />
               <span className="text-xs">Marke</span>
             </NavLink>
             <NavLink
@@ -591,7 +594,7 @@ export default function Navbar() {
                 color: isActive ? ROYAL_GOLD : CHARCOAL,
               })}
             >
-              <ShoppingCart/>
+              <ShoppingCart />
               <span className="text-xs">Purchases</span>
             </NavLink>
             <NavLink
@@ -601,7 +604,7 @@ export default function Navbar() {
                 color: isActive ? ROYAL_GOLD : CHARCOAL,
               })}
             >
-              <ListCheck/>
+              <ListCheck />
               <span className="text-xs">Orders</span>
             </NavLink>
             <NavLink
@@ -621,7 +624,7 @@ export default function Navbar() {
                 color: isActive ? ROYAL_GOLD : CHARCOAL,
               })}
             >
-              <WalletMinimal/>
+              <WalletMinimal />
               <span className="text-xs">Wallet</span>
             </NavLink>
           </div>

@@ -23,7 +23,6 @@ interface RegisterResponse {
   message?: string;
 }
 
-
 interface UserFromDB {
   _id: string;
   email: string;
@@ -57,10 +56,10 @@ const Register = () => {
 
   if (user) {
     toast.info("You are already logged in");
-     navigate("/marketplace");
+    navigate("/marketplace");
   }
 
-const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     toast.dismiss(); // আগের সব টোস্ট ক্লিয়ার করা
 
@@ -68,8 +67,12 @@ const handleSubmit = async (e: React.FormEvent) => {
 
     const formData = {
       name: (form.elements.namedItem("name") as HTMLInputElement).value.trim(),
-      email: (form.elements.namedItem("email") as HTMLInputElement).value.trim(),
-      phone: (form.elements.namedItem("phone") as HTMLInputElement).value.trim(),
+      email: (
+        form.elements.namedItem("email") as HTMLInputElement
+      ).value.trim(),
+      phone: (
+        form.elements.namedItem("phone") as HTMLInputElement
+      ).value.trim(),
       password: (form.elements.namedItem("password") as HTMLInputElement).value,
       countryCode: selectedCountry.code, // আপনার state থেকে আসছে
       role: "buyer",
@@ -79,7 +82,12 @@ const handleSubmit = async (e: React.FormEvent) => {
     };
 
     // 2. সাধারণ ভ্যালিডেশন
-    if (!formData.name || !formData.email || !formData.phone || !formData.password) {
+    if (
+      !formData.name ||
+      !formData.email ||
+      !formData.phone ||
+      !formData.password
+    ) {
       toast.error("Please fill out all fields!");
       return;
     }
@@ -95,13 +103,15 @@ const handleSubmit = async (e: React.FormEvent) => {
       // ---------------------------------------------------------
       // এখানে <UserFromDB[]> ব্যবহার করায় TypeScript আর এরর দিবে না
       const checkRes = await axios.get<UserFromDB[]>(
-        "https://vps-backend-server-beta.vercel.app/api/user/getall"
+        "http://localhost:3200/api/user/getall"
       );
-      
-      const allUsers = checkRes.data; 
+
+      const allUsers = checkRes.data;
 
       // চেক করা হচ্ছে ইমেইলটি ডাটাবেসে আছে কিনা
-      const isDuplicate = allUsers.some((user) => user.email === formData.email);
+      const isDuplicate = allUsers.some(
+        (user) => user.email === formData.email
+      );
 
       if (isDuplicate) {
         toast.error("⚠️ Email already exists! Please Login.");
@@ -112,7 +122,7 @@ const handleSubmit = async (e: React.FormEvent) => {
       // STEP 2: রেজিস্ট্রেশন (POST Request)
       // ---------------------------------------------------------
       const res = await axios.post<RegisterResponse>(
-        "https://vps-backend-server-beta.vercel.app/api/user/register",
+        "http://localhost:3200/api/user/register",
         formData
       );
 
@@ -120,7 +130,7 @@ const handleSubmit = async (e: React.FormEvent) => {
 
       // ব্যাকএন্ড যদি 200 দেয় কিন্তু মেসেজে exist থাকে (সেফটি চেক)
       if (
-        data.error || 
+        data.error ||
         (data.message && data.message.toLowerCase().includes("exist"))
       ) {
         toast.error("⚠️ Email already exists! Please Login.");
@@ -132,7 +142,7 @@ const handleSubmit = async (e: React.FormEvent) => {
       // ---------------------------------------------------------
       if (data.insertedId) {
         toast.success("🎉 Account created & Logged in!");
-        
+
         const savedUser = {
           _id: data.insertedId,
           name: formData.name,
@@ -148,14 +158,13 @@ const handleSubmit = async (e: React.FormEvent) => {
         });
 
         form.reset();
-        
+
         // রিডাইরেক্ট
         navigate("/marketplace");
-        window.location.reload(); 
+        window.location.reload();
       } else {
         toast.error("Registration failed. Try again.");
       }
-
     } catch (err: any) {
       console.error("Register Error:", err);
 
@@ -164,16 +173,17 @@ const handleSubmit = async (e: React.FormEvent) => {
       // ---------------------------------------------------------
       if (err.response) {
         const errorData = err.response.data as RegisterResponse;
-        const msg = errorData?.error || errorData?.message || JSON.stringify(errorData);
+        const msg =
+          errorData?.error || errorData?.message || JSON.stringify(errorData);
 
         if (
-          msg.toLowerCase().includes("exist") || 
+          msg.toLowerCase().includes("exist") ||
           msg.toLowerCase().includes("duplicate") ||
           msg.toLowerCase().includes("email")
         ) {
-           toast.error("⚠️ This email is already used! Please Login.");
+          toast.error("⚠️ This email is already used! Please Login.");
         } else {
-           toast.error(`Error: ${msg}`);
+          toast.error(`Error: ${msg}`);
         }
       } else {
         toast.error("❌ Network Error! Please check your internet.");
@@ -186,15 +196,23 @@ const handleSubmit = async (e: React.FormEvent) => {
       <div className="fixed inset-0 -z-10 opacity-10 pointer-events-none">
         <svg className="w-full h-full" viewBox="0 0 1200 800">
           <motion.line
-            x1="100" y1="200" x2="500" y2="600"
-            stroke="#f97316" strokeWidth="1.5"
+            x1="100"
+            y1="200"
+            x2="500"
+            y2="600"
+            stroke="#f97316"
+            strokeWidth="1.5"
             initial={{ pathLength: 0 }}
             animate={{ pathLength: 1, opacity: [0.3, 0.8, 0.3] }}
             transition={{ duration: 8, repeat: Infinity }}
           />
           <motion.line
-            x1="800" y1="100" x2="300" y2="500"
-            stroke="#ec4899" strokeWidth="1.5"
+            x1="800"
+            y1="100"
+            x2="300"
+            y2="500"
+            stroke="#ec4899"
+            strokeWidth="1.5"
             initial={{ pathLength: 0 }}
             animate={{ pathLength: 1, opacity: [0.3, 0.7, 0.3] }}
             transition={{ duration: 10, repeat: Infinity, delay: 1 }}
@@ -202,10 +220,16 @@ const handleSubmit = async (e: React.FormEvent) => {
           {[...Array(8)].map((_, i) => (
             <motion.circle
               key={i}
-              cx={100 + i * 140} cy={200 + (i % 3) * 150} r="4"
+              cx={100 + i * 140}
+              cy={200 + (i % 3) * 150}
+              r="4"
               fill="#f97316"
               animate={{ scale: [1, 1.6, 1], opacity: [0.4, 1, 0.4] }}
-              transition={{ duration: 4 + i * 0.5, repeat: Infinity, ease: "easeInOut" }}
+              transition={{
+                duration: 4 + i * 0.5,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
             />
           ))}
         </svg>
@@ -230,7 +254,9 @@ const handleSubmit = async (e: React.FormEvent) => {
                 <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-pink-600 rounded-2xl flex items-center justify-center shadow-2xl shadow-orange-500/50">
                   <Sparkles className="w-9 h-9 text-white" />
                 </div>
-                <span className="text-5xl font-black text-white">AAcctEmpire</span>
+                <span className="text-5xl font-black text-white">
+                  AAcctEmpire
+                </span>
               </motion.div>
 
               <motion.h1
@@ -239,8 +265,10 @@ const handleSubmit = async (e: React.FormEvent) => {
                 transition={{ delay: 0.6 }}
                 className="text-7xl font-black leading-tight text-white"
               >
-                Connect. Trade.<br />
-                <span className="text-orange-500">Transform</span><br />
+                Connect. Trade.
+                <br />
+                <span className="text-orange-500">Transform</span>
+                <br />
                 Your Influence
               </motion.h1>
 
@@ -250,7 +278,8 @@ const handleSubmit = async (e: React.FormEvent) => {
                 transition={{ delay: 0.9 }}
                 className="mt-8 text-xl text-gray-400"
               >
-                Join the future of creator commerce. Trade your social reach like never before.
+                Join the future of creator commerce. Trade your social reach
+                like never before.
               </motion.p>
             </div>
           </motion.div>
@@ -269,7 +298,9 @@ const handleSubmit = async (e: React.FormEvent) => {
                   <div className="w-14 h-14 bg-gradient-to-br from-orange-500 to-pink-600 rounded-2xl flex items-center justify-center shadow-xl">
                     <Sparkles className="w-8 h-8 text-white" />
                   </div>
-                  <span className="text-3xl font-bold text-white">AAcctEmpire</span>
+                  <span className="text-3xl font-bold text-white">
+                    AAcctEmpire
+                  </span>
                 </div>
               </div>
 
@@ -289,7 +320,10 @@ const handleSubmit = async (e: React.FormEvent) => {
 
               <p className="text-center text-gray-400 mb-8">
                 Already have an account?{" "}
-                <Link to="/login" className="text-orange-500 font-semibold hover:text-orange-400">
+                <Link
+                  to="/login"
+                  className="text-orange-500 font-semibold hover:text-orange-400"
+                >
                   Login
                 </Link>
               </p>
@@ -297,61 +331,131 @@ const handleSubmit = async (e: React.FormEvent) => {
               <form onSubmit={handleSubmit} className="space-y-5">
                 {/* Name */}
                 <div>
-                  <label className="text-sm font-medium text-gray-300">Full Name</label>
+                  <label className="text-sm font-medium text-gray-300">
+                    Full Name
+                  </label>
                   <div className="relative mt-2">
                     <User className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-orange-400" />
-                    <input type="text" required name="name" className="w-full pl-14 pr-5 py-4 bg-gray-900/60 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/30 transition" placeholder="John Doe" />
+                    <input
+                      type="text"
+                      required
+                      name="name"
+                      className="w-full pl-14 pr-5 py-4 bg-gray-900/60 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/30 transition"
+                      placeholder="John Doe"
+                    />
                   </div>
                 </div>
 
                 {/* Email */}
                 <div>
-                  <label className="text-sm font-medium text-gray-300">Email address</label>
+                  <label className="text-sm font-medium text-gray-300">
+                    Email address
+                  </label>
                   <div className="relative mt-2">
                     <Mail className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-orange-400" />
-                    <input type="email" required name="email" className="w-full pl-14 pr-5 py-4 bg-gray-900/60 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/30 transition" placeholder="you@example.com" />
+                    <input
+                      type="email"
+                      required
+                      name="email"
+                      className="w-full pl-14 pr-5 py-4 bg-gray-900/60 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/30 transition"
+                      placeholder="you@example.com"
+                    />
                   </div>
                 </div>
 
                 {/* Phone */}
                 <div>
-                  <label className="text-sm font-medium text-gray-300">Phone Number</label>
+                  <label className="text-sm font-medium text-gray-300">
+                    Phone Number
+                  </label>
                   <div className="relative mt-2">
-                    <button type="button" onClick={() => setIsCountryOpen(!isCountryOpen)} className="absolute left-3 top-1/2 -translate-y-1/2 z-10 flex items-center gap-2 bg-gray-900/80 px-3 py-2 rounded-lg hover:bg-gray-800 transition">
+                    <button
+                      type="button"
+                      onClick={() => setIsCountryOpen(!isCountryOpen)}
+                      className="absolute left-3 top-1/2 -translate-y-1/2 z-10 flex items-center gap-2 bg-gray-900/80 px-3 py-2 rounded-lg hover:bg-gray-800 transition"
+                    >
                       <span className="text-2xl">{selectedCountry.flag}</span>
-                      <span className="text-sm text-gray-300">{selectedCountry.code}</span>
-                      <ChevronDown className={`w-4 h-4 text-gray-400 transition ${isCountryOpen ? "rotate-180" : ""}`} />
+                      <span className="text-sm text-gray-300">
+                        {selectedCountry.code}
+                      </span>
+                      <ChevronDown
+                        className={`w-4 h-4 text-gray-400 transition ${
+                          isCountryOpen ? "rotate-180" : ""
+                        }`}
+                      />
                     </button>
                     {isCountryOpen && (
                       <div className="absolute left-0 top-full mt-2 w-full bg-gray-900 border border-gray-700 rounded-xl shadow-2xl z-20 max-h-64 overflow-y-auto">
                         {countries.map((country) => (
-                          <div key={country.code} onClick={() => { setSelectedCountry(country); setIsCountryOpen(false); }} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-800 cursor-pointer transition">
+                          <div
+                            key={country.code}
+                            onClick={() => {
+                              setSelectedCountry(country);
+                              setIsCountryOpen(false);
+                            }}
+                            className="flex items-center gap-3 px-4 py-3 hover:bg-gray-800 cursor-pointer transition"
+                          >
                             <span className="text-2xl">{country.flag}</span>
-                            <span className="text-gray-300 text-sm">{country.label}</span>
-                            <span className="ml-auto text-gray-500 text-sm">{country.code}</span>
+                            <span className="text-gray-300 text-sm">
+                              {country.label}
+                            </span>
+                            <span className="ml-auto text-gray-500 text-sm">
+                              {country.code}
+                            </span>
                           </div>
                         ))}
                       </div>
                     )}
                     <Phone className="absolute left-40 top-1/2 -translate-y-1/2 w-5 h-5 text-orange-400 z-10" />
-                    <input type="tel" required name="phone" className="w-full pl-52 pr-5 py-4 bg-gray-900/60 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/30 transition" placeholder="801 234 5678" />
+                    <input
+                      type="tel"
+                      required
+                      name="phone"
+                      className="w-full pl-52 pr-5 py-4 bg-gray-900/60 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/30 transition"
+                      placeholder="801 234 5678"
+                    />
                   </div>
                 </div>
 
                 {/* Password */}
                 <div>
-                  <label className="text-sm font-medium text-gray-300">Password</label>
+                  <label className="text-sm font-medium text-gray-300">
+                    Password
+                  </label>
                   <div className="relative mt-2">
                     <Lock className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-orange-400" />
-                    <input type={showPassword ? "text" : "password"} required name="password" className="w-full pl-14 pr-14 py-4 bg-gray-900/60 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/30 transition" placeholder="Create a strong password" />
-                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white">
-                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      required
+                      name="password"
+                      className="w-full pl-14 pr-14 py-4 bg-gray-900/60 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/30 transition"
+                      placeholder="Create a strong password"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+                    >
+                      {showPassword ? (
+                        <EyeOff className="w-5 h-5" />
+                      ) : (
+                        <Eye className="w-5 h-5" />
+                      )}
                     </button>
                   </div>
-                  <p className="text-xs text-gray-500 mt-2">Minimum length of 8-30 characters<br />Only lowercase, numeric and symbols allowed</p>
+                  <p className="text-xs text-gray-500 mt-2">
+                    Minimum length of 8-30 characters
+                    <br />
+                    Only lowercase, numeric and symbols allowed
+                  </p>
                 </div>
 
-                <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} type="submit" className="w-full bg-orange-500 hover:bg-orange-600 disabled:bg-gray-700 disabled:cursor-not-allowed text-white font-bold text-lg py-5 rounded-2xl shadow-xl shadow-orange-500/30 transition-all mt-8">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  type="submit"
+                  className="w-full bg-orange-500 hover:bg-orange-600 disabled:bg-gray-700 disabled:cursor-not-allowed text-white font-bold text-lg py-5 rounded-2xl shadow-xl shadow-orange-500/30 transition-all mt-8"
+                >
                   Sign up
                 </motion.button>
               </form>

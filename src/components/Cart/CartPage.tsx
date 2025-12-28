@@ -26,7 +26,7 @@ interface CartItem {
   UserEmail: string;
 }
 
-const API_URL = "https://vps-backend-server-beta.vercel.app";
+const API_URL = "http://localhost:3200";
 
 const CartPage: React.FC = () => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
@@ -101,7 +101,9 @@ const CartPage: React.FC = () => {
           await sendNotification({
             type: "buy",
             title: "Cart Checkout Successful",
-            message: `You successfully purchased ${cartItems.length} items for $${total.toFixed(2)}.`,
+            message: `You successfully purchased ${
+              cartItems.length
+            } items for $${total.toFixed(2)}.`,
             data: {
               totalAmount: total,
               itemCount: cartItems.length,
@@ -150,7 +152,6 @@ const CartPage: React.FC = () => {
     <div className="min-h-screen bg-[#F9FBFC] text-[#0A1D37]">
       {/* Responsive Container: Reduced padding on mobile (px-4 py-6) */}
       <div className="max-w-6xl mx-auto px-4 py-6 md:px-6 md:py-12">
-        
         {/* Breadcrumb & Title */}
         <div className="mb-6 md:mb-10">
           <Link
@@ -165,7 +166,7 @@ const CartPage: React.FC = () => {
               Back to Marketplace
             </span>
           </Link>
-          
+
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <h1 className="text-3xl md:text-4xl font-black tracking-tight">
               My <span className="text-[#D4A017]">Cart</span>.
@@ -182,7 +183,9 @@ const CartPage: React.FC = () => {
             <div className="w-20 h-20 md:w-24 md:h-24 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6 text-gray-200">
               <ShoppingCartIcon size={32} className="md:w-10 md:h-10" />
             </div>
-            <h2 className="text-xl md:text-2xl font-bold mb-2">Your cart is empty</h2>
+            <h2 className="text-xl md:text-2xl font-bold mb-2">
+              Your cart is empty
+            </h2>
             <p className="text-sm md:text-base text-gray-400 mb-8">
               Add items to your cart to see them here.
             </p>
@@ -208,16 +211,16 @@ const CartPage: React.FC = () => {
                     <div className="w-16 h-16 md:w-20 md:h-20 flex-shrink-0 bg-gradient-to-br from-[#0A1D37] to-[#1a3a63] rounded-xl md:rounded-2xl flex items-center justify-center text-white text-xl md:text-2xl font-bold shadow-lg">
                       {item.name[0]}
                     </div>
-                    
+
                     {/* Mobile Title logic */}
                     <div className="flex-1 sm:hidden">
-                        <h3 className="font-bold text-lg leading-tight group-hover:text-[#D4A017] transition-colors line-clamp-1">
-                          {item.name}
-                        </h3>
-                        {/* UPDATE: ইমেইল হাইড করা হয়েছে */}
-                        <p className="text-[10px] text-gray-400 font-medium truncate">
-                          Verified Seller
-                        </p>
+                      <h3 className="font-bold text-lg leading-tight group-hover:text-[#D4A017] transition-colors line-clamp-1">
+                        {item.name}
+                      </h3>
+                      {/* UPDATE: ইমেইল হাইড করা হয়েছে */}
+                      <p className="text-[10px] text-gray-400 font-medium truncate">
+                        Verified Seller
+                      </p>
                     </div>
                   </div>
 
@@ -239,10 +242,12 @@ const CartPage: React.FC = () => {
                   {/* Price & Action Section: Row on Mobile, Column on Desktop */}
                   <div className="w-full sm:w-auto flex flex-row justify-between sm:flex-col sm:items-end gap-2 md:gap-3 mt-2 sm:mt-0 pt-3 sm:pt-0 border-t sm:border-0 border-gray-100">
                     <div className="sm:text-right">
-                        <span className="block sm:hidden text-[10px] text-gray-400 uppercase font-bold">Price</span>
-                        <p className="text-xl md:text-2xl font-black text-[#0A1D37]">
-                          ${Number(item.price).toFixed(2)}
-                        </p>
+                      <span className="block sm:hidden text-[10px] text-gray-400 uppercase font-bold">
+                        Price
+                      </span>
+                      <p className="text-xl md:text-2xl font-black text-[#0A1D37]">
+                        ${Number(item.price).toFixed(2)}
+                      </p>
                     </div>
                     <button
                       onClick={() => handleDelete(item._id)}
@@ -274,7 +279,9 @@ const CartPage: React.FC = () => {
                     <span className="text-[#D4A017] font-bold">FREE</span>
                   </div>
                   <div className="pt-6 border-t border-white/10 flex justify-between items-center">
-                    <span className="font-bold text-sm md:text-base">Total Cost</span>
+                    <span className="font-bold text-sm md:text-base">
+                      Total Cost
+                    </span>
                     <span className="text-3xl md:text-4xl font-black text-[#D4A017]">
                       ${total.toFixed(2)}
                     </span>

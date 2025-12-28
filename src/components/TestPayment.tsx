@@ -61,14 +61,17 @@ const TestPayment: React.FC<TestPaymentProps> = ({ amount }) => {
 
           try {
             // Backend-এ verify করি
-            const verifyRes = await fetch("https://vps-backend-server-beta.vercel.app/api/verify-payment", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                transaction_id,
-                userEmail: user.email,
-              }),
-            });
+            const verifyRes = await fetch(
+              "http://localhost:3200/api/verify-payment",
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  transaction_id,
+                  userEmail: user.email,
+                }),
+              }
+            );
 
             const verifyData = await verifyRes.json();
 
@@ -76,11 +79,14 @@ const TestPayment: React.FC<TestPaymentProps> = ({ amount }) => {
               setPaymentStatus(`Success! ₦${amount} verified.`);
 
               // Balance update
-              const balanceRes = await fetch("https://vps-backend-server-beta.vercel.app/api/update-balance", {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email: user.email }),
-              });
+              const balanceRes = await fetch(
+                "http://localhost:3200/api/update-balance",
+                {
+                  method: "PATCH",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ email: user.email }),
+                }
+              );
 
               const balanceData = await balanceRes.json();
 
@@ -139,9 +145,10 @@ const TestPayment: React.FC<TestPaymentProps> = ({ amount }) => {
         disabled={isProcessing}
         className={`flex items-center justify-center gap-4 w-full max-w-md px-10 py-5 
           text-white text-lg font-bold rounded-xl shadow-xl transition duration-300
-          ${isProcessing 
-            ? "bg-gray-500 cursor-not-allowed" 
-            : "bg-orange-500 hover:bg-orange-600"
+          ${
+            isProcessing
+              ? "bg-gray-500 cursor-not-allowed"
+              : "bg-orange-500 hover:bg-orange-600"
           }`}
       >
         <CreditCard size={28} />
@@ -151,7 +158,8 @@ const TestPayment: React.FC<TestPaymentProps> = ({ amount }) => {
       {paymentStatus && (
         <div
           className={`w-full max-w-md p-5 rounded-xl text-center font-bold text-lg ${
-            paymentStatus.includes("Success") || paymentStatus.includes("verified")
+            paymentStatus.includes("Success") ||
+            paymentStatus.includes("verified")
               ? "bg-green-100 text-green-800 border-2 border-green-400"
               : "bg-red-100 text-red-800 border-2 border-red-400"
           }`}

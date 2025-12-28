@@ -19,7 +19,7 @@ const ITEMS_PER_PAGE = 5;
 
 /* ====================== API FUNCTIONS ====================== */
 const fetchPayments = async (): Promise<Payment[]> => {
-  const response = await axios.get("https://vps-backend-server-beta.vercel.app/api/payments");
+  const response = await axios.get("http://localhost:3200/api/payments");
   return response.data as Payment[]; // assuming the endpoint returns an array directly
 };
 
@@ -75,7 +75,9 @@ const DepositRequests: React.FC = () => {
   const queryClient = useQueryClient();
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortBy, setSortBy] = useState<"createdAt" | "amount" | "status" | "customerEmail">("createdAt");
+  const [sortBy, setSortBy] = useState<
+    "createdAt" | "amount" | "status" | "customerEmail"
+  >("createdAt");
   const [sortOrder, setSortOrder] = useState<"desc" | "asc">("desc");
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -106,7 +108,9 @@ const DepositRequests: React.FC = () => {
     let filtered = payments.filter(
       (p) =>
         p._id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        String(p.transactionId).toLowerCase().includes(searchTerm.toLowerCase()) ||
+        String(p.transactionId)
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
         p.customerEmail.toLowerCase().includes(searchTerm.toLowerCase()) ||
         p.status.toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -124,7 +128,8 @@ const DepositRequests: React.FC = () => {
           comp = a.customerEmail.localeCompare(b.customerEmail);
           break;
         default:
-          comp = new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+          comp =
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       }
       return sortOrder === "asc" ? comp : -comp;
     });
@@ -182,7 +187,9 @@ const DepositRequests: React.FC = () => {
         </h3>
         <div className="flex gap-2 w-full sm:w-auto">
           <button
-            onClick={() => queryClient.refetchQueries({ queryKey: ["payments"] })}
+            onClick={() =>
+              queryClient.refetchQueries({ queryKey: ["payments"] })
+            }
             className="bg-white border p-2 rounded-lg hover:bg-gray-100 text-gray-600"
             disabled={isLoading}
           >
