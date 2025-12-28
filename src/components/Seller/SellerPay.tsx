@@ -5,19 +5,18 @@ import {
   CheckCircle2,
   X,
   Lock,
-  RefreshCw,
-  ShieldCheck,
-  LogOut,
-  AlertTriangle,
-  CreditCard
+  RefreshCw
 } from "lucide-react";
-import { toast } from "sonner"; // Toast Library
 import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2"; // Alerts এর জন্য
 
 // Hooks
 import { useAuth } from "../../context/AuthContext"; 
 import { useAuthHook } from "../../hook/useAuthHook"; 
 import { sendNotification } from "../../components/Notification/Notification";
+
+// Components
+import Loading from "../../components/Loading"; // ✅ আপনার কাস্টম লোডিং কম্পোনেন্ট
 
 const API_URL = "http://localhost:3200";
 
@@ -53,74 +52,36 @@ const SellerPay = () => {
     navigate("/login");
   };
 
-  // --- PAYMENT LOGIC ---
-  const handleWalletPayment = () => {
+  // --- DIRECT PAYMENT LOGIC ---
+  const handleWalletPayment = async () => {
     // 1. User Check
     if (!userEmail) {
-      toast.error("User not found! Please login again.");
+      Swal.fire({
+        icon: "error",
+        title: "User not found",
+        text: "Please login again.",
+        showConfirmButton: false,
+        timer: 2000
+      });
       return;
     }
 
-    // 2. Insufficient Funds Alert (Toast)
+    // 2. Balance Check
     if (currentBalance < activationFee) {
-      toast.custom((t) => (
-        <div className="bg-white border-l-4 border-red-500 shadow-xl rounded-lg p-4 flex items-start gap-3 w-full max-w-[350px] mx-auto animate-in slide-in-from-top-5 duration-300">
-           <div className="text-red-500 bg-red-50 p-2 rounded-full shrink-0">
-             <AlertTriangle size={20} />
-           </div>
-           <div className="flex-1 min-w-0">
-             <h3 className="font-bold text-gray-900 text-sm">Insufficient Funds</h3>
-             <p className="text-xs text-gray-500 mt-1 leading-relaxed">
-               Required: <span className="font-bold text-gray-800">${activationFee.toFixed(2)}</span>
-               <br />
-               Available: <span className="font-bold text-red-500">${currentBalance.toFixed(2)}</span>
-             </p>
-           </div>
-           <button onClick={() => toast.dismiss(t)} className="text-gray-400 hover:text-gray-600 p-1"><X size={16} /></button>
-        </div>
-      ), { duration: 4000, position: 'top-center' }); // Mobile friendly position
+      Swal.fire({
+        icon: "error",
+        title: "Insufficient Funds",
+        text: `You need $${activationFee.toFixed(2)} but have $${currentBalance.toFixed(2)}`,
+        confirmButtonColor: "#d33",
+      });
       return;
     }
 
-    // 3. Confirmation Toast (Mobile Friendly Action Sheet Style)
-    toast.custom((t) => (
-      <div className="bg-white border border-gray-200 shadow-2xl rounded-2xl p-5 w-full max-w-[350px] mx-auto animate-in zoom-in-95 duration-200">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="bg-[#0A1A3A] text-white p-2 rounded-full shrink-0">
-            <CreditCard size={18} />
-          </div>
-          <h3 className="font-bold text-gray-900 text-sm">Confirm Payment?</h3>
-        </div>
-        <p className="text-xs text-gray-500 mb-4 leading-relaxed">
-          You are about to pay <span className="font-bold text-[#0A1A3A]">${activationFee}</span> to activate your Seller account.
-        </p>
-        <div className="grid grid-cols-2 gap-3">
-          <button 
-            onClick={() => toast.dismiss(t)}
-            className="py-2.5 text-xs font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition active:scale-95"
-          >
-            Cancel
-          </button>
-          <button 
-            onClick={() => {
-              toast.dismiss(t);
-              processPayment();
-            }}
-            className="py-2.5 text-xs font-bold text-white bg-[#0A1A3A] hover:bg-[#1a2e4d] rounded-xl shadow-md transition active:scale-95"
-          >
-            Confirm Pay
-          </button>
-        </div>
-      </div>
-    ), { duration: 10000, position: 'top-center' });
-  };
-
-  // --- API CALL ---
-  const processPayment = async () => {
-    setLoading(true);
-    const toastId = toast.loading("Processing payment...", { position: 'top-center' });
+    // 3. START LOADING (Custom Component)
+    setLoading(true); // ✅ এটি true হলে নিচে Loading কম্পোনেন্ট রেন্ডার হবে
 
     try {
+      // API Call
       const res = await fetch(`${API_URL}/api/user/become-seller`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -131,7 +92,6 @@ const SellerPay = () => {
       });
 
       const result = await res.json();
-      toast.dismiss(toastId);
 
       if (result.success) {
         // Notification
@@ -145,47 +105,54 @@ const SellerPay = () => {
           } as any);
         } catch (e) { console.error(e); }
 
-        // Success Alert
-        toast.custom((t) => (
-          <div className="bg-white w-full max-w-[350px] mx-auto rounded-2xl shadow-2xl border border-green-100 p-4 flex items-start gap-3 relative overflow-hidden animate-in fade-in zoom-in-95">
-             <div className="absolute top-0 right-0 w-16 h-16 bg-green-50 rounded-bl-full -z-10" />
-             <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center shrink-0 text-green-600 shadow-sm">
-               <ShieldCheck size={20} strokeWidth={2.5} />
-             </div>
-             <div className="flex-1 min-w-0">
-               <h3 className="text-sm font-bold text-gray-900">Upgrade Successful!</h3>
-               <p className="text-xs text-gray-500 mt-1">
-                 You are now a Seller. <span className="text-orange-600 font-bold block mt-1">Logging out...</span>
-               </p>
-             </div>
-             <button onClick={() => toast.dismiss(t)} className="text-gray-400 hover:text-gray-600 p-1"><X size={16} /></button>
-          </div>
-        ), { duration: 3000, position: 'top-center' });
-
         setIsPaymentModalOpen(false);
-        
-        // Logout & Redirect
-        setTimeout(() => {
-            handleSafeLogout();
-        }, 2000);
+
+        // Success Alert
+        await Swal.fire({
+          icon: 'success',
+          title: 'Upgrade Successful!',
+          html: `
+            <p>You are now a Seller!</p>
+            <p style="color: orange; font-weight: bold; margin-top: 10px;">Logging out to apply changes...</p>
+          `,
+          timer: 2000,
+          timerProgressBar: true,
+          showConfirmButton: false,
+          willClose: () => {
+             handleSafeLogout();
+          }
+        });
 
       } else {
-        toast.error(result.message || "Activation Failed", { position: 'top-center' });
+        // Error from Backend
+        Swal.fire({
+          icon: "error",
+          title: "Failed",
+          text: result.message || "Activation Failed",
+        });
       }
     } catch (err) {
-      toast.dismiss(toastId);
       console.error(err);
-      toast.error("Connection Error. Check Backend.", { position: 'top-center' });
+      Swal.fire({
+        icon: "error",
+        title: "Network Error",
+        text: "Could not connect to the server.",
+      });
     } finally {
-      setLoading(false);
+      setLoading(false); // ✅ লোডিং শেষ
     }
   };
+
+  // ✅ যদি লোডিং ট্রু হয়, তাহলে পুরো স্ক্রিনে লোডিং দেখাবে
+  if (loading) {
+    return <Loading />;
+  }
 
   return (
     <div className="min-h-screen bg-[#F7F5F4] font-sans text-gray-800 p-4 md:p-8 relative flex items-center justify-center">
       
       <div className="w-full max-w-6xl mx-auto">
-        {/* Header - Mobile Responsive */}
+        {/* Header */}
         <div className="mb-8 text-center md:text-left">
           <h1 className="text-2xl md:text-4xl font-bold text-[#0A1A3A]">
             Activate Seller Account
@@ -195,7 +162,7 @@ const SellerPay = () => {
           </p>
         </div>
 
-        {/* Main Card - Mobile Responsive */}
+        {/* Main Card */}
         <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 md:p-12 flex flex-col items-center w-full max-w-4xl mx-auto">
           
           <div className="w-14 h-14 md:w-16 md:h-16 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center mb-6 shadow-sm">
@@ -230,10 +197,9 @@ const SellerPay = () => {
         </div>
       </div>
 
-      {/* ================= PAYMENT MODAL (Mobile Optimized) ================= */}
+      {/* ================= PAYMENT MODAL ================= */}
       {isPaymentModalOpen && (
         <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-          {/* Modal Container */}
           <div className="bg-white w-full max-w-md rounded-t-3xl md:rounded-3xl shadow-2xl overflow-hidden animate-in slide-in-from-bottom-10 md:slide-in-from-bottom-0 md:zoom-in-95 duration-300">
             
             {/* Modal Header */}
@@ -297,22 +263,19 @@ const SellerPay = () => {
                     <div className="text-left">
                       <h4 className="font-bold text-[#0A1A3A] text-sm">Pay with Balance</h4>
                       {currentBalance < activationFee ? (
-                        <span className="text-[10px] text-red-500 font-bold uppercase tracking-wide">Insufficient funds</span>
+                        <span className="text-[10px] text-red-500 font-bold uppercase tracking-wide">INSUFFICIENT FUNDS</span>
                       ) : (
-                        <span className="text-[10px] text-green-600 font-bold uppercase tracking-wide">Funds Available</span>
+                        <span className="text-[10px] text-green-600 font-bold uppercase tracking-wide">FUNDS AVAILABLE • TAP TO PAY</span>
                       )}
                     </div>
                   </div>
                   
-                  {loading ? (
-                    <div className="animate-spin h-5 w-5 border-2 border-[#0A1A3A] border-t-transparent rounded-full"></div>
-                  ) : (
-                    <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
+                  {/* Button Icon Indicator */}
+                   <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
                       currentBalance >= activationFee ? 'border-[#0A1A3A]' : 'border-gray-300'
                     }`}>
                          {currentBalance >= activationFee && <div className="w-3 h-3 bg-[#0A1A3A] rounded-full"></div>}
                     </div>
-                  )}
                 </button>
               </div>
               
