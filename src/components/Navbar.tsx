@@ -1,12 +1,11 @@
-// src/components/Navbar.tsx
 import { Button } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import { FaBreadSlice, FaTrash } from "react-icons/fa";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { useAuth } from "../context/AuthContext";
 import axios from "axios";
 
+import { useAuth } from "../context/AuthContext";
 import { getAllNotifications } from "../components/Notification/Notification";
 import headerlogo from "../assets/headerlogo.png";
 import { useAuthHook } from "../hook/useAuthHook";
@@ -316,10 +315,10 @@ export default function Navbar() {
                   )}
                 </button>
 
-                {/* Dropdown */}
+                {/* Dropdown - Mobile Responsive Update */}
                 {notifOpen && (
                   <div
-                    className="absolute right-0 mt-2 w-96 bg-white border rounded-xl shadow-2xl z-50 overflow-hidden"
+                    className="fixed top-14 left-4 right-4 md:absolute md:top-full md:left-auto md:right-0 md:mt-2 md:w-96 bg-white border rounded-xl shadow-2xl z-50 overflow-hidden"
                     style={{ backgroundColor: CLEAN_WHITE }}
                   >
                     <div className="px-4 py-3 border-b flex items-center justify-between">
@@ -333,7 +332,7 @@ export default function Navbar() {
                       </div>
                     </div>
 
-                    <div className="max-h-72 overflow-auto divide-y">
+                    <div className="max-h-[60vh] md:max-h-80 overflow-y-auto divide-y">
                       {notifications.length === 0 && !loadingNotifs && (
                         <div className="p-4 text-center text-sm text-gray-500">
                           No notifications found for <br />{" "}
@@ -354,15 +353,15 @@ export default function Navbar() {
                         >
                           <div className="flex items-start justify-between gap-3">
                             <div className="flex-1">
-                              {/* TITLE: Bold Black */}
+                              {/* TITLE */}
                               <div className="text-sm font-bold text-black">
                                 {n.title}
                               </div>
-                              {/* MESSAGE: Dark Gray & Medium Weight */}
+                              {/* MESSAGE */}
                               <div className="text-xs text-gray-800 font-medium mt-1 line-clamp-2 leading-relaxed">
                                 {n.message || n.description || "No description"}
                               </div>
-                              {/* DATE: Darker Gray */}
+                              {/* DATE */}
                               <div className="text-[10px] text-gray-600 font-semibold mt-1 flex justify-between">
                                 <span>
                                   {n.createdAt
