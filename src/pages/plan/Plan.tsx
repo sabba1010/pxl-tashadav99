@@ -5,12 +5,11 @@ import DeductAndCreditAction from "../../components/Payment/SubscriptionPayment"
 import { useAuthHook } from "../../hook/useAuthHook";
 import { toast } from "sonner";
 
-
-
 const SellerPlans: React.FC = () => {
-  const {data} = useAuthHook();
-
-const userId = `${data?._id}`; 
+  const { data } = useAuthHook();
+  const activePlan = data?.subscribedPlan;
+  console.log(data?.subscribedPlan);
+  const userId = `${data?._id}`;
   return (
     <div className="py-16 bg-[#F5F5F5]">
       <div className="max-w-7xl mx-auto px-8">
@@ -68,9 +67,17 @@ const userId = `${data?._id}`;
             </ul>
 
             <div className="mt-8">
-              <button>
-                <span className="px-6 py-3 bg-gray-300 text-gray-700 rounded-2xl cursor-not-allowed">Current Plan</span>
-              </button>
+              {activePlan ? (
+                <span className="px-6 py-3 bg-green-100 text-green-800 rounded-2xl">
+                  Free Plan
+                </span>
+              ) : (
+                <button>
+                <span className="px-6 py-3 bg-gray-300 text-gray-700 rounded-2xl cursor-not-allowed">
+                  Current Plan
+                </span>
+                </button>
+              )}
             </div>
           </div>
 
@@ -122,14 +129,20 @@ const userId = `${data?._id}`;
             </ul>
 
             <div className="mt-8">
-              <DeductAndCreditAction
-                userId={userId}
-                deductAmount={9.99}
-                creditAmount={10} 
-                newPlan="basic"
-                buttonText="Upgrade to Basic – $9.99"
-                onSuccess={() => toast.success("Upgraded to Basic Seller!")}
-              />
+              {activePlan === "basic" ? (
+                <span className="px-6 py-3 bg-gray-300 text-gray-700 rounded-2xl cursor-not-allowed">
+                  Current Plan
+                </span>
+              ) : (
+                <DeductAndCreditAction
+                  userId={userId}
+                  deductAmount={9.99}
+                  creditAmount={10}
+                  newPlan="basic"
+                  buttonText="Upgrade to Basic – $9.99"
+                  onSuccess={() => toast.success("Upgraded to Basic Seller!")}
+                />
+              )}
             </div>
           </div>
 
@@ -175,14 +188,20 @@ const userId = `${data?._id}`;
             </ul>
 
             <div className="mt-8">
-          <DeductAndCreditAction
-                userId={userId}
-                deductAmount={15.99}
-                creditAmount={10} 
-                newPlan="business"
-                buttonText="Upgrade to Business – $15.99"
-                onSuccess={() => toast.success("Upgraded to Business Seller")}
-              />
+              {activePlan === "business" ? (
+                <span className="px-6 py-3 bg-gray-300 text-gray-700 rounded-2xl cursor-not-allowed">
+                  Current Plan
+                </span>
+              ) : (
+                <DeductAndCreditAction
+                  userId={userId}
+                  deductAmount={15.99}
+                  creditAmount={10}
+                  newPlan="business"
+                  buttonText="Upgrade to Business – $15.99"
+                  onSuccess={() => toast.success("Upgraded to Business Seller")}
+                />
+              )}
             </div>
           </div>
         </div>
@@ -235,14 +254,22 @@ const userId = `${data?._id}`;
               </ul>
 
               <div className="mt-8">
-                <DeductAndCreditAction
-                  userId={userId}
-                  deductAmount={19.99}
-                  creditAmount={30}
-                  newPlan="premium"
-                  buttonText="Upgrade to Premium  $19.99"
-                  onSuccess={() => toast.success("Welcome to Premium Seller!")}
-                />
+                {activePlan === "premium" ? (
+                  <span className="px-6 py-3 bg-gray-300 text-gray-700 rounded-2xl cursor-not-allowed">
+                    Current Plan
+                  </span>
+                ) : (
+                  <DeductAndCreditAction
+                    userId={userId}
+                    deductAmount={19.99}
+                    creditAmount={30}
+                    newPlan="premium"
+                    buttonText="Upgrade to Premium  $19.99"
+                    onSuccess={() =>
+                      toast.success("Welcome to Premium Seller!")
+                    }
+                  />
+                )}
               </div>
             </div>
           </div>
