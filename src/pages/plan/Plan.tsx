@@ -238,7 +238,7 @@ const userId = `${data?._id}`;
                 <DeductAndCreditAction
                   userId={userId}
                   deductAmount={19.99}
-                  creditAmount={30} // বড় বোনাস দিলাম Premium-এ
+                  creditAmount={30}
                   newPlan="premium"
                   buttonText="Upgrade to Premium  $19.99"
                   onSuccess={() => toast.success("Welcome to Premium Seller!")}
