@@ -3,6 +3,8 @@
 import React, { useState } from "react";
 import { Loader2, CheckCircle, AlertCircle } from "lucide-react";
 import { Button } from "@mui/material";
+import { useAuthHook } from "../../hook/useAuthHook";
+import { useNavigate } from "react-router-dom";
 
 interface DeductAndCreditActionProps {
   userId: string;
@@ -34,6 +36,8 @@ const DeductAndCreditAction: React.FC<DeductAndCreditActionProps> = ({
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
+  const { data, refetch } = useAuthHook();
+  const navigate = useNavigate();
 
   const handleTransaction = async () => {
     // Basic validation
@@ -56,7 +60,7 @@ const DeductAndCreditAction: React.FC<DeductAndCreditActionProps> = ({
 
     try {
       const response = await fetch(
-        `http://localhost:3200/api/users/getall/${userId}`,
+        `http://localhost:3200/api/user/getall/${userId}`,
         {
           method: "POST",
           headers: {
@@ -65,11 +69,10 @@ const DeductAndCreditAction: React.FC<DeductAndCreditActionProps> = ({
           body: JSON.stringify({
             deductAmount,
             creditAmount,
-            ...(newPlan !== undefined && { newPlan }), // শুধু পাঠাবে যদি দেওয়া থাকে
+            ...(newPlan !== undefined && { newPlan }),
           }),
         }
       );
-
       const data = await response.json();
 
       if (!response.ok) {

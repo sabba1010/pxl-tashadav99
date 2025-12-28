@@ -1,79 +1,16 @@
+// components/SellerPlans.tsx
+
 import React from "react";
+import DeductAndCreditAction from "../../components/Payment/SubscriptionPayment";
+import { useAuthHook } from "../../hook/useAuthHook";
+import { toast } from "sonner";
 
-/* ================== TYPES ================== */
-type Plan = {
-  name: string;
-  price: string;
-  description: string;
-  features: string[];
-  popular?: boolean;
-};
 
-type PlanCardProps = {
-  plan: Plan;
-};
 
-/* ================== DATA ================== */
-const plans: Plan[] = [
-  {
-    name: "Default Seller",
-    price: "Free",
-    description: "Perfect for new sellers testing the platform.",
-    features: [
-      "10 listings per day",
-      "Standard marketplace visibility",
-      "Basic listing tools",
-      "Referral bonus eligibility",
-      "In-app messaging",
-      "Earnings withdrawal enabled",
-      "Limited category access"
-    ]
-  },
-  {
-    name: "Basic Seller",
-    price: "$9.99/mo",
-    description: "For active sellers wanting more exposure.",
-    features: [
-      "20 listings per day",
-      "Higher visibility than Free sellers",
-      "Priority placement over Default sellers",
-      "Faster listing review",
-      "Basic seller badge",
-      "Promotional boosts",
-      "Weekend posting (1 per week)"
-    ]
-  },
-  {
-    name: "Business Seller",
-    price: "$15.99/mo",
-    description: "Best for growing sellers.",
-    features: [
-      "30 listings per day",
-      "Business-level priority ranking",
-      "Priority support",
-      "Advanced analytics",
-      "Unlimited categories",
-      "Weekend posting (2 per week)"
-    ]
-  },
-  {
-    name: "Premium Seller",
-    price: "$19.99/mo",
-    popular: true,
-    description: "Maximum exposure & fastest support.",
-    features: [
-      "40 listings per day",
-      "Top-tier visibility",
-      "Premium seller badge",
-      "Homepage priority",
-      "Bulk uploads",
-      "Unlimited weekend posts"
-    ]
-  }
-];
-
-/* ================== COMPONENT ================== */
 const SellerPlans: React.FC = () => {
+  const {data} = useAuthHook();
+
+const userId = `${data?._id}`; 
   return (
     <div className="py-16 bg-[#F5F5F5]">
       <div className="max-w-7xl mx-auto px-8">
@@ -81,67 +18,236 @@ const SellerPlans: React.FC = () => {
           Seller Subscription Plans
         </h1>
 
-        {/* ===== Row 1 (3 Cards) ===== */}
-        <div className="grid md:grid-cols-3 gap-12">
-          {plans.slice(0, 3).map((plan: Plan) => (
-            <PlanCard key={plan.name} plan={plan} />
-          ))}
+        {/* ===== Row 1: 3 Cards ===== */}
+        <div className="grid md:grid-cols-3 gap-12 mb-14">
+          {/* Default Seller */}
+          <div className="rounded-3xl p-10 bg-white border border-gray-200 shadow-sm hover:shadow-lg transition-all">
+            <h2 className="text-2xl font-bold text-[#111111]">
+              Default Seller
+            </h2>
+            <p className="text-4xl font-semibold mt-2 text-[#0A1A3A]">Free</p>
+            <p className="mt-3 text-[#444444]">
+              Perfect for new sellers testing the platform.
+            </p>
+
+            <ul className="mt-6 space-y-3">
+              <li className="flex items-start gap-3">
+                <span className="text-[#1BC47D] text-xl">✔</span>
+                <span className="text-[#111111]">10 listings per day</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="text-[#1BC47D] text-xl">✔</span>
+                <span className="text-[#111111]">
+                  Standard marketplace visibility
+                </span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="text-[#1BC47D] text-xl">✔</span>
+                <span className="text-[#111111]">Basic listing tools</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="text-[#1BC47D] text-xl">✔</span>
+                <span className="text-[#111111]">
+                  Referral bonus eligibility
+                </span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="text-[#1BC47D] text-xl">✔</span>
+                <span className="text-[#111111]">In-app messaging</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="text-[#1BC47D] text-xl">✔</span>
+                <span className="text-[#111111]">
+                  Earnings withdrawal enabled
+                </span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="text-[#1BC47D] text-xl">✔</span>
+                <span className="text-[#111111]">Limited category access</span>
+              </li>
+            </ul>
+
+            <div className="mt-8">
+              <button>
+                <span className="px-6 py-3 bg-gray-300 text-gray-700 rounded-2xl cursor-not-allowed">Current Plan</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Basic Seller */}
+          <div className="rounded-3xl p-10 bg-white border border-gray-200 shadow-sm hover:shadow-lg transition-all">
+            <h2 className="text-2xl font-bold text-[#111111]">Basic Seller</h2>
+            <p className="text-4xl font-semibold mt-2 text-[#0A1A3A]">
+              $9.99/mo
+            </p>
+            <p className="mt-3 text-[#444444]">
+              For active sellers wanting more exposure.
+            </p>
+
+            <ul className="mt-6 space-y-3">
+              <li className="flex items-start gap-3">
+                <span className="text-[#1BC47D] text-xl">✔</span>
+                <span className="text-[#111111]">20 listings per day</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="text-[#1BC47D] text-xl">✔</span>
+                <span className="text-[#111111]">
+                  Higher visibility than Free sellers
+                </span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="text-[#1BC47D] text-xl">✔</span>
+                <span className="text-[#111111]">
+                  Priority placement over Default sellers
+                </span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="text-[#1BC47D] text-xl">✔</span>
+                <span className="text-[#111111]">Faster listing review</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="text-[#1BC47D] text-xl">✔</span>
+                <span className="text-[#111111]">Basic seller badge</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="text-[#1BC47D] text-xl">✔</span>
+                <span className="text-[#111111]">Promotional boosts</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="text-[#1BC47D] text-xl">✔</span>
+                <span className="text-[#111111]">
+                  Weekend posting (1 per week)
+                </span>
+              </li>
+            </ul>
+
+            <div className="mt-8">
+              <DeductAndCreditAction
+                userId={userId}
+                deductAmount={9.99}
+                creditAmount={10} 
+                newPlan="basic"
+                buttonText="Upgrade to Basic – $9.99"
+                onSuccess={() => toast.success("Upgraded to Basic Seller!")}
+              />
+            </div>
+          </div>
+
+          {/* Business Seller */}
+          <div className="rounded-3xl p-10 bg-white border border-gray-200 shadow-sm hover:shadow-lg transition-all">
+            <h2 className="text-2xl font-bold text-[#111111]">
+              Business Seller
+            </h2>
+            <p className="text-4xl font-semibold mt-2 text-[#0A1A3A]">
+              $15.99/mo
+            </p>
+            <p className="mt-3 text-[#444444]">Best for growing sellers.</p>
+
+            <ul className="mt-6 space-y-3">
+              <li className="flex items-start gap-3">
+                <span className="text-[#1BC47D] text-xl">✔</span>
+                <span className="text-[#111111]">30 listings per day</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="text-[#1BC47D] text-xl">✔</span>
+                <span className="text-[#111111]">
+                  Business-level priority ranking
+                </span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="text-[#1BC47D] text-xl">✔</span>
+                <span className="text-[#111111]">Priority support</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="text-[#1BC47D] text-xl">✔</span>
+                <span className="text-[#111111]">Advanced analytics</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="text-[#1BC47D] text-xl">✔</span>
+                <span className="text-[#111111]">Unlimited categories</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="text-[#1BC47D] text-xl">✔</span>
+                <span className="text-[#111111]">
+                  Weekend posting (2 per week)
+                </span>
+              </li>
+            </ul>
+
+            <div className="mt-8">
+          <DeductAndCreditAction
+                userId={userId}
+                deductAmount={15.99}
+                creditAmount={10} 
+                newPlan="business"
+                buttonText="Upgrade to Business – $15.99"
+                onSuccess={() => toast.success("Upgraded to Business Seller")}
+              />
+            </div>
+          </div>
         </div>
 
-        {/* ===== Row 2 (Centered Card) ===== */}
-        <div className="mt-14 flex justify-center">
+        {/* ===== Row 2: Premium (Centered) ===== */}
+        <div className="flex justify-center">
           <div className="w-full md:w-1/3">
-            <PlanCard plan={plans[3]} />
+            <div className="relative rounded-3xl p-10 bg-white border-2 border-[#0A1A3A] shadow-xl scale-105 transition-all">
+              <div className="absolute top-0 right-0 bg-[#D4A643] text-[#111111] text-sm px-3 py-1 rounded-bl-xl rounded-tr-3xl">
+                Most Popular
+              </div>
+
+              <h2 className="text-2xl font-bold text-[#111111]">
+                Premium Seller
+              </h2>
+              <p className="text-4xl font-semibold mt-2 text-[#0A1A3A]">
+                $19.99/mo
+              </p>
+              <p className="mt-3 text-[#444444]">
+                Maximum exposure & fastest support.
+              </p>
+
+              <ul className="mt-6 space-y-3">
+                <li className="flex items-start gap-3">
+                  <span className="text-[#1BC47D] text-xl">✔</span>
+                  <span className="text-[#111111]">40 listings per day</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-[#1BC47D] text-xl">✔</span>
+                  <span className="text-[#111111]">Top-tier visibility</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-[#1BC47D] text-xl">✔</span>
+                  <span className="text-[#111111]">Premium seller badge</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-[#1BC47D] text-xl">✔</span>
+                  <span className="text-[#111111]">Homepage priority</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-[#1BC47D] text-xl">✔</span>
+                  <span className="text-[#111111]">Bulk uploads</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-[#1BC47D] text-xl">✔</span>
+                  <span className="text-[#111111]">
+                    Unlimited weekend posts
+                  </span>
+                </li>
+              </ul>
+
+              <div className="mt-8">
+                <DeductAndCreditAction
+                  userId={userId}
+                  deductAmount={19.99}
+                  creditAmount={30} // বড় বোনাস দিলাম Premium-এ
+                  newPlan="premium"
+                  buttonText="Upgrade to Premium  $19.99"
+                  onSuccess={() => toast.success("Welcome to Premium Seller!")}
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  );
-};
-
-/* ================== CARD ================== */
-const PlanCard: React.FC<PlanCardProps> = ({ plan }) => {
-  return (
-    <div
-      className={`relative rounded-3xl p-10 bg-white transition-all duration-300
-        ${
-          plan.popular
-            ? "border-2 border-[#0A1A3A] scale-105 shadow-xl"
-            : "border border-gray-200 shadow-sm hover:shadow-lg"
-        }`}
-    >
-      {plan.popular && (
-        <div className="absolute top-0 right-0 bg-[#D4A643] text-[#111111] text-sm px-3 py-1 rounded-bl-xl rounded-tr-3xl">
-          Most Popular
-        </div>
-      )}
-
-      <h2 className="text-2xl font-bold text-[#111111]">{plan.name}</h2>
-
-      <p className="text-4xl font-semibold mt-2 text-[#0A1A3A]">
-        {plan.price}
-      </p>
-
-      <p className="mt-3 text-[#444444]">{plan.description}</p>
-
-      <ul className="mt-6 space-y-3">
-        {plan.features.map((feature: string, idx: number) => (
-          <li key={idx} className="flex items-start gap-3">
-            <span className="text-[#1BC47D] text-xl">✔</span>
-            <span className="text-[#111111]">{feature}</span>
-          </li>
-        ))}
-      </ul>
-
-      <button
-        className="
-          mt-8 w-full py-3 rounded-xl font-medium
-          bg-[#0A1A3A] text-white border-2 border-[#0A1A3A]
-          hover:bg-[#111111] transition
-        "
-      >
-        Choose Plan
-      </button>
     </div>
   );
 };

@@ -8,7 +8,7 @@ const Test = () => {
       <DeductAndCreditAction
         userId={`${data?._id}`}
         deductAmount={50}
-        creditAmount={6}
+        creditAmount={10}
         buttonText="Convert with 20% Bonus"
         newPlan="pro"
         onSuccess={(data) => {
