@@ -1,7 +1,6 @@
-import React, { useMemo, useState } from "react";
-import axios from "axios";
-import { toast } from "sonner";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import axios from "axios";
+import React, { useMemo, useState } from "react";
 import Loading from './../../components/Loading';
 
 /* ====================== TYPES ====================== */
@@ -15,7 +14,7 @@ interface Payment {
   createdAt: string;
   credited: boolean;
 }
-
+  
 const ITEMS_PER_PAGE = 15;
 
 /* ====================== API FUNCTIONS ====================== */

@@ -264,7 +264,6 @@ export default function Wallet(): React.ReactElement {
                   setActiveTab("withdraw");
                   // fetchWithdrawals এখানে কল না করলেও চলবে কারণ useEffect হ্যান্ডেল করবে,
                   // তবুও রাখা যেতে পারে instant call এর জন্য
-                  fetchWithdrawals();
                 }}
                 className={tabClass("withdraw")}
               >

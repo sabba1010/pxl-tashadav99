@@ -5,19 +5,18 @@ import {
   Dashboard,
   ListAlt,
   Logout,
-  Star,
-  Menu as MenuIcon,
   People,
   PeopleOutline,
   Person,
   ReceiptLong,
+  Star
 } from "@mui/icons-material";
 import { Box } from "@mui/material";
 import { ChevronRight } from "lucide-react";
 import React, { useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
 import { toast } from "sonner";
+import { useAuth } from "../../context/AuthContext";
 
 interface NavItem {
   name: string;

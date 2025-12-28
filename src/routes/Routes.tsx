@@ -36,20 +36,18 @@ import RefundPolicy from "../components/Policy/RefundPolicy";
 import RatingsReputationPanel from "../dashboard/admin-dashboard/RatingsReputationPanel";
 import WhyChooseUs from "../pages/why/WhyChooseUs";
 
+import CartPage from "../components/Cart/CartPage";
 import MyAds from "../components/Myproducts/MyAds";
 import Post from "../components/Notification/Post";
+import PaymentForm from "../components/Payment/Withdraw";
 import SellerPay from "../components/Seller/SellerPay";
 import SellerAccount from "../dashboard/admin-dashboard/SellerAccount";
 import AddAccountCredentials from "../dashboard/buyer-dahboard/AddAccount";
 import Review from "../dashboard/buyer-dahboard/Review";
 import SellForm from "../dashboard/user-dashboard/SellForm";
-import PrivateRoute from "./PrivateRoute";
-import SellerRoute from "./SellerRoute";
-import PaymentForm from "../components/Payment/Withdraw";
 import AdminRoute from "./AdminRoute";
+import PrivateRoute from "./PrivateRoute";
 import SellerPrivateRoute from "./SellerPrivateRoute";
-import CartPage from "../components/Cart/CartPage";
-import TestPayment from "../components/TestPayment";
 
 const Routes = createBrowserRouter([
   {

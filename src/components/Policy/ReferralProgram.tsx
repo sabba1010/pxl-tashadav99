@@ -1,9 +1,24 @@
 import React from "react";
-import { Gift, Users, Share2, CheckCircle, ArrowRight } from "lucide-react";
+import { Gift, Users, Share2, CheckCircle, ArrowRight, Copy } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useAuthHook } from "../../hook/useAuthHook";
 
 const ReferralProgram: React.FC = () => {
-  const referralLink = "https://cctbazaar.com/ref/YourUniqueCode123";
+  const { data } = useAuthHook();
+  const referralLink = `http://localhost:3000/?ref/${data?.referralCode}`;
+
+  const [copied, setCopied] = React.useState(false);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(referralLink);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000); // 2 সেকেন্ড পর আবার "Copy Link" হবে
+    } catch (err) {
+      console.error("Failed to copy:", err);
+      alert("Copy failed! Please copy manually.");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-white py-16 px-6">
@@ -47,8 +62,21 @@ const ReferralProgram: React.FC = () => {
             <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-5 break-all font-mono text-lg">
               {referralLink}
             </div>
-            <button className="mt-6 px-8 py-4 bg-teal-500 hover:bg-teal-400 rounded-2xl font-bold text-lg transition-all hover:scale-105">
-              Copy Link
+            <button
+              onClick={handleCopy}
+              className="mt-6 px-8 py-4 bg-teal-500 hover:bg-teal-400 rounded-2xl font-bold text-lg transition-all hover:scale-105 inline-flex items-center gap-2"
+            >
+              {copied ? (
+                <>
+                  <CheckCircle className="w-6 h-6" />
+                  Copied!
+                </>
+              ) : (
+                <>
+                  <Copy className="w-5 h-5" />
+                  Copy Link
+                </>
+              )}
             </button>
           </div>
         </div>
