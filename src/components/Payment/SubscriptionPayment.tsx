@@ -103,33 +103,71 @@ const DeductAndCreditAction: React.FC<DeductAndCreditActionProps> = ({
   };
 
   return (
-    <div className="space-y-3">
-      <Button
-        onClick={handleTransaction}
-        disabled={loading || disabled || deductAmount <= 0}
-        className="w-full"
-      >
-        {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-        {children || buttonText}
-      </Button>
+    <div className="space-y-4">
+  {/* Premium Button */}
+  <Button
+    onClick={handleTransaction}
+    disabled={loading || disabled || deductAmount <= 0}
+    className={`
+      relative w-full overflow-hidden rounded-xl px-6 py-4 text-base font-semibold
+      shadow-lg transition-all duration-300 transform
+      ${
+        loading || disabled || deductAmount <= 0
+          ? "cursor-not-allowed bg-gray-400 text-gray-200"
+          : "hover:scale-[1.02] hover:shadow-xl active:scale-[0.98]"
+      }
+      bg-gradient-to-r from-[#0A1A3A] to-[#1e3a6d]
+      text-white border-0
+    `}
+  >
+    {/* Optional shiny effect */}
+    <span className="absolute inset-0 bg-[#d4a643] text-white" />
 
-      {status !== "idle" && (
-        <div
-          className={`flex items-center gap-2 rounded-md p-3 text-sm font-medium ${
-            status === "success"
-              ? "bg-green-100 text-green-800"
-              : "bg-red-100 text-red-800"
-          }`}
-        >
-          {status === "success" ? (
-            <CheckCircle className="h-4 w-4" />
-          ) : (
-            <AlertCircle className="h-4 w-4" />
-          )}
-          <span>{message}</span>
-        </div>
+    <span className="relative flex items-center justify-center gap-3 text-white">
+      {loading && <Loader2 className="h-5 w-5 animate-spin" />}
+      {children || buttonText}
+    </span>
+  </Button>
+
+  {/* Status Message - Enhanced */}
+  {status !== "idle" && (
+    <div
+      className={`
+        relative overflow-hidden rounded-xl px-5 py-4 text-sm font-medium
+        shadow-md border backdrop-blur-sm transition-all duration-500
+        flex items-center gap-3
+        ${
+          status === "success"
+            ? "bg-[#d4a643] text-green-800"
+            : "bg-gradient-to-r from-red-50 to-rose-50 border-red-200 text-red-800"
+        }
+      `}
+    >
+      {/* Subtle glow effect for success */}
+      {status === "success" && (
+        <div className="absolute inset-0 bg-green-400 opacity-5 animate-pulse" />
       )}
+
+      {/* Icon */}
+      {status === "success" ? (
+        <CheckCircle className="h-5 w-5 flex-shrink-0" />
+      ) : (
+        <AlertCircle className="h-5 w-5 flex-shrink-0" />
+      )}
+
+      {/* Message */}
+      <span className="relative">{message}</span>
+
+      {/* Optional small accent line */}
+      <div
+        className={`
+          absolute left-0 top-0 bottom-0 w-1
+          ${status === "success" ? "bg-green-500" : "bg-red-500"}
+        `}
+      />
     </div>
+  )}
+</div>
   );
 };
 

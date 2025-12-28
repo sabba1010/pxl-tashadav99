@@ -11,6 +11,8 @@ export interface User {
   phone: string;
   role: string;
   referralCode: string;
+  subscribedPlan: string;
+  salesCredit: number;
 }
 
 export const useAuthHook = () => {
