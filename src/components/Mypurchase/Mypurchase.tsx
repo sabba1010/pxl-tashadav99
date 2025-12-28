@@ -2,7 +2,6 @@ import React, { useMemo, useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import { useAuthHook } from "../../hook/useAuthHook";
-import { sendNotification } from "../Notification/Notification";
 import { toast } from "sonner"; // Toast Import
 
 import type { IconType } from "react-icons";
@@ -739,21 +738,15 @@ const MyPurchase: React.FC = () => {
                 </div>
               </div>
 
-              {/* --- RESTORED CONFIRM & CANCEL BUTTONS --- */}
+              {/* --- CANCEL BUTTON REMOVED / ONLY CONFIRM BUTTON VISIBLE --- */}
               {selected.status === "Pending" && (
-                <div className="grid grid-cols-2 gap-2 mt-6">
+                <div className="mt-6">
                   <button
                     onClick={() => handleUpdateStatus("completed")}
-                    className="py-2.5 bg-[#33ac6f] hover:bg-[#2aa46a] text-white rounded-lg font-medium transition shadow-sm"
+                    className="w-full py-2.5 bg-[#33ac6f] hover:bg-[#2aa46a] text-white rounded-lg font-medium transition shadow-sm"
                   >
                     Confirm Received
                   </button>
-                  {/* <button
-                    onClick={() => handleUpdateStatus("cancelled")}
-                    className="py-2.5 bg-red-50 text-red-600 rounded-lg font-bold text-sm hover:bg-red-100 transition border border-red-100"
-                  >
-                    Cancel Order
-                  </button> */}
                 </div>
               )}
 
