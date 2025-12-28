@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import axios from "axios";
 import { toast } from "sonner";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import Loading from './../../components/Loading';
 
 /* ====================== TYPES ====================== */
 interface Payment {
@@ -15,59 +16,12 @@ interface Payment {
   credited: boolean;
 }
 
-const ITEMS_PER_PAGE = 5;
+const ITEMS_PER_PAGE = 15;
 
 /* ====================== API FUNCTIONS ====================== */
 const fetchPayments = async (): Promise<Payment[]> => {
   const response = await axios.get("http://localhost:3200/api/payments");
   return response.data as Payment[]; // assuming the endpoint returns an array directly
-};
-
-/* ====================== LOADING COMPONENT ====================== */
-const Loading: React.FC = () => {
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50">
-      <div className="">
-        <div className="relative mx-auto mb-8 h-24 w-24">
-          <div className="absolute inset-0 rounded-full border-8 border-green-200"></div>
-          <div className="absolute inset-0 animate-spin rounded-full border-8 border-transparent border-t-green-500"></div>
-          <div className="absolute inset-4 animate-pulse rounded-full bg-green-400 opacity-20"></div>
-          <div className="absolute inset-8 animate-ping rounded-full bg-green-600 opacity-30"></div>
-        </div>
-
-        <h2 className="mb-2 text-3xl font-semibold text-green-800">
-          Loading
-          <span className="inline-block animate-bounce">.</span>
-          <span className="inline-block animate-bounce delay-150">.</span>
-          <span className="inline-block animate-bounce delay-300">.</span>
-        </h2>
-        <p className="text-lg text-green-600">
-          Please wait while we prepare everything for you
-        </p>
-
-        <style>{`
-          @keyframes bounce {
-            0%,
-            100% {
-              transform: translateY(0);
-            }
-            50% {
-              transform: translateY(-8px);
-            }
-          }
-          .delay-150 {
-            animation-delay: 150ms;
-          }
-          .delay-300 {
-            animation-delay: 300ms;
-          }
-          .animate-bounce {
-            animation: bounce 1.5s infinite;
-          }
-        `}</style>
-      </div>
-    </div>
-  );
 };
 
 /* ====================== MAIN COMPONENT ====================== */

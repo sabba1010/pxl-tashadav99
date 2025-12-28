@@ -24,7 +24,7 @@ interface Seller {
   // Fields below are not in your API sample yet, added defaults for UI
   accountsSold?: number;
   status?: string;
-  totalEarnings?: number;
+  balance?: number;
 }
 
 const SellerAccount: React.FC = () => {
@@ -38,7 +38,7 @@ const SellerAccount: React.FC = () => {
         setLoading(true);
         const response = await fetch("http://localhost:3200/api/user/getall");
         const data = await response.json();
-
+      console.log(data)
         let allUsers: Seller[] = [];
 
         // Handle different API response structures (array vs object)
@@ -80,7 +80,7 @@ const SellerAccount: React.FC = () => {
           className="shadow-lg rounded-lg overflow-hidden"
         >
           <Table>
-            <TableHead className="bg-green-600 text-white">
+            <TableHead className="bg-[#D1A148] text-white">
               <TableRow>
                 <TableCell className="text-white font-bold">ID</TableCell>
                 <TableCell className="text-white font-bold">Name</TableCell>
@@ -136,7 +136,7 @@ const SellerAccount: React.FC = () => {
                       />
                     </TableCell>
                     <TableCell className="text-right font-bold text-gray-700">
-                      ${seller.totalEarnings || 0}
+                      ${seller.balance || 0}
                     </TableCell>
                   </TableRow>
                 ))

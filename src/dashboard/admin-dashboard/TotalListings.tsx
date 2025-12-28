@@ -159,7 +159,7 @@ const TotalListings: React.FC = () => {
     );
 
   return (
-    <Box sx={{ p: 4, bgcolor: "#F9FAFB", minHeight: "100vh" }}>
+    <Box sx={{ p: 4, bgcolor: "", minHeight: "100vh" }}>
       {/* Header */}
       <Paper
         elevation={0}

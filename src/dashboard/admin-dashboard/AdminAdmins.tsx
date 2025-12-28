@@ -41,7 +41,7 @@ const mainNavItems: NavItem[] = [
     icon: <ReceiptLong />,
   },
   {
-    name: "Deposit Requests",
+    name: "All Deposit",
     path: "/admin-dashboard/deposits",
     icon: <AccountBalanceWallet />,
   },

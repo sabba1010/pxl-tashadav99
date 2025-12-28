@@ -159,7 +159,7 @@ const mockTransactions: Transaction[] = [
   },
 ];
 
-const ITEMS_PER_PAGE = 8;
+const ITEMS_PER_PAGE = 10;
 
 // --- HELPER COMPONENT: TRANSACTION MODAL ---
 
@@ -450,7 +450,7 @@ const AllTransactions: React.FC = () => {
   return (
     <div className="p-4 space-y-6">
       {/* Search and Action Bar */}
-      <div className="flex flex-col sm:flex-row justify-between items-center bg-gray-50 p-4 rounded-xl shadow-inner border border-gray-200">
+      <div className="flex flex-col sm:flex-row justify-between items-center  p-4 ">
         <h3 className="text-xl font-semibold text-gray-800 mb-2 sm:mb-0">
           Transaction Log ({filteredAndSortedTransactions.length} of{" "}
           {mockTransactions.length})
@@ -465,7 +465,7 @@ const AllTransactions: React.FC = () => {
       </div>
 
       {/* Transactions Table */}
-      <div className="overflow-x-auto bg-white rounded-xl shadow-lg border">
+      <div className="bg-white">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
@@ -575,7 +575,7 @@ const AllTransactions: React.FC = () => {
 
       {/* Pagination Controls */}
       {filteredAndSortedTransactions.length > ITEMS_PER_PAGE && (
-        <div className="flex justify-between items-center px-4 py-3 bg-white rounded-xl shadow-md border border-gray-100">
+        <div className="flex justify-between items-center px-4 py-3">
           <p className="text-sm text-gray-700">
             Showing{" "}
             <span className="font-medium">
