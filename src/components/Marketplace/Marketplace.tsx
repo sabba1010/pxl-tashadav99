@@ -350,7 +350,7 @@ const Marketplace: React.FC = () => {
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSubcats, setSelectedSubcats] = useState<SubcatState>({});
-  const [priceRange, setPriceRange] = useState(1000);
+  const [priceRange, setPriceRange] = useState(100);
   const [showBanner, setShowBanner] = useState(true);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
@@ -583,7 +583,7 @@ const Marketplace: React.FC = () => {
               <CategorySelector selectedSubcats={selectedSubcats} setSelectedSubcats={setSelectedSubcats} />
               <div className="mt-6 border-t pt-4">
                 <div className="flex justify-between text-sm font-semibold mb-2"><span>Price Range</span><span>${priceRange}</span></div>
-                <input type="range" min={0} max={1000} value={priceRange} onChange={(e) => setPriceRange(Number(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-[#33ac6f]" />
+                <input type="range" min={0} max={100} value={priceRange} onChange={(e) => setPriceRange(Number(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-[#33ac6f]" />
               </div>
             </div>
           </aside>
@@ -632,7 +632,7 @@ const Marketplace: React.FC = () => {
         <aside className="relative bg-white w-80 h-full overflow-y-auto p-6 shadow-xl">
           <div className="flex justify-between items-center mb-6"><h2 className="text-xl font-bold">Filters</h2><button onClick={() => setDrawerOpen(false)}><TimesIcon /></button></div>
           <CategorySelector selectedSubcats={selectedSubcats} setSelectedSubcats={setSelectedSubcats} />
-          <div className="mt-8"><label className="font-semibold block mb-2">Max Price: ${priceRange}</label><input type="range" min="0" max={1000} value={priceRange} onChange={(e) => setPriceRange(Number(e.target.value))} className="w-full accent-[#33ac6f]" /></div>
+          <div className="mt-8"><label className="font-semibold block mb-2">Max Price: ${priceRange}</label><input type="range" min="0" max={100} value={priceRange} onChange={(e) => setPriceRange(Number(e.target.value))} className="w-full accent-[#33ac6f]" /></div>
         </aside>
       </div>
 
