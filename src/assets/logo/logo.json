@@ -522,5 +522,45 @@
     {
         "name": "Gett",
         "link": "https://acctbazaar.com/assets/product/gett.png"
+    },
+    {
+        "name": "YouTube",
+        "link": "https://acctbazaar.com/assets/product/youtube.png"
+    },
+    {
+        "name": "GitHub",
+        "link": "https://acctbazaar.com/assets/product/github.png"
+    },
+    {
+        "name": "Canva",
+        "link": "https://acctbazaar.com/assets/product/canva.png"
+    },
+    {
+        "name": "ChatGPT",
+        "link": "https://acctbazaar.com/assets/product/chatgpt.png"
+    },
+    {
+        "name": "Office365",
+        "link": "https://acctbazaar.com/assets/product/office365.png"
+    },
+    {
+        "name": "Paypal",
+        "link": "https://acctbazaar.com/assets/product/paypal.png"
+    },
+    {
+        "name": "Bluesky",
+        "link": "https://acctbazaar.com/assets/product/bluesky.png"
+    },
+    {
+        "name": "QQ",
+        "link": "https://acctbazaar.com/assets/product/qq.png"
+    },
+    {
+        "name": "Kick",
+        "link": "https://acctbazaar.com/assets/product/kick.jpg"
+    },
+    {
+        "name": "Other",
+        "link": "https://acctbazaar.com/assets/product/other.png"
     }
   ]
