@@ -19,8 +19,9 @@ import {
   FaGlobe,
   FaPaperPlane,
   FaSmile,
-  FaPaperclip,
   FaCircle,
+  FaClock, // Added Clock Icon
+  FaExclamationTriangle, // Added Warning Icon
 } from "react-icons/fa";
 
 /* ---------------------------------------------
@@ -34,8 +35,9 @@ const FaEyeIcon = FaEye as unknown as React.ComponentType<any>;
 const FaGlobeIcon = FaGlobe as unknown as React.ComponentType<any>;
 const FaPaperPlaneIcon = FaPaperPlane as unknown as React.ComponentType<any>;
 const FaSmileIcon = FaSmile as unknown as React.ComponentType<any>;
-const FaPaperclipIcon = FaPaperclip as unknown as React.ComponentType<any>;
 const FaCircleIcon = FaCircle as unknown as React.ComponentType<any>;
+const FaClockIcon = FaClock as unknown as React.ComponentType<any>;
+const FaExclamationTriangleIcon = FaExclamationTriangle as unknown as React.ComponentType<any>;
 
 const ICON_COLOR_MAP = new Map<IconType, string>([
   [FaInstagram, "#E1306C"],
@@ -91,6 +93,7 @@ interface Purchase {
   sellerEmail: string;
   price: number;
   date: string;
+  rawDate: string; // Used for countdown calculation
   status: PurchaseStatus;
   purchaseNumber?: string;
 }
@@ -218,6 +221,9 @@ const MyPurchase: React.FC = () => {
   const [selected, setSelected] = useState<Purchase | null>(null);
   const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Timer State for Countdown
+  const [now, setNow] = useState(new Date().getTime());
 
   // Seller Names Map
   const [sellerNames, setSellerNames] = useState<Record<string, string>>({});
@@ -245,7 +251,6 @@ const MyPurchase: React.FC = () => {
   const [unreadState, setUnreadState] = useState<Record<string, boolean>>({});
   const scrollRef = useRef<HTMLDivElement>(null);
   const chatLengthRef = useRef(0);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // API URLs
   const PURCHASE_API = "http://localhost:3200/purchase";
@@ -255,6 +260,28 @@ const MyPurchase: React.FC = () => {
   const playNotificationSound = () => {
     const audio = new Audio(NOTIFICATION_SOUND);
     audio.play().catch((err) => console.log("Audio play failed:", err));
+  };
+
+  /* -------- Timer Interval -------- */
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setNow(new Date().getTime());
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  /* -------- Countdown Calculator Helper -------- */
+  const getRemainingTime = (purchaseDateStr: string) => {
+    const purchaseTime = new Date(purchaseDateStr).getTime();
+    const deadline = purchaseTime + 60 * 60 * 1000; // 1 hour expiration
+    const diff = deadline - now;
+
+    if (diff <= 0) return null; // Expired
+
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+    return `${minutes}m ${seconds}s`;
   };
 
   /* -------- Fetch Data -------- */
@@ -281,6 +308,7 @@ const MyPurchase: React.FC = () => {
           sellerEmail: item.sellerEmail || "Unknown",
           price: item.price || 0,
           date: formatDate(item.purchaseDate),
+          rawDate: item.purchaseDate,
           status: (item.status
             ? item.status.charAt(0).toUpperCase() + item.status.slice(1)
             : "Pending") as PurchaseStatus,
@@ -295,6 +323,44 @@ const MyPurchase: React.FC = () => {
     };
     fetchPurchases();
   }, [buyerId]);
+
+  /* -------- Auto Cancel Logic (1 Hour) -------- */
+  useEffect(() => {
+    const checkAndCancelExpiredOrders = async () => {
+      if (purchases.length === 0) return;
+
+      const ONE_HOUR = 60 * 60 * 1000; 
+
+      const pendingOrders = purchases.filter((p) => p.status === "Pending");
+      let updated = false;
+
+      for (const order of pendingOrders) {
+        const orderTime = new Date(order.rawDate).getTime();
+        
+        // If 1 hour passed and still pending
+        if (now - orderTime > ONE_HOUR) {
+          try {
+            await axios.patch(`${PURCHASE_API}/update-status/${order.id}`, {
+              status: "cancelled",
+            });
+            
+            setPurchases((prev) =>
+              prev.map((p) =>
+                p.id === order.id ? { ...p, status: "Cancelled" } : p
+              )
+            );
+            updated = true;
+          } catch (err) {
+            console.error(`Failed to auto-cancel order ${order.id}`, err);
+          }
+        }
+      }
+      // Note: Removed toast to avoid spamming every render, logic handles update silently
+    };
+
+    checkAndCancelExpiredOrders();
+  }, [now, purchases]); // Depend on 'now' to check every second
+
 
   /* -------- Fetch Seller Names -------- */
   useEffect(() => {
@@ -378,7 +444,7 @@ const MyPurchase: React.FC = () => {
     }
   }, [purchases, buyerId, isChatOpen, activeChatOrderId]);
 
-  /* -------- Status Actions (WITH TOAST) -------- */
+  /* -------- Status Actions -------- */
   const handleUpdateStatus = async (status: "completed" | "cancelled") => {
     if (!selected || !buyerId) return;
     try {
@@ -407,27 +473,24 @@ const MyPurchase: React.FC = () => {
           : null
       );
 
-      // TOAST ALERT
       if (status === "completed") {
         toast.success("Order received and confirmed successfully!");
       } else {
         toast.success("Order cancelled successfully.");
       }
     } catch (err) {
-      toast.error("Failed to update status. Please try again.");
+      toast.error("Failed to update status.");
     }
   };
 
-  /* -------- Auto Delete Function -------- */
+  /* -------- Auto Delete Msgs -------- */
   const autoDeleteOldMessages = async (messages: IMessage[]) => {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
     const oldMessages = messages.filter((m) => {
       if (!m.createdAt || !m._id) return false;
       return new Date(m.createdAt) < thirtyDaysAgo;
     });
-
     if (oldMessages.length > 0) {
       for (const msg of oldMessages) {
         try {
@@ -450,20 +513,16 @@ const MyPurchase: React.FC = () => {
         }
       );
       let newData = res.data as IMessage[];
-
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
       const validMessages = newData.filter((m) => {
         if (!m.createdAt) return true;
         return new Date(m.createdAt) >= thirtyDaysAgo;
       });
-
       if (validMessages.length < newData.length) {
         autoDeleteOldMessages(newData);
         newData = validMessages;
       }
-
       if (
         newData.length > chatLengthRef.current &&
         chatLengthRef.current !== 0
@@ -523,17 +582,6 @@ const MyPurchase: React.FC = () => {
       fetchChat(activeChatSellerEmail, activeChatOrderId);
     } catch (err) {
       toast.error("Failed to send message");
-    }
-  };
-
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      setTypedMessage((prev) => prev + ` [File: ${file.name}] `);
-      toast.success(`File "${file.name}" attached!`);
-    }
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
     }
   };
 
@@ -617,68 +665,85 @@ const MyPurchase: React.FC = () => {
                     </Link>
                   </div>
                 ) : (
-                  filtered.map((p) => (
-                    <div
-                      key={p.id}
-                      className="bg-[#F8FAFB] rounded-xl p-3 sm:p-4 flex items-start gap-3 border border-gray-100 hover:shadow-md transition-all"
-                    >
-                      <div className="flex-shrink-0 mt-1">
-                        {renderBadge(p.platform)}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-sm font-semibold text-[#0A1A3A] truncate">
-                          {p.title}
-                        </h3>
-                        <p className="text-[11px] text-gray-500 mt-0.5">
-                          {p.desc}
-                        </p>
-                        <div className="mt-2 flex items-center gap-2">
-                          <span
-                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
-                              p.status === "Completed"
-                                ? "bg-green-50 text-green-700 border-green-100"
-                                : p.status === "Pending"
-                                ? "bg-amber-50 text-amber-700 border-amber-100"
-                                : "bg-red-50 text-red-700 border-red-100"
-                            }`}
-                          >
-                            {p.status}
-                          </span>
-                          <span className="text-[10px] text-gray-400 uppercase font-medium">
-                            Seller: {getSellerDisplayName(p.sellerEmail)}
-                          </span>
+                  filtered.map((p) => {
+                    const remainingTime =
+                      p.status === "Pending" ? getRemainingTime(p.rawDate) : null;
+                    
+                    return (
+                      <div
+                        key={p.id}
+                        className="bg-[#F8FAFB] rounded-xl p-3 sm:p-4 flex items-start gap-3 border border-gray-100 hover:shadow-md transition-all"
+                      >
+                        <div className="flex-shrink-0 mt-1">
+                          {renderBadge(p.platform)}
                         </div>
-                      </div>
-                      <div className="flex-shrink-0 text-right flex flex-col items-end gap-2">
-                        <div className="text-sm font-bold text-[#0A1A3A]">
-                          ${p.price.toFixed(2)}
-                        </div>
-                        <div className="text-[10px] text-gray-400">
-                          {p.date}
-                        </div>
-                        <div className="flex gap-1">
-                          <button
-                            onClick={() => setSelected(p)}
-                            className="p-1.5 border rounded bg-white hover:bg-gray-50"
-                          >
-                            <FaEyeIcon size={14} />
-                          </button>
-                          <button
-                            onClick={() => handleOpenChat(p)}
-                            className="relative p-1.5 border rounded bg-white hover:bg-blue-50 text-blue-600 transition-colors"
-                          >
-                            <FaCommentsIcon size={14} />
-                            {unreadState[p.id] && (
-                              <span className="absolute -top-1 -right-1 flex h-3 w-3">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500 border-2 border-white"></span>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-sm font-semibold text-[#0A1A3A] truncate">
+                            {p.title}
+                          </h3>
+                          <p className="text-[11px] text-gray-500 mt-0.5">
+                            {p.desc}
+                          </p>
+                          <div className="mt-2 flex flex-col gap-1">
+                            <div className="flex items-center gap-2">
+                              <span
+                                className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                                  p.status === "Completed"
+                                    ? "bg-green-50 text-green-700 border-green-100"
+                                    : p.status === "Pending"
+                                    ? "bg-amber-50 text-amber-700 border-amber-100"
+                                    : "bg-red-50 text-red-700 border-red-100"
+                                }`}
+                              >
+                                {p.status}
                               </span>
+                              <span className="text-[10px] text-gray-400 uppercase font-medium">
+                                Seller: {getSellerDisplayName(p.sellerEmail)}
+                              </span>
+                            </div>
+                            
+                            {/* --- LIST VIEW COUNTDOWN --- */}
+                            {p.status === "Pending" && remainingTime && (
+                              <div className="flex items-center gap-1.5 text-red-600 animate-pulse mt-1">
+                                <FaClockIcon size={10} />
+                                <span className="text-[10px] font-bold">
+                                  Auto cancel in: {remainingTime}
+                                </span>
+                              </div>
                             )}
-                          </button>
+                          </div>
+                        </div>
+                        <div className="flex-shrink-0 text-right flex flex-col items-end gap-2">
+                          <div className="text-sm font-bold text-[#0A1A3A]">
+                            ${p.price.toFixed(2)}
+                          </div>
+                          <div className="text-[10px] text-gray-400">
+                            {p.date}
+                          </div>
+                          <div className="flex gap-1">
+                            <button
+                              onClick={() => setSelected(p)}
+                              className="p-1.5 border rounded bg-white hover:bg-gray-50"
+                            >
+                              <FaEyeIcon size={14} />
+                            </button>
+                            <button
+                              onClick={() => handleOpenChat(p)}
+                              className="relative p-1.5 border rounded bg-white hover:bg-blue-50 text-blue-600 transition-colors"
+                            >
+                              <FaCommentsIcon size={14} />
+                              {unreadState[p.id] && (
+                                <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                  <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500 border-2 border-white"></span>
+                                </span>
+                              )}
+                            </button>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))
+                    );
+                  })
                 )}
               </div>
             </div>
@@ -738,9 +803,23 @@ const MyPurchase: React.FC = () => {
                 </div>
               </div>
 
-              {/* --- CANCEL BUTTON REMOVED / ONLY CONFIRM BUTTON VISIBLE --- */}
+              {/* --- AUTO REMOVE WARNING + BUTTON --- */}
               {selected.status === "Pending" && (
-                <div className="mt-6">
+                <div className="mt-6 space-y-3">
+                   {getRemainingTime(selected.rawDate) && (
+                      <div className="bg-red-50 border border-red-100 rounded-lg p-3 flex items-start gap-3">
+                        <FaExclamationTriangleIcon className="text-red-500 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <p className="text-xs font-bold text-red-600">
+                             Action Required
+                          </p>
+                          <p className="text-[11px] text-red-500 mt-0.5 leading-tight">
+                            This order will be automatically cancelled in <span className="font-bold">{getRemainingTime(selected.rawDate)}</span> if not confirmed.
+                          </p>
+                        </div>
+                      </div>
+                   )}
+
                   <button
                     onClick={() => handleUpdateStatus("completed")}
                     className="w-full py-2.5 bg-[#33ac6f] hover:bg-[#2aa46a] text-white rounded-lg font-medium transition shadow-sm"
@@ -872,20 +951,6 @@ const MyPurchase: React.FC = () => {
               onSubmit={sendChat}
               className="p-3 bg-white border-t flex gap-2 items-center z-20"
             >
-              <input
-                type="file"
-                ref={fileInputRef}
-                className="hidden"
-                onChange={handleFileSelect}
-              />
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="p-2 text-gray-400 hover:text-blue-500 transition"
-              >
-                <FaPlusIcon />
-              </button>
-
               <div className="flex-1 relative">
                 <input
                   value={typedMessage}
