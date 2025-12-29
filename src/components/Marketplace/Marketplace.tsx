@@ -10,7 +10,7 @@ import { IconType } from "react-icons";
 import {
   FaWhatsapp, FaEnvelope, FaPlus, FaBullhorn, FaFacebookF, FaInstagram, FaTwitter, FaLock,
   FaShoppingCart, FaTimes, FaSearch, FaStar, FaEye, FaLinkedinIn, FaYoutube, FaSnapchatGhost,
-  FaTelegramPlane, FaDiscord, FaPinterest, FaRedditAlien, FaPaypal, FaCheck,
+  FaTelegramPlane, FaDiscord, FaPinterest, FaRedditAlien, FaPaypal, FaCheck, FaExternalLinkAlt
 } from "react-icons/fa";
 import { SiNetflix, SiAmazon, SiSteam, SiGoogle, SiTiktok, SiTinder } from "react-icons/si";
 import { MdMail, MdSimCard, MdPhoneIphone, MdVpnLock, MdLocalOffer } from "react-icons/md";
@@ -31,6 +31,7 @@ const SearchIcon = FaSearch as React.ElementType;
 const PlusIcon = FaPlus as React.ElementType;
 const PurchaseIcon = BiSolidPurchaseTag as React.ElementType;
 const CheckIcon = FaCheck as React.ElementType;
+const ExternalLinkIcon = FaExternalLinkAlt as React.ElementType;
 
 interface Item {
   id: string;
@@ -43,6 +44,7 @@ interface Item {
   category: string;
   subcategory?: string;
   realTime?: boolean;
+  previewLink?: string; // New Field
 }
 
 type SubcatState = Record<string, string[]>;
@@ -233,6 +235,8 @@ const ItemCard: React.FC<{
         <div className={`flex flex-col ${isList ? "items-end text-right" : "mt-4 items-center w-full"}`}>
         <div className="text-base font-bold text-[#0A1A3A] mb-1">${item.price.toFixed(2)}</div>
         <div className="flex items-center gap-1 w-full justify-center">
+          
+          {/* Add To Cart */}
           <button 
             onClick={() => onAddToCart(item)} 
             disabled={isAdded}
@@ -246,10 +250,8 @@ const ItemCard: React.FC<{
             {isAdded ? <CheckIcon size={14} /> : <ShoppingCartIcon size={14} />}
           </button>
 
+          {/* View Button (Only View here - Preview is removed) */}
           <button onClick={() => onView(item)} className="p-1.5 border rounded-md hover:bg-gray-50 text-gray-600 flex items-center justify-center" title="View Details"><EyeIcon size={14} /></button>
-          {/* <button onClick={() => onBuy(item)} disabled={isProcessing} className={`px-2 py-1.5 text-sm font-semibold text-white rounded bg-gradient-to-r from-[#33ac6f] to-[#27b86a] hover:shadow-lg disabled:opacity-70 flex items-center gap-2 ${isList ? "" : "flex-1 justify-center"}`}>
-            {isProcessing ? "..." : <><PurchaseIcon size={14} /> </>}
-          </button> */}
         </div>
       </div>
     </div>
@@ -266,44 +268,75 @@ const ProductModal: React.FC<{
     isAdded: boolean;
 }> = ({ item, onClose, onBuy, onAddToCart, isProcessing, isAdded }) => {
   const [accepted, setAccepted] = useState(false);
+  
   return (
     <>
       <div className="fixed inset-0 bg-black/60 z-40 backdrop-blur-sm" onClick={onClose} />
       <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg bg-white rounded-2xl shadow-2xl z-50 overflow-hidden max-h-[90vh] flex flex-col">
+        
+        {/* Header */}
         <div className="p-4 border-b flex justify-between items-center bg-gray-50">
           <h2 className="font-bold text-gray-800">Item Details</h2>
           <button onClick={onClose} className="p-1 hover:bg-gray-200 rounded-full"><TimesIcon /></button>
         </div>
+
+        {/* Body (Scrollable) */}
         <div className="p-6 overflow-y-auto">
           <div className="flex justify-center mb-4"><RenderIcon icon={item.icon} size={72} realTime={item.realTime} /></div>
           <h2 className="text-2xl font-bold text-center text-[#0A1A3A] mb-1">{item.title}</h2>
           <div className="text-3xl font-extrabold text-center text-green-600 mb-6">${item.price.toFixed(2)}</div>
+          
           <div className="space-y-4 text-sm bg-gray-50 p-4 rounded-lg">
-            <div><span className="font-semibold text-gray-700">Description:</span> <p className="text-gray-600 mt-1">{item.desc || "No description provided."}</p></div>
+            <div>
+              <span className="font-semibold text-gray-700">Description:</span> 
+              <p className="text-gray-600 mt-1">{item.desc || "No description provided."}</p>
+            </div>
             
-            <div className="flex justify-between">
+            <div className="flex justify-between mt-2">
                 <span>Seller: <span className="font-medium">Verified Seller</span></span>
                 <span>Category: <span className="font-medium">{item.category}</span></span>
             </div>
             
             <div className="flex items-center gap-2 text-yellow-500"><Stars value={5} /> <span className="text-gray-400 text-xs">(Verified)</span></div>
           </div>
+
           <div className="mt-4 flex items-start gap-3 p-3 bg-yellow-50 border border-yellow-100 rounded-lg">
             <input type="checkbox" id="accept" checked={accepted} onChange={(e) => setAccepted(e.target.checked)} className="mt-1" />
             <label htmlFor="accept" className="text-xs text-gray-700 cursor-pointer select-none">I have verified the seller rating and description. I understand that transactions outside this platform are not protected.</label>
           </div>
         </div>
-        <div className="p-4 border-t bg-gray-50 grid grid-cols-2 gap-3">
-          <button 
-            onClick={() => onAddToCart(item)} 
-            disabled={isAdded}
-            className={`py-3 border border-gray-300 rounded-xl font-semibold transition ${isAdded ? "bg-green-50 text-green-600 cursor-not-allowed" : "hover:bg-gray-100"}`}
-          >
-            {isAdded ? "Added to Cart" : "Add to Cart"}
-          </button>
-          <button onClick={() => accepted && onBuy(item)} disabled={!accepted || isProcessing} className={`py-3 rounded-xl font-bold text-white transition ${accepted ? "bg-[#33ac6f] hover:bg-[#28965e]" : "bg-gray-300 cursor-not-allowed"}`}>
-            {isProcessing ? "Processing..." : "Purchase Now"}
-          </button>
+
+        {/* Footer Buttons */}
+        <div className="p-4 border-t bg-gray-50 flex flex-col gap-3">
+          {/* Row 1: Cart & Purchase */}
+          <div className="grid grid-cols-2 gap-3">
+            <button 
+                onClick={() => onAddToCart(item)} 
+                disabled={isAdded}
+                className={`py-3 border border-gray-300 rounded-xl font-semibold transition ${isAdded ? "bg-green-50 text-green-600 cursor-not-allowed" : "hover:bg-gray-100"}`}
+            >
+                {isAdded ? "Added to Cart" : "Add to Cart"}
+            </button>
+            <button 
+                onClick={() => accepted && onBuy(item)} 
+                disabled={!accepted || isProcessing} 
+                className={`py-3 rounded-xl font-bold text-white transition ${accepted ? "bg-[#33ac6f] hover:bg-[#28965e]" : "bg-gray-300 cursor-not-allowed"}`}
+            >
+                {isProcessing ? "Processing..." : "Purchase Now"}
+            </button>
+          </div>
+
+          {/* Row 2: Preview Button (Same Style as Purchase Now - Full Width) */}
+          {item.previewLink && (
+            <a 
+              href={item.previewLink} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="w-full py-3 rounded-xl font-bold text-white bg-blue-600 hover:bg-blue-700 transition flex items-center justify-center gap-2 shadow-sm"
+            >
+              <ExternalLinkIcon size={16} /> Preview Product
+            </a>
+          )}
         </div>
       </div>
     </>
@@ -349,12 +382,13 @@ const Marketplace: React.FC = () => {
             title: p.name,
             desc: p.description,
             price: Number(p.price) || 0,
-            seller: p.userEmail, // লজিকের জন্য সেলারের ইমেইল এখানে লোড হচ্ছে
+            seller: p.userEmail, 
             delivery: "Instant",
             icon: p.categoryIcon || FaBullhorn,
             category: "Social Media",
             subcategory: p.category,
             realTime: true,
+            previewLink: p.previewLink, // Map previewLink from Backend here
           }));
         setItems(mapped);
       } catch (err) { console.error("Failed to load products", err); } finally { setLoading(false); }
@@ -444,7 +478,7 @@ const Marketplace: React.FC = () => {
     }
   }, [user.user?.email, cartItemIds]);
 
-  // --- INSTANT PURCHASE LOGIC (FIXED) ---
+  // --- INSTANT PURCHASE LOGIC ---
   const buyNow = async (item: Item) => {
     const currentUserEmail = user.user?.email;
     
@@ -457,12 +491,12 @@ const Marketplace: React.FC = () => {
     setProcessingIds((prev) => [...prev, item.id]);
 
     try {
-      // Backend এর সাথে নাম মিলিয়ে Payload পাঠানো হচ্ছে
+      // Backend Payload
       const payload = {
         buyerEmail: currentUserEmail,
         productName: item.title,
         price: item.price,
-        sellerEmail: item.seller, // যদি এটা খালি থাকে তাহলে এরর আসবে
+        sellerEmail: item.seller,
         productId: item.id
       };
 
