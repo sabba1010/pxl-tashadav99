@@ -22,6 +22,8 @@ import {
   FaSmile,
   FaPaperclip,
   FaCircle,
+  FaCheck, // Added for Confirm button
+  FaBan,   // Added for Cancel button
 } from "react-icons/fa";
 
 /* ---------------------------------------------
@@ -37,6 +39,8 @@ const FaPaperPlaneIcon = FaPaperPlane as unknown as React.ComponentType<any>;
 const FaSmileIcon = FaSmile as unknown as React.ComponentType<any>;
 const FaPaperclipIcon = FaPaperclip as unknown as React.ComponentType<any>;
 const FaCircleIcon = FaCircle as unknown as React.ComponentType<any>;
+const FaCheckIcon = FaCheck as unknown as React.ComponentType<any>;
+const FaBanIcon = FaBan as unknown as React.ComponentType<any>;
 
 const ICON_COLOR_MAP = new Map<IconType, string>([
   [FaInstagram, "#E1306C"],
@@ -217,6 +221,7 @@ const MyOrder: React.FC = () => {
   const [selected, setSelected] = useState<Order | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isUpdating, setIsUpdating] = useState(false); // New loading state for updates
 
   // Store Buyer Names (Email -> Name)
   const [buyerNames, setBuyerNames] = useState<Record<string, string>>({});
@@ -360,6 +365,41 @@ const MyOrder: React.FC = () => {
       return () => clearInterval(interval);
     }
   }, [orders, sellerId, isChatOpen, activeChatOrderId]);
+
+  /* -------- Update Status Logic (Confirm/Cancel) -------- */
+  const updateOrderStatus = async (
+    orderId: string,
+    newStatus: "Completed" | "Cancelled"
+  ) => {
+    if (!orderId) return;
+
+    try {
+      setIsUpdating(true);
+      
+      // ✅ PATCH REQUEST: Matches your existing backend route /update-status/:id
+      await axios.patch(`${PURCHASE_API}/update-status/${orderId}`, {
+        status: newStatus, // Backend receives this status
+      });
+
+      // Update Local State immediately
+      setOrders((prev) =>
+        prev.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o))
+      );
+
+      // Update Selected Modal if open
+      if (selected && selected.id === orderId) {
+        setSelected((prev) => (prev ? { ...prev, status: newStatus } : null));
+      }
+
+      toast.success(`Order marked as ${newStatus}`);
+
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to update order status");
+    } finally {
+      setIsUpdating(false);
+    }
+  };
 
   /* -------- Auto Delete Function -------- */
   const autoDeleteOldMessages = async (messages: IMessage[]) => {
@@ -563,13 +603,14 @@ const MyOrder: React.FC = () => {
                   filtered.map((p) => (
                     <div
                       key={p.id}
-                      className="bg-[#F8FAFB] rounded-xl p-3 sm:p-4 flex items-start gap-3 border border-gray-100 hover:shadow-md transition-all"
+                      onClick={() => setSelected(p)} // Changed: Click anywhere to open details
+                      className="bg-[#F8FAFB] cursor-pointer rounded-xl p-3 sm:p-4 flex items-start gap-3 border border-gray-100 hover:shadow-md transition-all group"
                     >
                       <div className="flex-shrink-0 mt-1">
                         {renderBadge(p.platform)}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-sm font-semibold text-[#0A1A3A] truncate">
+                        <h3 className="text-sm font-semibold text-[#0A1A3A] truncate group-hover:text-blue-600 transition-colors">
                           {p.title}
                         </h3>
                         <p className="text-[11px] text-gray-500 mt-0.5">
@@ -599,7 +640,7 @@ const MyOrder: React.FC = () => {
                         <div className="text-[10px] text-gray-400">
                           {p.date}
                         </div>
-                        <div className="flex gap-1">
+                        <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
                           <button
                             onClick={() => setSelected(p)}
                             className="p-1.5 border rounded bg-white hover:bg-gray-50"
@@ -664,6 +705,20 @@ const MyOrder: React.FC = () => {
               </div>
               <div className="mt-4 grid grid-cols-1 gap-3 text-sm">
                 <div>
+                  <p className="text-gray-500">Order Status</p>
+                  <span
+                    className={`inline-block px-3 py-1 mt-1 rounded-full text-xs font-bold border ${
+                      selected.status === "Completed"
+                        ? "bg-green-50 text-green-700 border-green-100"
+                        : selected.status === "Pending"
+                        ? "bg-amber-50 text-amber-700 border-amber-100"
+                        : "bg-red-50 text-red-700 border-red-100"
+                    }`}
+                  >
+                    {selected.status}
+                  </span>
+                </div>
+                <div>
                   <p className="text-gray-500">Order Number</p>
                   <p className="font-medium">{selected.orderNumber || "—"}</p>
                 </div>
@@ -680,6 +735,41 @@ const MyOrder: React.FC = () => {
                   </p>
                 </div>
               </div>
+
+              {/* ACTION BUTTONS: ONLY SHOW IF PENDING */}
+              {selected.status === "Pending" && (
+                <div className="mt-6 p-4 bg-gray-50 rounded-xl border border-gray-100">
+                  <p className="text-xs font-semibold text-gray-500 uppercase mb-3">
+                    Order Actions
+                  </p>
+                  <div className="flex gap-3">
+                    <button
+                      disabled={isUpdating}
+                      onClick={() =>
+                        updateOrderStatus(selected.id, "Completed")
+                      }
+                      className="flex-1 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition shadow-sm flex items-center justify-center gap-2 disabled:opacity-50"
+                    >
+                      {isUpdating ? (
+                        "Updating..."
+                      ) : (
+                        <>
+                          <FaCheckIcon size={14} /> Confirm
+                        </>
+                      )}
+                    </button>
+                    <button
+                      disabled={isUpdating}
+                      onClick={() =>
+                        updateOrderStatus(selected.id, "Cancelled")
+                      }
+                      className="flex-1 py-2.5 bg-white border border-red-200 text-red-600 hover:bg-red-50 rounded-lg font-medium transition shadow-sm flex items-center justify-center gap-2 disabled:opacity-50"
+                    >
+                      <FaBanIcon size={14} /> Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
 
               <div className="mt-6 flex gap-2">
                 <button
