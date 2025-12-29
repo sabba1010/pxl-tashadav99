@@ -379,12 +379,12 @@ const MyAds: React.FC = () => {
       </div>
 
       {/* Floating Action Button (Mobile Only) */}
-      <Link
+      {/* <Link
         to="/add-product"
         className="sm:hidden fixed bottom-6 right-6 w-14 h-14 bg-[#33ac6f] text-white rounded-full shadow-2xl flex items-center justify-center z-50 hover:scale-110 active:scale-95 transition-transform"
       >
         <Plus size={24} />
-      </Link>
+      </Link> */}
     </div>
   );
 };
