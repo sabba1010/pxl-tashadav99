@@ -465,11 +465,6 @@
         "link": "https://acctbazaar.com/assets/product/appletv.png"
     },
     {
-      
-      "name": "HBO Max",
-      "link": "https://acctbazaar.com/assets/product/hbomax.png"
-    },
-    {
         
         "name": "Spotify",
         "link": "https://acctbazaar.com/assets/product/spotify.png"
@@ -478,5 +473,54 @@
       
       "name": "Audiomack",
       "link": "https://acctbazaar.com/assets/product/audio-mac.png"
+    },
+    {
+      
+      "name": "Damus",
+      "link": "https://acctbazaar.com/assets/product/damus.png"
+    },
+    {   
+        "name": "RTRO",
+        "link": "https://acctbazaar.com/assets/product/rtro.png"
+    },
+    {
+        "name": "Gowalla",
+        "link": "https://acctbazaar.com/assets/product/gowalla.jpeg"
+    },
+    {
+        "name": "Yandex",
+        "link": "https://acctbazaar.com/assets/product/yandex.png"
+    },
+    {
+        "name": "Uber",
+        "link": "https://acctbazaar.com/assets/product/uber.png"
+    },
+    {
+        "name": "Grab",
+        "link": "https://acctbazaar.com/assets/product/grab.png"
+    },
+    {
+        "name": "Bolt",
+        "link": "https://acctbazaar.com/assets/product/bolt.png"
+    },
+    {
+        "name": "BlaBlaCar",
+        "link": "https://acctbazaar.com/assets/product/blablacar.jpeg"
+    },
+    {
+        "name": "inDriver",
+        "link": "https://acctbazaar.com/assets/product/indriver.png"
+    },
+    {
+        "name": "Careem",
+        "link": "https://acctbazaar.com/assets/product/careem.png"
+    },
+    {
+        "name": "OnTaxi",
+        "link": "https://acctbazaar.com/assets/product/ontaxi.png"
+    },
+    {
+        "name": "Gett",
+        "link": "https://acctbazaar.com/assets/product/gett.png"
     }
   ]
