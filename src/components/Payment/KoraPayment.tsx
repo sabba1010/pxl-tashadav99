@@ -12,6 +12,8 @@ interface PaymentResponse {
   checkoutUrl: string;
 }
 
+
+
 interface KoraPaymentProps {
   amount: number; // এখানে dynamic amount আসবে
   currency?: "NGN" | "USD" | "GHS"; // optional, default NGN
