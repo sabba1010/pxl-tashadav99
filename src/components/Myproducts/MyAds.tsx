@@ -55,7 +55,7 @@ const MyAds: React.FC = () => {
     const fetchAds = async () => {
       try {
         const res = await axios.get<Ad[]>(
-          "https://vps-backend-server-beta.vercel.app/product/all-sells"
+          "http://localhost:3200/product/all-sells"
         );
 
         const userAds = res.data.filter(
@@ -126,9 +126,7 @@ const MyAds: React.FC = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await axios.delete(
-            `https://vps-backend-server-beta.vercel.app/product/delete/${id}`
-          );
+          await axios.delete(`http://localhost:3200/product/delete/${id}`);
           setItems((prev) => prev.filter((it) => it._id !== id));
 
           // Single Alert Logic

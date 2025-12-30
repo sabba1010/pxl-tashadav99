@@ -188,7 +188,7 @@ const AllUsers: React.FC = () => {
   } | null>(null);
 
   useEffect(() => {
-    fetch("https://vps-backend-server-beta.vercel.app/api/user/getall")
+    fetch("http://localhost:3200/api/user/getall")
       .then((r) => r.json())
       .then((data) => setUsers(Array.isArray(data) ? data : data.users || []))
       .catch(console.error)
@@ -239,7 +239,7 @@ const AllUsers: React.FC = () => {
 
   const refresh = () => {
     setLoading(true);
-    fetch("https://vps-backend-server-beta.vercel.app/api/user/getall")
+    fetch("http://localhost:3200/api/user/getall")
       .then((r) => r.json())
       .then((data) => setUsers(Array.isArray(data) ? data : data.users || []))
       .finally(() => setLoading(false));

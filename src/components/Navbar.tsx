@@ -20,7 +20,7 @@ const FaBreadSliceIcon = FaBreadSlice as unknown as React.ComponentType<any>;
 const FaTrashIcon = FaTrash as unknown as React.ComponentType<any>;
 
 // API URL
-const API_URL = "https://vps-backend-server-beta.vercel.app/api/notification";
+const API_URL = "http://localhost:3200/api/notification";
 
 type NItem = {
   _id?: string;
@@ -44,6 +44,7 @@ export default function Navbar() {
   const navigate = useNavigate();
 
   const loginUserData = useAuthHook();
+  console.log(loginUserData.data);
   const currentUserEmail =
     loginUserData.data?.email || localStorage.getItem("userEmail");
 
@@ -237,7 +238,8 @@ export default function Navbar() {
               >
                 Mypurchase
               </NavLink>
-              {loginUser?.role === "seller" || loginUser?.role === "admin" ? (
+              {loginUserData.data?.role === "seller" ||
+              loginUserData.data?.role === "admin" ? (
                 <NavLink
                   to="/orders"
                   className="font-medium"

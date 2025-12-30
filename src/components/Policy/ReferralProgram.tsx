@@ -1,11 +1,18 @@
 import React from "react";
-import { Gift, Users, Share2, CheckCircle, ArrowRight, Copy } from "lucide-react";
+import {
+  Gift,
+  Users,
+  Share2,
+  CheckCircle,
+  ArrowRight,
+  Copy,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuthHook } from "../../hook/useAuthHook";
 
 const ReferralProgram: React.FC = () => {
   const { data } = useAuthHook();
-  const referralLink = `http://localhost:3000/?ref/${data?.referralCode}`;
+  const referralLink = `http://localhost:3200/?ref/${data?.referralCode}`;
 
   const [copied, setCopied] = React.useState(false);
 
@@ -23,18 +30,22 @@ const ReferralProgram: React.FC = () => {
   return (
     <div className="min-h-screen bg-white py-16 px-6">
       <div className="max-w-4xl mx-auto">
-
         {/* Hero */}
         <div className="text-center mb-16">
           <div className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-yellow-100 border border-yellow-300 mb-8">
             <Gift className="w-7 h-7 text-yellow-600" />
-            <span className="text-yellow-700 font-bold text-lg">Referral Program</span>
+            <span className="text-yellow-700 font-bold text-lg">
+              Referral Program
+            </span>
           </div>
           <h1 className="text-4xl md:text-6xl font-bold text-[#e6c06c] mb-6">
-            Invite Friends.<br />Earn $10 Each!
+            Invite Friends.
+            <br />
+            Earn $10 Each!
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Share your link → Friend completes first $50+ trade → Both get $10 wallet credit instantly!
+            Share your link → Friend completes first $50+ trade → Both get $10
+            wallet credit instantly!
           </p>
         </div>
 
@@ -49,8 +60,12 @@ const ReferralProgram: React.FC = () => {
               <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[#33ac6f] flex items-center justify-center">
                 <item.icon className="w-9 h-9 text-white" />
               </div>
-              <div className="text-4xl font-bold text-[#e6c06c] mb-2">0{item.step}</div>
-              <h3 className="text-xl font-semibold text-[#00183b]">{item.title}</h3>
+              <div className="text-4xl font-bold text-[#e6c06c] mb-2">
+                0{item.step}
+              </div>
+              <h3 className="text-xl font-semibold text-[#00183b]">
+                {item.title}
+              </h3>
             </div>
           ))}
         </div>
@@ -58,7 +73,9 @@ const ReferralProgram: React.FC = () => {
         {/* Referral Link Box */}
         <div className="max-w-2xl mx-auto mb-16">
           <div className="p-8 bg-gradient-to-br from-[#00183b] to-[#002a5c] rounded-3xl text-center text-white">
-            <p className="text-lg mb-4 opacity-90">Your Personal Referral Link</p>
+            <p className="text-lg mb-4 opacity-90">
+              Your Personal Referral Link
+            </p>
             <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-5 break-all font-mono text-lg">
               {referralLink}
             </div>
@@ -83,7 +100,9 @@ const ReferralProgram: React.FC = () => {
 
         {/* Rules */}
         <div className="bg-gray-50 rounded-3xl p-8 md:p-12">
-          <h2 className="text-3xl font-bold text-[#00183b] text-center mb-8">Rules & Conditions</h2>
+          <h2 className="text-3xl font-bold text-[#00183b] text-center mb-8">
+            Rules & Conditions
+          </h2>
           <ul className="space-y-4 max-w-3xl mx-auto text-gray-700">
             {[
               "New users only (no existing accounts)",
