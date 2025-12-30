@@ -136,7 +136,7 @@ const SellerAccount: React.FC = () => {
                       />
                     </TableCell>
                     <TableCell className="text-right font-bold text-gray-700">
-                      ${seller.balance || 0}
+                      ${seller.balance?.toFixed(1) || 0}
                     </TableCell>
                   </TableRow>
                 ))
