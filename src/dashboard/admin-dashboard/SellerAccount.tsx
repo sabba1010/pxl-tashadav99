@@ -36,7 +36,9 @@ const SellerAccount: React.FC = () => {
     const fetchSellers = async () => {
       try {
         setLoading(true);
-        const response = await fetch("http://localhost:3200/api/user/getall");
+        const response = await fetch(
+          "https://vps-backend-server-beta.vercel.app/api/user/getall"
+        );
         const data = await response.json();
         console.log(data);
         let allUsers: Seller[] = [];

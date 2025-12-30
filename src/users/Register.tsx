@@ -105,7 +105,7 @@ const Register = () => {
       // ---------------------------------------------------------
       // এখানে <UserFromDB[]> ব্যবহার করায় TypeScript আর এরর দিবে না
       const checkRes = await axios.get<UserFromDB[]>(
-        "http://localhost:3200/api/user/getall"
+        "https://vps-backend-server-beta.vercel.app/api/user/getall"
       );
 
       const allUsers = checkRes.data;
@@ -124,7 +124,7 @@ const Register = () => {
       // STEP 2: রেজিস্ট্রেশন (POST Request)
       // ---------------------------------------------------------
       const res = await axios.post<RegisterResponse>(
-        "http://localhost:3200/api/user/register",
+        "https://vps-backend-server-beta.vercel.app/api/user/register",
         formData
       );
 
