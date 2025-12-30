@@ -12,8 +12,6 @@ interface PaymentResponse {
   checkoutUrl: string;
 }
 
-
-
 interface KoraPaymentProps {
   amount: number; // এখানে dynamic amount আসবে
   currency?: "NGN" | "USD" | "GHS"; // optional, default NGN
@@ -44,7 +42,7 @@ export default function KoraPayment({
       setLoading(true);
 
       const response = await axios.post(
-        "https://vps-backend-server-beta.vercel.app/korapay/create",
+        "http://localhost:3200/korapay/create",
         { amount, user, currency },
         { headers: { "Content-Type": "application/json" } }
       );

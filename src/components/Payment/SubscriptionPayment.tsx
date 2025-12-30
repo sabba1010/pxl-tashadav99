@@ -3,23 +3,25 @@
 import React, { useState } from "react";
 import { Loader2, CheckCircle, AlertCircle } from "lucide-react";
 import { Button } from "@mui/material";
-import { useAuthHook } from "../../hook/useAuthHook";
+import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
+
+const MySwal = Swal; // Allows <></> inside html if needed
 
 interface DeductAndCreditActionProps {
   userId: string;
-  deductAmount: number; // balance থেকে কাটবে
-  creditAmount: number; // salesCredit-এ যোগ হবে
-  newPlan?: string; // অপশনাল: "basic" | "pro" | "premium" ইত্যাদি
+  deductAmount: number;
+  creditAmount: number;
+  newPlan?: string;
   onSuccess?: (data: {
     newBalance: number;
     newSalesCredit: number;
     subscribedPlan?: string;
   }) => void;
   onError?: (error: string) => void;
-  buttonText?: string; // বাটনে কী লেখা দেখাবে
+  buttonText?: string;
   disabled?: boolean;
-  children?: React.ReactNode; // কাস্টম কন্টেন্ট (যেমন আইকন + টেক্সট)
+  children?: React.ReactNode;
 }
 
 const DeductAndCreditAction: React.FC<DeductAndCreditActionProps> = ({
@@ -36,11 +38,10 @@ const DeductAndCreditAction: React.FC<DeductAndCreditActionProps> = ({
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
-  const { data, refetch } = useAuthHook();
-  const navigate = useNavigate();
+  const naigate = useNavigate();
 
   const handleTransaction = async () => {
-    // Basic validation
+    // Validation before showing alert
     if (deductAmount <= 0) {
       setStatus("error");
       setMessage("Deduct amount must be greater than 0");
@@ -54,13 +55,29 @@ const DeductAndCreditAction: React.FC<DeductAndCreditActionProps> = ({
       return;
     }
 
+    // SweetAlert2 Confirmation
+    const result = await MySwal.fire({
+      title: "Confirm Transaction",
+      icon: "info",
+      showCancelButton: true,
+      confirmButtonColor: "#d4a643",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Confirm Purchase",
+    });
+
+    // If user cancels → stop here
+    if (!result.isConfirmed) {
+      return;
+    }
+
+    // Proceed with transaction
     setLoading(true);
     setStatus("idle");
     setMessage("");
 
     try {
       const response = await fetch(
-        `https://vps-backend-server-beta.vercel.app/api/user/getall/${userId}`,
+        `http://localhost:3200/api/user/getall/${userId}`,
         {
           method: "POST",
           headers: {
@@ -73,6 +90,7 @@ const DeductAndCreditAction: React.FC<DeductAndCreditActionProps> = ({
           }),
         }
       );
+
       const data = await response.json();
 
       if (!response.ok) {
@@ -80,21 +98,39 @@ const DeductAndCreditAction: React.FC<DeductAndCreditActionProps> = ({
       }
 
       setStatus("success");
-      setMessage(data.message || "Transaction successful!");
+      setMessage(data.message || "Transaction completed successfully!");
 
+      // Success callback
       onSuccess?.({
         newBalance: data.newBalance,
         newSalesCredit: data.newSalesCredit,
         subscribedPlan: data.subscribedPlan,
       });
+
+      // Optional: Show success toast
+      MySwal.fire({
+        icon: "success",
+        title: "Success!",
+        text: "Balance deducted and sales credit added.",
+        timer: 3000,
+        showConfirmButton: false,
+      });
+      naigate("/selling-form");
     } catch (err: any) {
       setStatus("error");
-      setMessage(err.message || "Something went wrong");
+      setMessage(err.message || "Transaction failed");
       onError?.(err.message);
+
+      // Optional: Show error alert
+      MySwal.fire({
+        icon: "error",
+        title: "Failed",
+        text: err.message || "Something went wrong",
+      });
     } finally {
       setLoading(false);
 
-      // 5 সেকেন্ড পর মেসেজ ক্লিয়ার
+      // Auto-clear status message after 5 seconds
       setTimeout(() => {
         setStatus("idle");
         setMessage("");
@@ -104,70 +140,54 @@ const DeductAndCreditAction: React.FC<DeductAndCreditActionProps> = ({
 
   return (
     <div className="space-y-4">
-  {/* Premium Button */}
-  <Button
-    onClick={handleTransaction}
-    disabled={loading || disabled || deductAmount <= 0}
-    className={`
-      relative w-full overflow-hidden rounded-xl px-6 py-4 text-base font-semibold
-      shadow-lg transition-all duration-300 transform
-      ${
-        loading || disabled || deductAmount <= 0
-          ? "cursor-not-allowed bg-gray-400 text-gray-200"
-          : "hover:scale-[1.02] hover:shadow-xl active:scale-[0.98]"
-      }
-      bg-gradient-to-r from-[#0A1A3A] to-[#1e3a6d]
-      text-white border-0
-    `}
-  >
-    {/* Optional shiny effect */}
-    <span className="absolute inset-0 bg-[#d4a643] text-white" />
-
-    <span className="relative flex items-center justify-center gap-3 text-white">
-      {loading && <Loader2 className="h-5 w-5 animate-spin" />}
-      {children || buttonText}
-    </span>
-  </Button>
-
-  {/* Status Message - Enhanced */}
-  {status !== "idle" && (
-    <div
-      className={`
-        relative overflow-hidden rounded-xl px-5 py-4 text-sm font-medium
-        shadow-md border backdrop-blur-sm transition-all duration-500
-        flex items-center gap-3
-        ${
-          status === "success"
-            ? "bg-[#d4a643] text-green-800"
-            : "bg-gradient-to-r from-red-50 to-rose-50 border-red-200 text-red-800"
-        }
-      `}
-    >
-      {/* Subtle glow effect for success */}
-      {status === "success" && (
-        <div className="absolute inset-0 bg-green-400 opacity-5 animate-pulse" />
-      )}
-
-      {/* Icon */}
-      {status === "success" ? (
-        <CheckCircle className="h-5 w-5 flex-shrink-0" />
-      ) : (
-        <AlertCircle className="h-5 w-5 flex-shrink-0" />
-      )}
-
-      {/* Message */}
-      <span className="relative">{message}</span>
-
-      {/* Optional small accent line */}
-      <div
+      <Button
+        onClick={handleTransaction}
+        disabled={loading || disabled || deductAmount <= 0}
         className={`
-          absolute left-0 top-0 bottom-0 w-1
-          ${status === "success" ? "bg-green-500" : "bg-red-500"}
+          relative w-full overflow-hidden rounded-xl px-6 py-4 text-base font-semibold
+          shadow-lg transition-all duration-300 transform
+          ${
+            loading || disabled || deductAmount <= 0
+              ? "cursor-not-allowed bg-gray-400 text-gray-200"
+              : "hover:scale-[1.02] hover:shadow-xl active:scale-[0.98]"
+          }
+          bg-gradient-to-r from-[#0A1A3A] to-[#1e3a6d] text-white border-0
         `}
-      />
+      >
+        <span className="relative flex items-center justify-center gap-3 text-white">
+          {loading && <Loader2 className="h-5 w-5 animate-spin" />}
+          {children || buttonText}
+        </span>
+      </Button>
+
+      {/* Status Message */}
+      {status !== "idle" && (
+        <div
+          className={`
+            relative overflow-hidden rounded-xl px-5 py-4 text-sm font-medium
+            shadow-md border backdrop-blur-sm transition-all duration-500
+            flex items-center gap-3
+            ${
+              status === "success"
+                ? "bg-green-50 border-green-200 text-green-800"
+                : "bg-red-50 border-red-200 text-red-800"
+            }
+          `}
+        >
+          {status === "success" ? (
+            <CheckCircle className="h-5 w-5 flex-shrink-0" />
+          ) : (
+            <AlertCircle className="h-5 w-5 flex-shrink-0" />
+          )}
+          <span className="relative">{message}</span>
+          <div
+            className={`absolute left-0 top-0 bottom-0 w-1 ${
+              status === "success" ? "bg-green-500" : "bg-red-500"
+            }`}
+          />
+        </div>
+      )}
     </div>
-  )}
-</div>
   );
 };
 

@@ -226,7 +226,7 @@ const WithdrawalRequests: React.FC = () => {
   const fetchRequests = async () => {
     setLoading(true);
     try {
-      const response = await fetch("https://vps-backend-server-beta.vercel.app/withdraw/getall");
+      const response = await fetch("http://localhost:3200/withdraw/getall");
       const data = await response.json();
       if (Array.isArray(data)) setRequests(data);
     } catch (error) {
@@ -254,7 +254,7 @@ const WithdrawalRequests: React.FC = () => {
         );
 
         const response = await fetch(
-          `https://vps-backend-server-beta.vercel.app/withdraw/approve/${id}`,
+          `http://localhost:3200/withdraw/approve/${id}`,
           {
             method: "PUT",
             headers: { "Content-Type": "application/json" },

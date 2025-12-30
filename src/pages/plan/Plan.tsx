@@ -8,7 +8,6 @@ import { toast } from "sonner";
 const SellerPlans: React.FC = () => {
   const { data } = useAuthHook();
   const activePlan = data?.subscribedPlan;
-  console.log(data?.subscribedPlan);
   const userId = `${data?._id}`;
   return (
     <div className="py-16 bg-[#F5F5F5]">

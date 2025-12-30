@@ -23,7 +23,7 @@ import {
   FaPaperclip,
   FaCircle,
   FaCheck, // Added for Confirm button
-  FaBan,   // Added for Cancel button
+  FaBan, // Added for Cancel button
 } from "react-icons/fa";
 
 /* ---------------------------------------------
@@ -249,9 +249,9 @@ const MyOrder: React.FC = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const chatLengthRef = useRef(0);
 
-  const PURCHASE_API = "https://vps-backend-server-beta.vercel.app/purchase";
-  const CHAT_API = "https://vps-backend-server-beta.vercel.app/chat";
-  const USER_API = "https://vps-backend-server-beta.vercel.app/user";
+  const PURCHASE_API = "http://localhost:3200/purchase";
+  const CHAT_API = "http://localhost:3200/chat";
+  const USER_API = "http://localhost:3200/user";
 
   const playNotificationSound = () => {
     const audio = new Audio(NOTIFICATION_SOUND);
@@ -375,7 +375,7 @@ const MyOrder: React.FC = () => {
 
     try {
       setIsUpdating(true);
-      
+
       // ✅ PATCH REQUEST: Matches your existing backend route /update-status/:id
       await axios.patch(`${PURCHASE_API}/update-status/${orderId}`, {
         status: newStatus, // Backend receives this status
@@ -392,7 +392,6 @@ const MyOrder: React.FC = () => {
       }
 
       toast.success(`Order marked as ${newStatus}`);
-
     } catch (err) {
       console.error(err);
       toast.error("Failed to update order status");
@@ -640,7 +639,10 @@ const MyOrder: React.FC = () => {
                         <div className="text-[10px] text-gray-400">
                           {p.date}
                         </div>
-                        <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
+                        <div
+                          className="flex gap-1"
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           <button
                             onClick={() => setSelected(p)}
                             className="p-1.5 border rounded bg-white hover:bg-gray-50"

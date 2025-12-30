@@ -37,7 +37,8 @@ const FaPaperPlaneIcon = FaPaperPlane as unknown as React.ComponentType<any>;
 const FaSmileIcon = FaSmile as unknown as React.ComponentType<any>;
 const FaCircleIcon = FaCircle as unknown as React.ComponentType<any>;
 const FaClockIcon = FaClock as unknown as React.ComponentType<any>;
-const FaExclamationTriangleIcon = FaExclamationTriangle as unknown as React.ComponentType<any>;
+const FaExclamationTriangleIcon =
+  FaExclamationTriangle as unknown as React.ComponentType<any>;
 
 const ICON_COLOR_MAP = new Map<IconType, string>([
   [FaInstagram, "#E1306C"],
@@ -221,7 +222,7 @@ const MyPurchase: React.FC = () => {
   const [selected, setSelected] = useState<Purchase | null>(null);
   const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  
+
   // Timer State for Countdown
   const [now, setNow] = useState(new Date().getTime());
 
@@ -253,9 +254,9 @@ const MyPurchase: React.FC = () => {
   const chatLengthRef = useRef(0);
 
   // API URLs
-  const PURCHASE_API = "https://vps-backend-server-beta.vercel.app/purchase";
-  const CHAT_API = "https://vps-backend-server-beta.vercel.app/chat";
-  const USER_API = "https://vps-backend-server-beta.vercel.app/user";
+  const PURCHASE_API = "http://localhost:3200/purchase";
+  const CHAT_API = "http://localhost:3200/chat";
+  const USER_API = "http://localhost:3200/user";
 
   const playNotificationSound = () => {
     const audio = new Audio(NOTIFICATION_SOUND);
@@ -329,21 +330,21 @@ const MyPurchase: React.FC = () => {
     const checkAndCancelExpiredOrders = async () => {
       if (purchases.length === 0) return;
 
-      const ONE_HOUR = 60 * 60 * 1000; 
+      const ONE_HOUR = 60 * 60 * 1000;
 
       const pendingOrders = purchases.filter((p) => p.status === "Pending");
       let updated = false;
 
       for (const order of pendingOrders) {
         const orderTime = new Date(order.rawDate).getTime();
-        
+
         // If 1 hour passed and still pending
         if (now - orderTime > ONE_HOUR) {
           try {
             await axios.patch(`${PURCHASE_API}/update-status/${order.id}`, {
               status: "cancelled",
             });
-            
+
             setPurchases((prev) =>
               prev.map((p) =>
                 p.id === order.id ? { ...p, status: "Cancelled" } : p
@@ -360,7 +361,6 @@ const MyPurchase: React.FC = () => {
 
     checkAndCancelExpiredOrders();
   }, [now, purchases]); // Depend on 'now' to check every second
-
 
   /* -------- Fetch Seller Names -------- */
   useEffect(() => {
@@ -667,8 +667,10 @@ const MyPurchase: React.FC = () => {
                 ) : (
                   filtered.map((p) => {
                     const remainingTime =
-                      p.status === "Pending" ? getRemainingTime(p.rawDate) : null;
-                    
+                      p.status === "Pending"
+                        ? getRemainingTime(p.rawDate)
+                        : null;
+
                     return (
                       <div
                         key={p.id}
@@ -701,7 +703,7 @@ const MyPurchase: React.FC = () => {
                                 Seller: {getSellerDisplayName(p.sellerEmail)}
                               </span>
                             </div>
-                            
+
                             {/* --- LIST VIEW COUNTDOWN --- */}
                             {p.status === "Pending" && remainingTime && (
                               <div className="flex items-center gap-1.5 text-red-600 animate-pulse mt-1">
@@ -806,19 +808,23 @@ const MyPurchase: React.FC = () => {
               {/* --- AUTO REMOVE WARNING + BUTTON --- */}
               {selected.status === "Pending" && (
                 <div className="mt-6 space-y-3">
-                   {getRemainingTime(selected.rawDate) && (
-                      <div className="bg-red-50 border border-red-100 rounded-lg p-3 flex items-start gap-3">
-                        <FaExclamationTriangleIcon className="text-red-500 mt-0.5 flex-shrink-0" />
-                        <div>
-                          <p className="text-xs font-bold text-red-600">
-                             Action Required
-                          </p>
-                          <p className="text-[11px] text-red-500 mt-0.5 leading-tight">
-                            This order will be automatically cancelled in <span className="font-bold">{getRemainingTime(selected.rawDate)}</span> if not confirmed.
-                          </p>
-                        </div>
+                  {getRemainingTime(selected.rawDate) && (
+                    <div className="bg-red-50 border border-red-100 rounded-lg p-3 flex items-start gap-3">
+                      <FaExclamationTriangleIcon className="text-red-500 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="text-xs font-bold text-red-600">
+                          Action Required
+                        </p>
+                        <p className="text-[11px] text-red-500 mt-0.5 leading-tight">
+                          This order will be automatically cancelled in{" "}
+                          <span className="font-bold">
+                            {getRemainingTime(selected.rawDate)}
+                          </span>{" "}
+                          if not confirmed.
+                        </p>
                       </div>
-                   )}
+                    </div>
+                  )}
 
                   <button
                     onClick={() => handleUpdateStatus("completed")}
