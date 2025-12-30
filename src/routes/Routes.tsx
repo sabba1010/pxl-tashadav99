@@ -198,10 +198,6 @@ const Routes = createBrowserRouter([
         element: <AllUsers />,
       },
       {
-        path: "transactions",
-        element: <AllTransactions />,
-      },
-      {
         path: "deposits",
         element: <DepositRequests />,
       },

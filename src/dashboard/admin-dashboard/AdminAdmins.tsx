@@ -33,12 +33,7 @@ const mainNavItems: NavItem[] = [
     name: "Seller Account",
     path: "/admin-dashboard/seller-accounts",
     icon: <PeopleOutline />,
-  },
-  {
-    name: "All Transactions",
-    path: "/admin-dashboard/transactions",
-    icon: <ReceiptLong />,
-  },
+  }, 
   {
     name: "All Deposit",
     path: "/admin-dashboard/deposits",
