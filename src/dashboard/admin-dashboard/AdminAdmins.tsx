@@ -8,7 +8,6 @@ import {
   People,
   PeopleOutline,
   Person,
-  ReceiptLong,
   Star
 } from "@mui/icons-material";
 import { Box } from "@mui/material";
@@ -181,20 +180,8 @@ const AdminAdmins: React.FC = () => {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-x-hidden overflow-y-auto p-6">
-        <header className="mb-6 pb-3 border-b border-gray-200">
-          <h2 className="text-2xl font-semibold text-gray-900">
-            {[
-              ...mainNavItems,
-              { name: "My Profile", path: "/admin-dashboard/profile" },
-            ].find((item) => item.path === location.pathname)?.name ||
-              "Welcome to the Dashboard"}
-          </h2>
-        </header>
-
-        <div className="p-6 min-h-[calc(100vh-150px)]">
+      <main className="flex-1 overflow-x-hidden overflow-y-auto">
           <Outlet />
-        </div>
       </main>
     </div>
   );

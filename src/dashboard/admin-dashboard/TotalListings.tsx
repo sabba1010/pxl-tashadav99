@@ -1,4 +1,9 @@
-import { Close, Edit, Search, Visibility } from "@mui/icons-material";
+import {
+  Close,
+  Edit,
+  Search,
+  Visibility,
+} from "@mui/icons-material";
 import {
   Box,
   Button,
@@ -45,13 +50,15 @@ const TotalListings: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
+  const [selectedUser, setSelectedUser] = useState("all");
+  const [selectedStatus, setSelectedStatus] = useState("all");
 
-  // Modals & Selection States
+  // Modals & Selection
   const [openEdit, setOpenEdit] = useState(false);
   const [openView, setOpenView] = useState(false);
   const [selected, setSelected] = useState<Listing | null>(null);
 
-  // Form States for Update
+  // Edit form states
   const [newStatus, setNewStatus] = useState("");
   const [rejectReason, setRejectReason] = useState("");
 
@@ -71,11 +78,15 @@ const TotalListings: React.FC = () => {
     }
   };
 
-  // স্ট্যাটাস পরিবর্তনের সরাসরি ব্যাকএন্ড হিট ফাংশন
+  const uniqueUsers = useMemo(() => {
+    const users = Array.from(new Set(listings.map((item) => item.userEmail)));
+    return ["all", ...users];
+  }, [listings]);
+
+  const statusOptions = ["all", "active", "pending", "reject", "sold"];
+
   const handleUpdateStatus = async () => {
     if (!selected) return;
-
-    // রিজেক্ট করলে রিজন চেক করা
     if (newStatus === "reject" && !rejectReason.trim()) {
       alert("Please provide a reason for rejection.");
       return;
@@ -95,7 +106,6 @@ const TotalListings: React.FC = () => {
       );
 
       if (response.ok) {
-        // UI আপডেট সরাসরি করা হচ্ছে পেজ রিফ্রেশ ছাড়া
         setListings((prev) =>
           prev.map((item) =>
             item._id === selected._id ? { ...item, status: newStatus } : item
@@ -114,15 +124,20 @@ const TotalListings: React.FC = () => {
   const filtered = useMemo(() => {
     return [...listings].filter(
       (l) =>
-        l.name.toLowerCase().includes(search.toLowerCase()) ||
-        l._id.toLowerCase().includes(search.toLowerCase())
+        (l.name.toLowerCase().includes(search.toLowerCase()) ||
+          l._id.toLowerCase().includes(search.toLowerCase())) &&
+        (selectedUser === "all" || l.userEmail === selectedUser) &&
+        (selectedStatus === "all" ||
+          l.status.toLowerCase() === selectedStatus.toLowerCase())
     );
-  }, [search, listings]);
+  }, [search, listings, selectedUser, selectedStatus]);
 
   const paginated = useMemo(() => {
     const start = (page - 1) * ITEMS_PER_PAGE;
     return filtered.slice(start, start + ITEMS_PER_PAGE);
   }, [filtered, page]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
 
   const getStatusStyles = (status: string) => {
     switch (status?.toLowerCase()) {
@@ -147,92 +162,171 @@ const TotalListings: React.FC = () => {
     );
 
   return (
-    <Box sx={{ p: 4, bgcolor: "", minHeight: "100vh" }}>
+    <Box sx={{ p: 4, bgcolor: "#F5F7FA", minHeight: "100vh" }}>
       {/* Header */}
       <Paper
-        elevation={0}
+        elevation={2}
         sx={{
-          p: 4,
+          p: 3,
           mb: 4,
-          borderRadius: 4,
+          borderRadius: 2,
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          border: "1px solid #F2F2F2",
+          background: "linear-gradient(145deg, #ffffff, #f8fafc)",
+          boxShadow: "0 4px 20px rgba(0,0,0,0.05)",
         }}
       >
-        <Typography variant="h5" fontWeight="700">
+        <Typography variant="h5" fontWeight="700" color="#1F2A44">
           Listings ({filtered.length})
         </Typography>
-        <Box sx={{ position: "relative", width: 320 }}>
-          <Search
-            sx={{
-              position: "absolute",
-              left: 15,
-              top: "50%",
-              transform: "translateY(-50%)",
-              color: "#9CA3AF",
-            }}
-          />
-          <InputBase
-            placeholder="Search..."
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setPage(1);
-            }}
-            sx={{
-              bgcolor: "#fff",
-              border: "1px solid #D1D5DB",
-              borderRadius: "10px",
-              pl: 6,
-              pr: 2,
-              py: 1,
-              width: "100%",
-            }}
-          />
+        <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
+          <Box sx={{ position: "relative", width: 280 }}>
+            <Search
+              sx={{
+                position: "absolute",
+                left: 15,
+                top: "50%",
+                transform: "translateY(-50%)",
+                color: "#6B7280",
+              }}
+            />
+            <InputBase
+              placeholder="Search listings..."
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
+              sx={{
+                bgcolor: "#fff",
+                border: "1px solid #E5E7EB",
+                borderRadius: "12px",
+                pl: 6,
+                pr: 2,
+                py: 1.2,
+                width: "100%",
+                boxShadow: "inset 0 2px 4px rgba(0,0,0,0.03)",
+                transition: "all 0.2s",
+                "&:focus-within": {
+                  borderColor: "#33ac6f",
+                  boxShadow: "0 0 0 3px rgba(51,172,111,0.1)",
+                },
+              }}
+            />
+          </Box>
+          <FormControl sx={{ minWidth: 140 }}>
+            <Select
+              value={selectedUser}
+              onChange={(e) => {
+                setSelectedUser(e.target.value);
+                setPage(1);
+              }}
+              displayEmpty
+              sx={{
+                borderRadius: "12px",
+                height: 44,
+                bgcolor: "#fff",
+                boxShadow: "0 2px 4px rgba(0,0,0,0.05)",
+                "&:hover": { bgcolor: "#f8fafc" },
+              }}
+            >
+              {uniqueUsers.map((user) => (
+                <MenuItem key={user} value={user}>
+                  {user === "all" ? "All Users" : user.split("@")[0]}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <FormControl sx={{ minWidth: 120 }}>
+            <Select
+              value={selectedStatus}
+              onChange={(e) => {
+                setSelectedStatus(e.target.value);
+                setPage(1);
+              }}
+              displayEmpty
+              sx={{
+                borderRadius: "12px",
+                height: 44,
+                bgcolor: "#fff",
+                boxShadow: "0 2px 4px rgba(0,0,0,0.05)",
+                "&:hover": { bgcolor: "#f8fafc" },
+              }}
+            >
+              {statusOptions.map((status) => (
+                <MenuItem key={status} value={status}>
+                  {status === "all"
+                    ? "All Status"
+                    : status.charAt(0).toUpperCase() + status.slice(1)}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
         </Box>
       </Paper>
 
       {/* Table */}
       <TableContainer
         component={Paper}
-        elevation={0}
-        sx={{ borderRadius: 4, border: "1px solid #F2F2F2" }}
+        elevation={2}
+        sx={{
+          borderRadius: 2,
+          background: "linear-gradient(145deg, #ffffff, #f8fafc)",
+          boxShadow: "0 4px 20px rgba(0,0,0,0.05)",
+        }}
       >
         <Table>
           <TableHead sx={{ bgcolor: "#F9FAFB" }}>
             <TableRow>
-              {["ID", "Title", "Seller", "Price", "Status", "Actions"].map(
-                (head) => (
-                  <TableCell
-                    key={head}
-                    sx={{
-                      fontWeight: "600",
-                      color: "#6B7280",
-                      fontSize: "12px",
-                      textTransform: "uppercase",
-                    }}
-                  >
-                    {head}
-                  </TableCell>
-                )
-              )}
+              {[
+                "ID",
+                "Title",
+                "Seller Name",
+                "Seller Email",
+                "Price",
+                "Status",
+                "Actions",
+              ].map((head) => (
+                <TableCell
+                  key={head}
+                  sx={{
+                    fontWeight: "600",
+                    color: "#6B7280",
+                    fontSize: "12px",
+                    textTransform: "uppercase",
+                    py: 2.5,
+                  }}
+                >
+                  {head}
+                </TableCell>
+              ))}
             </TableRow>
           </TableHead>
           <TableBody>
             {paginated.map((row) => {
               const styles = getStatusStyles(row.status);
               return (
-                <TableRow key={row._id} hover>
+                <TableRow
+                  key={row._id}
+                  hover
+                  sx={{
+                    "&:hover": { background: "rgba(51,172,111,0.03)" },
+                  }}
+                >
                   <TableCell sx={{ fontSize: "13px", color: "#6B7280" }}>
                     #{row._id.slice(-5).toUpperCase()}
                   </TableCell>
-                  <TableCell sx={{ fontWeight: "500" }}>{row.name}</TableCell>
-                  <TableCell sx={{ fontSize: "14px" }}>
+                  <TableCell sx={{ fontWeight: "500", color: "#1F2A44" }}>
+                    {row.name}
+                  </TableCell>
+                  <TableCell sx={{ color: "#1F2A44" }}>
                     {row.userEmail.split("@")[0]}
                   </TableCell>
-                  <TableCell sx={{ fontWeight: "700" }}>
+                  <TableCell sx={{ color: "#6B7280", fontSize: "14px" }}>
+                    {row.userEmail}
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: "700", color: "#1F2A44" }}>
                     ${parseFloat(row.price).toFixed(2)}
                   </TableCell>
                   <TableCell>
@@ -240,12 +334,13 @@ const TotalListings: React.FC = () => {
                       sx={{
                         display: "inline-block",
                         px: 1.5,
-                        py: 0.4,
+                        py: 0.5,
                         borderRadius: "20px",
                         bgcolor: styles.bg,
                         color: styles.color,
                         fontSize: "12px",
                         fontWeight: "700",
+                        boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
                       }}
                     >
                       {row.status.toUpperCase()}
@@ -254,22 +349,22 @@ const TotalListings: React.FC = () => {
                   <TableCell>
                     <IconButton
                       size="small"
-                      color="success"
                       onClick={() => {
                         setSelected(row);
                         setOpenView(true);
                       }}
+                      sx={{ "&:hover": { bgcolor: "rgba(51,172,111,0.1)" } }}
                     >
                       <Visibility fontSize="small" />
                     </IconButton>
                     <IconButton
                       size="small"
-                      color="warning"
                       onClick={() => {
                         setSelected(row);
                         setNewStatus(row.status);
                         setOpenEdit(true);
                       }}
+                      sx={{ "&:hover": { bgcolor: "rgba(255,149,0,0.1)" } }}
                     >
                       <Edit fontSize="small" />
                     </IconButton>
@@ -281,23 +376,89 @@ const TotalListings: React.FC = () => {
         </Table>
       </TableContainer>
 
-      {/* Pagination */}
-      <Box display="flex" justifyContent="center" mt={4}>
+      {/* Modern Pagination */}
+      <Box sx={{ mt: 5, display: "flex", flexDirection: "column", alignItems: "center" }}>
         <Pagination
-          count={Math.ceil(filtered.length / ITEMS_PER_PAGE)}
+          count={totalPages}
           page={page}
           onChange={(_, p) => setPage(p)}
-          color="primary"
+          boundaryCount={15}
+          siblingCount={1}
+          size="large"
+          sx={{
+            "& .MuiPaginationItem-root": {
+              fontSize: "1rem",
+              fontWeight: 500,
+              minWidth: 44,
+              height: 44,
+              borderRadius: "12px",
+              margin: "0 6px",
+              color: "#4B5563",
+              transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+              "&:hover": {
+                backgroundColor: "#E6F4EA",
+                color: "#33ac6f",
+                transform: "translateY(-3px)",
+                boxShadow: "0 6px 16px rgba(51, 172, 111, 0.2)",
+              },
+            },
+            "& .MuiPaginationItem-page.Mui-selected": {
+              background: "linear-gradient(135deg, #33ac6f, #2a8e5b)",
+              color: "#ffffff",
+              fontWeight: 700,
+              boxShadow: "0 8px 24px rgba(51, 172, 111, 0.35)",
+              transform: "translateY(-3px)",
+              "&:hover": {
+                background: "linear-gradient(135deg, #2d9962, #257a50)",
+                boxShadow: "0 12px 28px rgba(51, 172, 111, 0.4)",
+              },
+            },
+            "& .MuiPaginationItem-previousNext": {
+              backgroundColor: "#ffffff",
+              border: "1px solid #E5E7EB",
+              color: "#6B7280",
+              borderRadius: "12px",
+              "&:hover": {
+                backgroundColor: "#f3f4f6",
+                borderColor: "#33ac6f",
+                color: "#33ac6f",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+              },
+              "&.Mui-disabled": {
+                backgroundColor: "#f9fafb",
+                color: "#9CA3AF",
+                borderColor: "#E5E7EB",
+              },
+            },
+            "& .MuiPaginationItem-ellipsis": {
+              color: "#9CA3AF",
+              fontSize: "1.4rem",
+              margin: "0 8px",
+            },
+          }}
         />
+
+        <Typography
+          variant="body2"
+          color="#6B7280"
+          sx={{ mt: 2.5, fontSize: "0.925rem", letterSpacing: "0.2px" }}
+        >
+          Page <strong>{page}</strong> of <strong>{totalPages}</strong> • {filtered.length} total listings
+        </Typography>
       </Box>
 
-      {/* VIEW MODAL */}
+      {/* View Modal */}
       <Dialog
         open={openView}
         onClose={() => setOpenView(false)}
         fullWidth
         maxWidth="sm"
-        PaperProps={{ sx: { borderRadius: 3 } }}
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            background: "linear-gradient(145deg, #ffffff, #f8fafc)",
+          },
+        }}
       >
         <DialogTitle
           sx={{
@@ -305,9 +466,10 @@ const TotalListings: React.FC = () => {
             display: "flex",
             justifyContent: "space-between",
             bgcolor: "#F9FAFB",
+            color: "#1F2A44",
           }}
         >
-          Details{" "}
+          Details
           <IconButton onClick={() => setOpenView(false)} size="small">
             <Close />
           </IconButton>
@@ -315,27 +477,33 @@ const TotalListings: React.FC = () => {
         <DialogContent dividers>
           {selected && (
             <Box sx={{ p: 1 }}>
-              <Typography variant="h6" fontWeight="600">
+              <Typography variant="h6" fontWeight="600" color="#1F2A44">
                 {selected.name}
               </Typography>
-              <Typography color="text.secondary" sx={{ mb: 2 }}>
+              <Typography color="#6B7280" sx={{ mb: 2 }}>
                 {selected.category}
               </Typography>
               <Paper
                 variant="outlined"
-                sx={{ p: 2, bgcolor: "#F8F9FA", mb: 2 }}
+                sx={{
+                  p: 2,
+                  bgcolor: "#F8F9FA",
+                  mb: 2,
+                  borderRadius: 2,
+                  boxShadow: "0 2px 4px rgba(0,0,0,0.05)",
+                }}
               >
-                <Typography variant="body2">
+                <Typography variant="body2" color="#1F2A44">
                   <strong>Login Email:</strong> {selected.email}
                 </Typography>
-                <Typography variant="body2">
+                <Typography variant="body2" color="#1F2A44">
                   <strong>Password:</strong> {selected.password}
                 </Typography>
               </Paper>
-              <Typography variant="body2">
+              <Typography variant="body2" color="#1F2A44">
                 <strong>Seller:</strong> {selected.userEmail}
               </Typography>
-              <Typography variant="body2" sx={{ mt: 1 }}>
+              <Typography variant="body2" sx={{ mt: 1 }} color="#6B7280">
                 <strong>Description:</strong> {selected.description}
               </Typography>
             </Box>
@@ -343,24 +511,34 @@ const TotalListings: React.FC = () => {
         </DialogContent>
       </Dialog>
 
-      {/* EDIT MODAL WITH REJECT REASON */}
+      {/* Edit Modal */}
       <Dialog
         open={openEdit}
         onClose={() => setOpenEdit(false)}
         PaperProps={{
-          sx: { borderRadius: 3, width: "100%", maxWidth: "380px" },
+          sx: {
+            borderRadius: 3,
+            maxWidth: "380px",
+            background: "linear-gradient(145deg, #ffffff, #f8fafc)",
+          },
         }}
       >
-        <DialogTitle sx={{ fontWeight: 700 }}>Update Status</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 700, color: "#1F2A44" }}>
+          Update Status
+        </DialogTitle>
         <DialogContent>
           <FormControl fullWidth sx={{ mt: 2 }}>
-            <InputLabel>Status</InputLabel>
+            <InputLabel sx={{ color: "#6B7280" }}>Status</InputLabel>
             <Select
               value={newStatus}
               label="Status"
               onChange={(e) => {
                 setNewStatus(e.target.value);
                 if (e.target.value !== "reject") setRejectReason("");
+              }}
+              sx={{
+                borderRadius: "12px",
+                boxShadow: "0 2px 4px rgba(0,0,0,0.05)",
               }}
             >
               <MenuItem value="active">Active</MenuItem>
@@ -369,22 +547,21 @@ const TotalListings: React.FC = () => {
               <MenuItem value="sold">Sold</MenuItem>
             </Select>
           </FormControl>
-
-          {/* রিজেক্ট সিলেক্ট করলে এই ইনপুট ফিল্ড আসবে */}
           {newStatus === "reject" && (
             <TextField
               fullWidth
               multiline
               rows={3}
               label="Reject Reason"
-              variant="outlined"
               value={rejectReason}
               onChange={(e) => setRejectReason(e.target.value)}
-              sx={{ mt: 3 }}
+              sx={{
+                mt: 3,
+                "& .MuiOutlinedInput-root": { borderRadius: "12px" },
+              }}
               placeholder="Why are you rejecting this?"
             />
           )}
-
           <Button
             fullWidth
             variant="contained"
@@ -395,7 +572,11 @@ const TotalListings: React.FC = () => {
               borderRadius: 2,
               py: 1.5,
               fontWeight: 600,
-              "&:hover": { bgcolor: "#2a8e5b" },
+              textTransform: "none",
+              "&:hover": {
+                bgcolor: "#2a8e5b",
+                boxShadow: "0 4px 12px rgba(51,172,111,0.3)",
+              },
             }}
           >
             Confirm Change
