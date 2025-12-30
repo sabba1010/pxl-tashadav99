@@ -46,7 +46,7 @@ export default function Wallet(): React.ReactElement {
 
     try {
       setWithdrawLoading(true);
-      const response = await fetch("http://localhost:3200/withdraw/getall");
+      const response = await fetch("https://vps-backend-server-beta.vercel.app/withdraw/getall");
       if (!response.ok) throw new Error("Failed to fetch");
       const data = await response.json();
 

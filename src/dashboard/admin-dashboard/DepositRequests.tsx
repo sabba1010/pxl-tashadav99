@@ -19,7 +19,7 @@ const ITEMS_PER_PAGE = 15;
 
 /* ====================== API FUNCTIONS ====================== */
 const fetchPayments = async (): Promise<Payment[]> => {
-  const response = await axios.get("http://localhost:3200/api/payments");
+  const response = await axios.get("https://vps-backend-server-beta.vercel.app/api/payments");
   return response.data as Payment[]; // assuming the endpoint returns an array directly
 };
 

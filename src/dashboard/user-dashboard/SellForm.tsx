@@ -81,7 +81,7 @@ const SellForm: React.FC = () => {
   useEffect(() => {
     const fetchPlatforms = async () => {
       try {
-        const response = await axios.get<{ data: Platform[] }>("http://localhost:3200/icon-data");
+        const response = await axios.get<{ data: Platform[] }>("https://vps-backend-server-beta.vercel.app/icon-data");
         const data = Array.isArray(response.data)
           ? response.data
           : response.data.data || [];
@@ -107,7 +107,7 @@ const SellForm: React.FC = () => {
 
       try {
         const response = await axios.get<{ salesCredit: number }>(
-          `http://localhost:3200/product/credit?email=${encodeURIComponent(user.email)}`
+          `https://vps-backend-server-beta.vercel.app/product/credit?email=${encodeURIComponent(user.email)}`
         );
         const credit = response.data.salesCredit ?? 0;
         setSalesCredit(credit);
@@ -193,7 +193,7 @@ const SellForm: React.FC = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:3200/product/sell",
+        "https://vps-backend-server-beta.vercel.app/product/sell",
         formData
       );
 
