@@ -1,8 +1,22 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import React, { useMemo, useState } from "react";
-import Loading from "./../../components/Loading";
-import { Box, Paper, InputBase, IconButton, Tooltip, Pagination, Typography } from "@mui/material";
+import {
+  Box,
+  Paper,
+  InputBase,
+  IconButton,
+  Tooltip,
+  Pagination,
+  Typography,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  CircularProgress,
+} from "@mui/material";
 import { Search, Refresh } from "@mui/icons-material";
 
 /* ====================== TYPES ====================== */
@@ -130,7 +144,11 @@ const DepositRequests: React.FC = () => {
   }
 
   if (isLoading && payments.length === 0) {
-    return <Loading />;
+    return (
+      <Box display="flex" justifyContent="center" mt={10}>
+        <CircularProgress sx={{ color: "#33ac6f" }} />
+      </Box>
+    );
   }
 
   return (
@@ -201,65 +219,93 @@ const DepositRequests: React.FC = () => {
       </Paper>
 
       {/* Table */}
-      <Box component={Paper} sx={{ borderRadius: 2, background: "linear-gradient(145deg, #ffffff, #f8fafc)", boxShadow: "0 4px 20px rgba(0,0,0,0.05)" }}>
+      <TableContainer
+        component={Paper}
+        elevation={2}
+        sx={{
+          borderRadius: 2,
+          background: "linear-gradient(145deg, #ffffff, #f8fafc)",
+          boxShadow: "0 4px 20px rgba(0,0,0,0.05)",
+        }}
+      >
         {isLoading ? (
           <Box display="flex" justifyContent="center" py={6}>
-            <Loading />
+            <CircularProgress sx={{ color: "#33ac6f" }} />
           </Box>
         ) : (
-          <Box sx={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse" }}>
-              <thead style={{ background: "#F9FAFB" }}>
-                <tr>
-                  {[
-                    { title: "Customer Email", col: "customerEmail" },
-                    { title: "Submitted", col: "createdAt" },
-                    { title: "Trx ID", col: "" },
-                    { title: "Amount", col: "amount" },
-                    { title: "Status", col: "status" },
-                    { title: "Credited", col: "" },
-                  ].map((h) => (
-                    <th
-                      key={h.title}
-                      style={{
-                        padding: "16px",
-                        textAlign: "left",
-                        fontSize: 12,
-                        fontWeight: 700,
-                        color: "#6B7280",
-                        textTransform: "uppercase",
-                      }}
-                      onClick={() => h.col && handleSort(h.col as typeof sortBy)}
-                    >
-                      {h.title}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {paginated.length > 0 ? (
-                  paginated.map((p) => (
-                    <tr key={p._id} style={{ borderBottom: "1px solid #EEF2F7" }}>
-                      <td style={{ padding: "12px 16px", fontSize: 14, fontWeight: 600, color: "#111827" }}>{p.customerEmail}</td>
-                      <td style={{ padding: "12px 16px", color: "#4B5563" }}>{new Date(p.createdAt).toLocaleString()}</td>
-                      <td style={{ padding: "12px 16px", fontFamily: "monospace", color: "#6B7280" }}>{String(p.transactionId)}</td>
-                      <td style={{ padding: "12px 16px", fontWeight: 700 }}>{formatCurrency(p.amount, p.currency)}</td>
-                      <td style={{ padding: "12px 16px" }}>
-                        <span style={{ padding: "4px 10px", borderRadius: 9999, fontSize: 12, fontWeight: 700, background: p.status.toLowerCase() === "successful" ? "#E8F9EE" : "#F3F4F6", color: p.status.toLowerCase() === "successful" ? "#16A34A" : "#374151" }}>{p.status}</span>
-                      </td>
-                      <td style={{ padding: "12px 16px", color: p.credited ? "#16A34A" : "#DC2626", fontWeight: 700 }}>{p.credited ? "Yes" : "No"}</td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={6} style={{ padding: "40px 16px", textAlign: "center", color: "#9CA3AF" }}>No payments found.</td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </Box>
+          <Table>
+            <TableHead sx={{ bgcolor: "#F9FAFB" }}>
+              <TableRow>
+                {[
+                  "Customer Email",
+                  "Submitted",
+                  "Trx ID",
+                  "Amount",
+                  "Status",
+                  "Credited",
+                ].map((head) => (
+                  <TableCell
+                    key={head}
+                    sx={{
+                      fontWeight: "600",
+                      color: "#6B7280",
+                      fontSize: "12px",
+                      textTransform: "uppercase",
+                      py: 2.5,
+                    }}
+                  >
+                    {head}
+                  </TableCell>
+                ))}
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {paginated.length > 0 ? (
+                paginated.map((p) => (
+                  <TableRow
+                    key={p._id}
+                    hover
+                    sx={{
+                      "&:hover": { background: "rgba(51,172,111,0.03)" },
+                    }}
+                  >
+                    <TableCell sx={{ fontSize: "13px", color: "#6B7280", fontWeight: 600 }}>
+                      {p.customerEmail}
+                    </TableCell>
+                    <TableCell sx={{ color: "#4B5563" }}>{new Date(p.createdAt).toLocaleString()}</TableCell>
+                    <TableCell sx={{ fontFamily: "monospace", color: "#6B7280" }}>{String(p.transactionId)}</TableCell>
+                    <TableCell sx={{ fontWeight: 700 }}>{formatCurrency(p.amount, p.currency)}</TableCell>
+                    <TableCell>
+                      <Box
+                        sx={{
+                          display: "inline-block",
+                          px: 1.5,
+                          py: 0.5,
+                          borderRadius: "20px",
+                          bgcolor: p.status.toLowerCase() === "successful" ? "#E8F9EE" : "#F3F4F6",
+                          color: p.status.toLowerCase() === "successful" ? "#16A34A" : "#374151",
+                          fontSize: "12px",
+                          fontWeight: "700",
+                          boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                        }}
+                      >
+                        {p.status}
+                      </Box>
+                    </TableCell>
+                    <TableCell sx={{ color: p.credited ? "#16A34A" : "#DC2626", fontWeight: 700 }}>{p.credited ? "Yes" : "No"}</TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={6} sx={{ py: 6, textAlign: "center", color: "#9CA3AF" }}>
+                    No payments found.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
         )}
-      </Box>
+      </TableContainer>
 
       {/* Pagination */}
       {totalPages > 1 && (
