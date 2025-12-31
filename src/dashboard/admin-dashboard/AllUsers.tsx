@@ -7,6 +7,7 @@ import {
   IconButton,
   InputBase,
   Paper,
+  Pagination,
   Table,
   TableBody,
   TableCell,
@@ -428,13 +429,35 @@ const AllUsers: React.FC = () => {
 
       {totalPages > 1 && (
         <Box sx={{ mt: 5, display: "flex", flexDirection: "column", alignItems: "center" }}>
-          <Box sx={{ display: "flex", gap: 2 }}>
-            {Array.from({ length: totalPages }, (_, i) => (
-              <Button key={i} onClick={() => setCurrentPage(i + 1)} variant={currentPage === i + 1 ? "contained" : "outlined"} sx={{ borderRadius: "12px" }}>
-                {i + 1}
-              </Button>
-            ))}
-          </Box>
+          <Pagination
+            count={totalPages}
+            page={currentPage}
+            onChange={(_, p) => setCurrentPage(p)}
+            boundaryCount={2}
+            siblingCount={1}
+            size="large"
+            sx={{
+              "& .MuiPaginationItem-root": {
+                fontSize: "1rem",
+                fontWeight: 500,
+                minWidth: 44,
+                height: 44,
+                borderRadius: "12px",
+                margin: "0 6px",
+                color: "#4B5563",
+              },
+              "& .MuiPaginationItem-page.Mui-selected": {
+                background: "linear-gradient(135deg, #33ac6f, #2a8e5b)",
+                color: "#ffffff",
+                fontWeight: 700,
+                boxShadow: "0 8px 24px rgba(51, 172, 111, 0.35)",
+              },
+            }}
+          />
+
+          <Typography variant="body2" color="#6B7280" sx={{ mt: 2.5, fontSize: "0.925rem" }}>
+            Page <strong>{currentPage}</strong> of <strong>{totalPages}</strong> • {filteredAndSorted.length} total users
+          </Typography>
         </Box>
       )}
 
