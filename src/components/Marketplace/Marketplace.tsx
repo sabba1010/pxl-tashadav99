@@ -871,10 +871,7 @@ const Marketplace: React.FC = () => {
     }
   };
 
-  
-
-
-  // --- SMART PAGINATION LOGIC (1... 155) ---
+// --- SMART PAGINATION LOGIC (1... 155) ---
   const getPageNumbers = () => {
     const totalNumbers = 5; // মোট কয়টা বাটন দেখাবেন (ডট বাদে)
     const totalBlocks = totalNumbers + 2; // ডট সহ মোট ব্লক
