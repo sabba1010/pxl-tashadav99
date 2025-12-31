@@ -71,7 +71,6 @@ const UserModal: React.FC<{
             ✕
           </button>
         </div>
-
         <div className="p-6 space-y-6">
           <div className="flex items-center gap-4">
             <Avatar sx={{ width: 56, height: 56, bgcolor: roleColor }}>
@@ -85,7 +84,6 @@ const UserModal: React.FC<{
               </p>
             </div>
           </div>
-
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium text-gray-600">Role</label>
@@ -112,7 +110,6 @@ const UserModal: React.FC<{
               </p>
             </div>
           </div>
-
           <div>
             <label className="text-sm font-medium text-gray-600">
               Wallet Balance (USD)
@@ -132,7 +129,6 @@ const UserModal: React.FC<{
               </p>
             )}
           </div>
-
           {isSeller && (
             <div>
               <label className="text-sm font-medium text-gray-600">
@@ -157,14 +153,12 @@ const UserModal: React.FC<{
               )}
             </div>
           )}
-
           <div className="text-xs text-gray-400 pt-2">
             Created: {new Date(user.accountCreationDate).toLocaleDateString()}
             <br />
             ID: <span className="font-mono">{user._id}</span>
           </div>
         </div>
-
         <div className="p-6 bg-gray-50/80 border-t flex justify-end gap-3">
           <button
             onClick={onClose}
@@ -282,12 +276,10 @@ const AllUsers: React.FC = () => {
         <Typography variant="h5" fontWeight={700} color="#1F2A44">
           All Users ({filteredAndSorted.length})
         </Typography>
-
         <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
           <Button onClick={refresh} sx={{ minWidth: 44 }}>
             ↻
           </Button>
-
           <Box sx={{ position: "relative", width: 300 }}>
             <Search
               sx={{
@@ -379,11 +371,23 @@ const AllUsers: React.FC = () => {
                       </Avatar>
                       <Box>
                         <Typography sx={{ fontWeight: 500 }}>{user.name}</Typography>
-                        <Typography sx={{ fontSize: "12px", color: "#6B7280" }}>{user.email}</Typography>
+                        <Typography sx={{ fontSize: "12px", color: "#6B7280" }}>
+                          {user.email}
+                        </Typography>
                       </Box>
                     </TableCell>
                     <TableCell sx={{ textAlign: "center" }}>
-                      <Box sx={{ px: 1.5, py: 0.5, borderRadius: "20px", bgcolor: isSeller ? "#FFF8E6" : "#E8F9EE", color: isSeller ? "#D1A148" : "#33ac6f", fontWeight: 700, fontSize: "12px" }}>
+                      <Box
+                        sx={{
+                          px: 1.5,
+                          py: 0.5,
+                          borderRadius: "20px",
+                          bgcolor: isSeller ? "#FFF8E6" : "#E8F9EE",
+                          color: isSeller ? "#D1A148" : "#33ac6f",
+                          fontWeight: 700,
+                          fontSize: "12px",
+                        }}
+                      >
                         {user.role}
                       </Box>
                     </TableCell>
@@ -401,12 +405,18 @@ const AllUsers: React.FC = () => {
                     </TableCell>
                     <TableCell>
                       <Tooltip title="View">
-                        <IconButton onClick={() => setModal({ user, mode: "view" })} sx={{ "&:hover": { bgcolor: "rgba(51,172,111,0.1)" } }}>
+                        <IconButton
+                          onClick={() => setModal({ user, mode: "view" })}
+                          sx={{ "&:hover": { bgcolor: "rgba(51,172,111,0.1)" } }}
+                        >
                           <Visibility fontSize="small" />
                         </IconButton>
                       </Tooltip>
                       <Tooltip title="Edit">
-                        <IconButton onClick={() => setModal({ user, mode: "edit" })} sx={{ "&:hover": { bgcolor: "rgba(209,161,72,0.1)" } }}>
+                        <IconButton
+                          onClick={() => setModal({ user, mode: "edit" })}
+                          sx={{ "&:hover": { bgcolor: "rgba(209,161,72,0.1)" } }}
+                        >
                           <Edit fontSize="small" sx={{ color: "#D1A148" }} />
                         </IconButton>
                       </Tooltip>
@@ -414,7 +424,6 @@ const AllUsers: React.FC = () => {
                   </TableRow>
                 );
               })}
-
               {paginated.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={6} sx={{ textAlign: "center", py: 6, color: "#9CA3AF" }}>
@@ -427,15 +436,26 @@ const AllUsers: React.FC = () => {
         )}
       </TableContainer>
 
-      {totalPages > 1 && (
-        <Box sx={{ mt: 5, display: "flex", flexDirection: "column", alignItems: "center" }}>
+      {/* Pagination section */}
+      <Box
+        sx={{
+          mt: 4,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          flexDirection: "column",
+          gap: 2,
+        }}
+      >
+        {totalPages > 1 && (
           <Pagination
             count={totalPages}
             page={currentPage}
-            onChange={(_, p) => setCurrentPage(p)}
+            onChange={(_, page) => setCurrentPage(page)}
             boundaryCount={2}
             siblingCount={1}
             size="large"
+            color="primary"
             sx={{
               "& .MuiPaginationItem-root": {
                 fontSize: "1rem",
@@ -454,12 +474,13 @@ const AllUsers: React.FC = () => {
               },
             }}
           />
+        )}
 
-          <Typography variant="body2" color="#6B7280" sx={{ mt: 2.5, fontSize: "0.925rem" }}>
-            Page <strong>{currentPage}</strong> of <strong>{totalPages}</strong> • {filteredAndSorted.length} total users
-          </Typography>
-        </Box>
-      )}
+        <Typography variant="body2" color="#6B7280" sx={{ fontSize: "0.925rem" }}>
+          Showing page <strong>{currentPage}</strong> of <strong>{totalPages}</strong> •{" "}
+          {filteredAndSorted.length} total user{filteredAndSorted.length !== 1 ? "s" : ""}
+        </Typography>
+      </Box>
 
       {modal && (
         <UserModal
