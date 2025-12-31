@@ -34,7 +34,7 @@ interface User {
   balance?: number;
 }
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 8;
 
 const UserModal: React.FC<{
   user: User;
@@ -494,7 +494,7 @@ const AllUsers: React.FC = () => {
                   boxShadow: "0 6px 16px rgba(51, 172, 111, 0.2)",
                 },
               },
-              "& .MuiPaginationItem-page.Mui-selected": {
+              "& .MuiPaginationItem-page.Mui-selected, & .MuiPaginationItem-root.Mui-selected": {
                 background: "linear-gradient(135deg, #33ac6f, #2a8e5b)",
                 color: "#ffffff",
                 fontWeight: 700,
