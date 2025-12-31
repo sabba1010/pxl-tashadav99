@@ -41,6 +41,7 @@ interface Listing {
   password: string;
   userEmail: string;
   status: string;
+  userAccountName: string;
 }
 
 const ITEMS_PER_PAGE = 8;
@@ -52,7 +53,9 @@ const TotalListings: React.FC = () => {
   const [page, setPage] = useState(1);
   const [selectedUser, setSelectedUser] = useState("all");
   const [selectedStatus, setSelectedStatus] = useState("all");
-  const [users, setUsers] = useState<Array<{ email: string; userAccountName?: string }>>([]);
+  const [users, setUsers] = useState<
+    Array<{ email: string; userAccountName?: string; role?: string }>
+  >([]);
 
   // Modals & Selection
   const [openEdit, setOpenEdit] = useState(false);
@@ -82,9 +85,8 @@ const TotalListings: React.FC = () => {
 
   const fetchUsers = async () => {
     try {
-      const res = await fetch("http://localhost:3200/user/getall");
+      const res = await fetch("http://localhost:3200/api/user/getall");
       const data = await res.json();
-      // Expecting array of users with `email` and optional `userAccountName`
       setUsers(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error("Error fetching users:", err);
@@ -93,7 +95,11 @@ const TotalListings: React.FC = () => {
 
   const statusOptions = useMemo(() => {
     const sts = Array.from(
-      new Set(listings.map((item) => (item.status || "").toLowerCase()).filter(Boolean))
+      new Set(
+        listings
+          .map((item) => (item.status || "").toLowerCase())
+          .filter(Boolean)
+      )
     );
     return ["all", ...sts];
   }, [listings]);
@@ -167,6 +173,17 @@ const TotalListings: React.FC = () => {
     }
   };
 
+  // Pre-compute seller list with sorting
+  const sellerList = useMemo(() => {
+    return users
+      .filter((u) => (u.role || "").toLowerCase() === "seller")
+      .sort((a, b) => {
+        const nameA = (a.userAccountName || a.email.split("@")[0]).toLowerCase();
+        const nameB = (b.userAccountName || b.email.split("@")[0]).toLowerCase();
+        return nameA.localeCompare(nameB);
+      });
+  }, [users]);
+
   if (loading)
     return (
       <Box display="flex" justifyContent="center" mt={10}>
@@ -228,14 +245,18 @@ const TotalListings: React.FC = () => {
               }}
             />
           </Box>
-          <FormControl sx={{ minWidth: 180 }}>
+
+          {/* Seller Filter - Now with real userAccountName and sorted */}
+          <FormControl sx={{ minWidth: 200 }}>
+            <InputLabel id="seller-filter-label">Seller</InputLabel>
             <Select
+              labelId="seller-filter-label"
               value={selectedUser}
+              label="Seller"
               onChange={(e) => {
                 setSelectedUser(e.target.value);
                 setPage(1);
               }}
-              displayEmpty
               sx={{
                 borderRadius: "12px",
                 height: 44,
@@ -244,22 +265,26 @@ const TotalListings: React.FC = () => {
                 "&:hover": { bgcolor: "#f8fafc" },
               }}
             >
-              <MenuItem value="all">All Users</MenuItem>
-              {users.map((u) => (
+              <MenuItem value="all">All Sellers</MenuItem>
+              {sellerList.map((u) => (
                 <MenuItem key={u.email} value={u.email}>
-                  {u.userAccountName ? u.userAccountName : u.email.split("@")[0]}
+                  {u.userAccountName || u.email.split("@")[0]}
                 </MenuItem>
               ))}
             </Select>
           </FormControl>
+
+          {/* Status Filter */}
           <FormControl sx={{ minWidth: 140 }}>
+            <InputLabel id="status-filter-label">Status</InputLabel>
             <Select
+              labelId="status-filter-label"
               value={selectedStatus}
+              label="Status"
               onChange={(e) => {
                 setSelectedStatus(e.target.value);
                 setPage(1);
               }}
-              displayEmpty
               sx={{
                 borderRadius: "12px",
                 height: 44,
@@ -320,6 +345,10 @@ const TotalListings: React.FC = () => {
           <TableBody>
             {paginated.map((row) => {
               const styles = getStatusStyles(row.status);
+              const seller = users.find((u) => u.email === row.userEmail);
+              const displayName =
+                seller?.userAccountName || row.userEmail.split("@")[0];
+
               return (
                 <TableRow
                   key={row._id}
@@ -334,11 +363,8 @@ const TotalListings: React.FC = () => {
                   <TableCell sx={{ fontWeight: "500", color: "#1F2A44" }}>
                     {row.name}
                   </TableCell>
-                  <TableCell sx={{ color: "#1F2A44" }}>
-                    {(() => {
-                      const seller = users.find((u) => u.email === row.userEmail);
-                      return seller?.userAccountName ? seller.userAccountName : row.userEmail.split("@")[0];
-                    })()}
+                  <TableCell sx={{ color: "#1F2A44", fontWeight: "500" }}>
+                    {displayName}
                   </TableCell>
                   <TableCell sx={{ color: "#6B7280", fontSize: "14px" }}>
                     {row.userEmail}
@@ -393,7 +419,7 @@ const TotalListings: React.FC = () => {
         </Table>
       </TableContainer>
 
-      {/* Modern Pagination */}
+      {/* Pagination */}
       <Box sx={{ mt: 5, display: "flex", flexDirection: "column", alignItems: "center" }}>
         <Pagination
           count={totalPages}
@@ -454,13 +480,13 @@ const TotalListings: React.FC = () => {
             },
           }}
         />
-
         <Typography
           variant="body2"
           color="#6B7280"
           sx={{ mt: 2.5, fontSize: "0.925rem", letterSpacing: "0.2px" }}
         >
-          Page <strong>{page}</strong> of <strong>{totalPages}</strong> • {filtered.length} total listings
+          Page <strong>{page}</strong> of <strong>{totalPages}</strong> •{" "}
+          {filtered.length} total listings
         </Typography>
       </Box>
 
