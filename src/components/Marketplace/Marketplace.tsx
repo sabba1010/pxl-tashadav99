@@ -871,6 +871,39 @@ const Marketplace: React.FC = () => {
     }
   };
 
+  
+
+
+  // --- SMART PAGINATION LOGIC (1... 155) ---
+  const getPageNumbers = () => {
+    const totalNumbers = 5; // মোট কয়টা বাটন দেখাবেন (ডট বাদে)
+    const totalBlocks = totalNumbers + 2; // ডট সহ মোট ব্লক
+
+    if (totalPages > totalBlocks) {
+      const startPage = Math.max(2, currentPage - 1);
+      const endPage = Math.min(totalPages - 1, currentPage + 1);
+
+      let pages: (number | string)[] = [1];
+
+      if (currentPage <= 3) {
+        pages = [1, 2, 3, 4, "...", totalPages];
+      }
+   
+      else if (currentPage >= totalPages - 2) {
+        pages = [1, "...", totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
+      }
+
+      else {
+        pages = [1, "...", startPage, currentPage, endPage, "...", totalPages];
+      }
+      
+      return pages;
+    }
+
+    // যদি পেজ সংখ্যা কম হয়, সব দেখাবে
+    return Array.from({ length: totalPages }, (_, i) => i + 1);
+  };
+
   return (
     <div className="min-h-screen bg-[#F7F5F4] pb-10">
       {showBanner && (
@@ -1041,24 +1074,79 @@ const Marketplace: React.FC = () => {
                 ))}
               </div>
             )}
+
+            {/* --- IMPROVED PAGINATION UI (1...155) --- */}
             {totalPages > 1 && (
-              <div className="flex justify-center items-center gap-2 mt-8">
+              <div className="flex justify-center items-center gap-2 mt-8 select-none">
+                {/* Previous Button */}
                 <button
                   disabled={currentPage === 1}
-                  onClick={() => setCurrentPage((p) => p - 1)}
-                  className="px-3 py-1 border rounded disabled:opacity-50 hover:bg-white"
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
-                  Prev
+                  <svg
+                    className="w-4 h-4 text-gray-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 19l-7-7 7-7"
+                    />
+                  </svg>
                 </button>
-                <span className="text-sm font-medium">
-                  Page {currentPage} of {totalPages}
-                </span>
+
+                {/* Page Numbers */}
+                <div className="flex items-center gap-1">
+                  {getPageNumbers().map((page, index) =>
+                    page === "..." ? (
+                      <span
+                        key={`dots-${index}`}
+                        className="px-2 text-gray-400 font-medium"
+                      >
+                        ...
+                      </span>
+                    ) : (
+                      <button
+                        key={page}
+                        onClick={() => setCurrentPage(Number(page))}
+                        className={`min-w-[36px] h-9 px-3 flex items-center justify-center rounded-lg text-sm font-semibold border transition-all duration-200 
+                          ${
+                            currentPage === page
+                              ? "bg-[#33ac6f] border-[#33ac6f] text-white shadow-md transform scale-105"
+                              : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400"
+                          }`}
+                      >
+                        {page}
+                      </button>
+                    )
+                  )}
+                </div>
+
+                {/* Next Button */}
                 <button
                   disabled={currentPage === totalPages}
-                  onClick={() => setCurrentPage((p) => p + 1)}
-                  className="px-3 py-1 border rounded disabled:opacity-50 hover:bg-white"
+                  onClick={() =>
+                    setCurrentPage((p) => Math.min(totalPages, p + 1))
+                  }
+                  className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
-                  Next
+                  <svg
+                    className="w-4 h-4 text-gray-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 5l7 7-7 7"
+                    />
+                  </svg>
                 </button>
               </div>
             )}
