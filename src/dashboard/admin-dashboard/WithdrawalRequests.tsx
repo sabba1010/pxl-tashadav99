@@ -243,7 +243,7 @@ const WithdrawalRequests: React.FC = () => {
     return filteredRequests.slice(startIndex, startIndex + ITEMS_PER_PAGE);
   }, [filteredRequests, currentPage]);
 
-  const totalPages = Math.ceil(filteredRequests.length / ITEMS_PER_PAGE);
+  const totalPages = Math.max(1, Math.ceil(filteredRequests.length / ITEMS_PER_PAGE));
 
   const getStatusColor = (status: string) => {
     const s = status.toLowerCase();
@@ -339,7 +339,7 @@ const WithdrawalRequests: React.FC = () => {
         )}
       </TableContainer>
 
-      {totalPages > 1 && (
+      (
         <Box sx={{ mt: 5, display: "flex", flexDirection: "column", alignItems: "center" }}>
           <Pagination
             count={totalPages}
@@ -401,11 +401,14 @@ const WithdrawalRequests: React.FC = () => {
             }}
           />
 
-          <Typography variant="body2" color="#6B7280" sx={{ mt: 2.5, fontSize: "0.925rem", letterSpacing: "0.2px" }}>
+          <Typography
+            variant="body2"
+            color="#6B7280"
+            sx={{ mt: 2.5, fontSize: "0.925rem", letterSpacing: "0.2px" }}
+          >
             Page <strong>{currentPage}</strong> of <strong>{totalPages}</strong> • {filteredRequests.length} total withdrawals
           </Typography>
         </Box>
-      )}
 
         {isModalOpen && (
           <WithdrawalModal
