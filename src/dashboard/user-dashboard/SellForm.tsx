@@ -40,6 +40,7 @@ interface FormData {
   userRole: string;
   status: string;
   createdAt: Date;
+  userAccountName: string;
 }
 
 const SellForm: React.FC = () => {
@@ -47,7 +48,7 @@ const SellForm: React.FC = () => {
   const navigate = useNavigate();
   const { data } = useAuthHook();
   const user = data;
-  console.log(user?.email);
+  console.log(user?.name);
 
   const [platforms, setPlatforms] = useState<Platform[]>([]);
   const [loadingPlatforms, setLoadingPlatforms] = useState(true);
@@ -73,6 +74,7 @@ const SellForm: React.FC = () => {
     userRole: user?.role || "",
     status: "pending",
     createdAt: new Date(),
+    userAccountName: `${user?.name}` || "",
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
