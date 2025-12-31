@@ -1,4 +1,5 @@
 import { Edit, Search, Visibility } from "@mui/icons-material";
+import { Refresh } from "@mui/icons-material";
 import {
   Avatar,
   Box,
@@ -277,9 +278,30 @@ const AllUsers: React.FC = () => {
           All Users ({filteredAndSorted.length})
         </Typography>
         <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
-          <Button onClick={refresh} sx={{ minWidth: 44 }}>
-            ↻
-          </Button>
+            <Tooltip title="Refresh list">
+              <IconButton
+                onClick={refresh}
+                aria-label="refresh"
+                sx={{
+                  width: 44,
+                  height: 44,
+                  display: "inline-flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  background: "linear-gradient(135deg,#33ac6f,#2a8e5b)",
+                  color: "#fff",
+                  borderRadius: "12px",
+                  boxShadow: "0 8px 20px rgba(51,172,111,0.18)",
+                  transition: "all 0.18s ease-in-out",
+                  "&:hover": {
+                    transform: "translateY(-3px)",
+                    boxShadow: "0 12px 28px rgba(51,172,111,0.26)",
+                  },
+                }}
+              >
+                <Refresh fontSize="small" />
+              </IconButton>
+            </Tooltip>
           <Box sx={{ position: "relative", width: 300 }}>
             <Search
               sx={{
