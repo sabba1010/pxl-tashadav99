@@ -13,8 +13,10 @@ import {
   CircularProgress,
   InputBase,
   Pagination,
+  IconButton,
+  Tooltip,
 } from "@mui/material";
-import { Search } from "@mui/icons-material";
+import { Search, Refresh } from "@mui/icons-material";
 
 // Interface matching your API response + UI specific fields
 interface Seller {
@@ -37,35 +39,32 @@ const SellerAccount: React.FC = () => {
   const [page, setPage] = useState(1);
 
   // --- Fetch and Filter Data ---
-  useEffect(() => {
-    const fetchSellers = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch("http://localhost:3200/api/user/getall");
-        const data = await response.json();
-        console.log(data);
-        let allUsers: Seller[] = [];
+  const fetchSellers = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch("http://localhost:3200/api/user/getall");
+      const data = await response.json();
+      let allUsers: Seller[] = [];
 
-        // Handle different API response structures (array vs object)
-        if (Array.isArray(data)) {
-          allUsers = data;
-        } else if (data.users && Array.isArray(data.users)) {
-          allUsers = data.users;
-        }
-
-        // FILTER: Only keep users where role is "seller" (case-insensitive)
-        const onlySellers = allUsers.filter(
-          (user) => user.role && user.role.toLowerCase() === "seller"
-        );
-
-        setSellers(onlySellers);
-      } catch (error) {
-        console.error("Error fetching sellers:", error);
-      } finally {
-        setLoading(false);
+      if (Array.isArray(data)) {
+        allUsers = data;
+      } else if (data.users && Array.isArray(data.users)) {
+        allUsers = data.users;
       }
-    };
 
+      const onlySellers = allUsers.filter(
+        (user) => user.role && user.role.toLowerCase() === "seller"
+      );
+
+      setSellers(onlySellers);
+    } catch (error) {
+      console.error("Error fetching sellers:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchSellers();
   }, []);
 
@@ -107,6 +106,34 @@ const SellerAccount: React.FC = () => {
         </Typography>
 
         <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
+          <Tooltip title="Refresh list">
+            <IconButton
+              onClick={() => {
+                setPage(1);
+                fetchSellers();
+              }}
+              aria-label="refresh"
+              sx={{
+                width: 44,
+                height: 44,
+                display: "inline-flex",
+                justifyContent: "center",
+                alignItems: "center",
+                background: "linear-gradient(135deg,#33ac6f,#2a8e5b)",
+                color: "#fff",
+                borderRadius: "12px",
+                boxShadow: "0 8px 20px rgba(51,172,111,0.18)",
+                transition: "all 0.18s ease-in-out",
+                "&:hover": {
+                  transform: "translateY(-3px)",
+                  boxShadow: "0 12px 28px rgba(51,172,111,0.26)",
+                },
+              }}
+            >
+              <Refresh fontSize="small" />
+            </IconButton>
+          </Tooltip>
+
           <Box sx={{ position: "relative", width: 320 }}>
             <Search
               sx={{
