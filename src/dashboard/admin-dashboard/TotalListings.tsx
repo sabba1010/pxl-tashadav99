@@ -52,6 +52,7 @@ const TotalListings: React.FC = () => {
   const [page, setPage] = useState(1);
   const [selectedUser, setSelectedUser] = useState("all");
   const [selectedStatus, setSelectedStatus] = useState("all");
+  const [users, setUsers] = useState<Array<{ email: string; userAccountName?: string }>>([]);
 
   // Modals & Selection
   const [openEdit, setOpenEdit] = useState(false);
@@ -64,6 +65,7 @@ const TotalListings: React.FC = () => {
 
   useEffect(() => {
     fetchData();
+    fetchUsers();
   }, []);
 
   const fetchData = async () => {
@@ -78,12 +80,23 @@ const TotalListings: React.FC = () => {
     }
   };
 
-  const uniqueUsers = useMemo(() => {
-    const users = Array.from(new Set(listings.map((item) => item.userEmail)));
-    return ["all", ...users];
-  }, [listings]);
+  const fetchUsers = async () => {
+    try {
+      const res = await fetch("http://localhost:3200/user/getall");
+      const data = await res.json();
+      // Expecting array of users with `email` and optional `userAccountName`
+      setUsers(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error("Error fetching users:", err);
+    }
+  };
 
-  const statusOptions = ["all", "active", "pending", "reject", "sold"];
+  const statusOptions = useMemo(() => {
+    const sts = Array.from(
+      new Set(listings.map((item) => (item.status || "").toLowerCase()).filter(Boolean))
+    );
+    return ["all", ...sts];
+  }, [listings]);
 
   const handleUpdateStatus = async () => {
     if (!selected) return;
@@ -215,7 +228,7 @@ const TotalListings: React.FC = () => {
               }}
             />
           </Box>
-          <FormControl sx={{ minWidth: 140 }}>
+          <FormControl sx={{ minWidth: 180 }}>
             <Select
               value={selectedUser}
               onChange={(e) => {
@@ -231,14 +244,15 @@ const TotalListings: React.FC = () => {
                 "&:hover": { bgcolor: "#f8fafc" },
               }}
             >
-              {uniqueUsers.map((user) => (
-                <MenuItem key={user} value={user}>
-                  {user === "all" ? "All Users" : user.split("@")[0]}
+              <MenuItem value="all">All Users</MenuItem>
+              {users.map((u) => (
+                <MenuItem key={u.email} value={u.email}>
+                  {u.userAccountName ? u.userAccountName : u.email.split("@")[0]}
                 </MenuItem>
               ))}
             </Select>
           </FormControl>
-          <FormControl sx={{ minWidth: 120 }}>
+          <FormControl sx={{ minWidth: 140 }}>
             <Select
               value={selectedStatus}
               onChange={(e) => {
@@ -321,7 +335,10 @@ const TotalListings: React.FC = () => {
                     {row.name}
                   </TableCell>
                   <TableCell sx={{ color: "#1F2A44" }}>
-                    {row.userEmail.split("@")[0]}
+                    {(() => {
+                      const seller = users.find((u) => u.email === row.userEmail);
+                      return seller?.userAccountName ? seller.userAccountName : row.userEmail.split("@")[0];
+                    })()}
                   </TableCell>
                   <TableCell sx={{ color: "#6B7280", fontSize: "14px" }}>
                     {row.userEmail}
