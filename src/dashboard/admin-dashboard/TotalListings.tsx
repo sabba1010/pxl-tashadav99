@@ -51,7 +51,7 @@ const TotalListings: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
-  const [selectedUser, setSelectedUser] = useState("all");
+  const [selectedUser, setSelectedUser] = useState("all"); // now holds userAccountName or "all"
   const [selectedStatus, setSelectedStatus] = useState("all");
 
   // Modals & Selection
@@ -79,26 +79,21 @@ const TotalListings: React.FC = () => {
     }
   };
 
-  // Only listings that have a valid userAccountName
-  const validListings = useMemo(() => {
-    return listings.filter((item) => item.userAccountName && item.userAccountName.trim() !== "");
-  }, [listings]);
-
-  // Unique seller names from valid listings only
+  // Unique seller names from listings
   const sellerOptions = useMemo(() => {
     const uniqueNames = Array.from(
-      new Set(validListings.map((item) => item.userAccountName))
-    ).sort();
+      new Set(listings.map((item) => item.userAccountName).filter(Boolean))
+    ).sort(); // alphabetical sort (optional)
     return ["all", ...uniqueNames];
-  }, [validListings]);
+  }, [listings]);
 
-  // Unique status options from valid listings only
+  // Unique status options
   const statusOptions = useMemo(() => {
     const sts = Array.from(
-      new Set(validListings.map((item) => (item.status || "").toLowerCase()).filter(Boolean))
+      new Set(listings.map((item) => (item.status || "").toLowerCase()).filter(Boolean))
     );
     return ["all", ...sts];
-  }, [validListings]);
+  }, [listings]);
 
   const handleUpdateStatus = async () => {
     if (!selected) return;
@@ -134,9 +129,8 @@ const TotalListings: React.FC = () => {
     }
   };
 
-  // Filtering only on valid listings
   const filtered = useMemo(() => {
-    return validListings.filter(
+    return [...listings].filter(
       (l) =>
         (l.name.toLowerCase().includes(search.toLowerCase()) ||
           l._id.toLowerCase().includes(search.toLowerCase())) &&
@@ -144,7 +138,7 @@ const TotalListings: React.FC = () => {
         (selectedStatus === "all" ||
           l.status.toLowerCase() === selectedStatus.toLowerCase())
     );
-  }, [search, validListings, selectedUser, selectedStatus]);
+  }, [search, listings, selectedUser, selectedStatus]);
 
   const paginated = useMemo(() => {
     const start = (page - 1) * ITEMS_PER_PAGE;
@@ -230,7 +224,7 @@ const TotalListings: React.FC = () => {
             />
           </Box>
 
-          {/* Seller Filter - only from valid listings */}
+          {/* Seller Filter - Now uses userAccountName only */}
           <FormControl sx={{ minWidth: 180 }}>
             <Select
               value={selectedUser}
@@ -287,7 +281,7 @@ const TotalListings: React.FC = () => {
         </Box>
       </Paper>
 
-      {/* Table - only shows valid listings */}
+      {/* Table */}
       <TableContainer
         component={Paper}
         elevation={2}
@@ -341,8 +335,9 @@ const TotalListings: React.FC = () => {
                   <TableCell sx={{ fontWeight: "500", color: "#1F2A44" }}>
                     {row.name}
                   </TableCell>
+                  {/* Simplified Seller Name */}
                   <TableCell sx={{ color: "#1F2A44" }}>
-                    {row.userAccountName}
+                    {row.userAccountName || "Unknown Seller"}
                   </TableCell>
                   <TableCell sx={{ color: "#6B7280", fontSize: "14px" }}>
                     {row.userEmail}
