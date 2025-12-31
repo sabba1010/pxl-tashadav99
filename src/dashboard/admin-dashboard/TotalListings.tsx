@@ -53,7 +53,6 @@ const TotalListings: React.FC = () => {
   const [page, setPage] = useState(1);
   const [selectedUser, setSelectedUser] = useState("all");
   const [selectedStatus, setSelectedStatus] = useState("all");
-  const [users, setUsers] = useState<Array<{ email: string; userAccountName?: string; role?: string }>>([]);
 
   // Modals & Selection
   const [openEdit, setOpenEdit] = useState(false);
@@ -66,7 +65,6 @@ const TotalListings: React.FC = () => {
 
   useEffect(() => {
     fetchData();
-    fetchUsers();
   }, []);
 
   const fetchData = async () => {
@@ -81,23 +79,26 @@ const TotalListings: React.FC = () => {
     }
   };
 
-  const fetchUsers = async () => {
-    try {
-      const res = await fetch("http://localhost:3200/api/user/getall");
-      const data = await res.json();
-      // Expecting array of users with `email` and optional `userAccountName`
-      setUsers(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error("Error fetching users:", err);
-    }
-  };
+  // Only listings that have a valid userAccountName
+  const validListings = useMemo(() => {
+    return listings.filter((item) => item.userAccountName && item.userAccountName.trim() !== "");
+  }, [listings]);
 
+  // Unique seller names from valid listings only
+  const sellerOptions = useMemo(() => {
+    const uniqueNames = Array.from(
+      new Set(validListings.map((item) => item.userAccountName))
+    ).sort();
+    return ["all", ...uniqueNames];
+  }, [validListings]);
+
+  // Unique status options from valid listings only
   const statusOptions = useMemo(() => {
     const sts = Array.from(
-      new Set(listings.map((item) => (item.status || "").toLowerCase()).filter(Boolean))
+      new Set(validListings.map((item) => (item.status || "").toLowerCase()).filter(Boolean))
     );
     return ["all", ...sts];
-  }, [listings]);
+  }, [validListings]);
 
   const handleUpdateStatus = async () => {
     if (!selected) return;
@@ -105,7 +106,6 @@ const TotalListings: React.FC = () => {
       alert("Please provide a reason for rejection.");
       return;
     }
-
     try {
       const response = await fetch(
         `http://localhost:3200/product/update-status/${selected._id}`,
@@ -118,7 +118,6 @@ const TotalListings: React.FC = () => {
           }),
         }
       );
-
       if (response.ok) {
         setListings((prev) =>
           prev.map((item) =>
@@ -135,16 +134,17 @@ const TotalListings: React.FC = () => {
     }
   };
 
+  // Filtering only on valid listings
   const filtered = useMemo(() => {
-    return [...listings].filter(
+    return validListings.filter(
       (l) =>
         (l.name.toLowerCase().includes(search.toLowerCase()) ||
           l._id.toLowerCase().includes(search.toLowerCase())) &&
-        (selectedUser === "all" || l.userEmail === selectedUser) &&
+        (selectedUser === "all" || l.userAccountName === selectedUser) &&
         (selectedStatus === "all" ||
           l.status.toLowerCase() === selectedStatus.toLowerCase())
     );
-  }, [search, listings, selectedUser, selectedStatus]);
+  }, [search, validListings, selectedUser, selectedStatus]);
 
   const paginated = useMemo(() => {
     const start = (page - 1) * ITEMS_PER_PAGE;
@@ -229,6 +229,8 @@ const TotalListings: React.FC = () => {
               }}
             />
           </Box>
+
+          {/* Seller Filter - only from valid listings */}
           <FormControl sx={{ minWidth: 180 }}>
             <Select
               value={selectedUser}
@@ -246,15 +248,17 @@ const TotalListings: React.FC = () => {
               }}
             >
               <MenuItem value="all">All Sellers</MenuItem>
-              {users
-                .filter((u) => (u.role || "").toLowerCase() === "seller")
-                .map((u) => (
-                  <MenuItem key={u.email} value={u.email}>
-                    {u.userAccountName ? u.userAccountName : u.email.split("@")[0]}
+              {sellerOptions
+                .filter((opt) => opt !== "all")
+                .map((name) => (
+                  <MenuItem key={name} value={name}>
+                    {name}
                   </MenuItem>
                 ))}
             </Select>
           </FormControl>
+
+          {/* Status Filter */}
           <FormControl sx={{ minWidth: 140 }}>
             <Select
               value={selectedStatus}
@@ -283,7 +287,7 @@ const TotalListings: React.FC = () => {
         </Box>
       </Paper>
 
-      {/* Table */}
+      {/* Table - only shows valid listings */}
       <TableContainer
         component={Paper}
         elevation={2}
@@ -338,10 +342,7 @@ const TotalListings: React.FC = () => {
                     {row.name}
                   </TableCell>
                   <TableCell sx={{ color: "#1F2A44" }}>
-                    {(() => {
-                      const seller = users.find((u) => u.email === row.userEmail);
-                      return seller?.userAccountName ? seller.userAccountName : row.userEmail.split("@")[0];
-                    })()}
+                    {row.userAccountName}
                   </TableCell>
                   <TableCell sx={{ color: "#6B7280", fontSize: "14px" }}>
                     {row.userEmail}
@@ -396,7 +397,7 @@ const TotalListings: React.FC = () => {
         </Table>
       </TableContainer>
 
-      {/* Modern Pagination */}
+      {/* Pagination */}
       <Box sx={{ mt: 5, display: "flex", flexDirection: "column", alignItems: "center" }}>
         <Pagination
           count={totalPages}
@@ -457,7 +458,6 @@ const TotalListings: React.FC = () => {
             },
           }}
         />
-
         <Typography
           variant="body2"
           color="#6B7280"
