@@ -1,14 +1,17 @@
 import { Outlet } from "react-router-dom";
 import AdminAdmins from "../dashboard/admin-dashboard/AdminAdmins";
+import { Box } from "@mui/material";
 
 const Dashboard = () => {
   return (
     <div className="flex">
       <div>
-        <AdminAdmins/>
+        <AdminAdmins />
       </div>
       <div className="flex-1">
-        <Outlet />
+        <Box sx={{ p: 4 }}>
+          <Outlet />
+        </Box>
       </div>
     </div>
   );

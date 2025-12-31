@@ -119,7 +119,7 @@ const DashboardOverview: React.FC = () => {
     }).format(amount);
 
   return (
-    <div className="space-y-12 py-4">
+    <div className="space-y-12 py-4 px-6">
       {/* Header */}
       <div>
         <p className="text-gray-600 mt-3 text-lg">
