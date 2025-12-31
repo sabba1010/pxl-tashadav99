@@ -722,26 +722,32 @@ const MyPurchase: React.FC = () => {
                           <div className="text-[10px] text-gray-400">
                             {p.date}
                           </div>
-                          <div className="flex gap-1">
-                            <button
-                              onClick={() => setSelected(p)}
-                              className="p-1.5 border rounded bg-white hover:bg-gray-50"
-                            >
-                              <FaEyeIcon size={14} />
-                            </button>
-                            <button
-                              onClick={() => handleOpenChat(p)}
-                              className="relative p-1.5 border rounded bg-white hover:bg-blue-50 text-blue-600 transition-colors"
-                            >
-                              <FaCommentsIcon size={14} />
-                              {unreadState[p.id] && (
-                                <span className="absolute -top-1 -right-1 flex h-3 w-3">
-                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                                  <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500 border-2 border-white"></span>
-                                </span>
-                              )}
-                            </button>
-                          </div>
+                          
+                          {/* --- MODIFIED: Show View & Chat only if Pending --- */}
+                          {p.status === "Pending" && (
+                            <div className="flex gap-1">
+                              <button
+                                onClick={() => setSelected(p)}
+                                className="p-1.5 border rounded bg-white hover:bg-gray-50"
+                              >
+                                <FaEyeIcon size={14} />
+                              </button>
+                              <button
+                                onClick={() => handleOpenChat(p)}
+                                className="relative p-1.5 border rounded bg-white hover:bg-blue-50 text-blue-600 transition-colors"
+                              >
+                                <FaCommentsIcon size={14} />
+                                {unreadState[p.id] && (
+                                  <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500 border-2 border-white"></span>
+                                  </span>
+                                )}
+                              </button>
+                            </div>
+                          )}
+                          {/* --- END MODIFIED --- */}
+
                         </div>
                       </div>
                     );
@@ -836,20 +842,26 @@ const MyPurchase: React.FC = () => {
               )}
 
               <div className="mt-2 flex gap-2">
-                <button
-                  onClick={() => {
-                    setSelected(null);
-                    handleOpenChat(selected);
-                  }}
-                  className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2 relative"
-                >
-                  <FaCommentsIcon /> Chat Seller
-                  {unreadState[selected.id] && (
-                    <span className="ml-2 bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full animate-pulse">
-                      New
-                    </span>
-                  )}
-                </button>
+                
+                {/* --- MODIFIED: Show Chat Button ONLY if Pending --- */}
+                {selected.status === "Pending" && (
+                  <button
+                    onClick={() => {
+                      setSelected(null);
+                      handleOpenChat(selected);
+                    }}
+                    className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2 relative"
+                  >
+                    <FaCommentsIcon /> Chat Seller
+                    {unreadState[selected.id] && (
+                      <span className="ml-2 bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full animate-pulse">
+                        New
+                      </span>
+                    )}
+                  </button>
+                )}
+                {/* --- END MODIFIED --- */}
+
                 <button
                   onClick={() => setSelected(null)}
                   className="flex-1 py-2 border rounded hover:bg-gray-50"
