@@ -52,7 +52,7 @@ const TotalListings: React.FC = () => {
   const [page, setPage] = useState(1);
   const [selectedUser, setSelectedUser] = useState("all");
   const [selectedStatus, setSelectedStatus] = useState("all");
-  const [users, setUsers] = useState<Array<{ email: string; userAccountName?: string }>>([]);
+  const [users, setUsers] = useState<Array<{ email: string; userAccountName?: string; role?: string }>>([]);
 
   // Modals & Selection
   const [openEdit, setOpenEdit] = useState(false);
@@ -244,12 +244,14 @@ const TotalListings: React.FC = () => {
                 "&:hover": { bgcolor: "#f8fafc" },
               }}
             >
-              <MenuItem value="all">All Users</MenuItem>
-              {users.map((u) => (
-                <MenuItem key={u.email} value={u.email}>
-                  {u.userAccountName ? u.userAccountName : u.email.split("@")[0]}
-                </MenuItem>
-              ))}
+              <MenuItem value="all">All Sellers</MenuItem>
+              {users
+                .filter((u) => (u.role || "").toLowerCase() === "seller")
+                .map((u) => (
+                  <MenuItem key={u.email} value={u.email}>
+                    {u.userAccountName ? u.userAccountName : u.email.split("@")[0]}
+                  </MenuItem>
+                ))}
             </Select>
           </FormControl>
           <FormControl sx={{ minWidth: 140 }}>
