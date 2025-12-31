@@ -20,8 +20,9 @@ import {
   FaPaperPlane,
   FaSmile,
   FaCircle,
-  FaClock, // Added Clock Icon
-  FaExclamationTriangle, // Added Warning Icon
+  FaClock,
+  FaExclamationTriangle,
+  FaFlag,
 } from "react-icons/fa";
 
 /* ---------------------------------------------
@@ -39,6 +40,7 @@ const FaCircleIcon = FaCircle as unknown as React.ComponentType<any>;
 const FaClockIcon = FaClock as unknown as React.ComponentType<any>;
 const FaExclamationTriangleIcon =
   FaExclamationTriangle as unknown as React.ComponentType<any>;
+const FaFlagIcon = FaFlag as unknown as React.ComponentType<any>;
 
 const ICON_COLOR_MAP = new Map<IconType, string>([
   [FaInstagram, "#E1306C"],
@@ -74,6 +76,14 @@ const EMOJI_LIST = [
   "👋",
 ];
 
+const REPORT_REASONS = [
+  "Scam or Fraud",
+  "Item not received",
+  "Wrong item delivered",
+  "Abusive behavior",
+  "Other",
+];
+
 /* ---------------------------------------------
    Types
 ---------------------------------------------- */
@@ -94,7 +104,7 @@ interface Purchase {
   sellerEmail: string;
   price: number;
   date: string;
-  rawDate: string; // Used for countdown calculation
+  rawDate: string;
   status: PurchaseStatus;
   purchaseNumber?: string;
 }
@@ -168,7 +178,6 @@ const formatDate = (d: string) => {
   });
 };
 
-// --- Time Helper ---
 const timeAgo = (dateString?: string) => {
   if (!dateString) return null;
   const date = new Date(dateString);
@@ -223,10 +232,7 @@ const MyPurchase: React.FC = () => {
   const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Timer State for Countdown
   const [now, setNow] = useState(new Date().getTime());
-
-  // Seller Names Map
   const [sellerNames, setSellerNames] = useState<Record<string, string>>({});
 
   const loginUserData = useAuthHook();
@@ -239,7 +245,16 @@ const MyPurchase: React.FC = () => {
   const [typedMessage, setTypedMessage] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
-  // Specific Chat Identifiers
+  // Report States
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [reportTargetOrder, setReportTargetOrder] = useState<Purchase | null>(
+    null
+  );
+  const [reportReason, setReportReason] = useState(REPORT_REASONS[0]);
+  const [reportMessage, setReportMessage] = useState("");
+  const [isSubmittingReport, setIsSubmittingReport] = useState(false);
+
+  // Chat identifiers
   const [activeChatSellerEmail, setActiveChatSellerEmail] = useState<
     string | null
   >(null);
@@ -257,13 +272,13 @@ const MyPurchase: React.FC = () => {
   const PURCHASE_API = "http://localhost:3200/purchase";
   const CHAT_API = "http://localhost:3200/chat";
   const USER_API = "http://localhost:3200/user";
+  const REPORT_API = "http://localhost:3200/report";
 
   const playNotificationSound = () => {
     const audio = new Audio(NOTIFICATION_SOUND);
     audio.play().catch((err) => console.log("Audio play failed:", err));
   };
 
-  /* -------- Timer Interval -------- */
   useEffect(() => {
     const interval = setInterval(() => {
       setNow(new Date().getTime());
@@ -271,21 +286,16 @@ const MyPurchase: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
-  /* -------- Countdown Calculator Helper -------- */
   const getRemainingTime = (purchaseDateStr: string) => {
     const purchaseTime = new Date(purchaseDateStr).getTime();
-    const deadline = purchaseTime + 60 * 60 * 1000; // 1 hour expiration
+    const deadline = purchaseTime + 60 * 60 * 1000;
     const diff = deadline - now;
-
-    if (diff <= 0) return null; // Expired
-
+    if (diff <= 0) return null;
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
     const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
     return `${minutes}m ${seconds}s`;
   };
 
-  /* -------- Fetch Data -------- */
   useEffect(() => {
     const fetchPurchases = async () => {
       if (!buyerId) {
@@ -295,12 +305,9 @@ const MyPurchase: React.FC = () => {
       try {
         setIsLoading(true);
         const res = await axios.get(`${PURCHASE_API}/getall`);
-
-        // Filter: Get only items where I am the BUYER
         const myData = (res.data as ApiPurchase[]).filter(
           (item) => item.buyerEmail === buyerId
         );
-
         const mapped = myData.map((item) => ({
           id: item._id,
           platform: inferPlatform(item.productName),
@@ -325,57 +332,41 @@ const MyPurchase: React.FC = () => {
     fetchPurchases();
   }, [buyerId]);
 
-  /* -------- Auto Cancel Logic (1 Hour) -------- */
   useEffect(() => {
     const checkAndCancelExpiredOrders = async () => {
       if (purchases.length === 0) return;
-
       const ONE_HOUR = 60 * 60 * 1000;
-
       const pendingOrders = purchases.filter((p) => p.status === "Pending");
-      let updated = false;
-
       for (const order of pendingOrders) {
         const orderTime = new Date(order.rawDate).getTime();
-
-        // If 1 hour passed and still pending
         if (now - orderTime > ONE_HOUR) {
           try {
             await axios.patch(`${PURCHASE_API}/update-status/${order.id}`, {
               status: "cancelled",
             });
-
             setPurchases((prev) =>
               prev.map((p) =>
                 p.id === order.id ? { ...p, status: "Cancelled" } : p
               )
             );
-            updated = true;
           } catch (err) {
             console.error(`Failed to auto-cancel order ${order.id}`, err);
           }
         }
       }
-      // Note: Removed toast to avoid spamming every render, logic handles update silently
     };
-
     checkAndCancelExpiredOrders();
-  }, [now, purchases]); // Depend on 'now' to check every second
+  }, [now, purchases]);
 
-  /* -------- Fetch Seller Names -------- */
   useEffect(() => {
     const fetchNames = async () => {
       if (purchases.length === 0) return;
-
       const uniqueEmails = Array.from(
         new Set(purchases.map((p) => p.sellerEmail))
       ).filter((email) => email && email !== "Unknown");
-
       const newNames: Record<string, string> = {};
       const emailsToFetch = uniqueEmails.filter((email) => !sellerNames[email]);
-
       if (emailsToFetch.length === 0) return;
-
       await Promise.all(
         emailsToFetch.map(async (email) => {
           if (!email) return;
@@ -398,24 +389,19 @@ const MyPurchase: React.FC = () => {
     fetchNames();
   }, [purchases]);
 
-  /* -------- Unread Messages Logic -------- */
   useEffect(() => {
     const checkUnread = async () => {
       if (!buyerId || purchases.length === 0) return;
       const newUnreadMap: Record<string, boolean> = { ...unreadState };
       let hasChange = false;
-
       await Promise.all(
         purchases.map(async (p) => {
           if (isChatOpen && activeChatOrderId === p.id) return;
           if (!p.sellerEmail || p.sellerEmail === "Unknown") return;
-
           try {
             const res = await axios.get(
               `${CHAT_API}/history/${buyerId}/${p.sellerEmail}`,
-              {
-                params: { orderId: p.id },
-              }
+              { params: { orderId: p.id } }
             );
             const msgs = res.data as IMessage[];
             if (msgs.length > 0) {
@@ -436,7 +422,6 @@ const MyPurchase: React.FC = () => {
       );
       if (hasChange) setUnreadState(newUnreadMap);
     };
-
     if (purchases.length > 0) {
       checkUnread();
       const interval = setInterval(checkUnread, 10000);
@@ -444,7 +429,6 @@ const MyPurchase: React.FC = () => {
     }
   }, [purchases, buyerId, isChatOpen, activeChatOrderId]);
 
-  /* -------- Status Actions -------- */
   const handleUpdateStatus = async (status: "completed" | "cancelled") => {
     if (!selected || !buyerId) return;
     try {
@@ -462,7 +446,6 @@ const MyPurchase: React.FC = () => {
             : p
         )
       );
-
       setSelected((prev) =>
         prev
           ? {
@@ -472,7 +455,6 @@ const MyPurchase: React.FC = () => {
             }
           : null
       );
-
       if (status === "completed") {
         toast.success("Order received and confirmed successfully!");
       } else {
@@ -483,7 +465,40 @@ const MyPurchase: React.FC = () => {
     }
   };
 
-  /* -------- Auto Delete Msgs -------- */
+  // --- REPORT LOGIC ---
+  const openReportModal = (p: Purchase) => {
+    setReportTargetOrder(p);
+    setReportReason(REPORT_REASONS[0]);
+    setReportMessage("");
+    setIsReportModalOpen(true);
+    if (selected) setSelected(null);
+  };
+
+  const handleReportSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!reportMessage.trim() || !reportTargetOrder) return;
+    setIsSubmittingReport(true);
+    try {
+      await axios.post(`${REPORT_API}/create`, {
+        orderId: reportTargetOrder.id,
+        reporterEmail: buyerId,
+        sellerEmail: reportTargetOrder.sellerEmail,
+        reason: reportReason,
+        message: reportMessage,
+        createdAt: new Date(),
+      });
+      toast.success("Report submitted successfully.");
+      setIsReportModalOpen(false);
+      setReportMessage("");
+      setReportTargetOrder(null);
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to submit report. Please try again.");
+    } finally {
+      setIsSubmittingReport(false);
+    }
+  };
+
   const autoDeleteOldMessages = async (messages: IMessage[]) => {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -502,15 +517,12 @@ const MyPurchase: React.FC = () => {
     return false;
   };
 
-  /* -------- Chat Logic -------- */
   const fetchChat = async (sellerEmail: string, orderId: string) => {
     if (!buyerId || !sellerEmail || !orderId) return;
     try {
       const res = await axios.get(
         `${CHAT_API}/history/${buyerId}/${sellerEmail}`,
-        {
-          params: { orderId: orderId },
-        }
+        { params: { orderId: orderId } }
       );
       let newData = res.data as IMessage[];
       const thirtyDaysAgo = new Date();
@@ -704,7 +716,6 @@ const MyPurchase: React.FC = () => {
                               </span>
                             </div>
 
-                            {/* --- LIST VIEW COUNTDOWN --- */}
                             {p.status === "Pending" && remainingTime && (
                               <div className="flex items-center gap-1.5 text-red-600 animate-pulse mt-1">
                                 <FaClockIcon size={10} />
@@ -722,32 +733,43 @@ const MyPurchase: React.FC = () => {
                           <div className="text-[10px] text-gray-400">
                             {p.date}
                           </div>
-                          
-                          {/* --- MODIFIED: Show View & Chat only if Pending --- */}
-                          {p.status === "Pending" && (
-                            <div className="flex gap-1">
-                              <button
-                                onClick={() => setSelected(p)}
-                                className="p-1.5 border rounded bg-white hover:bg-gray-50"
-                              >
-                                <FaEyeIcon size={14} />
-                              </button>
-                              <button
-                                onClick={() => handleOpenChat(p)}
-                                className="relative p-1.5 border rounded bg-white hover:bg-blue-50 text-blue-600 transition-colors"
-                              >
-                                <FaCommentsIcon size={14} />
-                                {unreadState[p.id] && (
-                                  <span className="absolute -top-1 -right-1 flex h-3 w-3">
-                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                                    <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500 border-2 border-white"></span>
-                                  </span>
-                                )}
-                              </button>
-                            </div>
-                          )}
-                          {/* --- END MODIFIED --- */}
 
+                          <div className="flex gap-1">
+                            {/* Report Button (Always Visible) */}
+                            <button
+                              onClick={() => openReportModal(p)}
+                              className="p-1.5 border border-red-200 rounded bg-white hover:bg-red-50 text-red-500 transition-colors"
+                              title="Report Order"
+                            >
+                              <FaFlagIcon size={14} />
+                            </button>
+
+                            {/* View & Chat (Visible only if Pending) */}
+                            {p.status === "Pending" && (
+                              <>
+                                <button
+                                  onClick={() => setSelected(p)}
+                                  className="p-1.5 border rounded bg-white hover:bg-gray-50"
+                                  title="View Details"
+                                >
+                                  <FaEyeIcon size={14} />
+                                </button>
+                                <button
+                                  onClick={() => handleOpenChat(p)}
+                                  className="relative p-1.5 border rounded bg-white hover:bg-blue-50 text-blue-600 transition-colors"
+                                  title="Chat Seller"
+                                >
+                                  <FaCommentsIcon size={14} />
+                                  {unreadState[p.id] && (
+                                    <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                      <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500 border-2 border-white"></span>
+                                    </span>
+                                  )}
+                                </button>
+                              </>
+                            )}
+                          </div>
                         </div>
                       </div>
                     );
@@ -763,10 +785,10 @@ const MyPurchase: React.FC = () => {
       {selected && (
         <>
           <div
-            className="fixed inset-0 bg-black/60 z-40 backdrop-blur-sm transition-opacity"
+            className="fixed inset-0 bg-black/60 z-[9000] backdrop-blur-sm transition-opacity"
             onClick={() => setSelected(null)}
           />
-          <div className="fixed inset-x-0 bottom-0 sm:inset-auto sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:max-w-lg w-full bg-white rounded-t-3xl sm:rounded-3xl z-50 max-h-[90vh] sm:max-h-[80vh] overflow-y-auto shadow-2xl animate-in fade-in zoom-in duration-300">
+          <div className="fixed inset-x-0 bottom-0 sm:inset-auto sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:max-w-lg w-full bg-white rounded-t-3xl sm:rounded-3xl z-[9001] max-h-[90vh] sm:max-h-[80vh] overflow-y-auto shadow-2xl animate-in fade-in zoom-in duration-300">
             <div className="sticky top-0 bg-white border-b sm:border-b-0 px-6 py-4 flex justify-between items-center z-10">
               <div>
                 <h2 className="text-lg font-bold text-[#0A1A3A]">
@@ -811,7 +833,6 @@ const MyPurchase: React.FC = () => {
                 </div>
               </div>
 
-              {/* --- AUTO REMOVE WARNING + BUTTON --- */}
               {selected.status === "Pending" && (
                 <div className="mt-6 space-y-3">
                   {getRemainingTime(selected.rawDate) && (
@@ -841,37 +862,132 @@ const MyPurchase: React.FC = () => {
                 </div>
               )}
 
-              <div className="mt-2 flex gap-2">
-                
-                {/* --- MODIFIED: Show Chat Button ONLY if Pending --- */}
-                {selected.status === "Pending" && (
+              <div className="mt-6 flex flex-col gap-3">
+                <div className="flex gap-2">
+                  {selected.status === "Pending" && (
+                    <button
+                      onClick={() => {
+                        setSelected(null);
+                        handleOpenChat(selected);
+                      }}
+                      className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2 relative"
+                    >
+                      <FaCommentsIcon /> Chat Seller
+                      {unreadState[selected.id] && (
+                        <span className="ml-2 bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full animate-pulse">
+                          New
+                        </span>
+                      )}
+                    </button>
+                  )}
                   <button
-                    onClick={() => {
-                      setSelected(null);
-                      handleOpenChat(selected);
-                    }}
-                    className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2 relative"
+                    onClick={() => setSelected(null)}
+                    className="flex-1 py-2 border rounded hover:bg-gray-50"
                   >
-                    <FaCommentsIcon /> Chat Seller
-                    {unreadState[selected.id] && (
-                      <span className="ml-2 bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full animate-pulse">
-                        New
-                      </span>
-                    )}
+                    Close
                   </button>
-                )}
-                {/* --- END MODIFIED --- */}
+                </div>
 
                 <button
-                  onClick={() => setSelected(null)}
-                  className="flex-1 py-2 border rounded hover:bg-gray-50"
+                  onClick={() => openReportModal(selected)}
+                  className="text-xs text-red-500 hover:underline text-center"
                 >
-                  Close
+                  Report a problem with this order
                 </button>
               </div>
             </div>
           </div>
         </>
+      )}
+
+      {/* --- REPORT MODAL (FLEXBOX CENTERED & PERFECT SIZE) --- */}
+      {isReportModalOpen && reportTargetOrder && (
+        <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4">
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
+            onClick={() => setIsReportModalOpen(false)}
+          />
+          
+          {/* Modal Content */}
+          <div className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in duration-200">
+            {/* Header */}
+            <div className="bg-red-50 px-6 py-4 border-b border-red-100 flex justify-between items-center flex-shrink-0">
+              <h3 className="font-bold text-red-700 flex items-center gap-2">
+                <FaFlagIcon /> Report Order
+              </h3>
+              <button 
+                onClick={() => setIsReportModalOpen(false)}
+                className="text-gray-500 hover:bg-white rounded-full p-1 transition"
+              >
+                <FaTimesIcon />
+              </button>
+            </div>
+
+            {/* Scrollable Body */}
+            <div className="overflow-y-auto p-6">
+              <form onSubmit={handleReportSubmit} className="space-y-4">
+                <div className="bg-gray-50 p-3 rounded-lg border border-gray-100 text-center">
+                  <p className="text-xs text-gray-500 uppercase tracking-wide">
+                    Order ID
+                  </p>
+                  <p className="font-mono text-sm font-bold text-gray-800">
+                    {reportTargetOrder.purchaseNumber || reportTargetOrder.id}
+                  </p>
+                </div>
+
+                {/* REASON DROPDOWN */}
+                <div className="text-center">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Select Reason
+                  </label>
+                  <select
+                    value={reportReason}
+                    onChange={(e) => setReportReason(e.target.value)}
+                    className="w-full border rounded-lg p-3 text-sm focus:ring-2 focus:ring-red-200 outline-none bg-white"
+                  >
+                    {REPORT_REASONS.map((r) => (
+                      <option key={r} value={r}>
+                        {r}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* MESSAGE FIELD */}
+                <div className="text-center">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Message (Explain details)
+                  </label>
+                  <textarea
+                    value={reportMessage}
+                    onChange={(e) => setReportMessage(e.target.value)}
+                    className="w-full border-2 border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-red-200 focus:border-red-400 outline-none transition h-32 resize-none"
+                    placeholder="Please describe why you are reporting this order..."
+                    required
+                  ></textarea>
+                </div>
+
+                <div className="flex gap-3 justify-end pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsReportModalOpen(false)}
+                    className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSubmittingReport || !reportMessage.trim()}
+                    className="px-6 py-2 text-sm bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-lg shadow-red-200"
+                  >
+                    {isSubmittingReport ? "Submitting..." : "Submit Report"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* --- CHAT MODAL --- */}
