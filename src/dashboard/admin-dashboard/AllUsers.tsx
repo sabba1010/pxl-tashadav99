@@ -451,11 +451,10 @@ const AllUsers: React.FC = () => {
           <Pagination
             count={totalPages}
             page={currentPage}
-            onChange={(_, page) => setCurrentPage(page)}
-            boundaryCount={2}
+            onChange={(_, p) => setCurrentPage(p)}
+            boundaryCount={15}
             siblingCount={1}
             size="large"
-            color="primary"
             sx={{
               "& .MuiPaginationItem-root": {
                 fontSize: "1rem",
@@ -465,20 +464,53 @@ const AllUsers: React.FC = () => {
                 borderRadius: "12px",
                 margin: "0 6px",
                 color: "#4B5563",
+                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                "&:hover": {
+                  backgroundColor: "#E6F4EA",
+                  color: "#33ac6f",
+                  transform: "translateY(-3px)",
+                  boxShadow: "0 6px 16px rgba(51, 172, 111, 0.2)",
+                },
               },
               "& .MuiPaginationItem-page.Mui-selected": {
                 background: "linear-gradient(135deg, #33ac6f, #2a8e5b)",
                 color: "#ffffff",
                 fontWeight: 700,
                 boxShadow: "0 8px 24px rgba(51, 172, 111, 0.35)",
+                transform: "translateY(-3px)",
+                "&:hover": {
+                  background: "linear-gradient(135deg, #2d9962, #257a50)",
+                  boxShadow: "0 12px 28px rgba(51, 172, 111, 0.4)",
+                },
+              },
+              "& .MuiPaginationItem-previousNext": {
+                backgroundColor: "#ffffff",
+                border: "1px solid #E5E7EB",
+                color: "#6B7280",
+                borderRadius: "12px",
+                "&:hover": {
+                  backgroundColor: "#f3f4f6",
+                  borderColor: "#33ac6f",
+                  color: "#33ac6f",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                },
+                "&.Mui-disabled": {
+                  backgroundColor: "#f9fafb",
+                  color: "#9CA3AF",
+                  borderColor: "#E5E7EB",
+                },
+              },
+              "& .MuiPaginationItem-ellipsis": {
+                color: "#9CA3AF",
+                fontSize: "1.4rem",
+                margin: "0 8px",
               },
             }}
           />
         )}
 
-        <Typography variant="body2" color="#6B7280" sx={{ fontSize: "0.925rem" }}>
-          Showing page <strong>{currentPage}</strong> of <strong>{totalPages}</strong> •{" "}
-          {filteredAndSorted.length} total user{filteredAndSorted.length !== 1 ? "s" : ""}
+        <Typography variant="body2" color="#6B7280" sx={{ mt: 2.5, fontSize: "0.925rem", letterSpacing: "0.2px" }}>
+          Page <strong>{currentPage}</strong> of <strong>{totalPages}</strong> • {filteredAndSorted.length} total users
         </Typography>
       </Box>
 
