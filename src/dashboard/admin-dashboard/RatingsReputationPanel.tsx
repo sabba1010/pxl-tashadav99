@@ -7,7 +7,6 @@ import {
   Filter,
   X,
   ThumbsUp,
-  ThumbsDown,
   Clock,
 } from "lucide-react";
 
