@@ -29,7 +29,6 @@ import {
   Typography,
 } from "@mui/material";
 import React, { useEffect, useMemo, useState } from "react";
-
 interface Listing {
   _id: string;
   category: string;
@@ -43,30 +42,26 @@ interface Listing {
   status: string;
   userAccountName: string;
 }
-
 const ITEMS_PER_PAGE = 8;
-
 const TotalListings: React.FC = () => {
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
-  const [selectedUser, setSelectedUser] = useState("all"); // now holds userAccountName or "all"
+  const [selectedUser, setSelectedUser] = useState("all");
   const [selectedStatus, setSelectedStatus] = useState("all");
-
+  const [users, setUsers] = useState<Array<{ email: string; userAccountName?: string; role?: string }>>([]);
   // Modals & Selection
   const [openEdit, setOpenEdit] = useState(false);
   const [openView, setOpenView] = useState(false);
   const [selected, setSelected] = useState<Listing | null>(null);
-
   // Edit form states
   const [newStatus, setNewStatus] = useState("");
   const [rejectReason, setRejectReason] = useState("");
-
   useEffect(() => {
     fetchData();
+    fetchUsers();
   }, []);
-
   const fetchData = async () => {
     try {
       const response = await fetch("http://localhost:3200/product/all-sells");
@@ -78,23 +73,22 @@ const TotalListings: React.FC = () => {
       setLoading(false);
     }
   };
-
-  // Unique seller names from listings
-  const sellerOptions = useMemo(() => {
-    const uniqueNames = Array.from(
-      new Set(listings.map((item) => item.userAccountName).filter(Boolean))
-    ).sort(); // alphabetical sort (optional)
-    return ["all", ...uniqueNames];
-  }, [listings]);
-
-  // Unique status options
+  const fetchUsers = async () => {
+    try {
+      const res = await fetch("http://localhost:3200/api/user/getall");
+      const data = await res.json();
+      // Expecting array of users with `email` and optional `userAccountName`
+      setUsers(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error("Error fetching users:", err);
+    }
+  };
   const statusOptions = useMemo(() => {
     const sts = Array.from(
       new Set(listings.map((item) => (item.status || "").toLowerCase()).filter(Boolean))
     );
     return ["all", ...sts];
   }, [listings]);
-
   const handleUpdateStatus = async () => {
     if (!selected) return;
     if (newStatus === "reject" && !rejectReason.trim()) {
@@ -128,25 +122,21 @@ const TotalListings: React.FC = () => {
       console.error("Update failed:", error);
     }
   };
-
   const filtered = useMemo(() => {
     return [...listings].filter(
       (l) =>
         (l.name.toLowerCase().includes(search.toLowerCase()) ||
           l._id.toLowerCase().includes(search.toLowerCase())) &&
-        (selectedUser === "all" || l.userAccountName === selectedUser) &&
+        (selectedUser === "all" || l.userEmail === selectedUser) &&
         (selectedStatus === "all" ||
           l.status.toLowerCase() === selectedStatus.toLowerCase())
     );
   }, [search, listings, selectedUser, selectedStatus]);
-
   const paginated = useMemo(() => {
     const start = (page - 1) * ITEMS_PER_PAGE;
     return filtered.slice(start, start + ITEMS_PER_PAGE);
   }, [filtered, page]);
-
   const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
-
   const getStatusStyles = (status: string) => {
     switch (status?.toLowerCase()) {
       case "active":
@@ -161,14 +151,12 @@ const TotalListings: React.FC = () => {
         return { color: "#8E8E93", bg: "#F2F2F7" };
     }
   };
-
   if (loading)
     return (
       <Box display="flex" justifyContent="center" mt={10}>
         <CircularProgress sx={{ color: "#33ac6f" }} />
       </Box>
     );
-
   return (
     <Box sx={{ p: 4, bgcolor: "#F5F7FA", minHeight: "100vh" }}>
       {/* Header */}
@@ -223,8 +211,6 @@ const TotalListings: React.FC = () => {
               }}
             />
           </Box>
-
-          {/* Seller Filter - Now uses userAccountName only */}
           <FormControl sx={{ minWidth: 180 }}>
             <Select
               value={selectedUser}
@@ -242,17 +228,15 @@ const TotalListings: React.FC = () => {
               }}
             >
               <MenuItem value="all">All Sellers</MenuItem>
-              {sellerOptions
-                .filter((opt) => opt !== "all")
-                .map((name) => (
-                  <MenuItem key={name} value={name}>
-                    {name}
+              {users
+                .filter((u) => (u.role || "").toLowerCase() === "seller")
+                .map((u) => (
+                  <MenuItem key={u.email} value={u.email}>
+                    {u.userAccountName ? u.userAccountName : u.email.split("@")[0]}
                   </MenuItem>
                 ))}
             </Select>
           </FormControl>
-
-          {/* Status Filter */}
           <FormControl sx={{ minWidth: 140 }}>
             <Select
               value={selectedStatus}
@@ -280,7 +264,6 @@ const TotalListings: React.FC = () => {
           </FormControl>
         </Box>
       </Paper>
-
       {/* Table */}
       <TableContainer
         component={Paper}
@@ -335,9 +318,11 @@ const TotalListings: React.FC = () => {
                   <TableCell sx={{ fontWeight: "500", color: "#1F2A44" }}>
                     {row.name}
                   </TableCell>
-                  {/* Simplified Seller Name */}
                   <TableCell sx={{ color: "#1F2A44" }}>
-                    {row.userAccountName || "Unknown Seller"}
+                    {(() => {
+                      const seller = users.find((u) => u.email === row.userEmail);
+                      return seller?.userAccountName ? seller.userAccountName : row.userEmail.split("@")[0];
+                    })()}
                   </TableCell>
                   <TableCell sx={{ color: "#6B7280", fontSize: "14px" }}>
                     {row.userEmail}
@@ -391,8 +376,7 @@ const TotalListings: React.FC = () => {
           </TableBody>
         </Table>
       </TableContainer>
-
-      {/* Pagination */}
+      {/* Modern Pagination */}
       <Box sx={{ mt: 5, display: "flex", flexDirection: "column", alignItems: "center" }}>
         <Pagination
           count={totalPages}
@@ -461,7 +445,6 @@ const TotalListings: React.FC = () => {
           Page <strong>{page}</strong> of <strong>{totalPages}</strong> • {filtered.length} total listings
         </Typography>
       </Box>
-
       {/* View Modal */}
       <Dialog
         open={openView}
@@ -525,7 +508,6 @@ const TotalListings: React.FC = () => {
           )}
         </DialogContent>
       </Dialog>
-
       {/* Edit Modal */}
       <Dialog
         open={openEdit}
@@ -601,5 +583,4 @@ const TotalListings: React.FC = () => {
     </Box>
   );
 };
-
 export default TotalListings;
