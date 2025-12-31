@@ -871,8 +871,6 @@ const Marketplace: React.FC = () => {
     }
   };
 
-  
-
 
   // --- SMART PAGINATION LOGIC (1... 155) ---
   const getPageNumbers = () => {
