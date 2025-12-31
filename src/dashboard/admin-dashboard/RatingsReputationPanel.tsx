@@ -1,5 +1,7 @@
 import React, { useMemo, useState } from "react";
-import { Star, AlertCircle, CheckCircle, ThumbsUp, Clock, X } from "lucide-react";
+import { AlertCircle, CheckCircle, ThumbsUp, Clock, X } from "lucide-react";
+import StarIcon from "@mui/icons-material/Star";
+import StarBorderIcon from "@mui/icons-material/StarBorder";
 import SearchIcon from "@mui/icons-material/Search";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import RefreshIcon from "@mui/icons-material/Refresh";
@@ -146,10 +148,14 @@ const RatingsReputationPanel: React.FC = () => {
   const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
 
   const renderStars = (rating: number) => (
-    <Box sx={{ display: "flex", gap: 1 }}>
-      {[1, 2, 3, 4, 5].map((i) => (
-        <Star key={i} size={16} color={i <= rating ? "#FBBF24" : "#E5E7EB"} />
-      ))}
+    <Box sx={{ display: "flex", gap: 0.5, alignItems: "center" }}>
+      {[1, 2, 3, 4, 5].map((i) =>
+        i <= rating ? (
+          <StarIcon key={i} sx={{ color: "#FBBF24", width: 18, height: 18 }} />
+        ) : (
+          <StarBorderIcon key={i} sx={{ color: "#E5E7EB", width: 18, height: 18 }} />
+        )
+      )}
     </Box>
   );
 
