@@ -41,6 +41,7 @@ interface Listing {
   password: string;
   userEmail: string;
   status: string;
+  userAccountName: string;
 }
 
 const ITEMS_PER_PAGE = 8;
@@ -82,7 +83,7 @@ const TotalListings: React.FC = () => {
 
   const fetchUsers = async () => {
     try {
-      const res = await fetch("http://localhost:3200/user/getall");
+      const res = await fetch("http://localhost:3200/api/user/getall");
       const data = await res.json();
       // Expecting array of users with `email` and optional `userAccountName`
       setUsers(Array.isArray(data) ? data : []);
