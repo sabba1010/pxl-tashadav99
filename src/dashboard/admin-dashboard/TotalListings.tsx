@@ -173,6 +173,17 @@ const TotalListings: React.FC = () => {
     }
   };
 
+  // Pre-compute seller list with sorting
+  const sellerList = useMemo(() => {
+    return users
+      .filter((u) => (u.role || "").toLowerCase() === "seller")
+      .sort((a, b) => {
+        const nameA = (a.userAccountName || a.email.split("@")[0]).toLowerCase();
+        const nameB = (b.userAccountName || b.email.split("@")[0]).toLowerCase();
+        return nameA.localeCompare(nameB);
+      });
+  }, [users]);
+
   if (loading)
     return (
       <Box display="flex" justifyContent="center" mt={10}>
@@ -235,8 +246,8 @@ const TotalListings: React.FC = () => {
             />
           </Box>
 
-          {/* Updated Seller Filter with userAccountName priority */}
-          <FormControl sx={{ minWidth: 180 }}>
+          {/* Seller Filter - Now with real userAccountName and sorted */}
+          <FormControl sx={{ minWidth: 200 }}>
             <InputLabel id="seller-filter-label">Seller</InputLabel>
             <Select
               labelId="seller-filter-label"
@@ -255,16 +266,15 @@ const TotalListings: React.FC = () => {
               }}
             >
               <MenuItem value="all">All Sellers</MenuItem>
-              {users
-                .filter((u) => (u.role || "").toLowerCase() === "seller")
-                .map((u) => (
-                  <MenuItem key={u.email} value={u.email}>
-                    {u.userAccountName || u.email.split("@")[0]}
-                  </MenuItem>
-                ))}
+              {sellerList.map((u) => (
+                <MenuItem key={u.email} value={u.email}>
+                  {u.userAccountName || u.email.split("@")[0]}
+                </MenuItem>
+              ))}
             </Select>
           </FormControl>
 
+          {/* Status Filter */}
           <FormControl sx={{ minWidth: 140 }}>
             <InputLabel id="status-filter-label">Status</InputLabel>
             <Select
@@ -336,6 +346,9 @@ const TotalListings: React.FC = () => {
             {paginated.map((row) => {
               const styles = getStatusStyles(row.status);
               const seller = users.find((u) => u.email === row.userEmail);
+              const displayName =
+                seller?.userAccountName || row.userEmail.split("@")[0];
+
               return (
                 <TableRow
                   key={row._id}
@@ -350,8 +363,8 @@ const TotalListings: React.FC = () => {
                   <TableCell sx={{ fontWeight: "500", color: "#1F2A44" }}>
                     {row.name}
                   </TableCell>
-                  <TableCell sx={{ color: "#1F2A44" }}>
-                    {seller?.userAccountName || row.userEmail.split("@")[0]}
+                  <TableCell sx={{ color: "#1F2A44", fontWeight: "500" }}>
+                    {displayName}
                   </TableCell>
                   <TableCell sx={{ color: "#6B7280", fontSize: "14px" }}>
                     {row.userEmail}
