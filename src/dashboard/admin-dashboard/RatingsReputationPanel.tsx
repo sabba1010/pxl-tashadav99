@@ -2,6 +2,8 @@ import React, { useMemo, useState } from "react";
 import { Star, AlertCircle, CheckCircle, ThumbsUp, Clock, X } from "lucide-react";
 import SearchIcon from "@mui/icons-material/Search";
 import FilterListIcon from "@mui/icons-material/FilterList";
+import RefreshIcon from "@mui/icons-material/Refresh";
+import { Tooltip } from "@mui/material";
 import {
   Box,
   Paper,
@@ -151,6 +153,12 @@ const RatingsReputationPanel: React.FC = () => {
     </Box>
   );
 
+  const refresh = () => {
+    setSearchTerm("");
+    setFilter("all");
+    setPage(1);
+  };
+
   return (
     <Box sx={{ p: 4, bgcolor: "#F5F7FA", minHeight: "100vh" }}>
       <Paper
@@ -176,6 +184,31 @@ const RatingsReputationPanel: React.FC = () => {
         </Box>
 
         <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
+          <Tooltip title="Refresh">
+            <IconButton
+              onClick={refresh}
+              aria-label="refresh"
+              sx={{
+                width: 44,
+                height: 44,
+                display: "inline-flex",
+                justifyContent: "center",
+                alignItems: "center",
+                background: "linear-gradient(135deg,#33ac6f,#2a8e5b)",
+                color: "#fff",
+                borderRadius: "12px",
+                boxShadow: "0 8px 20px rgba(51,172,111,0.18)",
+                transition: "all 0.18s ease-in-out",
+                "&:hover": {
+                  transform: "translateY(-3px)",
+                  boxShadow: "0 12px 28px rgba(51,172,111,0.26)",
+                },
+              }}
+            >
+              <RefreshIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+
           <Box sx={{ position: "relative", width: 300 }}>
             <SearchIcon
               sx={{
@@ -299,9 +332,21 @@ const RatingsReputationPanel: React.FC = () => {
                   </Box>
                 </TableCell>
                 <TableCell>
-                  <Button variant="contained" color="primary" size="small" onClick={() => setSelectedSeller(s)} sx={{ bgcolor: "#6D28D9", textTransform: "none", borderRadius: 2 }}>
-                    View Reviews
-                  </Button>
+                    <Button
+                      variant="contained"
+                      size="small"
+                      onClick={() => setSelectedSeller(s)}
+                      sx={{
+                        background: "linear-gradient(135deg,#33ac6f,#2a8e5b)",
+                        color: "#fff",
+                        textTransform: "none",
+                        borderRadius: 2,
+                        boxShadow: "0 8px 20px rgba(51,172,111,0.18)",
+                        '&:hover': { background: 'linear-gradient(135deg,#2d9962,#257a50)' },
+                      }}
+                    >
+                      View Reviews
+                    </Button>
                 </TableCell>
               </TableRow>
             ))}
@@ -442,7 +487,7 @@ const RatingsReputationPanel: React.FC = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setSelectedSeller(null)}>Close</Button>
-          <Button variant="contained" sx={{ bgcolor: "#6D28D9", '&:hover': { bgcolor: '#5b21c6' } }}>Boost This Seller</Button>
+          <Button variant="contained" sx={{ background: "linear-gradient(135deg,#33ac6f,#2a8e5b)", color: '#fff', '&:hover': { background: 'linear-gradient(135deg,#2d9962,#257a50)' } }}>Boost This Seller</Button>
         </DialogActions>
       </Dialog>
     </Box>
