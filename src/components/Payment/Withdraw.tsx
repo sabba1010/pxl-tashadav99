@@ -241,9 +241,9 @@ const WithdrawForm: React.FC = () => {
               onChange={handleChange}
               className="w-full px-6 py-5 border-2 border-gray-200 rounded-xl focus:border-[#D4A017] focus:ring-4 focus:ring-[#D4A017]/20 text-lg transition"
             >
-              <option value="NGN">NGN – Nigerian Naira</option>
+              {/* <option value="NGN">NGN – Nigerian Naira</option>
               <option value="GHS">GHS – Ghanaian Cedi</option>
-              <option value="KES">KES – Kenyan Shilling</option>
+              <option value="KES">KES – Kenyan Shilling</option> */}
               <option value="USD">USD – US Dollar</option>
             </select>
           </div>
