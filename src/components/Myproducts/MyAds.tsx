@@ -166,104 +166,96 @@ const MyAds: React.FC = () => {
     );
 
   return (
-    <div className="min-h-screen bg-[#F3EFEE] pt-20 pb-24">
+    <div className="min-h-screen bg-[#F3EFEE] pt-12 pb-24 sm:pt-20">
       <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+        
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8 sm:mb-10">
           <div>
-            <h1 className="text-3xl sm:text-4xl font-bold text-[#0A1A3A] tracking-tight">
+            <h1 className="text-2xl sm:text-4xl font-bold text-[#0A1A3A] tracking-tight">
               My Listings
             </h1>
-            <p className="text-gray-600 mt-2 text-base">
+            <p className="text-sm sm:text-base text-gray-600 mt-1 sm:mt-2">
               Manage your products and monitor their approval status.
             </p>
           </div>
 
           <Link
             to="/selling-form"
-            className="flex items-center justify-center gap-2.5 bg-[#d4a643] hover:bg-[#33ac6f] text-white px-7 py-3.5 rounded-2xl font-semibold text-base shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+            className="flex items-center justify-center gap-2 bg-[#d4a643] hover:bg-[#33ac6f] text-white px-6 py-3 rounded-xl sm:rounded-2xl font-semibold text-sm sm:text-base shadow-lg transition-all duration-300 active:scale-95"
           >
-            <Plus size={20} />
+            <Plus size={18} />
             Create New Ad
           </Link>
         </div>
 
-        {/* Tabs (using MyPurchase tab design) */}
-        <div className="bg-white  overflow-hidden rounded-t-2xl">
-          <div className="flex gap-6 p-4 border-b overflow-x-auto">
+        {/* Tabs Section - Fixed Overflow and Gaps */}
+        <div className="bg-white rounded-t-2xl">
+          <div className="flex gap-4 sm:gap-6 p-4 border-b overflow-x-auto scrollbar-hide [ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {TABS.map((t) => (
               <button
                 key={t}
                 onClick={() => setActiveTab(t)}
-                className={`pb-2 text-sm whitespace-nowrap transition-all ${activeTab === t
-                  ? "text-[#d4a643] border-b-2 border-[#d4a643] font-bold"
-                  : "text-gray-500"
-                  }`}
+                className={`pb-2 text-xs sm:text-sm whitespace-nowrap transition-all border-b-2 ${
+                  activeTab === t
+                    ? "text-[#d4a643] border-[#d4a643] font-bold"
+                    : "text-gray-500 border-transparent"
+                }`}
               >
-                <span className="flex items-center gap-2">
+                <span className="flex items-center gap-1.5 sm:gap-2">
                   {t}
-                  <span className="text-xs text-gray-400 font-bold">{counts.get(t) ?? 0}</span>
+                  <span className="px-1.5 py-0.5 bg-gray-100 text-[10px] text-gray-500 rounded-md font-bold">
+                    {counts.get(t) ?? 0}
+                  </span>
                 </span>
               </button>
             ))}
           </div>
         </div>
-        <div className="bg-white  rounded-b-2xl px-6 py-8">
-          {/* Cards - Now matching Marketplace ItemCard height & style exactly */}
-          <div className="space-y-4 ">
+
+        {/* List Content Section */}
+        <div className="bg-white rounded-b-2xl px-3 sm:px-6 py-6 sm:py-8 border-t-0 shadow-sm">
+          <div className="space-y-4">
             {filtered.length === 0 ? (
-              <div className="bg-white rounded-3xl p-12 text-center shadow-md border border-gray-100">
-                <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-5">
-                  <Filter size={32} className="text-gray-400" />
+              <div className="bg-white rounded-3xl p-10 text-center border border-dashed border-gray-200">
+                <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <Filter size={28} className="text-gray-300" />
                 </div>
-                <h3 className="text-lg font-bold text-[#0A1A3A] mb-2">
+                <h3 className="text-base font-bold text-[#0A1A3A] mb-1">
                   No ads found
                 </h3>
-                <p className="text-gray-500 max-w-sm mx-auto">
+                <p className="text-xs sm:text-sm text-gray-400 max-w-[200px] mx-auto">
                   {activeTab === "All"
                     ? "You haven't created any listings yet."
                     : `No items in the "${activeTab}" category.`}
                 </p>
-                {activeTab === "All" && (
-                  <Link
-                    to="/selling-form"
-                    className="inline-block mt-5 text-[#33ac6f] font-semibold hover:underline"
-                  >
-                    Create your first listing →
-                  </Link>
-                )}
               </div>
             ) : (
-              <div className="grid grid-cols-1 gap-4 ">
+              <div className="grid grid-cols-1 gap-3 sm:gap-4">
                 {filtered.map((item) => (
                   <div
                     key={item._id}
-                    className="bg-[#f8fafb] rounded-xl shadow-sm hover:shadow-md border border-gray-100 transition-all duration-200 p-4 flex items-center gap-4"
+                    className="bg-[#f8fafb] rounded-xl border border-gray-100 p-3 sm:p-4 flex items-center gap-3 sm:gap-4 hover:shadow-md transition-shadow"
                   >
-                    {/* Icon - Same as Marketplace list mode */}
+                    {/* Icon */}
                     <div className="flex-shrink-0">
-                      <div className="w-12 h-12 rounded-xl bg-gray-50 border border-gray-200 flex items-center justify-center overflow-hidden shadow-sm">
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-white border border-gray-200 flex items-center justify-center shadow-sm">
                         <img
                           src={item.categoryIcon}
                           alt={item.category}
-                          className="w-9 h-9 object-contain"
+                          className="w-7 h-7 sm:w-9 sm:h-9 object-contain"
                         />
                       </div>
                     </div>
 
-                    {/* Title, Description, Status */}
+                    {/* Info */}
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-bold text-sm text-[#0A1A3A] truncate">
+                      <h3 className="font-bold text-xs sm:text-sm text-[#0A1A3A] truncate">
                         {item.name}
                       </h3>
-                      {/* <p className="text-xs text-gray-600 mt-1 line-clamp-2">
-                        {item.description || "No description provided"}
-                      </p> */}
-
-                      {/* Status Badge */}
-                      <div className="mt-2">
+                      <div className="mt-1.5 sm:mt-2">
                         <span
-                          className={`inline-flex px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider ${getStatusColor(
+                          className={`inline-flex px-2 py-0.5 rounded-md text-[9px] sm:text-xs font-bold uppercase tracking-wider ${getStatusColor(
                             item.status
                           )}`}
                         >
@@ -273,11 +265,8 @@ const MyAds: React.FC = () => {
                     </div>
 
                     {/* Price & Actions */}
-                    <div className="flex flex-col items-end gap-3">
-                      {/* <span className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">
-                        Price
-                      </span> */}
-                      <div className="text-base font-bold text-[#0A1A3A] text-[20px]">
+                    <div className="flex flex-col items-end gap-2 sm:gap-3">
+                      <div className="text-base sm:text-lg font-bold text-[#0A1A3A]">
                         ${item.price}
                       </div>
 
@@ -285,37 +274,32 @@ const MyAds: React.FC = () => {
                         {statusOf(item.status) === "restore" && (
                           <button
                             onClick={() => handleRestore(item._id)}
-                            className="p-2 border rounded-md hover:bg-emerald-50 text-emerald-600 transition"
-                            title="Restore"
+                            className="p-1.5 sm:p-2 border rounded-lg hover:bg-emerald-50 text-emerald-600 transition"
                           >
-                            <RefreshCw size={15} />
+                            <RefreshCw size={14} />
                           </button>
                         )}
-
                         <button
                           onClick={() => handleEdit(item._id)}
-                          className="p-2 border rounded-md hover:bg-gray-50 text-gray-600 transition"
-                          title="Edit"
+                          className="p-1.5 sm:p-2 border rounded-lg hover:bg-gray-50 text-gray-600 transition"
                         >
-                          <Edit size={15} />
+                          <Edit size={14} />
                         </button>
-
                         <button
                           onClick={() => handleDelete(item._id)}
-                          className="p-2 border rounded-md hover:bg-red-50 text-gray-600 hover:text-red-600 transition"
-                          title="Delete"
+                          className="p-1.5 sm:p-2 border rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-600 transition"
                         >
-                          <Trash2 size={15} />
+                          <Trash2 size={14} />
                         </button>
                       </div>
                     </div>
 
-                    {/* Reject Reason - Only if needed */}
+                    {/* Reject Reason */}
                     {(statusOf(item.status) === "denied" ||
                       statusOf(item.status) === "reject") &&
                       item.rejectReason && (
-                        <div className="col-span-full mt-3 p-3 bg-rose-50 border border-rose-200 rounded-lg flex items-start gap-2 text-xs">
-                          <AlertCircle size={14} className="text-rose-600 mt-0.5 flex-shrink-0" />
+                        <div className="basis-full w-full mt-3 p-2.5 bg-rose-50 border border-rose-100 rounded-lg flex items-start gap-2 text-[10px] sm:text-xs">
+                          <AlertCircle size={12} className="text-rose-600 mt-0.5 flex-shrink-0" />
                           <div>
                             <p className="font-bold text-rose-800">Action Required</p>
                             <p className="text-rose-700">{item.rejectReason}</p>
