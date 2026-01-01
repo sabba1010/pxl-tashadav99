@@ -401,30 +401,36 @@ const TotalListings: React.FC = () => {
           onChange={(_, p) => setPage(p)}
           size="large"
           sx={{
+            display: "inline-flex",
+            p: 1,
+            borderRadius: 2,
+            bgcolor: "transparent",
             "& .MuiPaginationItem-root": {
               fontSize: "1rem",
               fontWeight: 500,
-              minWidth: 44,
-              height: 44,
+              minWidth: 40,
+              height: 40,
               borderRadius: "12px",
-              mx: 0.75,
+              mx: 0.5,
               color: "#4B5563",
-              transition: "all 0.3s",
+              transition: "all 0.18s",
+              bgcolor: "#fff",
+              boxShadow: "0 1px 2px rgba(16,24,40,0.04)",
               "&:hover": {
                 bgcolor: "#E6F4EA",
                 color: "#33ac6f",
-                transform: "translateY(-3px)",
-                boxShadow: "0 6px 16px rgba(51,172,111,0.2)",
+                transform: "translateY(-2px)",
+                boxShadow: "0 6px 16px rgba(51,172,111,0.12)",
               },
             },
             "& .Mui-selected": {
-              bgcolor: "linear-gradient(135deg, #33ac6f, #2a8e5b) !important",
+              bgcolor: "#33ac6f !important",
               color: "#fff",
               fontWeight: 700,
-              boxShadow: "0 8px 24px rgba(51,172,111,0.35)",
-              "&:hover": {
-                bgcolor: "linear-gradient(135deg, #2d9962, #257a50) !important",
-              },
+              boxShadow: "0 8px 20px rgba(51,172,111,0.25)",
+              minWidth: 40,
+              height: 40,
+              borderRadius: "10px",
             },
             "& .MuiPaginationItem-previousNext": {
               bgcolor: "#fff",
