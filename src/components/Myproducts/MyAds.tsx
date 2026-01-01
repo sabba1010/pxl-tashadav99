@@ -189,15 +189,15 @@ const MyAds: React.FC = () => {
         </div>
 
         {/* Tabs (using MyPurchase tab design) */}
-        <div className="bg-white border overflow-hidden rounded-t-2xl">
+        <div className="bg-white  overflow-hidden rounded-t-2xl">
           <div className="flex gap-6 p-4 border-b overflow-x-auto">
             {TABS.map((t) => (
               <button
                 key={t}
                 onClick={() => setActiveTab(t)}
                 className={`pb-2 text-sm whitespace-nowrap transition-all ${activeTab === t
-                    ? "text-[#d4a643] border-b-2 border-[#d4a643] font-bold"
-                    : "text-gray-500"
+                  ? "text-[#d4a643] border-b-2 border-[#d4a643] font-bold"
+                  : "text-gray-500"
                   }`}
               >
                 <span className="flex items-center gap-2">
@@ -208,7 +208,7 @@ const MyAds: React.FC = () => {
             ))}
           </div>
         </div>
-        <div className="bg-white border rounded-b-2xl px-6 py-8">
+        <div className="bg-white  rounded-b-2xl px-6 py-8">
           {/* Cards - Now matching Marketplace ItemCard height & style exactly */}
           <div className="space-y-4 ">
             {filtered.length === 0 ? (
