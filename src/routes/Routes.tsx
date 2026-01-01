@@ -38,6 +38,7 @@ import WhyChooseUs from "../pages/why/WhyChooseUs";
 
 import CartPage from "../components/Cart/CartPage";
 import MyAds from "../components/Myproducts/MyAds";
+import SellerGuide from "../components/SellerGuide";
 import Post from "../components/Notification/Post";
 import PaymentForm from "../components/Payment/Withdraw";
 import SellerPay from "../components/Seller/SellerPay";
@@ -124,6 +125,14 @@ const Routes = createBrowserRouter([
         element: (
           <SellerPrivateRoute>
             <MyAds />
+          </SellerPrivateRoute>
+        ),
+      },
+      {
+        path: "/seller-guide",
+        element: (
+          <SellerPrivateRoute>
+            <SellerGuide />
           </SellerPrivateRoute>
         ),
       },

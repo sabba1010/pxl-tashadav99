@@ -278,6 +278,19 @@ export default function Navbar() {
               ) : (
                 ""
               )}
+              {loginUser?.role === "seller" || loginUser?.role === "admin" ? (
+                <NavLink
+                  to="/seller-guide"
+                  className="font-medium"
+                  style={({ isActive }) => ({
+                    color: isActive ? ROYAL_GOLD : CHARCOAL,
+                  })}
+                >
+                  Seller Guide
+                </NavLink>
+              ) : (
+                ""
+              )}
               <NavLink
                 to="/selling-form"
                 className="px-6 py-2.5 rounded-lg font-medium text-white shadow-sm"
