@@ -209,7 +209,7 @@ const MyAds: React.FC = () => {
             ))}
           </div>
         </div>
-
+         <div className="bg-white rounded-2xl shadow-sm border p-6">
         {/* Cards - Now matching Marketplace ItemCard height & style exactly */}
         <div className="space-y-4 ">
           {filtered.length === 0 ? (
@@ -239,7 +239,7 @@ const MyAds: React.FC = () => {
               {filtered.map((item) => (
                 <div
                   key={item._id}
-                  className="bg-white rounded-xl shadow-sm hover:shadow-md border border-gray-100 transition-all duration-200 p-4 flex items-top gap-4"
+                  className="bg-[#f8fafb] rounded-xl shadow-sm hover:shadow-md border border-gray-100 transition-all duration-200 p-4 flex items-top gap-4"
                 >
                   {/* Icon - Same as Marketplace list mode */}
                   <div className="flex-shrink-0">
@@ -328,6 +328,7 @@ const MyAds: React.FC = () => {
             </div>
           )}
         </div>
+</div>
       </div>
     </div>
   );
