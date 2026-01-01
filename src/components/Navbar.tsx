@@ -8,6 +8,7 @@ import axios from "axios";
 import { useAuth } from "../context/AuthContext";
 import { getAllNotifications } from "../components/Notification/Notification";
 import headerlogo from "../assets/headerlogo.png";
+import sellerGuide from "../assets/Saller guide.pdf";
 import { useAuthHook } from "../hook/useAuthHook";
 import {
   ListCheck,
@@ -275,6 +276,19 @@ export default function Navbar() {
                 >
                   My Ads
                 </NavLink>
+              ) : (
+                ""
+              )}
+              {loginUser?.role === "seller" || loginUser?.role === "admin" ? (
+                <a
+                  href={sellerGuide}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-medium"
+                  style={{ color: CHARCOAL }}
+                >
+                  Seller Guide
+                </a>
               ) : (
                 ""
               )}
