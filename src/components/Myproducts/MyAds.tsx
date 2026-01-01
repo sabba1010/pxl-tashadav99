@@ -256,9 +256,9 @@ const MyAds: React.FC = () => {
                       <h3 className="font-bold text-sm text-[#0A1A3A] truncate">
                         {item.name}
                       </h3>
-                      <p className="text-xs text-gray-600 mt-1 line-clamp-2">
+                      {/* <p className="text-xs text-gray-600 mt-1 line-clamp-2">
                         {item.description || "No description provided"}
-                      </p>
+                      </p> */}
 
                       {/* Status Badge */}
                       <div className="mt-2">
@@ -274,9 +274,9 @@ const MyAds: React.FC = () => {
 
                     {/* Price & Actions */}
                     <div className="flex flex-col items-end gap-3">
-                      <span className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">
+                      {/* <span className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">
                         Price
-                      </span>
+                      </span> */}
                       <div className="text-base font-bold text-[#0A1A3A] text-[20px]">
                         ${item.price}
                       </div>
