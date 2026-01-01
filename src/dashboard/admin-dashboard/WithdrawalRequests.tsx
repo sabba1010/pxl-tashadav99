@@ -1,8 +1,29 @@
 import React, { useState, useMemo, useCallback, useEffect } from "react";
-
-/**
- * Interface matching your MongoDB Document Structure
- */
+import {
+  Box,
+  Paper,
+  InputBase,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Pagination,
+  Typography,
+  CircularProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  FormControl,
+  Select,
+  MenuItem,
+  TextField,
+  IconButton,
+} from "@mui/material";
+import { Search, Close } from "@mui/icons-material";
 interface WithdrawalRequest {
   _id: string;
   paymentMethod: string;
@@ -39,175 +60,84 @@ const WithdrawalModal: React.FC<WithdrawalModalProps> = ({
   const [selectedStatus, setSelectedStatus] = useState<string>("");
   const [declineReason, setDeclineReason] = useState<string>("");
 
-  // Initialize state when modal opens
   useEffect(() => {
     if (request) {
-      // If status is 'success', show 'approved' in dropdown so user understands
-      setSelectedStatus(
-        request.status === "success" ? "approved" : request.status
-      );
+      setSelectedStatus(request.status === "success" ? "approved" : request.status);
       setDeclineReason(request.adminNote || "");
     }
   }, [request]);
 
   if (!request) return null;
 
-  const handleSave = () => {
-    onUpdateStatus(request._id, selectedStatus, declineReason);
-  };
-
-  const DetailRow: React.FC<{ label: string; value: React.ReactNode }> = ({
-    label,
-    value,
-  }) => (
-    <div className="flex justify-between items-start py-3 border-b border-gray-100 last:border-0">
-      <span className="text-sm font-medium text-gray-500 w-1/3">{label}</span>
-      <span className="text-sm font-semibold text-gray-800 w-2/3 text-right break-words">
-        {value}
-      </span>
-    </div>
-  );
-
   return (
-    <div className="fixed inset-0 bg-gray-900 bg-opacity-60 z-50 flex justify-center items-center p-4 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg transform transition-all flex flex-col max-h-[90vh]">
-        {/* Modal Header */}
-        <div className="px-6 py-4 border-b flex justify-between items-center bg-gray-50 rounded-t-2xl">
-          <h3 className="text-lg font-bold text-gray-800">Review Request</h3>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-red-500 transition-colors"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
-        </div>
+    <Dialog open={!!request} onClose={onClose} fullWidth maxWidth="sm">
+      <DialogTitle sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", bgcolor: "#F9FAFB", color: "#1F2A44", fontWeight: 700 }}>
+        Review Request
+        <IconButton size="small" onClick={onClose}>
+          <Close />
+        </IconButton>
+      </DialogTitle>
+      <DialogContent dividers>
+        <Box sx={{ mb: 2, textAlign: "center" }}>
+          <Typography variant="caption" sx={{ color: "#6B46C1", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>
+            Requested Amount
+          </Typography>
+          <Typography variant="h4" sx={{ fontWeight: 800, mt: 1, color: "#5B21B6" }}>
+            {request.amount} <Typography component="span" sx={{ fontSize: "1rem", fontWeight: 500 }}>{request.currency}</Typography>
+          </Typography>
+        </Box>
 
-        {/* Modal Body */}
-        <div className="p-6 overflow-y-auto custom-scrollbar">
-          <div className="bg-purple-50 p-4 rounded-xl mb-6 text-center border border-purple-100">
-            <p className="text-xs text-purple-600 uppercase tracking-wider font-bold">
-              Requested Amount
-            </p>
-            <p className="text-3xl font-extrabold text-purple-900 mt-1">
-              {request.amount}{" "}
-              <span className="text-lg font-medium">{request.currency}</span>
-            </p>
-          </div>
+        <Box sx={{ mb: 2 }}>
+          <Box sx={{ display: "flex", justifyContent: "space-between", py: 1, borderBottom: "1px solid #F3F4F6" }}>
+            <Typography variant="body2" color="#6B7280">Transaction ID</Typography>
+            <Typography variant="body2" color="#1F2A44" sx={{ fontFamily: "monospace" }}>{request._id}</Typography>
+          </Box>
+          <Box sx={{ display: "flex", justifyContent: "space-between", py: 1, borderBottom: "1px solid #F3F4F6" }}>
+            <Typography variant="body2" color="#6B7280">User Email</Typography>
+            <Typography variant="body2" color="#1F2A44">{request.email}</Typography>
+          </Box>
+          <Box sx={{ display: "flex", justifyContent: "space-between", py: 1, borderBottom: "1px solid #F3F4F6" }}>
+            <Typography variant="body2" color="#6B7280">Full Name</Typography>
+            <Typography variant="body2" color="#1F2A44">{request.fullName || "N/A"}</Typography>
+          </Box>
 
-          <div className="space-y-1">
-            <DetailRow
-              label="Transaction ID"
-              value={
-                <span className="font-mono text-xs bg-gray-100 px-2 py-1 rounded">
-                  {request._id}
-                </span>
-              }
-            />
-            <DetailRow label="User Email" value={request.email} />
-            <DetailRow label="Full Name" value={request.fullName || "N/A"} />
+          <Box sx={{ mt: 2, p: 2, bgcolor: "#F8FAFF", borderRadius: 1, border: "1px solid #EEF2FF" }}>
+            <Typography variant="body2" sx={{ fontWeight: 700 }}>Banking Details</Typography>
+            <Typography variant="body2">Method: {request.paymentMethod}</Typography>
+            <Typography variant="body2">Acc Num: {request.accountNumber}</Typography>
+            <Typography variant="body2">Bank Code: {request.bankCode}</Typography>
+          </Box>
 
-            <div className="py-3 border-b border-gray-100">
-              <p className="text-sm font-medium text-gray-500 mb-2">
-                Banking Details
-              </p>
-              <div className="bg-blue-50 p-3 rounded-lg text-sm text-blue-900 border border-blue-100">
-                <p>
-                  <span className="font-bold">Method:</span>{" "}
-                  {request.paymentMethod}
-                </p>
-                <p>
-                  <span className="font-bold">Acc Num:</span>{" "}
-                  {request.accountNumber}
-                </p>
-                <p>
-                  <span className="font-bold">Bank Code:</span>{" "}
-                  {request.bankCode}
-                </p>
-              </div>
-            </div>
+          <Box sx={{ display: "flex", justifyContent: "space-between", py: 1, mt: 2 }}>
+            <Typography variant="body2" color="#6B7280">Submitted At</Typography>
+            <Typography variant="body2" color="#1F2A44">{new Date(request.createdAt).toLocaleString()}</Typography>
+          </Box>
+        </Box>
 
-            <DetailRow
-              label="Submitted At"
-              value={new Date(request.createdAt).toLocaleString()}
-            />
-          </div>
+        <FormControl fullWidth sx={{ mt: 2 }}>
+          <Select value={selectedStatus} onChange={(e) => setSelectedStatus(e.target.value)} displayEmpty>
+            <MenuItem value="pending">Pending</MenuItem>
+            <MenuItem value="approved">Approved</MenuItem>
+            <MenuItem value="declined">Declined</MenuItem>
+          </Select>
+        </FormControl>
 
-          {/* --- ACTION SECTION --- */}
-          <div className="mt-6 pt-4 border-t border-gray-200">
-            <label className="block text-sm font-bold text-gray-700 mb-2">
-              Update Status
-            </label>
-            <select
-              value={selectedStatus}
-              onChange={(e) => setSelectedStatus(e.target.value)}
-              className="block w-full px-4 py-3 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent sm:text-sm transition-shadow"
-            >
-              <option value="pending">Pending</option>
-              <option value="approved">Approved</option>{" "}
-              {/* User selects Approved */}
-              <option value="declined">Declined</option>
-            </select>
-            <p className="text-xs text-gray-400 mt-1 ml-1">
-              Select "Approved" to mark as Success.
-            </p>
-          </div>
-
-          {/* --- DECLINE REASON BOX --- */}
-          {(selectedStatus === "declined" || selectedStatus === "Declined") && (
-            <div className="mt-4 animate-fadeIn">
-              <label className="block text-sm font-bold text-red-600 mb-2">
-                Reason for Rejection <span className="text-red-500">*</span>
-              </label>
-              <textarea
-                required
-                value={declineReason}
-                onChange={(e) => setDeclineReason(e.target.value)}
-                placeholder="Explain why..."
-                className="w-full p-3 border border-red-200 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm h-24 resize-none bg-red-50"
-              />
-            </div>
-          )}
-        </div>
-
-        {/* Modal Footer */}
-        <div className="p-4 bg-gray-50 flex justify-end space-x-3 rounded-b-2xl border-t border-gray-200">
-          <button
-            onClick={onClose}
-            className="px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={
-              updating ||
-              (selectedStatus === "declined" && !declineReason.trim())
-            }
-            className={`px-5 py-2.5 text-sm font-medium text-white rounded-lg shadow-sm transition-all flex items-center
-                ${
-                  selectedStatus === "declined" && !declineReason.trim()
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-purple-600 hover:bg-purple-700"
-                }`}
-          >
-            {updating ? "Saving..." : "Save Changes"}
-          </button>
-        </div>
-      </div>
-    </div>
+        {selectedStatus === "declined" && (
+          <TextField fullWidth multiline rows={3} sx={{ mt: 2 }} placeholder="Reason for rejection" value={declineReason} onChange={(e) => setDeclineReason(e.target.value)} />
+        )}
+      </DialogContent>
+      <DialogActions sx={{ p: 3 }}>
+        <Button onClick={onClose} variant="outlined">Cancel</Button>
+        <Button
+          variant="contained"
+          disabled={updating || (selectedStatus === "declined" && !declineReason.trim())}
+          onClick={() => onUpdateStatus(request._id, selectedStatus, declineReason)}
+          sx={{ backgroundColor: "#6B21B6", '&:hover': { backgroundColor: '#581C87' } }}
+        >
+          {updating ? "Saving..." : "Save Changes"}
+        </Button>
+      </DialogActions>
+    </Dialog>
   );
 };
 
@@ -226,7 +156,7 @@ const WithdrawalRequests: React.FC = () => {
   const fetchRequests = async () => {
     setLoading(true);
     try {
-      const response = await fetch("https://vps-backend-server-beta.vercel.app/withdraw/getall");
+      const response = await fetch("http://localhost:3200/withdraw/getall");
       const data = await response.json();
       if (Array.isArray(data)) setRequests(data);
     } catch (error) {
@@ -254,7 +184,7 @@ const WithdrawalRequests: React.FC = () => {
         );
 
         const response = await fetch(
-          `https://vps-backend-server-beta.vercel.app/withdraw/approve/${id}`,
+          `http://localhost:3200/withdraw/approve/${id}`,
           {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
@@ -313,7 +243,7 @@ const WithdrawalRequests: React.FC = () => {
     return filteredRequests.slice(startIndex, startIndex + ITEMS_PER_PAGE);
   }, [filteredRequests, currentPage]);
 
-  const totalPages = Math.ceil(filteredRequests.length / ITEMS_PER_PAGE);
+  const totalPages = Math.max(1, Math.ceil(filteredRequests.length / ITEMS_PER_PAGE));
 
   const getStatusColor = (status: string) => {
     const s = status.toLowerCase();
@@ -325,116 +255,160 @@ const WithdrawalRequests: React.FC = () => {
   };
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen font-sans">
-      <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-center bg-white p-5 rounded-xl shadow-sm border border-gray-200">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-800">Withdrawals</h1>
-          </div>
-          <div className="relative mt-4 md:mt-0 w-full md:w-96">
-            <input
-              type="text"
+    <Box sx={{ p: 4, bgcolor: "#F5F7FA", minHeight: "100vh" }}>
+      <Paper
+        elevation={2}
+        sx={{
+          p: 3,
+          mb: 4,
+          borderRadius: 2,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          background: "linear-gradient(145deg, #ffffff, #f8fafc)",
+          boxShadow: "0 4px 20px rgba(0,0,0,0.05)",
+        }}
+      >
+        <Typography variant="h5" fontWeight={700} color="#1F2A44">
+          Withdrawals ({filteredRequests.length})
+        </Typography>
+
+        <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
+          <Box sx={{ position: "relative", width: 360 }}>
+            <Search sx={{ position: "absolute", left: 15, top: "50%", transform: "translateY(-50%)", color: "#6B7280" }} />
+            <InputBase
               placeholder="Search..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none"
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setCurrentPage(1);
+              }}
+              sx={{
+                bgcolor: "#fff",
+                border: "1px solid #E5E7EB",
+                borderRadius: "12px",
+                pl: 6,
+                pr: 2,
+                py: 1.2,
+                width: "100%",
+                boxShadow: "inset 0 2px 4px rgba(0,0,0,0.03)",
+                transition: "all 0.2s",
+                "&:focus-within": {
+                  borderColor: "#33ac6f",
+                  boxShadow: "0 0 0 3px rgba(51,172,111,0.1)",
+                },
+              }}
             />
-          </div>
-        </div>
+          </Box>
+        </Box>
+      </Paper>
 
-        {/* Table */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-          {loading ? (
-            <div className="p-10 text-center">Loading...</div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    {[
-                      "Date",
-                      "User",
-                      "Method",
-                      "Amount",
-                      "Status",
-                      "Action",
-                    ].map((h) => (
-                      <th
-                        key={h}
-                        className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase"
-                      >
-                        {h}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {paginatedRequests.map((r) => (
-                    <tr key={r._id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 text-sm text-gray-500">
-                        {new Date(r.createdAt).toLocaleDateString()}
-                      </td>
-                      <td className="px-6 py-4 text-sm font-medium text-gray-900">
-                        {r.email}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-500">
-                        {r.paymentMethod}
-                      </td>
-                      <td className="px-6 py-4 text-sm font-bold">
-                        {r.amount} {r.currency}
-                      </td>
-                      <td className="px-6 py-4">
-                        <span
-                          className={`px-3 py-1 text-xs font-semibold rounded-full border ${getStatusColor(
-                            r.status
-                          )}`}
-                        >
-                          {r.status.toUpperCase()}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <button
-                          onClick={() => openModal(r)}
-                          className="text-purple-600 hover:bg-purple-50 px-3 py-1 rounded border border-purple-200 text-xs font-medium"
-                        >
-                          Review
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-
-        {/* Pagination */}
-        {filteredRequests.length > ITEMS_PER_PAGE && (
-          <div className="flex justify-between p-4 bg-white rounded-xl shadow-sm border">
-            <span>
-              Page {currentPage} of {totalPages}
-            </span>
-            <div className="space-x-2">
-              <button
-                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                disabled={currentPage === 1}
-                className="px-3 py-1 border rounded disabled:opacity-50"
-              >
-                Prev
-              </button>
-              <button
-                onClick={() =>
-                  setCurrentPage((p) => Math.min(totalPages, p + 1))
-                }
-                disabled={currentPage === totalPages}
-                className="px-3 py-1 border rounded disabled:opacity-50"
-              >
-                Next
-              </button>
-            </div>
-          </div>
+      <TableContainer component={Paper} elevation={2} sx={{ borderRadius: 2, background: "linear-gradient(145deg, #ffffff, #f8fafc)", boxShadow: "0 4px 20px rgba(0,0,0,0.05)" }}>
+        {loading ? (
+          <Box display="flex" justifyContent="center" py={6}>
+            <CircularProgress sx={{ color: "#33ac6f" }} />
+          </Box>
+        ) : (
+          <Table>
+            <TableHead sx={{ bgcolor: "#F9FAFB" }}>
+              <TableRow>
+                {["Date", "User", "Method", "Amount", "Status", "Action"].map((h) => (
+                  <TableCell key={h} sx={{ fontWeight: 600, color: "#6B7280", fontSize: "12px", textTransform: "uppercase", py: 2.5 }}>
+                    {h}
+                  </TableCell>
+                ))}
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {paginatedRequests.map((r) => (
+                <TableRow key={r._id} hover sx={{ "&:hover": { background: "rgba(51,172,111,0.03)" } }}>
+                  <TableCell sx={{ fontSize: "13px", color: "#6B7280" }}>{new Date(r.createdAt).toLocaleDateString()}</TableCell>
+                  <TableCell sx={{ fontWeight: 500, color: "#1F2A44" }}>{r.email}</TableCell>
+                  <TableCell sx={{ color: "#6B7280" }}>{r.paymentMethod}</TableCell>
+                  <TableCell sx={{ fontWeight: 700, color: "#1F2A44" }}>{r.amount} {r.currency}</TableCell>
+                  <TableCell>
+                    <Box sx={{ display: "inline-block", px: 1.5, py: 0.5, borderRadius: "20px", bgcolor: r.status.toLowerCase() === "success" || r.status.toLowerCase() === "approved" ? "#E8F9EE" : r.status.toLowerCase() === "declined" ? "#FFEBEB" : "#FFF7ED", color: r.status.toLowerCase() === "success" || r.status.toLowerCase() === "approved" ? "#16A34A" : r.status.toLowerCase() === "declined" ? "#DC2626" : "#92400E", fontSize: "12px", fontWeight: 700, boxShadow: "0 1px 3px rgba(0,0,0,0.1)" }}>{r.status.toUpperCase()}</Box>
+                  </TableCell>
+                  <TableCell>
+                    <Button size="small" onClick={() => openModal(r)} sx={{ textTransform: "none", bgcolor: "transparent", color: "#6B21B6", borderRadius: 1, border: "1px solid rgba(107,33,182,0.08)", px: 2, py: 0.5 }}>Review</Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         )}
+      </TableContainer>
+
+      (
+        <Box sx={{ mt: 5, display: "flex", flexDirection: "column", alignItems: "center" }}>
+          <Pagination
+            count={totalPages}
+            page={currentPage}
+            onChange={(_, p) => setCurrentPage(p)}
+            boundaryCount={15}
+            siblingCount={1}
+            size="large"
+            sx={{
+              "& .MuiPaginationItem-root": {
+                fontSize: "1rem",
+                fontWeight: 500,
+                minWidth: 44,
+                height: 44,
+                borderRadius: "12px",
+                margin: "0 6px",
+                color: "#4B5563",
+                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                "&:hover": {
+                  backgroundColor: "#E6F4EA",
+                  color: "#33ac6f",
+                  transform: "translateY(-3px)",
+                  boxShadow: "0 6px 16px rgba(51, 172, 111, 0.2)",
+                },
+              },
+              "& .MuiPaginationItem-page.Mui-selected": {
+                background: "linear-gradient(135deg, #33ac6f, #2a8e5b)",
+                color: "#ffffff",
+                fontWeight: 700,
+                boxShadow: "0 8px 24px rgba(51, 172, 111, 0.35)",
+                transform: "translateY(-3px)",
+                "&:hover": {
+                  background: "linear-gradient(135deg, #2d9962, #257a50)",
+                  boxShadow: "0 12px 28px rgba(51, 172, 111, 0.4)",
+                },
+              },
+              "& .MuiPaginationItem-previousNext": {
+                backgroundColor: "#ffffff",
+                border: "1px solid #E5E7EB",
+                color: "#6B7280",
+                borderRadius: "12px",
+                "&:hover": {
+                  backgroundColor: "#f3f4f6",
+                  borderColor: "#33ac6f",
+                  color: "#33ac6f",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                },
+                "&.Mui-disabled": {
+                  backgroundColor: "#f9fafb",
+                  color: "#9CA3AF",
+                  borderColor: "#E5E7EB",
+                },
+              },
+              "& .MuiPaginationItem-ellipsis": {
+                color: "#9CA3AF",
+                fontSize: "1.4rem",
+                margin: "0 8px",
+              },
+            }}
+          />
+
+          <Typography
+            variant="body2"
+            color="#6B7280"
+            sx={{ mt: 2.5, fontSize: "0.925rem", letterSpacing: "0.2px" }}
+          >
+            Page <strong>{currentPage}</strong> of <strong>{totalPages}</strong> • {filteredRequests.length} total withdrawals
+          </Typography>
+        </Box>
 
         {isModalOpen && (
           <WithdrawalModal
@@ -444,8 +418,7 @@ const WithdrawalRequests: React.FC = () => {
             updating={actionLoading}
           />
         )}
-      </div>
-    </div>
+    </Box>
   );
 };
 

@@ -40,6 +40,7 @@ interface FormData {
   userRole: string;
   status: string;
   createdAt: Date;
+  userAccountName: string;
 }
 
 const SellForm: React.FC = () => {
@@ -47,7 +48,7 @@ const SellForm: React.FC = () => {
   const navigate = useNavigate();
   const { data } = useAuthHook();
   const user = data;
-  console.log(user?.email)
+  console.log(user?.name);
 
   const [platforms, setPlatforms] = useState<Platform[]>([]);
   const [loadingPlatforms, setLoadingPlatforms] = useState(true);
@@ -73,6 +74,7 @@ const SellForm: React.FC = () => {
     userRole: user?.role || "",
     status: "pending",
     createdAt: new Date(),
+    userAccountName: `${user?.name}` || "",
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -81,7 +83,9 @@ const SellForm: React.FC = () => {
   useEffect(() => {
     const fetchPlatforms = async () => {
       try {
-        const response = await axios.get<{ data: Platform[] }>("https://vps-backend-server-beta.vercel.app/icon-data");
+        const response = await axios.get<{ data: Platform[] }>(
+          "http://localhost:3200/icon-data"
+        );
         const data = Array.isArray(response.data)
           ? response.data
           : response.data.data || [];
@@ -107,7 +111,9 @@ const SellForm: React.FC = () => {
 
       try {
         const response = await axios.get<{ salesCredit: number }>(
-          `https://vps-backend-server-beta.vercel.app/product/credit?email=${encodeURIComponent(user.email)}`
+          `http://localhost:3200/product/credit?email=${encodeURIComponent(
+            user.email
+          )}`
         );
         const credit = response.data.salesCredit ?? 0;
         setSalesCredit(credit);
@@ -179,7 +185,9 @@ const SellForm: React.FC = () => {
         return;
       }
       if (hasNoCredit) {
-        toast.error("You have no listing credits left. Purchase more to list an account.");
+        toast.error(
+          "You have no listing credits left. Purchase more to list an account."
+        );
         return;
       }
       handleSubmit();
@@ -193,7 +201,7 @@ const SellForm: React.FC = () => {
 
     try {
       const response = await axios.post(
-        "https://vps-backend-server-beta.vercel.app/product/sell",
+        "http://localhost:3200/product/sell",
         formData
       );
 
@@ -211,8 +219,7 @@ const SellForm: React.FC = () => {
       }
     } catch (error: any) {
       const msg =
-        error.response?.data?.message ||
-        "Failed to list account. Try again.";
+        error.response?.data?.message || "Failed to list account. Try again.";
       toast.error(msg);
       console.error(error);
     }
@@ -252,7 +259,8 @@ const SellForm: React.FC = () => {
             ⚠️ No Listing Credits Available
           </Typography>
           <Typography variant="body1" mt={1}>
-            You currently have 0 credits. You cannot list new accounts until you purchase more listing credits.
+            You currently have 0 credits. You cannot list new accounts until you
+            purchase more listing credits.
           </Typography>
         </Box>
       );
@@ -505,11 +513,17 @@ const SellForm: React.FC = () => {
               textAlign: "center",
             }}
           >
-            <Typography variant="h3" fontWeight="bold" gutterBottom color="black">
+            <Typography
+              variant="h3"
+              fontWeight="bold"
+              gutterBottom
+              color="black"
+            >
               Sell Your Account
             </Typography>
             <Typography className="md:w-2/3 md:mx-auto text-center text-black text-xl">
-              List your social media or gaming account securely and reach thousands of buyers
+              List your social media or gaming account securely and reach
+              thousands of buyers
             </Typography>
           </Box>
 

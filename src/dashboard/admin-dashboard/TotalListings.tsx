@@ -2,7 +2,7 @@ import {
   Close,
   Edit,
   Search,
-  Visibility
+  Visibility,
 } from "@mui/icons-material";
 import {
   Box,
@@ -26,14 +26,13 @@ import {
   TableHead,
   TableRow,
   TextField,
-  Typography
+  Typography,
 } from "@mui/material";
 import React, { useEffect, useMemo, useState } from "react";
 
 interface Listing {
   _id: string;
   category: string;
-  categoryIcon: string;
   name: string;
   description: string;
   price: string;
@@ -43,64 +42,126 @@ interface Listing {
   status: string;
 }
 
+interface User {
+  email: string;
+  userAccountName?: string;
+  role?: string;
+}
+
 const ITEMS_PER_PAGE = 8;
 
 const TotalListings: React.FC = () => {
   const [listings, setListings] = useState<Listing[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
+
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
+  const [selectedUser, setSelectedUser] = useState("all");
+  const [selectedStatus, setSelectedStatus] = useState("all");
 
-  // Modals & Selection States
-  const [openEdit, setOpenEdit] = useState(false);
-  const [openView, setOpenView] = useState(false);
   const [selected, setSelected] = useState<Listing | null>(null);
-
-  // Form States for Update
+  const [openView, setOpenView] = useState(false);
+  const [openEdit, setOpenEdit] = useState(false);
   const [newStatus, setNewStatus] = useState("");
   const [rejectReason, setRejectReason] = useState("");
 
   useEffect(() => {
-    fetchData();
+    Promise.all([
+      fetch("http://localhost:3200/product/all-sells").then((r) => r.json()),
+      fetch("http://localhost:3200/api/user/getall").then((r) => r.json()),
+    ])
+      .then(([listingsData, usersData]) => {
+        setListings(listingsData || []);
+        setUsers(Array.isArray(usersData) ? usersData : []);
+      })
+      .catch(console.error)
+      .finally(() => setLoading(false));
   }, []);
 
-  const fetchData = async () => {
-    try {
-      const response = await fetch("https://vps-backend-server-beta.vercel.app/product/all-sells");
-      const data = await response.json();
-      setListings(data);
-    } catch (error) {
-      console.error("Error:", error);
-    } finally {
-      setLoading(false);
+  // Sellers derived from actual listings (unique userEmail + display name)
+  const sellersFromListings = useMemo(() => {
+    const uniqueEmails = Array.from(new Set(listings.map((l) => l.userEmail)));
+
+    const sellerOptions = uniqueEmails.map((email) => {
+      const user = users.find((u) => u.email === email);
+      const displayName = user?.userAccountName || email.split("@")[0];
+      return {
+        email,
+        displayName,
+      };
+    });
+
+    // Sort alphabetically by display name
+    sellerOptions.sort((a, b) =>
+      a.displayName.toLowerCase().localeCompare(b.displayName.toLowerCase())
+    );
+
+    return sellerOptions;
+  }, [listings, users]);
+
+  // Unique statuses + "all"
+  const statusOptions = useMemo(() => {
+    const unique = new Set(
+      listings
+        .map((l) => (l.status || "").toLowerCase())
+        .filter(Boolean)
+    );
+    return ["all", ...Array.from(unique)];
+  }, [listings]);
+
+  // Filtered listings
+  const filteredListings = useMemo(() => {
+    return listings.filter(
+      (l) =>
+        (l.name.toLowerCase().includes(search.toLowerCase()) ||
+          l._id.toLowerCase().includes(search.toLowerCase())) &&
+        (selectedUser === "all" || l.userEmail === selectedUser) &&
+        (selectedStatus === "all" || l.status.toLowerCase() === selectedStatus)
+    );
+  }, [listings, search, selectedUser, selectedStatus]);
+
+  // Paginated data
+  const paginated = useMemo(() => {
+    const start = (page - 1) * ITEMS_PER_PAGE;
+    return filteredListings.slice(start, start + ITEMS_PER_PAGE);
+  }, [filteredListings, page]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredListings.length / ITEMS_PER_PAGE));
+
+  const getStatusStyle = (status: string) => {
+    switch (status?.toLowerCase()) {
+      case "active": return { color: "#34C759", bg: "#E8F9EE" };
+      case "pending": return { color: "#FF9500", bg: "#FFF4E6" };
+      case "reject": return { color: "#FF3B30", bg: "#FFEBEB" };
+      case "sold": return { color: "#007AFF", bg: "#EBF5FF" };
+      default: return { color: "#8E8E93", bg: "#F2F2F7" };
     }
   };
 
-  // স্ট্যাটাস পরিবর্তনের সরাসরি ব্যাকএন্ড হিট ফাংশন
+  const getDisplayName = (email: string) => {
+    const user = users.find((u) => u.email === email);
+    return user?.userAccountName || email.split("@")[0];
+  };
+
   const handleUpdateStatus = async () => {
     if (!selected) return;
-
-    // রিজেক্ট করলে রিজন চেক করা
     if (newStatus === "reject" && !rejectReason.trim()) {
-      alert("Please provide a reason for rejection.");
+      alert("Please provide a rejection reason.");
       return;
     }
 
     try {
-      const response = await fetch(
-        `https://vps-backend-server-beta.vercel.app/product/update-status/${selected._id}`,
-        {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            status: newStatus,
-            rejectReason: newStatus === "reject" ? rejectReason : "",
-          }),
-        }
-      );
+      const res = await fetch(`http://localhost:3200/product/update-status/${selected._id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          status: newStatus,
+          rejectReason: newStatus === "reject" ? rejectReason : "",
+        }),
+      });
 
-      if (response.ok) {
-        // UI আপডেট সরাসরি করা হচ্ছে পেজ রিফ্রেশ ছাড়া
+      if (res.ok) {
         setListings((prev) =>
           prev.map((item) =>
             item._id === selected._id ? { ...item, status: newStatus } : item
@@ -109,117 +170,157 @@ const TotalListings: React.FC = () => {
         setOpenEdit(false);
         setRejectReason("");
       } else {
-        alert("Server error while updating status.");
+        alert("Failed to update status.");
       }
-    } catch (error) {
-      console.error("Update failed:", error);
+    } catch (err) {
+      console.error("Update error:", err);
     }
   };
 
-  const filtered = useMemo(() => {
-    return [...listings].filter(
-      (l) =>
-        l.name.toLowerCase().includes(search.toLowerCase()) ||
-        l._id.toLowerCase().includes(search.toLowerCase())
-    );
-  }, [search, listings]);
+  const handleFilterChange = () => setPage(1);
 
-  const paginated = useMemo(() => {
-    const start = (page - 1) * ITEMS_PER_PAGE;
-    return filtered.slice(start, start + ITEMS_PER_PAGE);
-  }, [filtered, page]);
-
-  const getStatusStyles = (status: string) => {
-    switch (status?.toLowerCase()) {
-      case "active":
-        return { color: "#34C759", bg: "#E8F9EE" };
-      case "pending":
-        return { color: "#FF9500", bg: "#FFF4E6" };
-      case "reject":
-        return { color: "#FF3B30", bg: "#FFEBEB" };
-      case "sold":
-        return { color: "#007AFF", bg: "#EBF5FF" };
-      default:
-        return { color: "#8E8E93", bg: "#F2F2F7" };
-    }
-  };
-
-  if (loading)
+  if (loading) {
     return (
-      <Box display="flex" justifyContent="center" mt={10}>
+      <Box display="flex" justifyContent="center" my={10}>
         <CircularProgress sx={{ color: "#33ac6f" }} />
       </Box>
     );
+  }
 
   return (
-    <Box sx={{ p: 4, bgcolor: "", minHeight: "100vh" }}>
+    <Box sx={{ p: 4, bgcolor: "#F5F7FA", minHeight: "100vh" }}>
       {/* Header */}
       <Paper
-        elevation={0}
+        elevation={2}
         sx={{
-          p: 4,
+          p: 3,
           mb: 4,
-          borderRadius: 4,
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          border: "1px solid #F2F2F2",
+          borderRadius: 2,
+          background: "linear-gradient(145deg, #ffffff, #f8fafc)",
+          boxShadow: "0 4px 20px rgba(0,0,0,0.05)",
         }}
       >
-        <Typography variant="h5" fontWeight="700">
-          Listings ({filtered.length})
-        </Typography>
-        <Box sx={{ position: "relative", width: 320 }}>
-          <Search
-            sx={{
-              position: "absolute",
-              left: 15,
-              top: "50%",
-              transform: "translateY(-50%)",
-              color: "#9CA3AF",
-            }}
-          />
-          <InputBase
-            placeholder="Search..."
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setPage(1);
-            }}
-            sx={{
-              bgcolor: "#fff",
-              border: "1px solid #D1D5DB",
-              borderRadius: "10px",
-              pl: 6,
-              pr: 2,
-              py: 1,
-              width: "100%",
-            }}
-          />
+        <Box display="flex" justifyContent="space-between" alignItems="center">
+          <Typography variant="h5" fontWeight={700} color="#1F2A44">
+            Listings ({filteredListings.length})
+          </Typography>
+
+          <Box display="flex" gap={2} alignItems="center">
+            {/* Search */}
+            <Box sx={{ position: "relative", width: 280 }}>
+              <Search
+                sx={{
+                  position: "absolute",
+                  left: 15,
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  color: "#6B7280",
+                }}
+              />
+              <InputBase
+                placeholder="Search listings..."
+                value={search}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  handleFilterChange();
+                }}
+                sx={{
+                  bgcolor: "#fff",
+                  border: "1px solid #E5E7EB",
+                  borderRadius: "12px",
+                  pl: 6,
+                  pr: 2,
+                  py: 1.2,
+                  width: "100%",
+                  boxShadow: "inset 0 2px 4px rgba(0,0,0,0.03)",
+                  "&:focus-within": {
+                    borderColor: "#33ac6f",
+                    boxShadow: "0 0 0 3px rgba(51,172,111,0.1)",
+                  },
+                }}
+              />
+            </Box>
+
+            {/* Seller Filter - Now based on actual listings */}
+            <FormControl sx={{ minWidth: 200 }}>
+              <InputLabel>Seller</InputLabel>
+              <Select
+                value={selectedUser}
+                label="Seller"
+                onChange={(e) => {
+                  setSelectedUser(e.target.value);
+                  handleFilterChange();
+                }}
+                sx={{
+                  borderRadius: "12px",
+                  height: 44,
+                  bgcolor: "#fff",
+                  boxShadow: "0 2px 4px rgba(0,0,0,0.05)",
+                }}
+              >
+                <MenuItem value="all">All Sellers</MenuItem>
+                {sellersFromListings.map((seller) => (
+                  <MenuItem key={seller.email} value={seller.email}>
+                    {seller.displayName}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            {/* Status Filter */}
+            <FormControl sx={{ minWidth: 140 }}>
+              <InputLabel>Status</InputLabel>
+              <Select
+                value={selectedStatus}
+                label="Status"
+                onChange={(e) => {
+                  setSelectedStatus(e.target.value);
+                  handleFilterChange();
+                }}
+                sx={{
+                  borderRadius: "12px",
+                  height: 44,
+                  bgcolor: "#fff",
+                  boxShadow: "0 2px 4px rgba(0,0,0,0.05)",
+                }}
+              >
+                {statusOptions.map((s) => (
+                  <MenuItem key={s} value={s}>
+                    {s === "all" ? "All Status" : s.charAt(0).toUpperCase() + s.slice(1)}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
         </Box>
       </Paper>
 
       {/* Table */}
       <TableContainer
         component={Paper}
-        elevation={0}
-        sx={{ borderRadius: 4, border: "1px solid #F2F2F2" }}
+        elevation={2}
+        sx={{
+          borderRadius: 2,
+          background: "linear-gradient(145deg, #ffffff, #f8fafc)",
+          boxShadow: "0 4px 20px rgba(0,0,0,0.05)",
+        }}
       >
         <Table>
           <TableHead sx={{ bgcolor: "#F9FAFB" }}>
             <TableRow>
-              {["ID", "Title", "Seller", "Price", "Status", "Actions"].map(
-                (head) => (
+              {["ID", "Title", "Seller Name", "Seller Email", "Price", "Status", "Actions"].map(
+                (h) => (
                   <TableCell
-                    key={head}
+                    key={h}
                     sx={{
-                      fontWeight: "600",
+                      fontWeight: 600,
                       color: "#6B7280",
                       fontSize: "12px",
                       textTransform: "uppercase",
+                      py: 2.5,
                     }}
                   >
-                    {head}
+                    {h}
                   </TableCell>
                 )
               )}
@@ -227,17 +328,22 @@ const TotalListings: React.FC = () => {
           </TableHead>
           <TableBody>
             {paginated.map((row) => {
-              const styles = getStatusStyles(row.status);
+              const style = getStatusStyle(row.status);
               return (
-                <TableRow key={row._id} hover>
+                <TableRow
+                  key={row._id}
+                  hover
+                  sx={{ "&:hover": { bgcolor: "rgba(51,172,111,0.03)" } }}
+                >
                   <TableCell sx={{ fontSize: "13px", color: "#6B7280" }}>
                     #{row._id.slice(-5).toUpperCase()}
                   </TableCell>
-                  <TableCell sx={{ fontWeight: "500" }}>{row.name}</TableCell>
-                  <TableCell sx={{ fontSize: "14px" }}>
-                    {row.userEmail.split("@")[0]}
+                  <TableCell sx={{ fontWeight: 500, color: "#1F2A44" }}>{row.name}</TableCell>
+                  <TableCell sx={{ fontWeight: 500, color: "#1F2A44" }}>
+                    {getDisplayName(row.userEmail)}
                   </TableCell>
-                  <TableCell sx={{ fontWeight: "700" }}>
+                  <TableCell sx={{ color: "#6B7280" }}>{row.userEmail}</TableCell>
+                  <TableCell sx={{ fontWeight: 700, color: "#1F2A44" }}>
                     ${parseFloat(row.price).toFixed(2)}
                   </TableCell>
                   <TableCell>
@@ -245,12 +351,13 @@ const TotalListings: React.FC = () => {
                       sx={{
                         display: "inline-block",
                         px: 1.5,
-                        py: 0.4,
+                        py: 0.5,
                         borderRadius: "20px",
-                        bgcolor: styles.bg,
-                        color: styles.color,
+                        bgcolor: style.bg,
+                        color: style.color,
                         fontSize: "12px",
-                        fontWeight: "700",
+                        fontWeight: 700,
+                        boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
                       }}
                     >
                       {row.status.toUpperCase()}
@@ -259,22 +366,22 @@ const TotalListings: React.FC = () => {
                   <TableCell>
                     <IconButton
                       size="small"
-                      color="success"
                       onClick={() => {
                         setSelected(row);
                         setOpenView(true);
                       }}
+                      sx={{ "&:hover": { bgcolor: "rgba(51,172,111,0.1)" } }}
                     >
                       <Visibility fontSize="small" />
                     </IconButton>
                     <IconButton
                       size="small"
-                      color="warning"
                       onClick={() => {
                         setSelected(row);
                         setNewStatus(row.status);
                         setOpenEdit(true);
                       }}
+                      sx={{ "&:hover": { bgcolor: "rgba(255,149,0,0.1)" } }}
                     >
                       <Edit fontSize="small" />
                     </IconButton>
@@ -287,48 +394,96 @@ const TotalListings: React.FC = () => {
       </TableContainer>
 
       {/* Pagination */}
-      <Box display="flex" justifyContent="center" mt={4}>
+      <Box mt={5} display="flex" flexDirection="column" alignItems="center">
         <Pagination
-          count={Math.ceil(filtered.length / ITEMS_PER_PAGE)}
+          count={totalPages}
           page={page}
           onChange={(_, p) => setPage(p)}
-          color="primary"
+          size="large"
+          sx={{
+            "& .MuiPaginationItem-root": {
+              fontSize: "1rem",
+              fontWeight: 500,
+              minWidth: 44,
+              height: 44,
+              borderRadius: "12px",
+              mx: 0.75,
+              color: "#4B5563",
+              transition: "all 0.3s",
+              "&:hover": {
+                bgcolor: "#E6F4EA",
+                color: "#33ac6f",
+                transform: "translateY(-3px)",
+                boxShadow: "0 6px 16px rgba(51,172,111,0.2)",
+              },
+            },
+            "& .Mui-selected": {
+              bgcolor: "linear-gradient(135deg, #33ac6f, #2a8e5b) !important",
+              color: "#fff",
+              fontWeight: 700,
+              boxShadow: "0 8px 24px rgba(51,172,111,0.35)",
+              "&:hover": {
+                bgcolor: "linear-gradient(135deg, #2d9962, #257a50) !important",
+              },
+            },
+            "& .MuiPaginationItem-previousNext": {
+              bgcolor: "#fff",
+              border: "1px solid #E5E7EB",
+              "&:hover": {
+                bgcolor: "#f3f4f6",
+                borderColor: "#33ac6f",
+                color: "#33ac6f",
+              },
+            },
+          }}
         />
+        <Typography color="#6B7280" mt={2.5} fontSize="0.925rem">
+          Page <strong>{page}</strong> of <strong>{totalPages}</strong> • {filteredListings.length} listings
+        </Typography>
       </Box>
 
-      {/* VIEW MODAL */}
+      {/* View Modal */}
       <Dialog
         open={openView}
         onClose={() => setOpenView(false)}
-        fullWidth
         maxWidth="sm"
-        PaperProps={{ sx: { borderRadius: 3 } }}
+        fullWidth
+        PaperProps={{
+          sx: { borderRadius: 3, background: "linear-gradient(145deg, #ffffff, #f8fafc)" },
+        }}
       >
         <DialogTitle
           sx={{
-            fontWeight: 700,
             display: "flex",
             justifyContent: "space-between",
             bgcolor: "#F9FAFB",
+            fontWeight: 700,
+            color: "#1F2A44",
           }}
         >
-          Details{" "}
-          <IconButton onClick={() => setOpenView(false)} size="small">
+          Details
+          <IconButton onClick={() => setOpenView(false)}>
             <Close />
           </IconButton>
         </DialogTitle>
         <DialogContent dividers>
           {selected && (
-            <Box sx={{ p: 1 }}>
-              <Typography variant="h6" fontWeight="600">
+            <Box p={1}>
+              <Typography variant="h6" fontWeight={600} color="#1F2A44">
                 {selected.name}
               </Typography>
-              <Typography color="text.secondary" sx={{ mb: 2 }}>
+              <Typography color="#6B7280" mb={2}>
                 {selected.category}
               </Typography>
               <Paper
                 variant="outlined"
-                sx={{ p: 2, bgcolor: "#F8F9FA", mb: 2 }}
+                sx={{
+                  p: 2,
+                  bgcolor: "#F8F9FA",
+                  borderRadius: 2,
+                  mb: 2,
+                  boxShadow: "0 2px 4px rgba(0,0,0,0.05)",
+                }}
               >
                 <Typography variant="body2">
                   <strong>Login Email:</strong> {selected.email}
@@ -340,7 +495,7 @@ const TotalListings: React.FC = () => {
               <Typography variant="body2">
                 <strong>Seller:</strong> {selected.userEmail}
               </Typography>
-              <Typography variant="body2" sx={{ mt: 1 }}>
+              <Typography mt={1} color="#6B7280">
                 <strong>Description:</strong> {selected.description}
               </Typography>
             </Box>
@@ -348,15 +503,15 @@ const TotalListings: React.FC = () => {
         </DialogContent>
       </Dialog>
 
-      {/* EDIT MODAL WITH REJECT REASON */}
+      {/* Edit Modal */}
       <Dialog
         open={openEdit}
         onClose={() => setOpenEdit(false)}
-        PaperProps={{
-          sx: { borderRadius: 3, width: "100%", maxWidth: "380px" },
-        }}
+        PaperProps={{ sx: { borderRadius: 3, maxWidth: 380 } }}
       >
-        <DialogTitle sx={{ fontWeight: 700 }}>Update Status</DialogTitle>
+        <DialogTitle fontWeight={700} color="#1F2A44">
+          Update Status
+        </DialogTitle>
         <DialogContent>
           <FormControl fullWidth sx={{ mt: 2 }}>
             <InputLabel>Status</InputLabel>
@@ -367,6 +522,7 @@ const TotalListings: React.FC = () => {
                 setNewStatus(e.target.value);
                 if (e.target.value !== "reject") setRejectReason("");
               }}
+              sx={{ borderRadius: "12px" }}
             >
               <MenuItem value="active">Active</MenuItem>
               <MenuItem value="pending">Pending</MenuItem>
@@ -375,17 +531,15 @@ const TotalListings: React.FC = () => {
             </Select>
           </FormControl>
 
-          {/* রিজেক্ট সিলেক্ট করলে এই ইনপুট ফিল্ড আসবে */}
           {newStatus === "reject" && (
             <TextField
               fullWidth
               multiline
               rows={3}
               label="Reject Reason"
-              variant="outlined"
               value={rejectReason}
               onChange={(e) => setRejectReason(e.target.value)}
-              sx={{ mt: 3 }}
+              sx={{ mt: 3, "& .MuiOutlinedInput-root": { borderRadius: "12px" } }}
               placeholder="Why are you rejecting this?"
             />
           )}
@@ -400,7 +554,8 @@ const TotalListings: React.FC = () => {
               borderRadius: 2,
               py: 1.5,
               fontWeight: 600,
-              "&:hover": { bgcolor: "#2a8e5b" },
+              textTransform: "none",
+              "&:hover": { bgcolor: "#2a8e5b", boxShadow: "0 4px 12px rgba(51,172,111,0.3)" },
             }}
           >
             Confirm Change

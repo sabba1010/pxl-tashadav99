@@ -1,11 +1,23 @@
+import { Edit, Search, Visibility } from "@mui/icons-material";
+import { Refresh } from "@mui/icons-material";
 import {
-  ArrowDownward,
-  ArrowUpward,
-  Edit,
-  Search,
-  Visibility,
-} from "@mui/icons-material";
-import { Tooltip, CircularProgress, Avatar } from "@mui/material";
+  Avatar,
+  Box,
+  Button,
+  CircularProgress,
+  IconButton,
+  InputBase,
+  Paper,
+  Pagination,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Tooltip,
+  Typography,
+} from "@mui/material";
 import React, { useEffect, useMemo, useState } from "react";
 
 interface User {
@@ -22,7 +34,7 @@ interface User {
   balance?: number;
 }
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 8;
 
 const UserModal: React.FC<{
   user: User;
@@ -47,7 +59,7 @@ const UserModal: React.FC<{
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-50">
       <div className="bg-white/90 backdrop-blur-2xl rounded-3xl shadow-2xl max-w-lg w-full border border-white/20">
         <div className="p-6 border-b flex justify-between items-center bg-gradient-to-r from-gray-50 to-white">
           <h3 className="text-2xl font-bold">
@@ -60,7 +72,6 @@ const UserModal: React.FC<{
             ✕
           </button>
         </div>
-
         <div className="p-6 space-y-6">
           <div className="flex items-center gap-4">
             <Avatar sx={{ width: 56, height: 56, bgcolor: roleColor }}>
@@ -74,7 +85,6 @@ const UserModal: React.FC<{
               </p>
             </div>
           </div>
-
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium text-gray-600">Role</label>
@@ -101,7 +111,6 @@ const UserModal: React.FC<{
               </p>
             </div>
           </div>
-
           <div>
             <label className="text-sm font-medium text-gray-600">
               Wallet Balance (USD)
@@ -121,7 +130,6 @@ const UserModal: React.FC<{
               </p>
             )}
           </div>
-
           {isSeller && (
             <div>
               <label className="text-sm font-medium text-gray-600">
@@ -146,14 +154,12 @@ const UserModal: React.FC<{
               )}
             </div>
           )}
-
           <div className="text-xs text-gray-400 pt-2">
             Created: {new Date(user.accountCreationDate).toLocaleDateString()}
             <br />
             ID: <span className="font-mono">{user._id}</span>
           </div>
         </div>
-
         <div className="p-6 bg-gray-50/80 border-t flex justify-end gap-3">
           <button
             onClick={onClose}
@@ -188,7 +194,7 @@ const AllUsers: React.FC = () => {
   } | null>(null);
 
   useEffect(() => {
-    fetch("https://vps-backend-server-beta.vercel.app/api/user/getall")
+    fetch("http://localhost:3200/api/user/getall")
       .then((r) => r.json())
       .then((data) => setUsers(Array.isArray(data) ? data : data.users || []))
       .catch(console.error)
@@ -239,7 +245,7 @@ const AllUsers: React.FC = () => {
 
   const refresh = () => {
     setLoading(true);
-    fetch("https://vps-backend-server-beta.vercel.app/api/user/getall")
+    fetch("http://localhost:3200/api/user/getall")
       .then((r) => r.json())
       .then((data) => setUsers(Array.isArray(data) ? data : data.users || []))
       .finally(() => setLoading(false));
@@ -254,193 +260,281 @@ const AllUsers: React.FC = () => {
     role.toLowerCase() === "seller" ? "#D1A148" : "#33ac6f";
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center p-4 rounded-2xl">
-        <h2 className="text-xl font-bold">
+    <Box sx={{ p: 4, bgcolor: "#F5F7FA", minHeight: "100vh" }}>
+      <Paper
+        elevation={2}
+        sx={{
+          p: 3,
+          mb: 4,
+          borderRadius: 2,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          background: "linear-gradient(145deg, #ffffff, #f8fafc)",
+          boxShadow: "0 4px 20px rgba(0,0,0,0.05)",
+        }}
+      >
+        <Typography variant="h5" fontWeight={700} color="#1F2A44">
           All Users ({filteredAndSorted.length})
-        </h2>
-        <div className="flex gap-3">
-          <button
-            onClick={refresh}
-            className="p-2 rounded-lg hover:bg-gray-200"
-          >
-            ↻
-          </button>
-          <div className="relative">
+        </Typography>
+        <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
+            <Tooltip title="Refresh list">
+              <IconButton
+                onClick={refresh}
+                aria-label="refresh"
+                sx={{
+                  width: 44,
+                  height: 44,
+                  display: "inline-flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  background: "linear-gradient(135deg,#33ac6f,#2a8e5b)",
+                  color: "#fff",
+                  borderRadius: "12px",
+                  boxShadow: "0 8px 20px rgba(51,172,111,0.18)",
+                  transition: "all 0.18s ease-in-out",
+                  "&:hover": {
+                    transform: "translateY(-3px)",
+                    boxShadow: "0 12px 28px rgba(51,172,111,0.26)",
+                  },
+                }}
+              >
+                <Refresh fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          <Box sx={{ position: "relative", width: 300 }}>
             <Search
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-              fontSize="small"
+              sx={{
+                position: "absolute",
+                left: 15,
+                top: "50%",
+                transform: "translateY(-50%)",
+                color: "#6B7280",
+              }}
             />
-            <input
-              placeholder="Search..."
+            <InputBase
+              placeholder="Search users..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 pr-4 py-2 border rounded-xl focus:ring-[#33ac6f] focus:border-[#33ac6f] w-64"
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setCurrentPage(1);
+              }}
+              sx={{
+                bgcolor: "#fff",
+                border: "1px solid #E5E7EB",
+                borderRadius: "12px",
+                pl: 6,
+                pr: 2,
+                py: 1.2,
+                width: "100%",
+                boxShadow: "inset 0 2px 4px rgba(0,0,0,0.03)",
+                transition: "all 0.2s",
+                "&:focus-within": {
+                  borderColor: "#33ac6f",
+                  boxShadow: "0 0 0 3px rgba(51,172,111,0.1)",
+                },
+              }}
             />
-          </div>
-        </div>
-      </div>
+          </Box>
+        </Box>
+      </Paper>
 
-      <div className="">
+      <TableContainer
+        component={Paper}
+        elevation={2}
+        sx={{
+          borderRadius: 2,
+          background: "linear-gradient(145deg, #ffffff, #f8fafc)",
+          boxShadow: "0 4px 20px rgba(0,0,0,0.05)",
+        }}
+      >
         {loading ? (
-          <div className="flex justify-center py-20">
-            <CircularProgress style={{ color: "#33ac6f" }} />
-          </div>
+          <Box display="flex" justifyContent="center" py={6}>
+            <CircularProgress sx={{ color: "#33ac6f" }} />
+          </Box>
         ) : (
-          <table className="w-full">
-            <thead className="bg-gray-50">
-              <tr>
-                {[
-                  "ID",
-                  "User Info",
-                  "Role",
-                  "Fee Paid",
-                  "Balance",
-                  "Actions",
-                ].map((header, i) => {
-                  const key = ["_id", "name", "role", null, "balance", null][
-                    i
-                  ] as typeof sortBy;
-                  return (
-                    <th
-                      key={header}
-                      className={`px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase ${
-                        key ? "cursor-pointer" : ""
-                      }`}
-                      onClick={() => key && toggleSort(key)}
-                    >
-                      {header}
-                      {key &&
-                        sortBy === key &&
-                        (sortOrder === "asc" ? (
-                          <ArrowUpward fontSize="small" />
-                        ) : (
-                          <ArrowDownward fontSize="small" />
-                        ))}
-                    </th>
-                  );
-                })}
-              </tr>
-            </thead>
-            <tbody>
+          <Table>
+            <TableHead sx={{ bgcolor: "#F9FAFB" }}>
+              <TableRow>
+                {["ID", "User Info", "Role", "Fee Paid", "Balance", "Actions"].map(
+                  (header, i) => {
+                    const key = ["_id", "name", "role", null, "balance", null][i] as typeof sortBy;
+                    return (
+                      <TableCell
+                        key={header}
+                        sx={{
+                          fontWeight: 600,
+                          color: "#6B7280",
+                          fontSize: "12px",
+                          textTransform: "uppercase",
+                          py: 2.5,
+                          cursor: key ? "pointer" : "default",
+                        }}
+                        onClick={() => key && toggleSort(key)}
+                      >
+                        {header}
+                      </TableCell>
+                    );
+                  }
+                )}
+              </TableRow>
+            </TableHead>
+            <TableBody>
               {paginated.map((user) => {
                 const isSeller = user.role.toLowerCase() === "seller";
                 return (
-                  <tr key={user._id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 text-sm font-mono">
+                  <TableRow key={user._id} hover>
+                    <TableCell sx={{ fontSize: "13px", color: "#6B7280" }}>
                       {user._id.slice(0, 8)}...
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <Avatar
-                          sx={{
-                            width: 32,
-                            height: 32,
-                            bgcolor: roleColor(user.role),
-                          }}
-                        >
-                          {user.name[0]?.toUpperCase()}
-                        </Avatar>
-                        <div>
-                          <p className="font-medium">{user.name}</p>
-                          <p className="text-xs text-gray-500">{user.email}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-semibold capitalize bg-${roleColor(
-                          user.role
-                        )}/20 text-[${roleColor(user.role)}]`}
+                    </TableCell>
+                    <TableCell sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                      <Avatar sx={{ width: 32, height: 32, bgcolor: roleColor(user.role) }}>
+                        {user.name[0]?.toUpperCase()}
+                      </Avatar>
+                      <Box>
+                        <Typography sx={{ fontWeight: 500 }}>{user.name}</Typography>
+                        <Typography sx={{ fontSize: "12px", color: "#6B7280" }}>
+                          {user.email}
+                        </Typography>
+                      </Box>
+                    </TableCell>
+                    <TableCell sx={{ textAlign: "center" }}>
+                      <Box
+                        sx={{
+                          px: 1.5,
+                          py: 0.5,
+                          borderRadius: "20px",
+                          bgcolor: isSeller ? "#FFF8E6" : "#E8F9EE",
+                          color: isSeller ? "#D1A148" : "#33ac6f",
+                          fontWeight: 700,
+                          fontSize: "12px",
+                        }}
                       >
                         {user.role}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-center">
+                      </Box>
+                    </TableCell>
+                    <TableCell sx={{ textAlign: "center" }}>
                       {isSeller ? (
-                        <span
-                          className={
-                            user.activationFeePaid
-                              ? "text-[#33ac6f]"
-                              : "text-red-500"
-                          }
-                        >
-                          ●
-                        </span>
+                        <Typography sx={{ color: user.activationFeePaid ? "#33ac6f" : "#ef4444" }}>
+                          {user.activationFeePaid ? "●" : "●"}
+                        </Typography>
                       ) : (
                         "—"
                       )}
-                    </td>
-                    <td className="px-6 py-4 text-right font-semibold">
-                      ${(user.balance || 0).toFixed(1)}
-                    </td>
-                    <td className="px-6 py-4 text-center">
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: 700, textAlign: "right" }}>
+                      ${(user.balance || 0).toFixed(2)}
+                    </TableCell>
+                    <TableCell>
                       <Tooltip title="View">
-                        <button
+                        <IconButton
                           onClick={() => setModal({ user, mode: "view" })}
-                          className="p-2 rounded hover:bg-[#33ac6f]/20"
+                          sx={{ "&:hover": { bgcolor: "rgba(51,172,111,0.1)" } }}
                         >
-                          <Visibility
-                            fontSize="small"
-                            className="text-[#33ac6f]"
-                          />
-                        </button>
+                          <Visibility fontSize="small" />
+                        </IconButton>
                       </Tooltip>
                       <Tooltip title="Edit">
-                        <button
+                        <IconButton
                           onClick={() => setModal({ user, mode: "edit" })}
-                          className="p-2 rounded hover:bg-[#D1A148]/20"
+                          sx={{ "&:hover": { bgcolor: "rgba(209,161,72,0.1)" } }}
                         >
-                          <Edit fontSize="small" className="text-[#D1A148]" />
-                        </button>
+                          <Edit fontSize="small" sx={{ color: "#D1A148" }} />
+                        </IconButton>
                       </Tooltip>
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 );
               })}
               {paginated.length === 0 && (
-                <tr>
-                  <td colSpan={6} className="text-center py-12 text-gray-500">
+                <TableRow>
+                  <TableCell colSpan={6} sx={{ textAlign: "center", py: 6, color: "#9CA3AF" }}>
                     No users found.
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               )}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         )}
-      </div>
+      </TableContainer>
 
-      {totalPages > 1 && (
-        <div className="flex justify-center gap-2 bg-white/80 backdrop-blur p-4 rounded-2xl">
-          <button
-            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-            disabled={currentPage === 1}
-            className="px-4 py-2 rounded-xl bg-gray-100 disabled:opacity-50"
-          >
-            Prev
-          </button>
-          {Array.from({ length: totalPages }, (_, i) => (
-            <button
-              key={i}
-              onClick={() => setCurrentPage(i + 1)}
-              className={`px-4 py-2 rounded-xl ${
-                currentPage === i + 1
-                  ? "bg-[#33ac6f] text-white"
-                  : "bg-gray-100"
-              }`}
-            >
-              {i + 1}
-            </button>
-          ))}
-          <button
-            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-            disabled={currentPage === totalPages}
-            className="px-4 py-2 rounded-xl bg-gray-100 disabled:opacity-50"
-          >
-            Next
-          </button>
-        </div>
-      )}
+      {/* Pagination section */}
+      <Box
+        sx={{
+          mt: 4,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          flexDirection: "column",
+          gap: 2,
+        }}
+      >
+        {totalPages > 1 && (
+          <Pagination
+            count={totalPages}
+            page={currentPage}
+            onChange={(_, p) => setCurrentPage(p)}
+            boundaryCount={15}
+            siblingCount={1}
+            size="large"
+            sx={{
+              "& .MuiPaginationItem-root": {
+                fontSize: "1rem",
+                fontWeight: 500,
+                minWidth: 44,
+                height: 44,
+                borderRadius: "12px",
+                margin: "0 6px",
+                color: "#4B5563",
+                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                "&:hover": {
+                  backgroundColor: "#E6F4EA",
+                  color: "#33ac6f",
+                  transform: "translateY(-3px)",
+                  boxShadow: "0 6px 16px rgba(51, 172, 111, 0.2)",
+                },
+              },
+              "& .MuiPaginationItem-page.Mui-selected, & .MuiPaginationItem-root.Mui-selected": {
+                background: "linear-gradient(135deg, #33ac6f, #2a8e5b)",
+                color: "#ffffff",
+                fontWeight: 700,
+                boxShadow: "0 8px 24px rgba(51, 172, 111, 0.35)",
+                transform: "translateY(-3px)",
+                "&:hover": {
+                  background: "linear-gradient(135deg, #2d9962, #257a50)",
+                  boxShadow: "0 12px 28px rgba(51, 172, 111, 0.4)",
+                },
+              },
+              "& .MuiPaginationItem-previousNext": {
+                backgroundColor: "#ffffff",
+                border: "1px solid #E5E7EB",
+                color: "#6B7280",
+                borderRadius: "12px",
+                "&:hover": {
+                  backgroundColor: "#f3f4f6",
+                  borderColor: "#33ac6f",
+                  color: "#33ac6f",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                },
+                "&.Mui-disabled": {
+                  backgroundColor: "#f9fafb",
+                  color: "#9CA3AF",
+                  borderColor: "#E5E7EB",
+                },
+              },
+              "& .MuiPaginationItem-ellipsis": {
+                color: "#9CA3AF",
+                fontSize: "1.4rem",
+                margin: "0 8px",
+              },
+            }}
+          />
+        )}
+
+        <Typography variant="body2" color="#6B7280" sx={{ mt: 2.5, fontSize: "0.925rem", letterSpacing: "0.2px" }}>
+          Page <strong>{currentPage}</strong> of <strong>{totalPages}</strong> • {filteredAndSorted.length} total users
+        </Typography>
+      </Box>
 
       {modal && (
         <UserModal
@@ -450,7 +544,7 @@ const AllUsers: React.FC = () => {
           onSave={handleSave}
         />
       )}
-    </div>
+    </Box>
   );
 };
 

@@ -1,15 +1,33 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
+import { AlertCircle, CheckCircle, ThumbsUp, Clock, X } from "lucide-react";
+import StarIcon from "@mui/icons-material/Star";
+import StarBorderIcon from "@mui/icons-material/StarBorder";
+import SearchIcon from "@mui/icons-material/Search";
+import FilterListIcon from "@mui/icons-material/FilterList";
+import RefreshIcon from "@mui/icons-material/Refresh";
+import { Tooltip } from "@mui/material";
 import {
-  Star,
-  AlertCircle,
-  CheckCircle,
-  Search,
-  Filter,
-  X,
-  ThumbsUp,
-  ThumbsDown,
-  Clock,
-} from "lucide-react";
+  Box,
+  Paper,
+  InputBase,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Pagination,
+  Typography,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  IconButton,
+  FormControl,
+  Select,
+  MenuItem,
+} from "@mui/material";
 
 interface Review {
   id: string;
@@ -103,227 +121,382 @@ const mockSellers: Seller[] = [
   },
 ];
 
+const ITEMS_PER_PAGE = 8;
+
 const RatingsReputationPanel: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filter, setFilter] = useState<"all" | "disputed" | "top">("all");
+  const [page, setPage] = useState(1);
   const [selectedSeller, setSelectedSeller] = useState<Seller | null>(null);
 
-  const filteredSellers = mockSellers.filter((seller) => {
-    const matchesSearch =
-      seller.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      seller.name.toLowerCase().includes(searchTerm.toLowerCase());
-    if (filter === "disputed") return matchesSearch && seller.disputed > 0;
-    if (filter === "top") return matchesSearch && seller.rating >= 4.9 && seller.reviews >= 500;
-    return matchesSearch;
-  });
+  const filtered = useMemo(() => {
+    const q = searchTerm.trim().toLowerCase();
+    return mockSellers.filter((s) => {
+      const matches = !q || s.name.toLowerCase().includes(q) || s.username.toLowerCase().includes(q);
+      if (!matches) return false;
+      if (filter === "disputed") return s.disputed > 0;
+      if (filter === "top") return s.rating >= 4.9 && s.reviews >= 500;
+      return true;
+    });
+  }, [searchTerm, filter]);
+
+  const paginated = useMemo(() => {
+    const start = (page - 1) * ITEMS_PER_PAGE;
+    return filtered.slice(start, start + ITEMS_PER_PAGE);
+  }, [filtered, page]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
 
   const renderStars = (rating: number) => (
-    <div className="flex gap-1">
-      {[1, 2, 3, 4, 5].map((i) => (
-        <Star
-          key={i}
-          className={`w-4 h-4 ${i <= rating ? "text-yellow-400 fill-current" : "text-gray-300"}`}
-        />
-      ))}
-    </div>
+    <Box sx={{ display: "flex", gap: 0.5, alignItems: "center" }}>
+      {[1, 2, 3, 4, 5].map((i) =>
+        i <= rating ? (
+          <StarIcon key={i} sx={{ color: "#FBBF24", width: 18, height: 18 }} />
+        ) : (
+          <StarBorderIcon key={i} sx={{ color: "#E5E7EB", width: 18, height: 18 }} />
+        )
+      )}
+    </Box>
   );
 
+  const refresh = () => {
+    setSearchTerm("");
+    setFilter("all");
+    setPage(1);
+  };
+
   return (
-    <>
-      {/* Main Content - Full width but respects sidebar */}
-      <div className="min-h-screen bg-gray-50">
-        <div className="max-w-full mx-auto px-4 py-6 md:px-8 lg:px-12">
-          {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
-              Ratings & Reputation Management
-            </h1>
-            <p className="text-gray-600 text-sm md:text-base mt-1">
-              Monitor • Review • Resolve Disputes • Boost Top Sellers
-            </p>
-          </div>
+    <Box sx={{ p: 4, bgcolor: "#F5F7FA", minHeight: "100vh" }}>
+      <Paper
+        elevation={2}
+        sx={{
+          p: 3,
+          mb: 4,
+          borderRadius: 2,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          background: "linear-gradient(145deg, #ffffff, #f8fafc)",
+          boxShadow: "0 4px 20px rgba(0,0,0,0.05)",
+        }}
+      >
+        <Box>
+          <Typography variant="h5" fontWeight={700} color="#1F2A44">
+            Ratings & Reputation ({filtered.length})
+          </Typography>
+          <Typography color="#6B7280" sx={{ mt: 0.5 }}>
+            Monitor • Review • Resolve Disputes • Boost Top Sellers
+          </Typography>
+        </Box>
 
-          {/* Search & Filter Bar */}
-          <div className="mb-6 flex flex-col sm:flex-row gap-3">
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <input
-                type="text"
-                placeholder="Search sellers..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
-              />
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2">
-                <Filter className="w-5 h-5 text-gray-600" />
-                <select
-                  value={filter}
-                  onChange={(e) => setFilter(e.target.value as any)}
-                  className="border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+        <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
+          <Tooltip title="Refresh">
+            <IconButton
+              onClick={refresh}
+              aria-label="refresh"
+              sx={{
+                width: 44,
+                height: 44,
+                display: "inline-flex",
+                justifyContent: "center",
+                alignItems: "center",
+                background: "linear-gradient(135deg,#33ac6f,#2a8e5b)",
+                color: "#fff",
+                borderRadius: "12px",
+                boxShadow: "0 8px 20px rgba(51,172,111,0.18)",
+                transition: "all 0.18s ease-in-out",
+                "&:hover": {
+                  transform: "translateY(-3px)",
+                  boxShadow: "0 12px 28px rgba(51,172,111,0.26)",
+                },
+              }}
+            >
+              <RefreshIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+
+          <Box sx={{ position: "relative", width: 300 }}>
+            <SearchIcon
+              sx={{
+                position: "absolute",
+                left: 15,
+                top: "50%",
+                transform: "translateY(-50%)",
+                color: "#6B7280",
+              }}
+            />
+            <InputBase
+              placeholder="Search sellers..."
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setPage(1);
+              }}
+              sx={{
+                bgcolor: "#fff",
+                border: "1px solid #E5E7EB",
+                borderRadius: "12px",
+                pl: 6,
+                pr: 2,
+                py: 1.2,
+                width: "100%",
+                boxShadow: "inset 0 2px 4px rgba(0,0,0,0.03)",
+                transition: "all 0.2s",
+                "&:focus-within": {
+                  borderColor: "#33ac6f",
+                  boxShadow: "0 0 0 3px rgba(51,172,111,0.1)",
+                },
+              }}
+            />
+          </Box>
+
+          <FormControl sx={{ minWidth: 160 }}>
+            <Select
+              value={filter}
+              onChange={(e) => {
+                setFilter(e.target.value as any);
+                setPage(1);
+              }}
+              displayEmpty
+              startAdornment={<FilterListIcon />}
+              sx={{
+                borderRadius: "12px",
+                height: 44,
+                bgcolor: "#fff",
+                boxShadow: "0 2px 4px rgba(0,0,0,0.05)",
+              }}
+            >
+              <MenuItem value="all">All Sellers</MenuItem>
+              <MenuItem value="disputed">Disputed Only</MenuItem>
+              <MenuItem value="top">Top Rated</MenuItem>
+            </Select>
+          </FormControl>
+        </Box>
+      </Paper>
+
+      <TableContainer
+        component={Paper}
+        elevation={2}
+        sx={{
+          borderRadius: 2,
+          background: "linear-gradient(145deg, #ffffff, #f8fafc)",
+          boxShadow: "0 4px 20px rgba(0,0,0,0.05)",
+        }}
+      >
+        <Table>
+          <TableHead sx={{ bgcolor: "#F9FAFB" }}>
+            <TableRow>
+              {[
+                "Seller",
+                "Rating",
+                "Sales",
+                "Disputed",
+                "Status",
+                "Actions",
+              ].map((h) => (
+                <TableCell
+                  key={h}
+                  sx={{ fontWeight: 600, color: "#6B7280", fontSize: "12px", textTransform: "uppercase", py: 2.5 }}
                 >
-                  <option value="all">All Sellers</option>
-                  <option value="disputed">Disputed Only</option>
-                  <option value="top">Top Rated</option>
-                </select>
-              </div>
-            </div>
-          </div>
+                  {h}
+                </TableCell>
+              ))}
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {paginated.map((s) => (
+              <TableRow key={s.id} hover sx={{ "&:hover": { background: "rgba(51,172,111,0.03)" } }}>
+                <TableCell>
+                  <Box>
+                    <Typography sx={{ fontWeight: 600 }}>{s.name}</Typography>
+                    <Typography sx={{ fontSize: 12, color: "#6B7280" }}>{s.username} • {s.joinDate}</Typography>
+                  </Box>
+                </TableCell>
+                <TableCell>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    {renderStars(Math.round(s.rating))}
+                    <Typography sx={{ fontWeight: 700 }}>{s.rating}</Typography>
+                    <Typography sx={{ color: "#6B7280", fontSize: 12 }}>({s.reviews})</Typography>
+                  </Box>
+                </TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>{s.totalSales.toLocaleString()}</TableCell>
+                <TableCell>
+                  {s.disputed > 0 ? (
+                    <Box sx={{ display: "inline-flex", alignItems: "center", gap: 1, px: 1.5, py: 0.5, borderRadius: 2, bgcolor: "#FFF7ED", color: "#C2410C", fontSize: 12, fontWeight: 700 }}>
+                      <AlertCircle size={14} />
+                      {s.disputed}
+                    </Box>
+                  ) : (
+                    <Box sx={{ color: "#16A34A", fontSize: 13, display: "flex", alignItems: "center", gap: 1 }}>
+                      <CheckCircle size={16} /> Clean
+                    </Box>
+                  )}
+                </TableCell>
+                <TableCell>
+                  <Box sx={{ display: "inline-block", px: 1.5, py: 0.5, borderRadius: "20px", bgcolor: s.status === "verified" ? "#E8F9EE" : s.status === "warning" ? "#FFF7ED" : "#F2F2F7", color: s.status === "verified" ? "#16A34A" : s.status === "warning" ? "#D97706" : "#6B7280", fontWeight: 700, fontSize: 12 }}>
+                    {s.status === "verified" ? "Verified" : s.status === "warning" ? "Warning" : "Standard"}
+                  </Box>
+                </TableCell>
+                <TableCell>
+                    <Button
+                      variant="contained"
+                      size="small"
+                      onClick={() => setSelectedSeller(s)}
+                      sx={{
+                        background: "linear-gradient(135deg,#33ac6f,#2a8e5b)",
+                        color: "#fff",
+                        textTransform: "none",
+                        borderRadius: 2,
+                        boxShadow: "0 8px 20px rgba(51,172,111,0.18)",
+                        '&:hover': { background: 'linear-gradient(135deg,#2d9962,#257a50)' },
+                      }}
+                    >
+                      View Reviews
+                    </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
 
-          {/* Table - NO HORIZONTAL SCROLL */}
-          <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
-            <div className="overflow-x-auto scrollbar-hide">
-              <table className="w-full table-auto">
-                <thead className="bg-gray-50 border-b border-gray-200">
-                  <tr>
-                    <th className="text-left px-4 py-4 text-xs font-medium text-gray-600 uppercase tracking-wider">Seller</th>
-                    <th className="text-left px-4 py-4 text-xs font-medium text-gray-600 uppercase tracking-wider">Rating</th>
-                    <th className="text-left px-4 py-4 text-xs font-medium text-gray-600 uppercase tracking-wider">Sales</th>
-                    <th className="text-left px-4 py-4 text-xs font-medium text-gray-600 uppercase tracking-wider">Disputed</th>
-                    <th className="text-left px-4 py-4 text-xs font-medium text-gray-600 uppercase tracking-wider">Status</th>
-                    <th className="text-left px-4 py-4 text-xs font-medium text-gray-600 uppercase tracking-wider">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {filteredSellers.map((seller) => (
-                    <tr key={seller.id} className="hover:bg-gray-50 transition">
-                      <td className="px-4 py-5">
-                        <div>
-                          <p className="font-semibold text-gray-900">{seller.name}</p>
-                          <p className="text-sm text-gray-500">{seller.username} • {seller.joinDate}</p>
-                        </div>
-                      </td>
-                      <td className="px-4 py-5">
-                        <div className="flex items-center gap-2">
-                          {renderStars(Math.round(seller.rating))}
-                          <span className="font-bold text-gray-900">{seller.rating}</span>
-                          <span className="text-gray-500 text-sm">({seller.reviews})</span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-5 text-gray-700 font-medium">
-                        {seller.totalSales.toLocaleString()}
-                      </td>
-                      <td className="px-4 py-5">
-                        {seller.disputed > 0 ? (
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-100 text-orange-700 text-xs font-medium">
-                            <AlertCircle className="w-3.5 h-3.5" />
-                            {seller.disputed}
-                          </span>
-                        ) : (
-                          <span className="text-green-600 text-sm flex items-center gap-1">
-                            <CheckCircle className="w-4 h-4" /> Clean
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-4 py-5">
-                        <span
-                          className={`px-3 py-1.5 rounded-full text-xs font-medium ${
-                            seller.status === "verified"
-                              ? "bg-emerald-100 text-emerald-700"
-                              : seller.status === "warning"
-                              ? "bg-amber-100 text-amber-700"
-                              : "bg-gray-100 text-gray-600"
-                          }`}
-                        >
-                          {seller.status === "verified" ? "Verified" : seller.status === "warning" ? "Warning" : "Standard"}
-                        </span>
-                      </td>
-                      <td className="px-4 py-5">
-                        <button
-                          onClick={() => setSelectedSeller(seller)}
-                          className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-lg transition shadow-sm"
-                        >
-                          View Reviews
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
+      <Box sx={{ mt: 5, display: "flex", flexDirection: "column", alignItems: "center" }}>
+        <Pagination
+          count={totalPages}
+          page={page}
+          onChange={(_, p) => setPage(p)}
+          boundaryCount={15}
+          siblingCount={1}
+          size="large"
+          sx={{
+            "& .MuiPaginationItem-root": {
+              fontSize: "1rem",
+              fontWeight: 500,
+              minWidth: 44,
+              height: 44,
+              borderRadius: "12px",
+              margin: "0 6px",
+              color: "#4B5563",
+              transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+              "&:hover": {
+                backgroundColor: "#E6F4EA",
+                color: "#33ac6f",
+                transform: "translateY(-3px)",
+                boxShadow: "0 6px 16px rgba(51, 172, 111, 0.2)",
+              },
+            },
+            "& .MuiPaginationItem-page.Mui-selected": {
+              background: "linear-gradient(135deg, #33ac6f, #2a8e5b)",
+              color: "#ffffff",
+              fontWeight: 700,
+              boxShadow: "0 8px 24px rgba(51, 172, 111, 0.35)",
+              transform: "translateY(-3px)",
+              "&:hover": {
+                background: "linear-gradient(135deg, #2d9962, #257a50)",
+                boxShadow: "0 12px 28px rgba(51, 172, 111, 0.4)",
+              },
+            },
+            "& .MuiPaginationItem-previousNext": {
+              backgroundColor: "#ffffff",
+              border: "1px solid #E5E7EB",
+              color: "#6B7280",
+              borderRadius: "12px",
+              "&:hover": {
+                backgroundColor: "#f3f4f6",
+                borderColor: "#33ac6f",
+                color: "#33ac6f",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+              },
+              "&.Mui-disabled": {
+                backgroundColor: "#f9fafb",
+                color: "#9CA3AF",
+                borderColor: "#E5E7EB",
+              },
+            },
+            "& .MuiPaginationItem-ellipsis": {
+              color: "#9CA3AF",
+              fontSize: "1.4rem",
+              margin: "0 8px",
+            },
+          }}
+        />
 
-      {/* Modal - Same as before, unchanged */}
-      {selectedSeller && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
-            <div className="p-6 md:p-8">
-              <div className="flex justify-between items-start border-b pb-6 mb-6">
-                <div>
-                  <h2 className="text-2xl md:text-3xl font-bold">{selectedSeller.name}</h2>
-                  <p className="text-purple-600 text-lg">{selectedSeller.username}</p>
-                  <p className="text-gray-600 mt-2">{selectedSeller.bio}</p>
-                </div>
-                <button onClick={() => setSelectedSeller(null)} className="text-gray-500 hover:text-gray-700">
-                  <X className="w-8 h-8" />
-                </button>
-              </div>
+        <Typography variant="body2" color="#6B7280" sx={{ mt: 2.5, fontSize: "0.925rem", letterSpacing: "0.2px" }}>
+          Page <strong>{page}</strong> of <strong>{totalPages}</strong> • {filtered.length} sellers
+        </Typography>
+      </Box>
 
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                {["Overall Rating", "Total Sales", "Disputed", "Member Since"].map((label, i) => (
-                  <div key={i} className="bg-gray-50 rounded-lg p-4 text-center border">
-                    <p className="text-xs text-gray-600">{label}</p>
-                    {label === "Overall Rating" && (
-                      <>
-                        <div className="flex justify-center items-center gap-2 mt-2">
-                          {renderStars(Math.round(selectedSeller.rating))}
-                          <span className="text-2xl font-bold">{selectedSeller.rating}</span>
-                        </div>
-                        <p className="text-xs text-gray-500 mt-1">{selectedSeller.reviews} reviews</p>
-                      </>
-                    )}
-                    {label === "Total Sales" && <p className="text-3xl font-bold text-purple-600 mt-2">{selectedSeller.totalSales.toLocaleString()}</p>}
-                    {label === "Disputed" && <p className="text-3xl font-bold text-orange-600 mt-2">{selectedSeller.disputed}</p>}
-                    {label === "Member Since" && <p className="text-xl font-bold mt-2">{selectedSeller.joinDate}</p>}
-                  </div>
+      <Dialog
+        open={!!selectedSeller}
+        onClose={() => setSelectedSeller(null)}
+        fullWidth
+        maxWidth="lg"
+        PaperProps={{ sx: { borderRadius: 3, background: "linear-gradient(145deg, #ffffff, #f8fafc)" } }}
+      >
+        <DialogTitle sx={{ fontWeight: 700, display: "flex", justifyContent: "space-between", alignItems: "center", bgcolor: "#F9FAFB", color: "#1F2A44" }}>
+          {selectedSeller?.name}
+          <IconButton onClick={() => setSelectedSeller(null)} size="small"><X /></IconButton>
+        </DialogTitle>
+        <DialogContent dividers>
+          {selectedSeller && (
+            <Box>
+              <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "repeat(4, 1fr)" }, gap: 2, mb: 3 }}>
+                <Box sx={{ textAlign: "center", p: 2, bgcolor: "#F8F9FA", borderRadius: 2 }}>
+                  <Typography variant="caption">Overall Rating</Typography>
+                  <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 1, mt: 1 }}>
+                    {renderStars(Math.round(selectedSeller.rating))}
+                    <Typography sx={{ fontWeight: 700 }}>{selectedSeller.rating}</Typography>
+                  </Box>
+                  <Typography variant="caption" color="#6B7280">{selectedSeller.reviews} reviews</Typography>
+                </Box>
+                <Box sx={{ textAlign: "center", p: 2, bgcolor: "#F8F9FA", borderRadius: 2 }}>
+                  <Typography variant="caption">Total Sales</Typography>
+                  <Typography sx={{ fontWeight: 700, color: "#6D28D9", mt: 1 }}>{selectedSeller.totalSales.toLocaleString()}</Typography>
+                </Box>
+                <Box sx={{ textAlign: "center", p: 2, bgcolor: "#F8F9FA", borderRadius: 2 }}>
+                  <Typography variant="caption">Disputed</Typography>
+                  <Typography sx={{ fontWeight: 700, color: "#C2410C", mt: 1 }}>{selectedSeller.disputed}</Typography>
+                </Box>
+                <Box sx={{ textAlign: "center", p: 2, bgcolor: "#F8F9FA", borderRadius: 2 }}>
+                  <Typography variant="caption">Member Since</Typography>
+                  <Typography sx={{ fontWeight: 700, mt: 1 }}>{selectedSeller.joinDate}</Typography>
+                </Box>
+              </Box>
+
+              <Typography variant="h6" sx={{ mb: 2 }}>Recent Reviews</Typography>
+              <Box sx={{ display: "grid", gap: 2 }}>
+                {selectedSeller.recentReviews.map((r) => (
+                  <Paper key={r.id} variant="outlined" sx={{ p: 2, bgcolor: r.disputed ? "#FFFBF0" : "#FBFDFF" }}>
+                    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "start" }}>
+                      <Box>
+                        <Box sx={{ display: "flex", gap: 1, alignItems: "center", mb: 1 }}>
+                          <Typography sx={{ fontWeight: 700 }}>{r.buyer}</Typography>
+                          {renderStars(r.rating)}
+                          <Typography sx={{ color: "#6B7280", fontSize: 12, display: "flex", alignItems: "center", gap: 0.5 }}>
+                            <Clock size={14} /> {r.date}
+                          </Typography>
+                        </Box>
+                        <Typography>{r.comment}</Typography>
+                        <Box sx={{ mt: 1 }}>
+                          <Button size="small" startIcon={<ThumbsUp size={14} />}>
+                            Helpful ({r.helpful})
+                          </Button>
+                        </Box>
+                      </Box>
+                      {r.disputed && <Box sx={{ bgcolor: "#FFF4E6", color: "#C2410C", px: 2, py: 0.5, borderRadius: 2, fontWeight: 700 }}>DISPUTED</Box>}
+                    </Box>
+                  </Paper>
                 ))}
-              </div>
-
-              <h3 className="text-xl font-bold mb-4">Recent Reviews</h3>
-              <div className="space-y-4">
-                {selectedSeller.recentReviews.map((review) => (
-                  <div key={review.id} className={`p-5 rounded-xl border ${review.disputed ? "bg-orange-50 border-orange-300" : "bg-gray-50 border-gray-200"}`}>
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <span className="font-semibold">{review.buyer}</span>
-                          {renderStars(review.rating)}
-                          <span className="text-sm text-gray-500 flex items-center gap-1">
-                            <Clock className="w-4 h-4" /> {review.date}
-                          </span>
-                        </div>
-                        <p className="text-gray-700">{review.comment}</p>
-                        <div className="flex gap-4 mt-3">
-                          <button className="flex items-center gap-2 text-sm text-gray-600 hover:text-green-600">
-                            <ThumbsUp className="w-4 h-4" /> Helpful ({review.helpful})
-                          </button>
-                        </div>
-                      </div>
-                      {review.disputed && <span className="px-3 py-1 bg-orange-200 text-orange-800 rounded-full text-xs font-bold">DISPUTED</span>}
-                    </div>
-                    {review.disputed && (
-                      <div className="mt-4 flex flex-wrap gap-3">
-                        <button className="px-4 py-2 bg-red-100 text-red-700 rounded-lg text-sm font-medium hover:bg-red-200">Remove Rating</button>
-                        <button className="px-4 py-2 bg-green-100 text-green-700 rounded-lg text-sm font-medium hover:bg-green-200">Keep Rating</button>
-                        <button className="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg text-sm font-medium hover:bg-blue-200">Contact Buyer</button>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-10 flex gap-4 justify-center">
-                <button className="px-8 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-bold">Boost This Seller</button>
-                <button className="px-8 py-3 bg-orange-100 text-orange-700 border border-orange-300 rounded-lg font-bold hover:bg-orange-200">Warning / Suspend</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-    </>
+              </Box>
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setSelectedSeller(null)}>Close</Button>
+          <Button variant="contained" sx={{ background: "linear-gradient(135deg,#33ac6f,#2a8e5b)", color: '#fff', '&:hover': { background: 'linear-gradient(135deg,#2d9962,#257a50)' } }}>Boost This Seller</Button>
+        </DialogActions>
+      </Dialog>
+    </Box>
   );
 };
 

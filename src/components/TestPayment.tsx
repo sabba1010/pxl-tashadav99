@@ -62,7 +62,7 @@ const TestPayment: React.FC<TestPaymentProps> = ({ amount }) => {
           try {
             // Backend-এ verify করি
             const verifyRes = await fetch(
-              "https://vps-backend-server-beta.vercel.app/api/verify-payment",
+              "http://localhost:3200/api/verify-payment",
               {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -80,7 +80,7 @@ const TestPayment: React.FC<TestPaymentProps> = ({ amount }) => {
 
               // Balance update
               const balanceRes = await fetch(
-                "https://vps-backend-server-beta.vercel.app/api/update-balance",
+                "http://localhost:3200/api/update-balance",
                 {
                   method: "PATCH",
                   headers: { "Content-Type": "application/json" },
