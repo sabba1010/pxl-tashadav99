@@ -743,21 +743,8 @@ const MyOrder: React.FC = () => {
                     Order Actions
                   </p>
                   <div className="flex gap-3">
-                    <button
-                      disabled={isUpdating}
-                      onClick={() =>
-                        updateOrderStatus(selected.id, "Completed")
-                      }
-                      className="flex-1 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition shadow-sm flex items-center justify-center gap-2 disabled:opacity-50"
-                    >
-                      {isUpdating ? (
-                        "Updating..."
-                      ) : (
-                        <>
-                          <FaCheckIcon size={14} /> Confirm
-                        </>
-                      )}
-                    </button>
+                  
+                    
                     <button
                       disabled={isUpdating}
                       onClick={() =>

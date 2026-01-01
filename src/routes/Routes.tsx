@@ -50,6 +50,7 @@ import PrivateRoute from "./PrivateRoute";
 import SellerPrivateRoute from "./SellerPrivateRoute";
 import SubscriptionPayment from "../components/Payment/SubscriptionPayment";
 import Test from "../components/Test";
+import ReportAdmin from "../dashboard/admin-dashboard/ReportAdmin";
 
 const Routes = createBrowserRouter([
   {
@@ -224,6 +225,10 @@ const Routes = createBrowserRouter([
       {
         path: "ratings",
         element: <RatingsReputationPanel />,
+      },
+      {
+        path: "report",
+        element: <ReportAdmin />,
       },
     ],
   },
