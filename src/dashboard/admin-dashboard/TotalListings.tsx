@@ -418,7 +418,7 @@ const TotalListings: React.FC = () => {
               boxShadow: "0 1px 2px rgba(16,24,40,0.04)",
               "&:hover": {
                 bgcolor: "#E6F4EA",
-                color: "#33ac6f",
+               
                 transform: "translateY(-2px)",
                 boxShadow: "0 6px 16px rgba(51,172,111,0.12)",
               },
