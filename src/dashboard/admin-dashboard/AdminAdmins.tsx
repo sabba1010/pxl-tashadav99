@@ -1,5 +1,6 @@
 import {
   AccountBalanceWallet,
+  Assessment,
   ChevronLeft,
   CompareArrows,
   Dashboard,
@@ -48,6 +49,11 @@ const mainNavItems: NavItem[] = [
     name: "Ratings & Reputation",
     path: "/admin-dashboard/ratings",
     icon: <Star />,
+  },
+   {
+    name: "All Reports",
+    path: "/admin-dashboard/report",
+    icon: <Assessment />,
   },
 ];
 
