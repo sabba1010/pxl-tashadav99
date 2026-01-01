@@ -189,7 +189,7 @@ const MyAds: React.FC = () => {
         </div>
 
         {/* Tabs (using MyPurchase tab design) */}
-        <div className="bg-white rounded-2xl shadow-sm border overflow-hidden mb-8">
+        <div className="bg-white rounded-2xl shadow-sm border overflow-hidden mb-8 ">
           <div className="flex gap-6 p-4 border-b overflow-x-auto">
             {TABS.map((t) => (
               <button
@@ -211,7 +211,7 @@ const MyAds: React.FC = () => {
         </div>
 
         {/* Cards - Now matching Marketplace ItemCard height & style exactly */}
-        <div className="space-y-4">
+        <div className="space-y-4 ">
           {filtered.length === 0 ? (
             <div className="bg-white rounded-3xl p-12 text-center shadow-md border border-gray-100">
               <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-5">
@@ -235,7 +235,7 @@ const MyAds: React.FC = () => {
               )}
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-4">
+            <div className="grid grid-cols-1 gap-4 ">
               {filtered.map((item) => (
                 <div
                   key={item._id}
