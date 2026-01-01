@@ -181,7 +181,7 @@ const MyAds: React.FC = () => {
 
           <Link
             to="/selling-form"
-            className="flex items-center justify-center gap-2.5 bg-[#0A1A3A] hover:bg-[#162a52] text-white px-7 py-3.5 rounded-2xl font-semibold text-base shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+            className="flex items-center justify-center gap-2.5 bg-[#d4a643] hover:bg-[#33ac6f] text-white px-7 py-3.5 rounded-2xl font-semibold text-base shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
           >
             <Plus size={20} />
             Create New Ad
