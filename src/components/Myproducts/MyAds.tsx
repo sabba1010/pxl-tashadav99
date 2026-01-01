@@ -189,7 +189,7 @@ const MyAds: React.FC = () => {
         </div>
 
         {/* Tabs (using MyPurchase tab design) */}
-        <div className="bg-white rounded-2xl shadow-sm border overflow-hidden mb-8 ">
+        <div className="bg-white rounded-2xl shadow-sm border overflow-hidden ">
           <div className="flex gap-6 p-4 border-b overflow-x-auto">
             {TABS.map((t) => (
               <button
