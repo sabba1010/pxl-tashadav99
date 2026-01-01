@@ -181,7 +181,7 @@ const MyAds: React.FC = () => {
 
           <Link
             to="/selling-form"
-            className="flex items-center justify-center gap-2.5 bg-[#0A1A3A] hover:bg-[#162a52] text-white px-7 py-3.5 rounded-2xl font-semibold text-base shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+            className="flex items-center justify-center gap-2.5 bg-[#d4a643] hover:bg-[#33ac6f] text-white px-7 py-3.5 rounded-2xl font-semibold text-base shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
           >
             <Plus size={20} />
             Create New Ad
@@ -238,7 +238,7 @@ const MyAds: React.FC = () => {
                 {filtered.map((item) => (
                   <div
                     key={item._id}
-                    className="bg-[#f8fafb] rounded-xl shadow-sm hover:shadow-md border border-gray-100 transition-all duration-200 p-4 flex items-top gap-4"
+                    className="bg-[#f8fafb] rounded-xl shadow-sm hover:shadow-md border border-gray-100 transition-all duration-200 p-4 flex items-center gap-4"
                   >
                     {/* Icon - Same as Marketplace list mode */}
                     <div className="flex-shrink-0">
@@ -256,9 +256,9 @@ const MyAds: React.FC = () => {
                       <h3 className="font-bold text-sm text-[#0A1A3A] truncate">
                         {item.name}
                       </h3>
-                      <p className="text-xs text-gray-600 mt-1 line-clamp-2">
+                      {/* <p className="text-xs text-gray-600 mt-1 line-clamp-2">
                         {item.description || "No description provided"}
-                      </p>
+                      </p> */}
 
                       {/* Status Badge */}
                       <div className="mt-2">
@@ -274,9 +274,9 @@ const MyAds: React.FC = () => {
 
                     {/* Price & Actions */}
                     <div className="flex flex-col items-end gap-3">
-                      <span className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">
+                      {/* <span className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">
                         Price
-                      </span>
+                      </span> */}
                       <div className="text-base font-bold text-[#0A1A3A] text-[20px]">
                         ${item.price}
                       </div>
