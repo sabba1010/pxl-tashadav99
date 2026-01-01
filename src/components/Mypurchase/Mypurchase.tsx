@@ -206,17 +206,20 @@ const MyPurchase: React.FC = () => {
 
   useEffect(() => { fetchPurchases(); }, [buyerId]);
 
-  const handleUpdateStatus = async (status: string) => {
-    if (!selected) return;
-    try {
-      await axios.patch(`${PURCHASE_API}/update-status/${selected.id}`, { status });
-      toast.success(`Order ${status} successfully!`);
-      setSelected(null);
-      fetchPurchases();
-    } catch (err) {
-      toast.error("Failed to update status");
-    }
-  };
+const handleUpdateStatus = async (status: string, sellerEmail: string) => {
+  if (!selected) return;
+  try {
+    await axios.patch(`${PURCHASE_API}/update-status/${selected.id}`, {
+      status,
+      sellerEmail,  // নতুন করে পাঠাচ্ছি
+    });
+    toast.success(`Order ${status} successfully!`);
+    setSelected(null);
+    fetchPurchases();
+  } catch (err) {
+    toast.error("Failed to update status");
+  }
+};
 
   const openReportModal = (p: Purchase) => {
     setReportTargetOrder(p);
@@ -396,7 +399,7 @@ const MyPurchase: React.FC = () => {
                    <FaClockIcon className="text-amber-600 animate-pulse" />
                    <p className="text-xs text-amber-800">Auto-cancels in: <strong>{getRemainingTime(selected.rawDate)}</strong></p>
                 </div>
-                <button onClick={() => handleUpdateStatus("completed")} className="w-full bg-[#33ac6f] text-white py-3 rounded-xl font-bold hover:bg-[#2aa46a]">Confirm & Complete Order</button>
+                <button onClick={() => handleUpdateStatus("completed", selected.sellerEmail)} className="w-full bg-[#33ac6f] text-white py-3 rounded-xl font-bold hover:bg-[#2aa46a]">Confirm & Complete Order</button>
               </div>
             )}
           </div>
