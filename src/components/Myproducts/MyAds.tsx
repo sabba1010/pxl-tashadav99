@@ -188,35 +188,25 @@ const MyAds: React.FC = () => {
           </Link>
         </div>
 
-        {/* Tabs */}
-        <div className="bg-white rounded-3xl shadow-lg border border-gray-100 mb-8 sticky top-20 z-10 overflow-hidden">
-          <div className="p-2">
-            <nav className="flex gap-1 overflow-x-auto no-scrollbar">
-              {TABS.map((t) => (
-                <button
-                  key={t}
-                  onClick={() => setActiveTab(t)}
-                  className={`relative flex-1 min-w-fit px-6 py-3.5 text-sm font-semibold rounded-2xl transition-all duration-200 ${
-                    activeTab === t
-                      ? "text-white bg-[#0A1A3A] shadow-md"
-                      : "text-gray-600 hover:text-[#0A1A3A] hover:bg-gray-50"
-                  }`}
-                >
-                  <span className="flex items-center justify-center gap-2">
-                    {t}
-                    <span
-                      className={`text-xs px-2.5 py-1 rounded-full font-bold ${
-                        activeTab === t
-                          ? "bg-white/20"
-                          : "bg-gray-200 text-gray-700"
-                      }`}
-                    >
-                      {counts.get(t) ?? 0}
-                    </span>
-                  </span>
-                </button>
-              ))}
-            </nav>
+        {/* Tabs (using MyPurchase tab design) */}
+        <div className="bg-white rounded-2xl shadow-sm border overflow-hidden mb-8">
+          <div className="flex gap-6 p-4 border-b overflow-x-auto">
+            {TABS.map((t) => (
+              <button
+                key={t}
+                onClick={() => setActiveTab(t)}
+                className={`pb-2 text-sm whitespace-nowrap transition-all ${
+                  activeTab === t
+                    ? "text-[#d4a643] border-b-2 border-[#d4a643] font-bold"
+                    : "text-gray-500"
+                }`}
+              >
+                <span className="flex items-center gap-2">
+                  {t}
+                  <span className="text-xs text-gray-400 font-bold">{counts.get(t) ?? 0}</span>
+                </span>
+              </button>
+            ))}
           </div>
         </div>
 
