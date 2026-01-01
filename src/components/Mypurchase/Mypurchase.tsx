@@ -21,7 +21,7 @@ import {
 } from "react-icons/fa";
 
 /* ---------------------------------------------
-   Type Casting Icons (Fix for TS2786)
+   Type Casting Icons
 ---------------------------------------------- */
 const FaTimesIcon = FaTimes as any;
 const FaEyeIcon = FaEye as any;
@@ -157,22 +157,29 @@ const MyPurchase: React.FC = () => {
   const PURCHASE_API = `${BASE_URL}/purchase`;
   const CHAT_API = `${BASE_URL}/chat`;
 
+  // রিয়েল-টাইম সেকেন্ড কাউন্টার (টাইমারের জন্য)
   useEffect(() => {
     const interval = setInterval(() => setNow(new Date().getTime()), 1000);
     return () => clearInterval(interval);
   }, []);
 
+  // চ্যাট স্ক্রল হ্যান্ডলার
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [chatMessages]);
 
+  // ১ ঘণ্টা পর অটো-ক্যান্সেল লজিক (Helper)
   const getRemainingTime = (purchaseDateStr: string) => {
     const purchaseTime = new Date(purchaseDateStr).getTime();
-    const deadline = purchaseTime + 60 * 60 * 1000;
+    const deadline = purchaseTime + 60 * 60 * 1000; // ১ ঘণ্টা
     const diff = deadline - now;
-    if (diff <= 0) return "Expired";
+
+    if (diff <= 0) {
+      return "Expired";
+    }
+
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
     const seconds = Math.floor((diff % (1000 * 60)) / 1000);
     return `${minutes}m ${seconds}s`;
@@ -182,6 +189,9 @@ const MyPurchase: React.FC = () => {
     if (!buyerId) return;
     try {
       setIsLoading(true);
+      // ব্যাকএন্ডে অটো-ক্যান্সেল রাউটটি কল করুন
+      await axios.get(`${PURCHASE_API}/auto-cancel-check`);
+
       const res = await axios.get<RawPurchaseItem[]>(`${PURCHASE_API}/getall?email=${buyerId}&role=buyer`);
       const mapped: Purchase[] = res.data.map((item) => ({
         id: item._id,
@@ -206,20 +216,20 @@ const MyPurchase: React.FC = () => {
 
   useEffect(() => { fetchPurchases(); }, [buyerId]);
 
-const handleUpdateStatus = async (status: string, sellerEmail: string) => {
-  if (!selected) return;
-  try {
-    await axios.patch(`${PURCHASE_API}/update-status/${selected.id}`, {
-      status,
-      sellerEmail,  // নতুন করে পাঠাচ্ছি
-    });
-    toast.success(`Order ${status} successfully!`);
-    setSelected(null);
-    fetchPurchases();
-  } catch (err) {
-    toast.error("Failed to update status");
-  }
-};
+  const handleUpdateStatus = async (status: string, sellerEmail: string) => {
+    if (!selected) return;
+    try {
+      await axios.patch(`${PURCHASE_API}/update-status/${selected.id}`, {
+        status,
+        sellerEmail,
+      });
+      toast.success(`Order ${status} successfully!`);
+      setSelected(null);
+      fetchPurchases();
+    } catch (err) {
+      toast.error("Failed to update status");
+    }
+  };
 
   const openReportModal = (p: Purchase) => {
     setReportTargetOrder(p);
@@ -315,6 +325,7 @@ const handleUpdateStatus = async (status: string, sellerEmail: string) => {
       <div className="max-w-screen-xl mx-auto">
         <h1 className="text-2xl sm:text-3xl font-bold text-[#0A1A3A] mb-6">My Purchase</h1>
 
+        {/* Tab Selection */}
         <div className="bg-white rounded-2xl shadow-sm border overflow-hidden">
           <div className="flex gap-6 p-4 border-b overflow-x-auto">
             {TABS.map((t) => (
@@ -341,7 +352,9 @@ const handleUpdateStatus = async (status: string, sellerEmail: string) => {
                     <div>
                       <h3 className="font-bold text-[#0A1A3A] text-sm sm:text-base">{p.title}</h3>
                       <div className="flex items-center gap-2 mt-1">
-                        <span className={`text-[10px] px-2 py-0.5 rounded-full border font-bold ${p.status === 'Completed' ? 'bg-green-50 text-green-600' : 'bg-amber-50 text-amber-600'}`}>{p.status}</span>
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full border font-bold ${p.status === 'Completed' ? 'bg-green-50 text-green-600' : p.status === 'Cancelled' ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-600'}`}>
+                            {p.status}
+                        </span>
                         <span className="text-[10px] text-gray-400 font-mono">{p.purchaseNumber}</span>
                       </div>
                     </div>
@@ -354,7 +367,6 @@ const handleUpdateStatus = async (status: string, sellerEmail: string) => {
                     </div>
 
                     <div className="flex gap-2">
-                      {/* FIXED: Action buttons only show if status is PENDING */}
                       {p.status === "Pending" && (
                         <>
                           <button onClick={() => openReportModal(p)} className="p-2 text-red-500 border border-red-100 rounded bg-white hover:bg-red-50" title="Report Issue">
@@ -377,6 +389,7 @@ const handleUpdateStatus = async (status: string, sellerEmail: string) => {
         </div>
       </div>
 
+      {/* Details Modal with Timer */}
       {selected && (
         <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <div className="bg-white w-full max-w-lg rounded-t-3xl sm:rounded-2xl p-6 relative animate-in slide-in-from-bottom-5">
@@ -397,7 +410,9 @@ const handleUpdateStatus = async (status: string, sellerEmail: string) => {
               <div className="mt-8 space-y-3">
                 <div className="bg-amber-50 p-3 rounded-lg border border-amber-100 flex items-center gap-3">
                    <FaClockIcon className="text-amber-600 animate-pulse" />
-                   <p className="text-xs text-amber-800">Auto-cancels in: <strong>{getRemainingTime(selected.rawDate)}</strong></p>
+                   <p className="text-xs text-amber-800">
+                     Auto-cancels in: <strong>{getRemainingTime(selected.rawDate)}</strong>
+                   </p>
                 </div>
                 <button onClick={() => handleUpdateStatus("completed", selected.sellerEmail)} className="w-full bg-[#33ac6f] text-white py-3 rounded-xl font-bold hover:bg-[#2aa46a]">Confirm & Complete Order</button>
               </div>
@@ -406,6 +421,7 @@ const handleUpdateStatus = async (status: string, sellerEmail: string) => {
         </div>
       )}
 
+      {/* Report Modal */}
       {isReportModalOpen && reportTargetOrder && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md">
           <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
@@ -439,6 +455,7 @@ const handleUpdateStatus = async (status: string, sellerEmail: string) => {
         </div>
       )}
 
+      {/* Chat Section */}
       {isChatOpen && (
         <div className="fixed inset-0 z-[120] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60">
           <div className="bg-[#ECE5DD] w-full max-w-md h-[90vh] sm:h-[600px] sm:rounded-2xl overflow-hidden flex flex-col shadow-2xl">
