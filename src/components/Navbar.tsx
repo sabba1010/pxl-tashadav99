@@ -552,6 +552,18 @@ export default function Navbar() {
                           My Purchases
                         </span>
                       </NavLink>
+                      {loginUser?.role === "seller" || loginUser?.role === "admin" ? (
+                        <a
+                          href={sellerGuide}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={() => setOpen(false)}
+                          className="flex items-center gap-4 px-6 py-3 hover:bg-gray-50 transition lg:hidden"
+                          style={{ color: CHARCOAL }}
+                        >
+                          <span className="text-sm font-medium">Seller Guide</span>
+                        </a>
+                      ) : null}
                       <NavLink
                         to="/account-settings"
                         onClick={() => setOpen(false)}
