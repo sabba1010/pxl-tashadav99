@@ -49,13 +49,11 @@ import {
 } from "react-icons/md";
 import { BiSolidPurchaseTag } from "react-icons/bi";
 
-// Notification Helper & Context
 import { sendNotification } from "../Notification/Notification";
 import { useAuth } from "../../context/AuthContext";
 import { toast } from "sonner";
 import { useAuthHook } from "../../hook/useAuthHook";
 
-// --- ICONS & TYPES ---
 const StarIcon = FaStar as React.ElementType;
 const ShoppingCartIcon = FaShoppingCart as React.ElementType;
 const EyeIcon = FaEye as React.ElementType;
@@ -77,7 +75,7 @@ interface Item {
   category: string;
   subcategory?: string;
   realTime?: boolean;
-  previewLink?: string; // New Field
+  previewLink?: string;
 }
 
 type SubcatState = Record<string, string[]>;
@@ -232,7 +230,6 @@ const VIBRANT_GRADIENTS = [
   "linear-gradient(135deg,#9BE15D 0%,#00E3AE 100%)",
 ];
 
-// --- Helpers ---
 const hashCode = (s: string) => {
   let h = 0;
   for (let i = 0; i < s.length; i++)
@@ -249,7 +246,6 @@ const useLockBodyScroll = (isLocked: boolean) => {
   }, [isLocked]);
 };
 
-// --- Sub-Components ---
 const RenderIcon = ({
   icon,
   size = 36,
@@ -285,6 +281,7 @@ const RenderIcon = ({
       </div>
     );
   }
+
   return (
     <div
       style={{ width: badgeSize, height: badgeSize, background: bg }}
@@ -322,6 +319,7 @@ const CategorySelector: React.FC<{
 }> = ({ selectedSubcats, setSelectedSubcats }) => {
   const [openMain, setOpenMain] = useState<Record<string, boolean>>({});
   const wrapperRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -436,13 +434,11 @@ const CategorySelector: React.FC<{
   );
 };
 
-// --- Item Card ---
 const ItemCard: React.FC<{
   item: Item;
   viewMode: "list" | "grid";
   onAddToCart: (item: Item) => void;
   onView: (item: Item) => void;
-  onBuy: (item: Item) => void;
   isProcessing: boolean;
   isAdded: boolean;
 }> = ({
@@ -450,7 +446,6 @@ const ItemCard: React.FC<{
   viewMode,
   onAddToCart,
   onView,
-  onBuy,
   isProcessing,
   isAdded,
 }) => {
@@ -475,7 +470,6 @@ const ItemCard: React.FC<{
         <p className="text-xs text-gray-600 mt-1 line-clamp-2">
           {item.desc || "Premium account • Instant delivery"}
         </p>
-
         <div className="text-xs text-gray-400 mt-2">
           Verified Seller •{" "}
           <span className="text-green-600">{item.delivery}</span>
@@ -490,7 +484,6 @@ const ItemCard: React.FC<{
           ${item.price.toFixed(2)}
         </div>
         <div className="flex items-center gap-1 w-full justify-center">
-          {/* Add To Cart */}
           <button
             onClick={() => onAddToCart(item)}
             disabled={isAdded}
@@ -505,7 +498,6 @@ const ItemCard: React.FC<{
             {isAdded ? <CheckIcon size={14} /> : <ShoppingCartIcon size={14} />}
           </button>
 
-          {/* View Button (Only View here - Preview is removed) */}
           <button
             onClick={() => onView(item)}
             className="p-1.5 border rounded-md hover:bg-gray-50 text-gray-600 flex items-center justify-center"
@@ -519,7 +511,6 @@ const ItemCard: React.FC<{
   );
 };
 
-// --- Product Modal ---
 const ProductModal: React.FC<{
   item: Item;
   onClose: () => void;
@@ -537,7 +528,6 @@ const ProductModal: React.FC<{
         onClick={onClose}
       />
       <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg bg-white rounded-2xl shadow-2xl z-50 overflow-hidden max-h-[90vh] flex flex-col">
-        {/* Header */}
         <div className="p-4 border-b flex justify-between items-center bg-gray-50">
           <h2 className="font-bold text-gray-800">Item Details</h2>
           <button
@@ -548,7 +538,6 @@ const ProductModal: React.FC<{
           </button>
         </div>
 
-        {/* Body (Scrollable) */}
         <div className="p-6 overflow-y-auto">
           <div className="flex justify-center mb-4">
             <RenderIcon icon={item.icon} size={72} realTime={item.realTime} />
@@ -601,9 +590,7 @@ const ProductModal: React.FC<{
           </div>
         </div>
 
-        {/* Footer Buttons */}
         <div className="p-4 border-t bg-gray-50 flex flex-col gap-3">
-          {/* Row 1: Cart & Purchase */}
           <div className="grid grid-cols-2 gap-3">
             <button
               onClick={() => onAddToCart(item)}
@@ -629,7 +616,6 @@ const ProductModal: React.FC<{
             </button>
           </div>
 
-          {/* Row 2: Preview Button (Same Style as Purchase Now - Full Width) */}
           {item.previewLink && (
             <a
               href={item.previewLink}
@@ -646,7 +632,6 @@ const ProductModal: React.FC<{
   );
 };
 
-// --- MAIN COMPONENT ---
 const Marketplace: React.FC = () => {
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
@@ -661,7 +646,6 @@ const Marketplace: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [cartCount, setCartCount] = useState(0);
   const [processingIds, setProcessingIds] = useState<string[]>([]);
-
   const [cartItemIds, setCartItemIds] = useState<string[]>([]);
 
   const itemsPerPage = 6;
@@ -671,7 +655,6 @@ const Marketplace: React.FC = () => {
 
   useLockBodyScroll(drawerOpen || !!selectedItem || mobileSearchOpen);
 
-  // 1. পণ্য লোড করা
   useEffect(() => {
     const fetchItems = async () => {
       try {
@@ -691,11 +674,12 @@ const Marketplace: React.FC = () => {
             category: "Social Media",
             subcategory: p.category,
             realTime: true,
-            previewLink: p.previewLink, // Map previewLink from Backend here
+            previewLink: p.previewLink,
           }));
         setItems(mapped);
       } catch (err) {
         console.error("Failed to load products", err);
+        toast.error("Failed to load marketplace");
       } finally {
         setLoading(false);
       }
@@ -703,7 +687,6 @@ const Marketplace: React.FC = () => {
     fetchItems();
   }, []);
 
-  // 2. --- EXISTING CART ITEMS CHECK ---
   useEffect(() => {
     const fetchCartItems = async () => {
       if (!user.user?.email) return;
@@ -717,7 +700,7 @@ const Marketplace: React.FC = () => {
           setCartCount(items.length);
         }
       } catch (err) {
-        console.error("Failed to load existing cart items", err);
+        console.error("Failed to load cart", err);
       }
     };
     fetchCartItems();
@@ -728,44 +711,39 @@ const Marketplace: React.FC = () => {
     return items.filter((item) => {
       const matchesSearch =
         !q ||
-        item.title?.toLowerCase().includes(q) ||
+        item.title.toLowerCase().includes(q) ||
         item.desc?.toLowerCase().includes(q) ||
         item.subcategory?.toLowerCase().includes(q);
       const matchesPrice = item.price <= priceRange;
+
       const mainFilters = Object.keys(selectedSubcats);
       let matchesCategory = true;
       if (mainFilters.length > 0) {
-        if (!mainFilters.includes(item.category)) {
-          matchesCategory = false;
-        } else {
-          const subs = selectedSubcats[item.category] || [];
-          if (
-            subs.length > 0 &&
-            item.subcategory &&
-            !subs.includes(item.subcategory)
-          ) {
+        const relevantMain = Object.keys(CATEGORY_MAP).find((cat) =>
+          CATEGORY_MAP[cat].includes(item.subcategory || "")
+        );
+        if (relevantMain && mainFilters.includes(relevantMain)) {
+          const subs = selectedSubcats[relevantMain] || [];
+          if (subs.length > 0 && !subs.includes(item.subcategory || "")) {
             matchesCategory = false;
           }
+        } else if (relevantMain && !mainFilters.includes(relevantMain)) {
+          matchesCategory = false;
         }
       }
+
       return matchesSearch && matchesPrice && matchesCategory;
     });
   }, [items, searchQuery, selectedSubcats, priceRange]);
 
-  useEffect(
-    () => setCurrentPage(1),
-    [searchQuery, selectedSubcats, priceRange]
-  );
-  const totalPages = Math.max(
-    1,
-    Math.ceil(filteredItems.length / itemsPerPage)
-  );
+  useEffect(() => setCurrentPage(1), [searchQuery, selectedSubcats, priceRange]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredItems.length / itemsPerPage));
   const paginatedItems = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
     return filteredItems.slice(start, start + itemsPerPage);
   }, [filteredItems, currentPage]);
 
-  // --- 3. Add to Cart ---
   const addToCart = useCallback(
     async (item: Item) => {
       if (!user.user?.email) {
@@ -774,46 +752,44 @@ const Marketplace: React.FC = () => {
       }
 
       if (cartItemIds.includes(item.id)) {
-        toast.warning("This item is already in your cart!");
+        toast.warning("Already in cart!");
         return;
       }
 
       try {
-        const response = await fetch(`${API_URL}/cart/post`, {
+        const res = await fetch(`${API_URL}/cart/post`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             productId: item.id,
             name: item.title,
             price: item.price,
-            image: item.icon,
+            image: typeof item.icon === "string" ? item.icon : "",
             sellerEmail: item.seller,
             addedAt: new Date(),
             UserEmail: user.user?.email,
           }),
         });
 
-        if (response.ok) {
-          setCartCount((prev) => prev + 1);
-          setCartItemIds((prev) => [...prev, item.id]);
-          toast.success(`${item.title} added to cart!`);
+        if (res.ok) {
+          setCartCount((c) => c + 1);
+          setCartItemIds((ids) => [...ids, item.id]);
+          toast.success("Added to cart!");
         } else {
-          throw new Error("Failed");
+          toast.error("Failed to add");
         }
-      } catch (err: any) {
-        console.error("Cart Error:", err);
-        toast.error("Could not add to cart.");
+      } catch (err) {
+        toast.error("Network error");
       }
     },
     [user.user?.email, cartItemIds]
   );
 
-  // --- INSTANT PURCHASE LOGIC ---
+  // NOW USING SAME LOGIC AS CART PAGE
   const buyNow = async (item: Item) => {
-    const currentUserEmail = user.user?.email;
-
-    if (!currentUserEmail) {
-      toast.error("Please log in to purchase!");
+    const email = user.user?.email;
+    if (!email) {
+      toast.error("Please log in!");
       return;
     }
 
@@ -821,19 +797,30 @@ const Marketplace: React.FC = () => {
     setProcessingIds((prev) => [...prev, item.id]);
 
     try {
-      // Backend Payload
-      const payload = {
-        buyerEmail: currentUserEmail,
-        productName: item.title,
-        price: item.price,
-        sellerEmail: item.seller,
-        productId: item.id,
-      };
+      // 1. Add item to cart if not already there
+      if (!cartItemIds.includes(item.id)) {
+        await fetch(`${API_URL}/cart/post`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            productId: item.id,
+            name: item.title,
+            price: item.price,
+            image: typeof item.icon === "string" ? item.icon : "",
+            sellerEmail: item.seller,
+            addedAt: new Date(),
+            UserEmail: email,
+          }),
+        });
+        setCartItemIds((prev) => [...prev, item.id]);
+        setCartCount((prev) => prev + 1);
+      }
 
-      const res = await fetch(`${API_URL}/purchase/single-purchase`, {
+      // 2. Trigger full cart checkout (same as CartPage)
+      const res = await fetch(`${API_URL}/purchase/post`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({ email }),
       });
 
       const result = await res.json();
@@ -843,62 +830,47 @@ const Marketplace: React.FC = () => {
         try {
           await sendNotification({
             type: "buy",
-            title: "Purchase Successful",
-            message: `You successfully purchased ${
-              item.title
-            } for $${item.price.toFixed(2)}.`,
+            title: "Purchase Successful!",
+            message: `You bought ${item.title} for $${item.price.toFixed(2)}.`,
             data: { totalAmount: item.price, itemCount: 1 },
-            userEmail: currentUserEmail,
+            userEmail: email,
           } as any);
         } catch (notifErr) {
           console.error("Notification failed", notifErr);
         }
 
-        toast.success(
-          `Purchase Successful! New Balance: $${result.newBuyerBalance}`
-        );
+        toast.success(`Success! $${result.totalDeducted || item.price} deducted.`);
+        setCartItemIds([]);
+        setCartCount(0);
         setSelectedItem(null);
         refetch();
         navigate("/purchases");
       } else {
-        toast.error(result.message || "Purchase failed");
+        if (result.message?.includes("Insufficient")) {
+          toast.error(`Insufficient balance! Need $${result.required || item.price}`);
+        } else {
+          toast.error(result.message || "Purchase failed");
+        }
       }
-    } catch (err: any) {
-      console.error(err);
-      toast.error("Transaction Error: " + (err.message || "Network Error"));
+    } catch (err) {
+      toast.error("Transaction failed");
     } finally {
       setProcessingIds((prev) => prev.filter((id) => id !== item.id));
     }
   };
 
-// --- SMART PAGINATION LOGIC (1... 155) ---
   const getPageNumbers = () => {
-    const totalNumbers = 5; // মোট কয়টা বাটন দেখাবেন (ডট বাদে)
-    const totalBlocks = totalNumbers + 2; // ডট সহ মোট ব্লক
+    if (totalPages <= 7) return Array.from({ length: totalPages }, (_, i) => i + 1);
 
-    if (totalPages > totalBlocks) {
-      const startPage = Math.max(2, currentPage - 1);
-      const endPage = Math.min(totalPages - 1, currentPage + 1);
-
-      let pages: (number | string)[] = [1];
-
-      if (currentPage <= 3) {
-        pages = [1, 2, 3, 4, "...", totalPages];
-      }
-   
-      else if (currentPage >= totalPages - 2) {
-        pages = [1, "...", totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
-      }
-
-      else {
-        pages = [1, "...", startPage, currentPage, endPage, "...", totalPages];
-      }
-      
-      return pages;
+    const pages: (number | string)[] = [1];
+    if (currentPage <= 4) {
+      pages.push(2, 3, 4, 5, "...", totalPages);
+    } else if (currentPage >= totalPages - 3) {
+      pages.push("...", totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+    } else {
+      pages.push("...", currentPage - 1, currentPage, currentPage + 1, "...", totalPages);
     }
-
-    // যদি পেজ সংখ্যা কম হয়, সব দেখাবে
-    return Array.from({ length: totalPages }, (_, i) => i + 1);
+    return pages;
   };
 
   return (
@@ -911,6 +883,7 @@ const Marketplace: React.FC = () => {
           </button>
         </div>
       )}
+
       <div className="max-w-screen-2xl mx-auto px-4 py-6">
         <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
           <div className="flex items-center gap-3">
@@ -918,48 +891,27 @@ const Marketplace: React.FC = () => {
               onClick={() => setDrawerOpen(true)}
               className="lg:hidden p-2 bg-white border rounded-md shadow-sm"
             >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             </button>
             <div>
-              <h1 className="text-2xl lg:text-3xl font-bold text-[#0A1A3A]">
-                Marketplace
-              </h1>
-              <p className="text-sm text-gray-500">
-                Verified sellers • Instant delivery
-              </p>
+              <h1 className="text-2xl lg:text-3xl font-bold text-[#0A1A3A]">Marketplace</h1>
+              <p className="text-sm text-gray-500">Verified sellers • Instant delivery</p>
             </div>
           </div>
+
           <div className="hidden md:flex items-center gap-4">
             <div className="flex bg-white rounded-lg border overflow-hidden p-1">
               <button
                 onClick={() => setViewMode("list")}
-                className={`px-3 py-1.5 rounded-md text-sm ${
-                  viewMode === "list"
-                    ? "bg-gray-900 text-white"
-                    : "text-gray-600"
-                }`}
+                className={`px-3 py-1.5 rounded-md text-sm ${viewMode === "list" ? "bg-gray-900 text-white" : "text-gray-600"}`}
               >
                 List
               </button>
               <button
                 onClick={() => setViewMode("grid")}
-                className={`px-3 py-1.5 rounded-md text-sm ${
-                  viewMode === "grid"
-                    ? "bg-gray-900 text-white"
-                    : "text-gray-600"
-                }`}
+                className={`px-3 py-1.5 rounded-md text-sm ${viewMode === "grid" ? "bg-gray-900 text-white" : "text-gray-600"}`}
               >
                 Grid
               </button>
@@ -975,6 +927,7 @@ const Marketplace: React.FC = () => {
               <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             </div>
           </div>
+
           <div className="flex items-center gap-3">
             <button
               onClick={() => setMobileSearchOpen(true)}
@@ -982,10 +935,7 @@ const Marketplace: React.FC = () => {
             >
               <SearchIcon />
             </button>
-            <Link
-              to="/cart"
-              className="relative p-3 bg-white border rounded-lg shadow-sm"
-            >
+            <Link to="/cart" className="relative p-3 bg-white border rounded-lg shadow-sm">
               <ShoppingCartIcon />
               {cartCount > 0 && (
                 <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full">
@@ -1064,7 +1014,6 @@ const Marketplace: React.FC = () => {
                     viewMode={viewMode}
                     onAddToCart={addToCart}
                     onView={setSelectedItem}
-                    onBuy={buyNow}
                     isProcessing={processingIds.includes(item.id)}
                     isAdded={cartItemIds.includes(item.id)}
                   />
@@ -1072,49 +1021,30 @@ const Marketplace: React.FC = () => {
               </div>
             )}
 
-            {/* --- IMPROVED PAGINATION UI (1...155) --- */}
             {totalPages > 1 && (
               <div className="flex justify-center items-center gap-2 mt-8 select-none">
-                {/* Previous Button */}
                 <button
                   disabled={currentPage === 1}
                   onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                   className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
-                  <svg
-                    className="w-4 h-4 text-gray-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M15 19l-7-7 7-7"
-                    />
+                  <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                   </svg>
                 </button>
 
-                {/* Page Numbers */}
                 <div className="flex items-center gap-1">
-                  {getPageNumbers().map((page, index) =>
+                  {getPageNumbers().map((page, i) =>
                     page === "..." ? (
-                      <span
-                        key={`dots-${index}`}
-                        className="px-2 text-gray-400 font-medium"
-                      >
-                        ...
-                      </span>
+                      <span key={i} className="px-2 text-gray-400">...</span>
                     ) : (
                       <button
                         key={page}
-                        onClick={() => setCurrentPage(Number(page))}
-                        className={`min-w-[36px] h-9 px-3 flex items-center justify-center rounded-lg text-sm font-semibold border transition-all duration-200 
-                          ${
-                            currentPage === page
-                              ? "bg-[#33ac6f] border-[#33ac6f] text-white shadow-md transform scale-105"
-                              : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400"
+                        onClick={() => setCurrentPage(page as number)}
+                        className={`min-w-[36px] h-9 px-3 rounded-lg text-sm font-semibold border transition-all
+                          ${currentPage === page
+                            ? "bg-[#33ac6f] border-[#33ac6f] text-white shadow-md"
+                            : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
                           }`}
                       >
                         {page}
@@ -1123,26 +1053,13 @@ const Marketplace: React.FC = () => {
                   )}
                 </div>
 
-                {/* Next Button */}
                 <button
                   disabled={currentPage === totalPages}
-                  onClick={() =>
-                    setCurrentPage((p) => Math.min(totalPages, p + 1))
-                  }
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                   className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
-                  <svg
-                    className="w-4 h-4 text-gray-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 5l7 7-7 7"
-                    />
+                  <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
                 </button>
               </div>
@@ -1167,10 +1084,7 @@ const Marketplace: React.FC = () => {
           drawerOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div
-          className="absolute inset-0 bg-black/50"
-          onClick={() => setDrawerOpen(false)}
-        />
+        <div className="absolute inset-0 bg-black/50" onClick={() => setDrawerOpen(false)} />
         <aside className="relative bg-white w-80 h-full overflow-y-auto p-6 shadow-xl">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-bold">Filters</h2>
@@ -1183,13 +1097,11 @@ const Marketplace: React.FC = () => {
             setSelectedSubcats={setSelectedSubcats}
           />
           <div className="mt-8">
-            <label className="font-semibold block mb-2">
-              Max Price: ${priceRange}
-            </label>
+            <label className="font-semibold block mb-2">Max Price: ${priceRange}</label>
             <input
               type="range"
               min="0"
-              max={100}
+              max="100"
               value={priceRange}
               onChange={(e) => setPriceRange(Number(e.target.value))}
               className="w-full accent-[#33ac6f]"
