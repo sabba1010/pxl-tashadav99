@@ -195,11 +195,10 @@ const MyAds: React.FC = () => {
               <button
                 key={t}
                 onClick={() => setActiveTab(t)}
-                className={`pb-2 text-sm whitespace-nowrap transition-all ${
-                  activeTab === t
+                className={`pb-2 text-sm whitespace-nowrap transition-all ${activeTab === t
                     ? "text-[#d4a643] border-b-2 border-[#d4a643] font-bold"
                     : "text-gray-500"
-                }`}
+                  }`}
               >
                 <span className="flex items-center gap-2">
                   {t}
@@ -209,126 +208,126 @@ const MyAds: React.FC = () => {
             ))}
           </div>
         </div>
-         <div className="bg-white rounded-2xl shadow-sm border p-6">
-        {/* Cards - Now matching Marketplace ItemCard height & style exactly */}
-        <div className="space-y-4 ">
-          {filtered.length === 0 ? (
-            <div className="bg-white rounded-3xl p-12 text-center shadow-md border border-gray-100">
-              <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-5">
-                <Filter size={32} className="text-gray-400" />
-              </div>
-              <h3 className="text-lg font-bold text-[#0A1A3A] mb-2">
-                No ads found
-              </h3>
-              <p className="text-gray-500 max-w-sm mx-auto">
-                {activeTab === "All"
-                  ? "You haven't created any listings yet."
-                  : `No items in the "${activeTab}" category.`}
-              </p>
-              {activeTab === "All" && (
-                <Link
-                  to="/selling-form"
-                  className="inline-block mt-5 text-[#33ac6f] font-semibold hover:underline"
-                >
-                  Create your first listing →
-                </Link>
-              )}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 gap-4 ">
-              {filtered.map((item) => (
-                <div
-                  key={item._id}
-                  className="bg-[#f8fafb] rounded-xl shadow-sm hover:shadow-md border border-gray-100 transition-all duration-200 p-4 flex items-top gap-4"
-                >
-                  {/* Icon - Same as Marketplace list mode */}
-                  <div className="flex-shrink-0">
-                    <div className="w-12 h-12 rounded-xl bg-gray-50 border border-gray-200 flex items-center justify-center overflow-hidden shadow-sm">
-                      <img
-                        src={item.categoryIcon}
-                        alt={item.category}
-                        className="w-9 h-9 object-contain"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Title, Description, Status */}
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-bold text-sm text-[#0A1A3A] truncate">
-                      {item.name}
-                    </h3>
-                    <p className="text-xs text-gray-600 mt-1 line-clamp-2">
-                      {item.description || "No description provided"}
-                    </p>
-
-                    {/* Status Badge */}
-                    <div className="mt-2">
-                      <span
-                        className={`inline-flex px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider ${getStatusColor(
-                          item.status
-                        )}`}
-                      >
-                        {prettyStatusLabel(item.status)}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Price & Actions */}
-                  <div className="flex flex-col items-end gap-3">
-                     <span className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">
-                            Price
-                          </span>
-                    <div className="text-base font-bold text-[#0A1A3A] text-[20px]">
-                      ${item.price}
-                    </div>
-
-                    <div className="flex items-center gap-1">
-                      {statusOf(item.status) === "restore" && (
-                        <button
-                          onClick={() => handleRestore(item._id)}
-                          className="p-2 border rounded-md hover:bg-emerald-50 text-emerald-600 transition"
-                          title="Restore"
-                        >
-                          <RefreshCw size={15} />
-                        </button>
-                      )}
-
-                      <button
-                        onClick={() => handleEdit(item._id)}
-                        className="p-2 border rounded-md hover:bg-gray-50 text-gray-600 transition"
-                        title="Edit"
-                      >
-                        <Edit size={15} />
-                      </button>
-
-                      <button
-                        onClick={() => handleDelete(item._id)}
-                        className="p-2 border rounded-md hover:bg-red-50 text-gray-600 hover:text-red-600 transition"
-                        title="Delete"
-                      >
-                        <Trash2 size={15} />
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Reject Reason - Only if needed */}
-                  {(statusOf(item.status) === "denied" ||
-                    statusOf(item.status) === "reject") &&
-                    item.rejectReason && (
-                      <div className="col-span-full mt-3 p-3 bg-rose-50 border border-rose-200 rounded-lg flex items-start gap-2 text-xs">
-                        <AlertCircle size={14} className="text-rose-600 mt-0.5 flex-shrink-0" />
-                        <div>
-                          <p className="font-bold text-rose-800">Action Required</p>
-                          <p className="text-rose-700">{item.rejectReason}</p>
-                        </div>
-                      </div>
-                    )}
+        <div className="bg-white rounded-2xl shadow-sm border p-6">
+          {/* Cards - Now matching Marketplace ItemCard height & style exactly */}
+          <div className="space-y-4 ">
+            {filtered.length === 0 ? (
+              <div className="bg-white rounded-3xl p-12 text-center shadow-md border border-gray-100">
+                <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-5">
+                  <Filter size={32} className="text-gray-400" />
                 </div>
-              ))}
-            </div>
-          )}
+                <h3 className="text-lg font-bold text-[#0A1A3A] mb-2">
+                  No ads found
+                </h3>
+                <p className="text-gray-500 max-w-sm mx-auto">
+                  {activeTab === "All"
+                    ? "You haven't created any listings yet."
+                    : `No items in the "${activeTab}" category.`}
+                </p>
+                {activeTab === "All" && (
+                  <Link
+                    to="/selling-form"
+                    className="inline-block mt-5 text-[#33ac6f] font-semibold hover:underline"
+                  >
+                    Create your first listing →
+                  </Link>
+                )}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-4 ">
+                {filtered.map((item) => (
+                  <div
+                    key={item._id}
+                    className="bg-[#f8fafb] rounded-xl shadow-sm hover:shadow-md border border-gray-100 transition-all duration-200 p-4 flex items-top gap-4"
+                  >
+                    {/* Icon - Same as Marketplace list mode */}
+                    <div className="flex-shrink-0">
+                      <div className="w-12 h-12 rounded-xl bg-gray-50 border border-gray-200 flex items-center justify-center overflow-hidden shadow-sm">
+                        <img
+                          src={item.categoryIcon}
+                          alt={item.category}
+                          className="w-9 h-9 object-contain"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Title, Description, Status */}
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-bold text-sm text-[#0A1A3A] truncate">
+                        {item.name}
+                      </h3>
+                      <p className="text-xs text-gray-600 mt-1 line-clamp-2">
+                        {item.description || "No description provided"}
+                      </p>
+
+                      {/* Status Badge */}
+                      <div className="mt-2">
+                        <span
+                          className={`inline-flex px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider ${getStatusColor(
+                            item.status
+                          )}`}
+                        >
+                          {prettyStatusLabel(item.status)}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Price & Actions */}
+                    <div className="flex flex-col items-end gap-3">
+                      <span className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">
+                        Price
+                      </span>
+                      <div className="text-base font-bold text-[#0A1A3A] text-[20px]">
+                        ${item.price}
+                      </div>
+
+                      <div className="flex items-center gap-1">
+                        {statusOf(item.status) === "restore" && (
+                          <button
+                            onClick={() => handleRestore(item._id)}
+                            className="p-2 border rounded-md hover:bg-emerald-50 text-emerald-600 transition"
+                            title="Restore"
+                          >
+                            <RefreshCw size={15} />
+                          </button>
+                        )}
+
+                        <button
+                          onClick={() => handleEdit(item._id)}
+                          className="p-2 border rounded-md hover:bg-gray-50 text-gray-600 transition"
+                          title="Edit"
+                        >
+                          <Edit size={15} />
+                        </button>
+
+                        <button
+                          onClick={() => handleDelete(item._id)}
+                          className="p-2 border rounded-md hover:bg-red-50 text-gray-600 hover:text-red-600 transition"
+                          title="Delete"
+                        >
+                          <Trash2 size={15} />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Reject Reason - Only if needed */}
+                    {(statusOf(item.status) === "denied" ||
+                      statusOf(item.status) === "reject") &&
+                      item.rejectReason && (
+                        <div className="col-span-full mt-3 p-3 bg-rose-50 border border-rose-200 rounded-lg flex items-start gap-2 text-xs">
+                          <AlertCircle size={14} className="text-rose-600 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <p className="font-bold text-rose-800">Action Required</p>
+                            <p className="text-rose-700">{item.rejectReason}</p>
+                          </div>
+                        </div>
+                      )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
-</div>
       </div>
     </div>
   );
