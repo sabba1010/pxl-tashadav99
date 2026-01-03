@@ -29,7 +29,6 @@ const FaCommentsIcon = FaComments as any;
 const FaPaperPlaneIcon = FaPaperPlane as any;
 const FaClockIcon = FaClock as any;
 const FaFlagIcon = FaFlag as any;
-const FaGlobeIcon = FaGlobe as any;
 
 /* ---------------------------------------------
    Types & Interfaces
