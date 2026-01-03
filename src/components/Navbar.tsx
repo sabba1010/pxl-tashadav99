@@ -45,7 +45,7 @@ export default function Navbar() {
   const navigate = useNavigate();
 
   const loginUserData = useAuthHook();
-  console.log(loginUserData.data);
+  // console.log(loginUserData.data);
   const currentUserEmail =
     loginUserData.data?.email || localStorage.getItem("userEmail");
 
