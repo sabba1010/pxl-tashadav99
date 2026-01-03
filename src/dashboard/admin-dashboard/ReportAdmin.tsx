@@ -7,7 +7,7 @@ import {
 import Swal from 'sweetalert2';
 
 // API Base URL
-const API_URL = 'http://localhost:3200/purchase/report';
+const API_URL = 'https://vps-backend-server-beta.vercel.app/purchase/report';
 
 interface IReport {
     _id: string;

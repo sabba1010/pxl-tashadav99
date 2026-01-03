@@ -38,7 +38,7 @@ const Post: React.FC = () => {
 
     try {
       const res = await axios.post(
-        "http://localhost:3200/api/notification/notify",
+        "https://vps-backend-server-beta.vercel.app/api/notification/notify",
         formData
       );
 

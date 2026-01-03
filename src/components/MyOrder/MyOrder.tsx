@@ -247,9 +247,9 @@ const MyOrder: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  const PURCHASE_API = "http://localhost:3200/purchase";
-  const CHAT_API = "http://localhost:3200/chat";
-  const USER_API = "http://localhost:3200/user";
+  const PURCHASE_API = "https://vps-backend-server-beta.vercel.app/purchase";
+  const CHAT_API = "https://vps-backend-server-beta.vercel.app/chat";
+  const USER_API = "https://vps-backend-server-beta.vercel.app/user";
 
   const playNotificationSound = () => {
     const audio = new Audio(NOTIFICATION_SOUND);
