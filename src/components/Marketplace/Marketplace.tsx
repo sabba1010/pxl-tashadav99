@@ -10,7 +10,6 @@ import { IconType } from "react-icons";
 import {
   FaWhatsapp,
   FaEnvelope,
-  FaPlus,
   FaBullhorn,
   FaFacebookF,
   FaInstagram,
@@ -47,8 +46,6 @@ import {
   MdVpnLock,
   MdLocalOffer,
 } from "react-icons/md";
-import { BiSolidPurchaseTag } from "react-icons/bi";
-
 import { sendNotification } from "../Notification/Notification";
 import { useAuth } from "../../context/AuthContext";
 import { toast } from "sonner";
@@ -59,8 +56,6 @@ const ShoppingCartIcon = FaShoppingCart as React.ElementType;
 const EyeIcon = FaEye as React.ElementType;
 const TimesIcon = FaTimes as React.ElementType;
 const SearchIcon = FaSearch as React.ElementType;
-const PlusIcon = FaPlus as React.ElementType;
-const PurchaseIcon = BiSolidPurchaseTag as React.ElementType;
 const CheckIcon = FaCheck as React.ElementType;
 const ExternalLinkIcon = FaExternalLinkAlt as React.ElementType;
 

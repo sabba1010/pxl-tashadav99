@@ -29,7 +29,6 @@ const FaCommentsIcon = FaComments as any;
 const FaPaperPlaneIcon = FaPaperPlane as any;
 const FaClockIcon = FaClock as any;
 const FaFlagIcon = FaFlag as any;
-const FaGlobeIcon = FaGlobe as any;
 
 /* ---------------------------------------------
    Types & Interfaces
@@ -152,6 +151,10 @@ const MyPurchase: React.FC = () => {
   const [activeChatSellerEmail, setActiveChatSellerEmail] = useState<string | null>(null);
   const [activeChatOrderId, setActiveChatOrderId] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const BASE_URL = "http://localhost:3200";
   const PURCHASE_API = `${BASE_URL}/purchase`;
@@ -307,6 +310,27 @@ const MyPurchase: React.FC = () => {
     return purchases.filter((p) => p.status === activeTab);
   }, [activeTab, purchases]);
 
+  useEffect(() => setCurrentPage(1), [activeTab, purchases]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / itemsPerPage));
+  const paginated = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filtered.slice(start, start + itemsPerPage);
+  }, [filtered, currentPage]);
+
+  const getPageNumbers = () => {
+    if (totalPages <= 7) return Array.from({ length: totalPages }, (_, i) => i + 1);
+    const pages: (number | string)[] = [1];
+    if (currentPage <= 4) {
+      pages.push(2, 3, 4, 5, "...", totalPages);
+    } else if (currentPage >= totalPages - 3) {
+      pages.push("...", totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+    } else {
+      pages.push("...", currentPage - 1, currentPage, currentPage + 1, "...", totalPages);
+    }
+    return pages;
+  };
+
   const renderBadge = (platform: PlatformType, size = 36) => {
     const IconComp = getPlatformIcon(platform) as any;
     return (
@@ -345,7 +369,7 @@ const MyPurchase: React.FC = () => {
                 <Link to="/marketplace" className="bg-[#33ac6f] text-white px-6 py-2 rounded-full text-sm">Browse Shop</Link>
               </div>
             ) : (
-              filtered.map((p) => (
+              (paginated.length > 0 ? paginated : filtered).map((p) => (
                 <div key={p.id} className="bg-[#F8FAFB] border rounded-xl p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:shadow-md transition">
                   <div className="flex gap-4">
                     {renderBadge(p.platform)}
@@ -388,6 +412,51 @@ const MyPurchase: React.FC = () => {
           </div>
         </div>
       </div>
+      {totalPages > 1 && (
+        <div className="max-w-screen-xl mx-auto mt-4 px-4 sm:px-6">
+          <div className="flex justify-center items-center gap-2 mt-4 select-none">
+            <button
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+
+            <div className="flex items-center gap-1">
+              {getPageNumbers().map((page, i) =>
+                page === "..." ? (
+                  <span key={i} className="px-2 text-gray-400">...</span>
+                ) : (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentPage(page as number)}
+                    className={`min-w-[36px] h-9 px-3 rounded-lg text-sm font-semibold border transition-all
+                      ${currentPage === page
+                        ? "bg-[#33ac6f] border-[#33ac6f] text-white shadow-md"
+                        : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+                      }`}
+                  >
+                    {page}
+                  </button>
+                )
+              )}
+            </div>
+
+            <button
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Details Modal with Timer */}
       {selected && (
