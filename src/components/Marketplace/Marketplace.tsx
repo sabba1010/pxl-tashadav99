@@ -1110,12 +1110,12 @@ const Marketplace: React.FC = () => {
         </aside>
       </div>
 
-      <Link
+      {/* <Link
         to="/seller-pay"
         className="fixed bottom-6 right-6 w-14 h-14 bg-[#33ac6f] text-white rounded-full shadow-lg flex items-center justify-center hover:bg-[#28965e] transition z-40"
       >
         <PlusIcon size={24} />
-      </Link>
+      </Link> */}
     </div>
   );
 };
