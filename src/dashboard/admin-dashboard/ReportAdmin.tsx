@@ -97,7 +97,7 @@ const ReportAdmin: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-[#F9FAFB] p-4 lg:p-10 font-sans">
-            <div className="max-w-7xl mx-auto">
+            <div className=" mx-auto">
                 
                 {/* Header & Search Section */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
