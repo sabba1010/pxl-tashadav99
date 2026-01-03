@@ -52,6 +52,7 @@ import SellerPrivateRoute from "./SellerPrivateRoute";
 import SubscriptionPayment from "../components/Payment/SubscriptionPayment";
 import Test from "../components/Test";
 import ReportAdmin from "../dashboard/admin-dashboard/ReportAdmin";
+import RefDetails from "../dashboard/admin-dashboard/RefDetails";
 
 const Routes = createBrowserRouter([
   {
@@ -234,6 +235,10 @@ const Routes = createBrowserRouter([
       {
         path: "report",
         element: <ReportAdmin />,
+      },
+      {
+        path: "ref",
+        element:<RefDetails/>,
       },
     ],
   },
