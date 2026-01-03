@@ -152,7 +152,7 @@ const MyPurchase: React.FC = () => {
   const [activeChatOrderId, setActiveChatOrderId] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Pagination
+  // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
@@ -213,10 +213,7 @@ const MyPurchase: React.FC = () => {
   const handleUpdateStatus = async (status: string, sellerEmail: string) => {
     if (!selected) return;
     try {
-      await axios.patch(`${PURCHASE_API}/update-status/${selected.id}`, {
-        status,
-        sellerEmail,
-      });
+      await axios.patch(`${PURCHASE_API}/update-status/${selected.id}`, { status, sellerEmail });
       toast.success(`Order ${status} successfully!`);
       setSelected(null);
       fetchPurchases();
@@ -301,41 +298,48 @@ const MyPurchase: React.FC = () => {
     return purchases.filter((p) => p.status === activeTab);
   }, [activeTab, purchases]);
 
-  useEffect(() => setCurrentPage(1), [activeTab, purchases]);
+  useEffect(() => setCurrentPage(1), [activeTab]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / itemsPerPage));
+  
   const paginated = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
     return filtered.slice(start, start + itemsPerPage);
   }, [filtered, currentPage]);
 
-  /* ---------------------------------------------
-     Dynamic Pagination Logic (1... Last)
-  ---------------------------------------------- */
-  const getPageNumbers = () => {
+  // Improved Pagination Logic for Dots (...)
+const pageNumbers = useMemo(() => {
     const pages: (number | string)[] = [];
-    const showMax = 1; // বর্তমান পেজের পাশে কয়টি পেজ দেখাবে
+    const maxVisibleBeforeDots = 4; // ৪ নম্বর পর্যন্ত সরাসরি দেখাবে
 
     if (totalPages <= 5) {
+      // ৫ বা তার কম পেজ হলে সব দেখাবে
       for (let i = 1; i <= totalPages; i++) pages.push(i);
     } else {
-      pages.push(1); // ১ নম্বর সবসময় থাকবে
-
-      if (currentPage > showMax + 2) pages.push("...");
-
-      const start = Math.max(2, currentPage - showMax);
-      const end = Math.min(totalPages - 1, currentPage + showMax);
-
-      for (let i = start; i <= end; i++) {
-        pages.push(i);
+      // যদি পেজ সংখ্যা ৫ এর বেশি হয়
+      if (currentPage <= maxVisibleBeforeDots - 1) {
+        // ইউজার শুরুতে থাকলে: ১ ২ ৩ ৪ ... ২০
+        for (let i = 1; i <= maxVisibleBeforeDots; i++) pages.push(i);
+        pages.push("...");
+        pages.push(totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        // ইউজার শেষে থাকলে: ১ ... ১৭ ১৮ ১৯ ২০
+        pages.push(1);
+        pages.push("...");
+        for (let i = totalPages - 3; i <= totalPages; i++) pages.push(i);
+      } else {
+        // ইউজার মাঝখানে থাকলে: ১ ... ৫ ৬ ৭ ... ২০
+        pages.push(1);
+        pages.push("...");
+        pages.push(currentPage - 1);
+        pages.push(currentPage);
+        pages.push(currentPage + 1);
+        pages.push("...");
+        pages.push(totalPages);
       }
-
-      if (currentPage < totalPages - (showMax + 1)) pages.push("...");
-
-      pages.push(totalPages); // শেষ পেজ সবসময় থাকবে
     }
     return pages;
-  };
+  }, [currentPage, totalPages]);
 
   const renderBadge = (platform: PlatformType, size = 36) => {
     const IconComp = getPlatformIcon(platform) as any;
@@ -416,59 +420,153 @@ const MyPurchase: React.FC = () => {
             )}
           </div>
         </div>
+
+        {/* Pagination Section - Fixed Design & Logic */}
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center gap-2 mt-8 mb-10 select-none">
+            <button
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              className="p-2.5 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm"
+            >
+              <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+
+            <div className="flex items-center gap-1.5">
+              {pageNumbers.map((page, i) =>
+                page === "..." ? (
+                  <span key={`dots-${i}`} className="px-2 text-gray-400 font-bold">...</span>
+                ) : (
+                  <button
+                    key={`page-${page}`}
+                    onClick={() => setCurrentPage(page as number)}
+                    className={`min-w-[38px] h-[38px] px-3 rounded-lg text-sm font-bold border transition-all duration-200
+                      ${currentPage === page
+                        ? "bg-[#33ac6f] border-[#33ac6f] text-white shadow-md transform scale-105"
+                        : "bg-white border-gray-300 text-gray-700 hover:border-[#33ac6f] hover:text-[#33ac6f]"
+                      }`}
+                  >
+                    {page}
+                  </button>
+                )
+              )}
+            </div>
+
+            <button
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              className="p-2.5 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm"
+            >
+              <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* Pagination View */}
-      {totalPages > 1 && (
-        <div className="max-w-screen-xl mx-auto mt-6 flex justify-center items-center gap-1">
-          <button
-            disabled={currentPage === 1}
-            onClick={() => setCurrentPage(p => p - 1)}
-            className="p-2 border rounded-lg bg-white disabled:opacity-30 hover:bg-gray-50"
-          >
-            <ChevronLeft size={18} />
-          </button>
+      {/* Modals & Chat remain unchanged as per request */}
+      {selected && (
+        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-white w-full max-w-lg rounded-t-3xl sm:rounded-2xl p-6 relative animate-in slide-in-from-bottom-5">
+            <button onClick={() => setSelected(null)} className="absolute right-6 top-6 text-gray-400"><FaTimesIcon size={20} /></button>
+            <div className="text-center mb-6">
+              {renderBadge(selected.platform, 60)}
+              <h2 className="text-xl font-bold mt-4">{selected.title}</h2>
+              <p className="text-3xl font-black text-[#33ac6f] mt-2">${selected.price.toFixed(2)}</p>
+            </div>
+            
+            <div className="space-y-3 border-t pt-4 text-sm">
+              <div className="flex justify-between"><span className="text-gray-500">Seller</span><span className="font-medium">{selected.sellerEmail}</span></div>
+              <div className="flex justify-between"><span className="text-gray-500">Order ID</span><span className="font-mono font-bold">{selected.id}</span></div>
+              <div className="flex justify-between"><span className="text-gray-500">Date</span><span>{selected.date}</span></div>
+            </div>
 
-          {getPageNumbers().map((page, idx) => (
-            page === "..." ? (
-              <span key={`dots-${idx}`} className="px-2 text-gray-400">...</span>
-            ) : (
-              <button
-                key={`page-${page}`}
-                onClick={() => setCurrentPage(page as number)}
-                className={`w-9 h-9 rounded-lg text-sm font-bold border transition-all ${
-                  currentPage === page 
-                  ? "bg-[#33ac6f] border-[#33ac6f] text-white shadow-md" 
-                  : "bg-white border-gray-200 text-gray-600 hover:bg-gray-50"
-                }`}
-              >
-                {page}
-              </button>
-            )
-          ))}
-
-          <button
-            disabled={currentPage === totalPages}
-            onClick={() => setCurrentPage(p => p + 1)}
-            className="p-2 border rounded-lg bg-white disabled:opacity-30 hover:bg-gray-50"
-          >
-            <ChevronRight size={18} />
-          </button>
+            {selected.status === "Pending" && (
+              <div className="mt-8 space-y-3">
+                <div className="bg-amber-50 p-3 rounded-lg border border-amber-100 flex items-center gap-3">
+                   <FaClockIcon className="text-amber-600 animate-pulse" />
+                   <p className="text-xs text-amber-800">
+                     Auto-cancels in: <strong>{getRemainingTime(selected.rawDate)}</strong>
+                   </p>
+                </div>
+                <button onClick={() => handleUpdateStatus("completed", selected.sellerEmail)} className="w-full bg-[#33ac6f] text-white py-3 rounded-xl font-bold hover:bg-[#2aa46a]">Confirm & Complete Order</button>
+              </div>
+            )}
+          </div>
         </div>
       )}
 
-      {/* Modals & Chat remain the same as provided in previous code */}
-      {/* ... (Selected Modal, Report Modal, Chat logic) */}
+      {isReportModalOpen && reportTargetOrder && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md">
+          <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="bg-red-600 p-4 flex justify-between items-center text-white">
+              <h3 className="font-bold flex items-center gap-2"><FaFlagIcon /> Report Order</h3>
+              <button onClick={() => setIsReportModalOpen(false)}><FaTimesIcon /></button>
+            </div>
+            <form onSubmit={handleReportSubmit} className="p-6 space-y-4">
+              <div className="bg-gray-50 p-3 rounded text-center border">
+                <p className="text-[10px] text-gray-400 uppercase">Order Ref</p>
+                <p className="font-mono text-sm font-bold">{reportTargetOrder.purchaseNumber}</p>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1">Reason</label>
+                <select value={reportReason} onChange={(e) => setReportReason(e.target.value)} className="w-full border p-2.5 rounded-lg text-sm outline-none focus:ring-2 focus:ring-red-200">
+                  {REPORT_REASONS.map(r => <option key={r} value={r}>{r}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1">Details</label>
+                <textarea value={reportMessage} onChange={(e) => setReportMessage(e.target.value)} placeholder="Describe the issue..." className="w-full border p-3 rounded-lg text-sm h-32 focus:ring-2 focus:ring-red-200" required />
+              </div>
+              <div className="flex gap-2">
+                <button type="button" onClick={() => setIsReportModalOpen(false)} className="flex-1 py-2.5 text-gray-500 font-medium">Cancel</button>
+                <button type="submit" disabled={isSubmittingReport} className="flex-1 bg-red-600 text-white py-2.5 rounded-xl font-bold hover:bg-red-700 disabled:opacity-50">
+                  {isSubmittingReport ? "Sending..." : "Submit Report"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {isChatOpen && (
+        <div className="fixed inset-0 z-[120] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60">
+          <div className="bg-[#ECE5DD] w-full max-w-md h-[90vh] sm:h-[600px] sm:rounded-2xl overflow-hidden flex flex-col shadow-2xl">
+            <div className="bg-white p-4 border-b flex justify-between items-center">
+               <div className="flex items-center gap-3">
+                 <div className="w-10 h-10 bg-[#33ac6f] rounded-full flex items-center justify-center text-white font-bold uppercase">{activeChatSellerEmail?.[0]}</div>
+                 <span className="font-bold text-sm truncate max-w-[150px]">{activeChatSellerEmail}</span>
+               </div>
+               <button onClick={() => setIsChatOpen(false)} className="p-2 text-gray-400 hover:text-red-500"><FaTimesIcon size={20} /></button>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto p-4 space-y-3">
+               {chatMessages.map((m, i) => {
+                 const isMe = m.senderId === buyerId;
+                 return (
+                   <div key={i} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
+                     <div className={`max-w-[80%] p-3 rounded-2xl text-sm shadow-sm ${isMe ? 'bg-[#D9FDD3] text-gray-800 rounded-tr-none' : 'bg-white text-gray-800 rounded-tl-none'}`}>
+                        {m.message}
+                        <p className="text-[9px] text-gray-400 text-right mt-1">{timeAgo(m.createdAt)}</p>
+                     </div>
+                   </div>
+                 );
+               })}
+               <div ref={scrollRef} />
+            </div>
+
+            <form onSubmit={sendChat} className="p-3 bg-white border-t flex gap-2">
+               <input value={typedMessage} onChange={(e) => setTypedMessage(e.target.value)} className="flex-1 bg-gray-100 p-3 rounded-full text-sm outline-none" placeholder="Type a message..." />
+               <button type="submit" className="bg-[#33ac6f] text-white p-3 rounded-full"><FaPaperPlaneIcon size={16} /></button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
-
-// Simple Chevron Icons for Pagination if not imported
-const ChevronLeft = ({size}: {size: number}) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-);
-const ChevronRight = ({size}: {size: number}) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-);
 
 export default MyPurchase;
