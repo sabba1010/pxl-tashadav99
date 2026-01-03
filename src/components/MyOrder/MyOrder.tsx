@@ -912,13 +912,13 @@ const MyOrder: React.FC = () => {
           </div>
         </>
       )}
-
+{/* 
       <Link
         to="/add-product"
         className="hidden sm:flex fixed bottom-6 right-6 w-14 h-14 bg-[#33ac6f] text-white rounded-full shadow-2xl items-center justify-center text-xl hover:scale-110 transition-transform"
       >
         <FaPlusIcon />
-      </Link>
+      </Link> */}
     </>
   );
 };
