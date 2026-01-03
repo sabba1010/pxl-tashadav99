@@ -12,7 +12,7 @@ import { useAuthHook } from "../../hook/useAuthHook";
 
 const ReferralProgram: React.FC = () => {
   const { data } = useAuthHook();
-  const referralLink = `http://localhost:3200/?ref/${data?.referralCode}`;
+  const referralLink = `http://localhost:3000/register?ref=${data?.referralCode}`;
 
   const [copied, setCopied] = React.useState(false);
 
