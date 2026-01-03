@@ -12,34 +12,28 @@ import {
   FaTwitter,
   FaWhatsapp,
   FaTelegram,
-  FaPlus,
   FaTimes,
   FaEye,
-  FaStar,
   FaComments,
   FaGlobe,
   FaPaperPlane,
   FaSmile,
-  FaPaperclip,
-  FaCircle,
-  FaCheck, // Added for Confirm button
+ // Added for Confirm button
   FaBan, // Added for Cancel button
 } from "react-icons/fa";
 
 /* ---------------------------------------------
    Icon casts & Brand Assets
 ---------------------------------------------- */
-const FaPlusIcon = FaPlus as unknown as React.ComponentType<any>;
+
 const FaTimesIcon = FaTimes as unknown as React.ComponentType<any>;
-const FaStarIcon = FaStar as unknown as React.ComponentType<any>;
+
 const FaCommentsIcon = FaComments as unknown as React.ComponentType<any>;
 const FaEyeIcon = FaEye as unknown as React.ComponentType<any>;
-const FaGlobeIcon = FaGlobe as unknown as React.ComponentType<any>;
+
 const FaPaperPlaneIcon = FaPaperPlane as unknown as React.ComponentType<any>;
 const FaSmileIcon = FaSmile as unknown as React.ComponentType<any>;
-const FaPaperclipIcon = FaPaperclip as unknown as React.ComponentType<any>;
-const FaCircleIcon = FaCircle as unknown as React.ComponentType<any>;
-const FaCheckIcon = FaCheck as unknown as React.ComponentType<any>;
+
 const FaBanIcon = FaBan as unknown as React.ComponentType<any>;
 
 const ICON_COLOR_MAP = new Map<IconType, string>([
