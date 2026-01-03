@@ -242,6 +242,10 @@ const MyOrder: React.FC = () => {
   const [unreadState, setUnreadState] = useState<Record<string, boolean>>({});
   const scrollRef = useRef<HTMLDivElement>(null);
   const chatLengthRef = useRef(0);
+  
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const PURCHASE_API = "http://localhost:3200/purchase";
   const CHAT_API = "http://localhost:3200/chat";
@@ -280,6 +284,7 @@ const MyOrder: React.FC = () => {
         }));
 
         setOrders(mapped);
+        setCurrentPage(1);
       } catch (err) {
         console.error("Fetch error:", err);
       } finally {
@@ -517,10 +522,32 @@ const MyOrder: React.FC = () => {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chatMessages]);
 
-  const filtered = useMemo(() => {
+  const filteredOrders = useMemo(() => {
     if (activeTab === "All") return orders;
     return orders.filter((p) => p.status === activeTab);
   }, [activeTab, orders]);
+
+  useEffect(() => setCurrentPage(1), [activeTab, orders]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredOrders.length / itemsPerPage));
+  const paginatedOrders = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredOrders.slice(start, start + itemsPerPage);
+  }, [filteredOrders, currentPage]);
+
+  const getPageNumbers = () => {
+    if (totalPages <= 7) return Array.from({ length: totalPages }, (_, i) => i + 1);
+
+    const pages: (number | string)[] = [1];
+    if (currentPage <= 4) {
+      pages.push(2, 3, 4, 5, "...", totalPages);
+    } else if (currentPage >= totalPages - 3) {
+      pages.push("...", totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+    } else {
+      pages.push("...", currentPage - 1, currentPage, currentPage + 1, "...", totalPages);
+    }
+    return pages;
+  };
 
   // Helper to get Buyer Name
   const getBuyerDisplayName = (email: string | null) => {
@@ -577,7 +604,7 @@ const MyOrder: React.FC = () => {
                   <div className="py-20 text-center text-gray-400">
                     Loading your sales...
                   </div>
-                ) : filtered.length === 0 ? (
+                ) : filteredOrders.length === 0 ? (
                   <div className="py-20 flex flex-col items-center text-center">
                     <div className="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mb-4 text-2xl">
                       🏷️
@@ -593,7 +620,7 @@ const MyOrder: React.FC = () => {
                     </Link>
                   </div>
                 ) : (
-                  filtered.map((p) => (
+                  (paginatedOrders.length > 0 ? paginatedOrders : filteredOrders).map((p) => (
                     <div
                       key={p.id}
                       onClick={() => setSelected(p)} // Changed: Click anywhere to open details
@@ -664,6 +691,51 @@ const MyOrder: React.FC = () => {
                   ))
                 )}
               </div>
+
+              {totalPages > 1 && (
+                <div className="flex justify-center items-center gap-2 mt-4 select-none">
+                  <button
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                  </button>
+
+                  <div className="flex items-center gap-1">
+                    {getPageNumbers().map((page, i) =>
+                      page === "..." ? (
+                        <span key={i} className="px-2 text-gray-400">...</span>
+                      ) : (
+                        <button
+                          key={page}
+                          onClick={() => setCurrentPage(page as number)}
+                          className={`min-w-[36px] h-9 px-3 rounded-lg text-sm font-semibold border transition-all
+                            ${currentPage === page
+                              ? "bg-[#33ac6f] border-[#33ac6f] text-white shadow-md"
+                              : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+                            }`}
+                        >
+                          {page}
+                        </button>
+                      )
+                    )}
+                  </div>
+
+                  <button
+                    disabled={currentPage === totalPages}
+                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                    className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                </div>
+              )}
+
             </div>
           </div>
         </div>
