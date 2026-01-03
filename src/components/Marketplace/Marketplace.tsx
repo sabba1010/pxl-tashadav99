@@ -859,17 +859,37 @@ const Marketplace: React.FC = () => {
     }
   };
 
-  const getPageNumbers = () => {
-    if (totalPages <= 7) return Array.from({ length: totalPages }, (_, i) => i + 1);
-
-    const pages: (number | string)[] = [1];
-    if (currentPage <= 4) {
-      pages.push(2, 3, 4, 5, "...", totalPages);
-    } else if (currentPage >= totalPages - 3) {
-      pages.push("...", totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
-    } else {
-      pages.push("...", currentPage - 1, currentPage, currentPage + 1, "...", totalPages);
+const getPageNumbers = () => {
+    // যদি মোট পেজ ৭ বা তার কম হয়, তবে সব নম্বর সরাসরি দেখিয়ে দাও
+    if (totalPages <= 7) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
     }
+
+    const pages: (number | string)[] = [];
+
+    // ১. সবসময় প্রথম পেজ যোগ করো
+    pages.push(1);
+
+    if (currentPage <= 4) {
+      // ২. যদি ইউজার শুরুর দিকের পেজে থাকে (১ থেকে ৪)
+      pages.push(2, 3, 4, 5);
+      pages.push("...");
+      pages.push(totalPages);
+    } else if (currentPage >= totalPages - 3) {
+      // ৩. যদি ইউজার শেষের দিকের পেজে থাকে
+      pages.push("...");
+      for (let i = totalPages - 4; i < totalPages; i++) {
+        pages.push(i);
+      }
+      pages.push(totalPages);
+    } else {
+      // ৪. যদি ইউজার একদম মাঝখানের কোনো পেজে থাকে
+      pages.push("...");
+      pages.push(currentPage - 1, currentPage, currentPage + 1);
+      pages.push("...");
+      pages.push(totalPages);
+    }
+
     return pages;
   };
 
@@ -1021,49 +1041,44 @@ const Marketplace: React.FC = () => {
               </div>
             )}
 
-            {totalPages > 1 && (
-              <div className="flex justify-center items-center gap-2 mt-8 select-none">
-                <button
-                  disabled={currentPage === 1}
-                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                  className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                  </svg>
-                </button>
+           {/* Pagination View */}
+{totalPages > 1 && (
+  <div className="flex justify-center items-center gap-2 mt-10">
+    <button
+      disabled={currentPage === 1}
+      onClick={() => setCurrentPage((p) => p - 1)}
+      className="p-2 border rounded-lg bg-white disabled:opacity-30 hover:bg-gray-50 transition shadow-sm"
+    >
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+    </button>
 
-                <div className="flex items-center gap-1">
-                  {getPageNumbers().map((page, i) =>
-                    page === "..." ? (
-                      <span key={i} className="px-2 text-gray-400">...</span>
-                    ) : (
-                      <button
-                        key={page}
-                        onClick={() => setCurrentPage(page as number)}
-                        className={`min-w-[36px] h-9 px-3 rounded-lg text-sm font-semibold border transition-all
-                          ${currentPage === page
-                            ? "bg-[#33ac6f] border-[#33ac6f] text-white shadow-md"
-                            : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
-                          }`}
-                      >
-                        {page}
-                      </button>
-                    )
-                  )}
-                </div>
+    {getPageNumbers().map((page, idx) => (
+      page === "..." ? (
+        <span key={`dots-${idx}`} className="px-2 text-gray-400 font-bold">...</span>
+      ) : (
+        <button
+          key={`page-${page}`}
+          onClick={() => setCurrentPage(page as number)}
+          className={`w-10 h-10 rounded-lg text-sm font-bold border transition-all duration-200 shadow-sm ${
+            currentPage === page
+              ? "bg-[#33ac6f] border-[#33ac6f] text-white scale-110 shadow-md"
+              : "bg-white border-gray-200 text-gray-600 hover:bg-gray-50"
+          }`}
+        >
+          {page}
+        </button>
+      )
+    ))}
 
-                <button
-                  disabled={currentPage === totalPages}
-                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                  className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
-              </div>
-            )}
+    <button
+      disabled={currentPage === totalPages}
+      onClick={() => setCurrentPage((p) => p + 1)}
+      className="p-2 border rounded-lg bg-white disabled:opacity-30 hover:bg-gray-50 transition shadow-sm"
+    >
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+    </button>
+  </div>
+)}
           </main>
         </div>
       </div>
