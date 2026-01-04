@@ -612,7 +612,7 @@ export default function Navbar() {
               })}
             >
               <ShoppingBag />
-              <span className="text-xs">Marke</span>
+              <span className="text-xs">Marketplace</span>
             </NavLink>
             <NavLink
               to="/purchases"
