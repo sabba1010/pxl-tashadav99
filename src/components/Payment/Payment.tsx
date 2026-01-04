@@ -186,7 +186,7 @@ const Payment: React.FC = () => {
                       try {
                         // call your backend route
                         const res = await fetch(
-                          "https://vps-backend-server-beta.vercel.app/flutterwave/create",
+                          "http://localhost:3200/flutterwave/create",
                           {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },

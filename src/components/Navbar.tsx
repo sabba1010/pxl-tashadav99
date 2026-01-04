@@ -21,7 +21,7 @@ const FaBreadSliceIcon = FaBreadSlice as unknown as React.ComponentType<any>;
 const FaTrashIcon = FaTrash as unknown as React.ComponentType<any>;
 
 // API URL
-const API_URL = "https://vps-backend-server-beta.vercel.app/api/notification";
+const API_URL = "http://localhost:3200/api/notification";
 
 type NItem = {
   _id?: string;

@@ -134,7 +134,6 @@ const MyPurchase: React.FC = () => {
   const [selected, setSelected] = useState<Purchase | null>(null);
   const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [now, setNow] = useState(new Date().getTime());
 
   const loginUserData = useAuthHook();
   const buyerId = loginUserData.data?.email || localStorage.getItem("userEmail");
@@ -156,14 +155,9 @@ const MyPurchase: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  const BASE_URL = "https://vps-backend-server-beta.vercel.app";
+  const BASE_URL = "http://localhost:3200";
   const PURCHASE_API = `${BASE_URL}/purchase`;
   const CHAT_API = `${BASE_URL}/chat`;
-
-  useEffect(() => {
-    const interval = setInterval(() => setNow(new Date().getTime()), 1000);
-    return () => clearInterval(interval);
-  }, []);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -171,21 +165,11 @@ const MyPurchase: React.FC = () => {
     }
   }, [chatMessages]);
 
-  const getRemainingTime = (purchaseDateStr: string) => {
-    const purchaseTime = new Date(purchaseDateStr).getTime();
-    const deadline = purchaseTime + 60 * 60 * 1000;
-    const diff = deadline - now;
-    if (diff <= 0) return "Expired";
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-    return `${minutes}m ${seconds}s`;
-  };
-
   const fetchPurchases = async () => {
     if (!buyerId) return;
     try {
       setIsLoading(true);
-      await axios.get(`${PURCHASE_API}/auto-cancel-check`);
+      // "auto-cancel-check" API call remove kora hoyeche
       const res = await axios.get<RawPurchaseItem[]>(`${PURCHASE_API}/getall?email=${buyerId}&role=buyer`);
       const mapped: Purchase[] = res.data.map((item) => ({
         id: item._id,
@@ -307,28 +291,22 @@ const MyPurchase: React.FC = () => {
     return filtered.slice(start, start + itemsPerPage);
   }, [filtered, currentPage]);
 
-  // Improved Pagination Logic for Dots (...)
-const pageNumbers = useMemo(() => {
+  const pageNumbers = useMemo(() => {
     const pages: (number | string)[] = [];
-    const maxVisibleBeforeDots = 4; // ৪ নম্বর পর্যন্ত সরাসরি দেখাবে
+    const maxVisibleBeforeDots = 4;
 
     if (totalPages <= 5) {
-      // ৫ বা তার কম পেজ হলে সব দেখাবে
       for (let i = 1; i <= totalPages; i++) pages.push(i);
     } else {
-      // যদি পেজ সংখ্যা ৫ এর বেশি হয়
       if (currentPage <= maxVisibleBeforeDots - 1) {
-        // ইউজার শুরুতে থাকলে: ১ ২ ৩ ৪ ... ২০
         for (let i = 1; i <= maxVisibleBeforeDots; i++) pages.push(i);
         pages.push("...");
         pages.push(totalPages);
       } else if (currentPage >= totalPages - 2) {
-        // ইউজার শেষে থাকলে: ১ ... ১৭ ১৮ ১৯ ২০
         pages.push(1);
         pages.push("...");
         for (let i = totalPages - 3; i <= totalPages; i++) pages.push(i);
       } else {
-        // ইউজার মাঝখানে থাকলে: ১ ... ৫ ৬ ৭ ... ২০
         pages.push(1);
         pages.push("...");
         pages.push(currentPage - 1);
@@ -421,7 +399,7 @@ const pageNumbers = useMemo(() => {
           </div>
         </div>
 
-        {/* Pagination Section - Fixed Design & Logic */}
+        {/* Pagination Section */}
         {totalPages > 1 && (
           <div className="flex justify-center items-center gap-2 mt-8 mb-10 select-none">
             <button
@@ -467,7 +445,6 @@ const pageNumbers = useMemo(() => {
         )}
       </div>
 
-      {/* Modals & Chat remain unchanged as per request */}
       {selected && (
         <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <div className="bg-white w-full max-w-lg rounded-t-3xl sm:rounded-2xl p-6 relative animate-in slide-in-from-bottom-5">
@@ -486,12 +463,7 @@ const pageNumbers = useMemo(() => {
 
             {selected.status === "Pending" && (
               <div className="mt-8 space-y-3">
-                <div className="bg-amber-50 p-3 rounded-lg border border-amber-100 flex items-center gap-3">
-                   <FaClockIcon className="text-amber-600 animate-pulse" />
-                   <p className="text-xs text-amber-800">
-                     Auto-cancels in: <strong>{getRemainingTime(selected.rawDate)}</strong>
-                   </p>
-                </div>
+                {/* Auto-cancel warning block remove kora hoyeche */}
                 <button onClick={() => handleUpdateStatus("completed", selected.sellerEmail)} className="w-full bg-[#33ac6f] text-white py-3 rounded-xl font-bold hover:bg-[#2aa46a]">Confirm & Complete Order</button>
               </div>
             )}
@@ -499,6 +471,7 @@ const pageNumbers = useMemo(() => {
         </div>
       )}
 
+      {/* Report Modal */}
       {isReportModalOpen && reportTargetOrder && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md">
           <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
@@ -532,15 +505,16 @@ const pageNumbers = useMemo(() => {
         </div>
       )}
 
+      {/* Chat UI */}
       {isChatOpen && (
         <div className="fixed inset-0 z-[120] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60">
           <div className="bg-[#ECE5DD] w-full max-w-md h-[90vh] sm:h-[600px] sm:rounded-2xl overflow-hidden flex flex-col shadow-2xl">
             <div className="bg-white p-4 border-b flex justify-between items-center">
-               <div className="flex items-center gap-3">
-                 <div className="w-10 h-10 bg-[#33ac6f] rounded-full flex items-center justify-center text-white font-bold uppercase">{activeChatSellerEmail?.[0]}</div>
-                 <span className="font-bold text-sm truncate max-w-[150px]">{activeChatSellerEmail}</span>
-               </div>
-               <button onClick={() => setIsChatOpen(false)} className="p-2 text-gray-400 hover:text-red-500"><FaTimesIcon size={20} /></button>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-[#33ac6f] rounded-full flex items-center justify-center text-white font-bold uppercase">{activeChatSellerEmail?.[0]}</div>
+                  <span className="font-bold text-sm truncate max-w-[150px]">{activeChatSellerEmail}</span>
+                </div>
+                <button onClick={() => setIsChatOpen(false)} className="p-2 text-gray-400 hover:text-red-500"><FaTimesIcon size={20} /></button>
             </div>
             
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
@@ -559,8 +533,8 @@ const pageNumbers = useMemo(() => {
             </div>
 
             <form onSubmit={sendChat} className="p-3 bg-white border-t flex gap-2">
-               <input value={typedMessage} onChange={(e) => setTypedMessage(e.target.value)} className="flex-1 bg-gray-100 p-3 rounded-full text-sm outline-none" placeholder="Type a message..." />
-               <button type="submit" className="bg-[#33ac6f] text-white p-3 rounded-full"><FaPaperPlaneIcon size={16} /></button>
+                <input value={typedMessage} onChange={(e) => setTypedMessage(e.target.value)} className="flex-1 bg-gray-100 p-3 rounded-full text-sm outline-none" placeholder="Type a message..." />
+                <button type="submit" className="bg-[#33ac6f] text-white p-3 rounded-full"><FaPaperPlaneIcon size={16} /></button>
             </form>
           </div>
         </div>

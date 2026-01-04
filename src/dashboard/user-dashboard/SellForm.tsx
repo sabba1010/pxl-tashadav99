@@ -84,7 +84,7 @@ const SellForm: React.FC = () => {
     const fetchPlatforms = async () => {
       try {
         const response = await axios.get<{ data: Platform[] }>(
-          "https://vps-backend-server-beta.vercel.app/icon-data"
+          "http://localhost:3200/icon-data"
         );
         const data = Array.isArray(response.data)
           ? response.data
@@ -111,7 +111,7 @@ const SellForm: React.FC = () => {
 
       try {
         const response = await axios.get<{ salesCredit: number }>(
-          `https://vps-backend-server-beta.vercel.app/product/credit?email=${encodeURIComponent(
+          `http://localhost:3200/product/credit?email=${encodeURIComponent(
             user.email
           )}`
         );
@@ -201,7 +201,7 @@ const SellForm: React.FC = () => {
 
     try {
       const response = await axios.post(
-        "https://vps-backend-server-beta.vercel.app/product/sell",
+        "http://localhost:3200/product/sell",
         formData
       );
 

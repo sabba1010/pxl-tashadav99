@@ -116,7 +116,7 @@ const WithdrawForm: React.FC = () => {
 
       // আপনার withdraw রাউট যদি কাজ করে তবে এটা থাকবে
       const withdrawResponse = await fetch(
-        "https://vps-backend-server-beta.vercel.app/withdraw/post",
+        "http://localhost:3200/withdraw/post",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
