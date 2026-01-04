@@ -248,14 +248,16 @@ const useLockBodyScroll = (isLocked: boolean) => {
 
 const RenderIcon = ({
   icon,
-  size = 36,
+  size = 30, // 🔽 was 36
   realTime = false,
 }: {
+
   icon: string | IconType;
   size?: number;
   realTime?: boolean;
 }) => {
-  const badgeSize = Math.max(40, size + 8);
+const badgeSize = Math.max(34, size + 6); // 🔽 smaller
+
   let bg = VIBRANT_GRADIENTS[0];
   if (typeof icon !== "string") {
     const color = ICON_COLOR_MAP.get(icon);
@@ -293,10 +295,8 @@ const RenderIcon = ({
         IconComponent && <IconComponent size={Math.round(size * 0.65)} />
       )}
       {realTime && (
-        <span
-          className="absolute -right-0.5 -bottom-0.5 w-3 h-3 rounded-full bg-green-500 border-2 border-white"
-          title="Online"
-        />
+      <span className="absolute -right-0.5 -bottom-0.5 w-2.5 h-2.5 rounded-full bg-green-500 border-2 border-white" />
+
       )}
     </div>
   );
@@ -457,11 +457,12 @@ const ItemCard: React.FC<{
       }`}
     >
       <div className={isList ? "" : "flex justify-center mb-3"}>
-        <RenderIcon
-          icon={item.icon}
-          size={isList ? 40 : 56}
-          realTime={item.realTime}
-        />
+      <RenderIcon
+  icon={item.icon}
+  size={isList ? 32 : 44} // 🔽 smaller
+  realTime={item.realTime}
+/>
+
       </div>
       <div className="flex-1 min-w-0">
         <h3 className="font-bold text-sm text-[#0A1A3A] truncate">
@@ -1044,41 +1045,72 @@ const getPageNumbers = () => {
            {/* Pagination View */}
 {totalPages > 1 && (
   <div className="flex justify-center items-center gap-2 mt-10">
+    {/* Prev Button */}
     <button
       disabled={currentPage === 1}
       onClick={() => setCurrentPage((p) => p - 1)}
-      className="p-2 border rounded-lg bg-white disabled:opacity-30 hover:bg-gray-50 transition shadow-sm"
+      className="w-8 h-8 flex items-center justify-center rounded-md border bg-white disabled:opacity-30 hover:bg-gray-50 transition shadow-sm"
     >
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+      <svg
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="m15 18-6-6 6-6" />
+      </svg>
     </button>
 
-    {getPageNumbers().map((page, idx) => (
+    {/* Page Numbers */}
+    {getPageNumbers().map((page, idx) =>
       page === "..." ? (
-        <span key={`dots-${idx}`} className="px-2 text-gray-400 font-bold">...</span>
+        <span
+          key={`dots-${idx}`}
+          className="px-2 text-gray-400 text-xs font-semibold"
+        >
+          ...
+        </span>
       ) : (
         <button
           key={`page-${page}`}
           onClick={() => setCurrentPage(page as number)}
-          className={`w-10 h-10 rounded-lg text-sm font-bold border transition-all duration-200 shadow-sm ${
+          className={`w-8 h-8 rounded-md text-xs font-semibold border transition-all duration-200 shadow-sm ${
             currentPage === page
-              ? "bg-[#33ac6f] border-[#33ac6f] text-white scale-110 shadow-md"
+              ? "bg-[#33ac6f] border-[#33ac6f] text-white scale-105 shadow-md"
               : "bg-white border-gray-200 text-gray-600 hover:bg-gray-50"
           }`}
         >
           {page}
         </button>
       )
-    ))}
+    )}
 
+    {/* Next Button */}
     <button
       disabled={currentPage === totalPages}
       onClick={() => setCurrentPage((p) => p + 1)}
-      className="p-2 border rounded-lg bg-white disabled:opacity-30 hover:bg-gray-50 transition shadow-sm"
+      className="w-8 h-8 flex items-center justify-center rounded-md border bg-white disabled:opacity-30 hover:bg-gray-50 transition shadow-sm"
     >
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+      <svg
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="m9 18 6-6-6-6" />
+      </svg>
     </button>
   </div>
 )}
+
           </main>
         </div>
       </div>
