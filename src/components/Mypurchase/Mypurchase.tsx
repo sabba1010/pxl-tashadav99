@@ -21,7 +21,7 @@ import {
 } from "react-icons/fa";
 
 /* ---------------------------------------------
-   Type Casting Icons
+   Type Casting Icons (For TS Safety)
 ---------------------------------------------- */
 const FaTimesIcon = FaTimes as any;
 const FaEyeIcon = FaEye as any;
@@ -134,6 +134,7 @@ const MyPurchase: React.FC = () => {
   const [selected, setSelected] = useState<Purchase | null>(null);
   const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [now, setNow] = useState(Date.now());
 
   const loginUserData = useAuthHook();
   const buyerId = loginUserData.data?.email || localStorage.getItem("userEmail");
@@ -151,7 +152,6 @@ const MyPurchase: React.FC = () => {
   const [activeChatOrderId, setActiveChatOrderId] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
@@ -159,17 +159,38 @@ const MyPurchase: React.FC = () => {
   const PURCHASE_API = `${BASE_URL}/purchase`;
   const CHAT_API = `${BASE_URL}/chat`;
 
+  // Timer refresh & Auto-Confirm logic
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [chatMessages]);
+    const timer = setInterval(() => {
+      const currentTime = Date.now();
+      setNow(currentTime);
+
+      purchases.forEach((p) => {
+        if (p.status === "Pending") {
+          const startTime = new Date(p.rawDate).getTime();
+          const deadline = startTime + (24 * 60 * 60 * 1000);
+          if (deadline - currentTime <= 0) {
+            handleUpdateStatus("completed", p.sellerEmail, p.id);
+          }
+        }
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [purchases]);
+
+  const getRemainingTime = (rawDate: string) => {
+    const diff = (new Date(rawDate).getTime() + 86400000) - now;
+    if (diff <= 0) return "Confirming...";
+    const h = Math.floor(diff / 3600000).toString().padStart(2, '0');
+    const m = Math.floor((diff % 3600000) / 60000).toString().padStart(2, '0');
+    const s = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
+    return `${h}h ${m}m ${s}s`;
+  };
 
   const fetchPurchases = async () => {
     if (!buyerId) return;
     try {
       setIsLoading(true);
-      // "auto-cancel-check" API call remove kora hoyeche
       const res = await axios.get<RawPurchaseItem[]>(`${PURCHASE_API}/getall?email=${buyerId}&role=buyer`);
       const mapped: Purchase[] = res.data.map((item) => ({
         id: item._id,
@@ -194,44 +215,18 @@ const MyPurchase: React.FC = () => {
 
   useEffect(() => { fetchPurchases(); }, [buyerId]);
 
-  const handleUpdateStatus = async (status: string, sellerEmail: string) => {
-    if (!selected) return;
+  const handleUpdateStatus = async (status: string, sellerEmail: string, orderId?: string) => {
+    const id = orderId || selected?.id;
+    if (!id) return;
     try {
-      await axios.patch(`${PURCHASE_API}/update-status/${selected.id}`, { status, sellerEmail });
-      toast.success(`Order ${status} successfully!`);
-      setSelected(null);
+      await axios.patch(`${PURCHASE_API}/update-status/${id}`, { status, sellerEmail });
+      if (!orderId) {
+        toast.success(`Order ${status} successfully!`);
+        setSelected(null);
+      }
       fetchPurchases();
     } catch (err) {
-      toast.error("Failed to update status");
-    }
-  };
-
-  const openReportModal = (p: Purchase) => {
-    setReportTargetOrder(p);
-    setReportReason(REPORT_REASONS[0]);
-    setReportMessage("");
-    setIsReportModalOpen(true);
-    setSelected(null);
-  };
-
-  const handleReportSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!reportMessage.trim() || !reportTargetOrder) return;
-    setIsSubmittingReport(true);
-    try {
-      await axios.post(`${PURCHASE_API}/report/create`, {
-        orderId: reportTargetOrder.id,
-        reporterEmail: buyerId,
-        sellerEmail: reportTargetOrder.sellerEmail,
-        reason: reportReason,
-        message: reportMessage,
-      });
-      toast.success("Report submitted to administration.");
-      setIsReportModalOpen(false);
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || "Error submitting report");
-    } finally {
-      setIsSubmittingReport(false);
+      if (!orderId) toast.error("Failed to update status");
     }
   };
 
@@ -277,63 +272,54 @@ const MyPurchase: React.FC = () => {
     }
   };
 
+  const handleReportSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!reportMessage.trim() || !reportTargetOrder) return;
+    setIsSubmittingReport(true);
+    try {
+      await axios.post(`${PURCHASE_API}/report/create`, {
+        orderId: reportTargetOrder.id,
+        reporterEmail: buyerId,
+        sellerEmail: reportTargetOrder.sellerEmail,
+        reason: reportReason,
+        message: reportMessage,
+      });
+      toast.success("Report submitted.");
+      setIsReportModalOpen(false);
+    } catch (err) {
+      toast.error("Error submitting report");
+    } finally {
+      setIsSubmittingReport(false);
+    }
+  };
+
   const filtered = useMemo(() => {
     if (activeTab === "All") return purchases;
     return purchases.filter((p) => p.status === activeTab);
   }, [activeTab, purchases]);
 
-  useEffect(() => setCurrentPage(1), [activeTab]);
-
-  const totalPages = Math.max(1, Math.ceil(filtered.length / itemsPerPage));
-  
   const paginated = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
     return filtered.slice(start, start + itemsPerPage);
   }, [filtered, currentPage]);
 
-  const pageNumbers = useMemo(() => {
-    const pages: (number | string)[] = [];
-    const maxVisibleBeforeDots = 4;
-
-    if (totalPages <= 5) {
-      for (let i = 1; i <= totalPages; i++) pages.push(i);
-    } else {
-      if (currentPage <= maxVisibleBeforeDots - 1) {
-        for (let i = 1; i <= maxVisibleBeforeDots; i++) pages.push(i);
-        pages.push("...");
-        pages.push(totalPages);
-      } else if (currentPage >= totalPages - 2) {
-        pages.push(1);
-        pages.push("...");
-        for (let i = totalPages - 3; i <= totalPages; i++) pages.push(i);
-      } else {
-        pages.push(1);
-        pages.push("...");
-        pages.push(currentPage - 1);
-        pages.push(currentPage);
-        pages.push(currentPage + 1);
-        pages.push("...");
-        pages.push(totalPages);
-      }
-    }
-    return pages;
-  }, [currentPage, totalPages]);
-
   const renderBadge = (platform: PlatformType, size = 36) => {
-    const IconComp = getPlatformIcon(platform) as any;
+    const RawIcon = getPlatformIcon(platform);
+    const IconComponent = RawIcon as any; // Error Fix: Cast to any for JSX rendering
+    
     return (
       <div style={{
         width: size, height: size, borderRadius: 12, display: "inline-flex",
         alignItems: "center", justifyContent: "center",
-        background: ICON_COLOR_MAP.get(getPlatformIcon(platform)) || "#33ac6f"
+        background: ICON_COLOR_MAP.get(RawIcon) || "#33ac6f"
       }}>
-        <IconComp size={size * 0.6} color="#fff" />
+        <IconComponent size={size * 0.6} color="#fff" />
       </div>
     );
   };
 
   return (
-    <div className="min-h-screen bg-[#F3EFEE] pt-16 pb-20 px-4 sm:px-6">
+    <div className="min-h-screen bg-[#F3EFEE] pt-16 pb-20 px-4 sm:px-6 font-sans">
       <div className="max-w-screen-xl mx-auto">
         <h1 className="text-2xl sm:text-3xl font-bold text-[#0A1A3A] mb-6">My Purchase</h1>
 
@@ -352,8 +338,8 @@ const MyPurchase: React.FC = () => {
               <p className="text-center py-10 text-gray-400">Loading...</p>
             ) : filtered.length === 0 ? (
               <div className="text-center py-20">
-                <p className="text-gray-500 mb-4">No purchases found in this category.</p>
-                <Link to="/marketplace" className="bg-[#33ac6f] text-white px-6 py-2 rounded-full text-sm">Browse Shop</Link>
+                <p className="text-gray-500 mb-4">No purchases found.</p>
+                <Link to="/" className="bg-[#33ac6f] text-white px-6 py-2 rounded-full text-sm font-bold">Browse Shop</Link>
               </div>
             ) : (
               paginated.map((p) => (
@@ -366,7 +352,11 @@ const MyPurchase: React.FC = () => {
                         <span className={`text-[10px] px-2 py-0.5 rounded-full border font-bold ${p.status === 'Completed' ? 'bg-green-50 text-green-600' : p.status === 'Cancelled' ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-600'}`}>
                             {p.status}
                         </span>
-                        <span className="text-[10px] text-gray-400 font-mono">{p.purchaseNumber}</span>
+                        {p.status === "Pending" && (
+                          <span className="text-[10px] text-blue-600 font-bold flex items-center gap-1">
+                            <FaClockIcon size={10} /> {getRemainingTime(p.rawDate)}
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -376,19 +366,12 @@ const MyPurchase: React.FC = () => {
                       <p className="text-lg font-bold text-[#0A1A3A]">${p.price.toFixed(2)}</p>
                       <p className="text-[10px] text-gray-400">{p.date}</p>
                     </div>
-
                     <div className="flex gap-2">
                       {p.status === "Pending" && (
                         <>
-                          <button onClick={() => openReportModal(p)} className="p-2 text-red-500 border border-red-100 rounded bg-white hover:bg-red-50" title="Report Issue">
-                            <FaFlagIcon size={14} />
-                          </button>
-                          <button onClick={() => setSelected(p)} className="p-2 text-gray-600 border rounded bg-white hover:bg-gray-50" title="View Details">
-                            <FaEyeIcon size={14} />
-                          </button>
-                          <button onClick={() => handleOpenChat(p)} className="p-2 text-blue-600 border border-blue-100 rounded bg-white hover:bg-blue-50" title="Open Chat">
-                            <FaCommentsIcon size={14} />
-                          </button>
+                          <button onClick={() => { setReportTargetOrder(p); setIsReportModalOpen(true); }} className="p-2 text-red-500 border border-red-100 rounded bg-white hover:bg-red-50" title="Report Issue"><FaFlagIcon size={14} /></button>
+                          <button onClick={() => setSelected(p)} className="p-2 text-gray-600 border rounded bg-white hover:bg-gray-50" title="View Details"><FaEyeIcon size={14} /></button>
+                          <button onClick={() => handleOpenChat(p)} className="p-2 text-blue-600 border border-blue-100 rounded bg-white hover:bg-blue-50" title="Chat with Seller"><FaCommentsIcon size={14} /></button>
                         </>
                       )}
                     </div>
@@ -398,53 +381,9 @@ const MyPurchase: React.FC = () => {
             )}
           </div>
         </div>
-
-        {/* Pagination Section */}
-        {totalPages > 1 && (
-          <div className="flex justify-center items-center gap-2 mt-8 mb-10 select-none">
-            <button
-              disabled={currentPage === 1}
-              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              className="p-2.5 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm"
-            >
-              <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-
-            <div className="flex items-center gap-1.5">
-              {pageNumbers.map((page, i) =>
-                page === "..." ? (
-                  <span key={`dots-${i}`} className="px-2 text-gray-400 font-bold">...</span>
-                ) : (
-                  <button
-                    key={`page-${page}`}
-                    onClick={() => setCurrentPage(page as number)}
-                    className={`min-w-[38px] h-[38px] px-3 rounded-lg text-sm font-bold border transition-all duration-200
-                      ${currentPage === page
-                        ? "bg-[#33ac6f] border-[#33ac6f] text-white shadow-md transform scale-105"
-                        : "bg-white border-gray-300 text-gray-700 hover:border-[#33ac6f] hover:text-[#33ac6f]"
-                      }`}
-                  >
-                    {page}
-                  </button>
-                )
-              )}
-            </div>
-
-            <button
-              disabled={currentPage === totalPages}
-              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-              className="p-2.5 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm"
-            >
-              <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
-          </div>
-        )}
       </div>
 
+      {/* Details Modal */}
       {selected && (
         <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <div className="bg-white w-full max-w-lg rounded-t-3xl sm:rounded-2xl p-6 relative animate-in slide-in-from-bottom-5">
@@ -454,17 +393,13 @@ const MyPurchase: React.FC = () => {
               <h2 className="text-xl font-bold mt-4">{selected.title}</h2>
               <p className="text-3xl font-black text-[#33ac6f] mt-2">${selected.price.toFixed(2)}</p>
             </div>
-            
-            <div className="space-y-3 border-t pt-4 text-sm">
-              <div className="flex justify-between"><span className="text-gray-500">Seller</span><span className="font-medium">{selected.sellerEmail}</span></div>
-              <div className="flex justify-between"><span className="text-gray-500">Order ID</span><span className="font-mono font-bold">{selected.id}</span></div>
-              <div className="flex justify-between"><span className="text-gray-500">Date</span><span>{selected.date}</span></div>
-            </div>
-
             {selected.status === "Pending" && (
               <div className="mt-8 space-y-3">
-                {/* Auto-cancel warning block remove kora hoyeche */}
-                <button onClick={() => handleUpdateStatus("completed", selected.sellerEmail)} className="w-full bg-[#33ac6f] text-white py-3 rounded-xl font-bold hover:bg-[#2aa46a]">Confirm & Complete Order</button>
+                <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 flex flex-col items-center gap-2">
+                   <p className="text-[10px] text-blue-500 font-bold uppercase tracking-wider">Auto-Confirm Timer</p>
+                   <p className="text-2xl font-mono font-black text-blue-900">{getRemainingTime(selected.rawDate)}</p>
+                </div>
+                <button onClick={() => handleUpdateStatus("completed", selected.sellerEmail)} className="w-full bg-[#33ac6f] text-white py-3 rounded-xl font-bold hover:bg-[#2aa46a] shadow-lg transition-all active:scale-95">Confirm & Complete Order</button>
               </div>
             )}
           </div>
@@ -473,68 +408,47 @@ const MyPurchase: React.FC = () => {
 
       {/* Report Modal */}
       {isReportModalOpen && reportTargetOrder && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md">
-          <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
-            <div className="bg-red-600 p-4 flex justify-between items-center text-white">
-              <h3 className="font-bold flex items-center gap-2"><FaFlagIcon /> Report Order</h3>
-              <button onClick={() => setIsReportModalOpen(false)}><FaTimesIcon /></button>
+         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md">
+            <div className="bg-white w-full max-w-md rounded-2xl overflow-hidden shadow-2xl animate-in zoom-in-95">
+               <div className="bg-red-600 p-4 text-white font-bold flex justify-between items-center">
+                  <span className="flex items-center gap-2"><FaFlagIcon /> Report Order</span>
+                  <button onClick={() => setIsReportModalOpen(false)}><FaTimesIcon /></button>
+               </div>
+               <form onSubmit={handleReportSubmit} className="p-6 space-y-4">
+                  <label className="block text-xs font-bold text-gray-700">Reason</label>
+                  <select value={reportReason} onChange={(e) => setReportReason(e.target.value)} className="w-full border p-2 rounded-lg text-sm outline-none">
+                     {REPORT_REASONS.map(r => <option key={r} value={r}>{r}</option>)}
+                  </select>
+                  <label className="block text-xs font-bold text-gray-700">Message</label>
+                  <textarea value={reportMessage} onChange={(e) => setReportMessage(e.target.value)} placeholder="Describe the issue..." className="w-full border p-3 rounded-lg text-sm h-32 outline-none" required />
+                  <button type="submit" disabled={isSubmittingReport} className="w-full bg-red-600 text-white py-3 rounded-xl font-bold hover:bg-red-700 transition disabled:opacity-50">{isSubmittingReport ? "Sending..." : "Submit Report"}</button>
+               </form>
             </div>
-            <form onSubmit={handleReportSubmit} className="p-6 space-y-4">
-              <div className="bg-gray-50 p-3 rounded text-center border">
-                <p className="text-[10px] text-gray-400 uppercase">Order Ref</p>
-                <p className="font-mono text-sm font-bold">{reportTargetOrder.purchaseNumber}</p>
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-gray-700 mb-1">Reason</label>
-                <select value={reportReason} onChange={(e) => setReportReason(e.target.value)} className="w-full border p-2.5 rounded-lg text-sm outline-none focus:ring-2 focus:ring-red-200">
-                  {REPORT_REASONS.map(r => <option key={r} value={r}>{r}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-gray-700 mb-1">Details</label>
-                <textarea value={reportMessage} onChange={(e) => setReportMessage(e.target.value)} placeholder="Describe the issue..." className="w-full border p-3 rounded-lg text-sm h-32 focus:ring-2 focus:ring-red-200" required />
-              </div>
-              <div className="flex gap-2">
-                <button type="button" onClick={() => setIsReportModalOpen(false)} className="flex-1 py-2.5 text-gray-500 font-medium">Cancel</button>
-                <button type="submit" disabled={isSubmittingReport} className="flex-1 bg-red-600 text-white py-2.5 rounded-xl font-bold hover:bg-red-700 disabled:opacity-50">
-                  {isSubmittingReport ? "Sending..." : "Submit Report"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+         </div>
       )}
 
       {/* Chat UI */}
       {isChatOpen && (
-        <div className="fixed inset-0 z-[120] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60">
-          <div className="bg-[#ECE5DD] w-full max-w-md h-[90vh] sm:h-[600px] sm:rounded-2xl overflow-hidden flex flex-col shadow-2xl">
-            <div className="bg-white p-4 border-b flex justify-between items-center">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-[#33ac6f] rounded-full flex items-center justify-center text-white font-bold uppercase">{activeChatSellerEmail?.[0]}</div>
+        <div className="fixed inset-0 z-[120] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="bg-[#ECE5DD] w-full max-w-md h-[90vh] sm:h-[600px] sm:rounded-2xl flex flex-col overflow-hidden shadow-2xl">
+            <div className="bg-white p-4 flex justify-between items-center border-b">
+               <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-[#33ac6f] rounded-full flex items-center justify-center text-white text-xs font-bold">{activeChatSellerEmail?.[0].toUpperCase()}</div>
                   <span className="font-bold text-sm truncate max-w-[150px]">{activeChatSellerEmail}</span>
-                </div>
-                <button onClick={() => setIsChatOpen(false)} className="p-2 text-gray-400 hover:text-red-500"><FaTimesIcon size={20} /></button>
+               </div>
+               <button onClick={() => setIsChatOpen(false)} className="text-gray-400 hover:text-red-500"><FaTimesIcon size={20} /></button>
             </div>
-            
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
-               {chatMessages.map((m, i) => {
-                 const isMe = m.senderId === buyerId;
-                 return (
-                   <div key={i} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
-                     <div className={`max-w-[80%] p-3 rounded-2xl text-sm shadow-sm ${isMe ? 'bg-[#D9FDD3] text-gray-800 rounded-tr-none' : 'bg-white text-gray-800 rounded-tl-none'}`}>
-                        {m.message}
-                        <p className="text-[9px] text-gray-400 text-right mt-1">{timeAgo(m.createdAt)}</p>
-                     </div>
-                   </div>
-                 );
-               })}
+               {chatMessages.map((m, i) => (
+                  <div key={i} className={`flex ${m.senderId === buyerId ? 'justify-end' : 'justify-start'}`}>
+                     <div className={`p-3 rounded-2xl text-sm max-w-[80%] ${m.senderId === buyerId ? 'bg-[#D9FDD3] rounded-tr-none' : 'bg-white shadow-sm rounded-tl-none'}`}>{m.message}</div>
+                  </div>
+               ))}
                <div ref={scrollRef} />
             </div>
-
-            <form onSubmit={sendChat} className="p-3 bg-white border-t flex gap-2">
-                <input value={typedMessage} onChange={(e) => setTypedMessage(e.target.value)} className="flex-1 bg-gray-100 p-3 rounded-full text-sm outline-none" placeholder="Type a message..." />
-                <button type="submit" className="bg-[#33ac6f] text-white p-3 rounded-full"><FaPaperPlaneIcon size={16} /></button>
+            <form onSubmit={sendChat} className="p-3 bg-white flex gap-2 border-t">
+               <input value={typedMessage} onChange={(e) => setTypedMessage(e.target.value)} className="flex-1 bg-gray-100 p-2 rounded-full px-4 outline-none text-sm" placeholder="Type a message..." />
+               <button type="submit" className="bg-[#33ac6f] text-white p-3 rounded-full hover:bg-[#2aa46a] transition"><FaPaperPlaneIcon size={16} /></button>
             </form>
           </div>
         </div>
