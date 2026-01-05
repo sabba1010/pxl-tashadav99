@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import toast, { Toaster } from 'react-hot-toast'; // টোস্ট ইমপোর্ট করা হয়েছে
+import toast, { Toaster } from 'react-hot-toast';
 
 interface User {
   _id: string;
@@ -9,7 +9,7 @@ interface User {
   phone: string;
   role: string;
   balance: number;
-  status?: 'active' | 'blocked'; 
+  status?: 'active' | 'blocked';
 }
 
 const SellerManagement = () => {
@@ -26,87 +26,95 @@ const SellerManagement = () => {
     try {
       setLoading(true);
       const response = await axios.get<User[]>(`${API_BASE_URL}/api/user/getall`);
+      // ডাটাবেজ থেকে শুধুমাত্র সেলারদের ফিল্টার করা
       const sellerList = response.data.filter((user) => user.role === 'seller');
       setSellers(sellerList);
       setLoading(false);
     } catch (err) {
-      toast.error("Failed to load sellers data!");
+      toast.error("Failed to load sellers!");
       setLoading(false);
     }
   };
 
   const handleStatusChange = async (id: string, newStatus: string) => {
-    const loadingToast = toast.loading("Updating status...");
+    const tid = toast.loading("Updating status...");
     try {
       await axios.patch(`${API_BASE_URL}/api/user/update-status/${id}`, { status: newStatus });
       
-      // স্টেট আপডেট
+      // লোকাল স্টেট আপডেট
       setSellers(prev => prev.map(s => s._id === id ? { ...s, status: newStatus as 'active' | 'blocked' } : s));
       
-      toast.success(`Seller is now ${newStatus.toUpperCase()}`, { id: loadingToast });
+      toast.success(`Seller is now ${newStatus.toUpperCase()}`, { id: tid });
     } catch (err) {
-      toast.error("Failed to update status", { id: loadingToast });
+      toast.error("Failed to update status", { id: tid });
     }
   };
 
-  if (loading) return <div className="p-10 text-center font-bold">Loading Sellers...</div>;
+  if (loading) return <div className="p-10 text-center font-bold">Loading Sellers Data...</div>;
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
-      {/* টোস্ট কন্টেইনার */}
+      {/* Toast Notification Container */}
       <Toaster position="top-right" reverseOrder={false} />
 
-      <div className="mb-6 bg-white p-4 rounded-lg shadow-sm flex justify-between items-center">
+      <div className="mb-6 bg-white p-5 rounded-lg shadow-sm flex justify-between items-center border-l-4 border-blue-600">
         <div>
           <h2 className="text-2xl font-bold text-gray-800">Seller Management</h2>
-          <p className="text-sm text-gray-500">Quickly toggle between Active and Blocked status</p>
+          <p className="text-sm text-gray-500 font-medium">Manage and monitor platform sellers</p>
         </div>
-        <button onClick={fetchSellers} className="px-4 py-2 bg-blue-50 text-blue-600 rounded-md hover:bg-blue-100 transition">
-          Refresh List
+        <button 
+          onClick={fetchSellers} 
+          className="px-5 py-2 bg-gray-800 text-white rounded-lg hover:bg-black transition-all shadow-md font-semibold text-sm"
+        >
+          Refresh Data
         </button>
       </div>
 
-      <div className="overflow-x-auto bg-white shadow-xl rounded-xl border border-gray-200">
+      <div className="overflow-x-auto bg-white shadow-2xl rounded-2xl border border-gray-100">
         <table className="min-w-full table-auto">
           <thead>
-            <tr className="bg-gray-100 text-gray-600 text-sm">
-              <th className="px-6 py-4 text-left font-bold uppercase">Seller Information</th>
-              <th className="px-6 py-4 text-left font-bold uppercase">Account Balance</th>
-              <th className="px-6 py-4 text-center font-bold uppercase">Current Status</th>
+            <tr className="bg-gray-800 text-white text-xs uppercase tracking-wider">
+              <th className="px-6 py-4 text-left font-bold">Seller Information</th>
+              <th className="px-6 py-4 text-left font-bold">Balance</th>
+              <th className="px-6 py-4 text-center font-bold">Account Action</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
             {sellers.map((seller) => (
-              <tr key={seller._id} className="hover:bg-gray-50 transition">
-                <td className="px-6 py-4">
-                  <div className="font-bold text-gray-800 text-base">{seller.name || "Unknown"}</div>
-                  <div className="text-sm text-blue-500 italic">{seller.email}</div>
-                  <div className="text-xs text-gray-500 font-medium">WhatsApp: {seller.phone}</div>
+              <tr key={seller._id} className="hover:bg-blue-50/50 transition-colors">
+                <td className="px-6 py-5">
+                  <div className="font-extrabold text-gray-900 text-lg">{seller.name || "N/A"}</div>
+                  <div className="text-sm text-blue-600 font-medium">{seller.email}</div>
+                  <div className="text-xs text-green-600 font-bold mt-1">WhatsApp: {seller.phone}</div>
                 </td>
-                <td className="px-6 py-4">
-                  <span className="text-gray-700 font-mono font-bold bg-gray-100 px-2 py-1 rounded">
-                    ${seller.balance.toFixed(2)}
-                  </span>
+                <td className="px-6 py-5">
+                  <div className="flex items-center">
+                    <span className="text-xl font-black text-gray-800">${seller.balance.toFixed(2)}</span>
+                  </div>
                 </td>
-                <td className="px-6 py-4 text-center">
+                <td className="px-6 py-5 text-center">
                   <select
                     value={seller.status || 'active'}
                     onChange={(e) => handleStatusChange(seller._id, e.target.value)}
-                    className={`px-4 py-2 rounded-lg border-2 font-black text-xs cursor-pointer focus:outline-none transition-all ${
+                    className={`px-4 py-2 rounded-xl border-2 font-black text-xs cursor-pointer focus:outline-none shadow-sm transition-all ${
                       seller.status === 'blocked' 
-                        ? 'border-red-200 bg-red-50 text-red-600' 
-                        : 'border-green-200 bg-green-50 text-green-600'
+                        ? 'border-red-500 bg-red-50 text-red-600' 
+                        : 'border-green-500 bg-green-50 text-green-600'
                     }`}
                   >
-                    <option value="active">🟢 ACTIVE</option>
-                    <option value="blocked">🔴 BLOCKED</option>
+                    <option value="active">🟢 ACTIVE ACCOUNT</option>
+                    <option value="blocked">🔴 BLOCK ACCOUNT</option>
                   </select>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-        {sellers.length === 0 && <div className="p-10 text-center text-gray-400">No sellers available.</div>}
+        {sellers.length === 0 && (
+          <div className="p-20 text-center flex flex-col items-center">
+            <p className="text-gray-400 text-lg font-medium">No sellers found in the database.</p>
+          </div>
+        )}
       </div>
     </div>
   );
