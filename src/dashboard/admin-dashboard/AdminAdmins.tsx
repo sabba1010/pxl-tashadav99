@@ -1,7 +1,7 @@
 import {
   AccountBalanceWallet,
   Assessment,
-  ChevronLeft as MuiChevronLeft, // নাম পরিবর্তন করে MUI এরটা নেয়া হলো
+  ChevronLeft as MuiChevronLeft,
   ChevronRight as MuiChevronRight,
   CompareArrows,
   Dashboard,
@@ -12,9 +12,9 @@ import {
   Person,
   Star,
   Diversity3,
+  ManageAccounts, // Seller Management এর জন্য পারফেক্ট আইকন
 } from "@mui/icons-material";
 import { Box } from "@mui/material";
-// lucide-react ইমপোর্ট বাদ দেওয়া হয়েছে কনফ্লিক্ট এড়াতে
 import React, { useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -26,15 +26,33 @@ interface NavItem {
   icon: React.ReactNode;
 }
 
+// আপনার চাহিদা অনুযায়ী লজিক্যাল সিরিয়ালে সাজানো হয়েছে
 const mainNavItems: NavItem[] = [
-  { name: "Dashboard Overview", path: "/admin-dashboard", icon: <Dashboard /> },
-  { name: "Listings", path: "/admin-dashboard/listings", icon: <ListAlt /> },
-  { name: "All Users", path: "/admin-dashboard/users", icon: <People /> },
+  { 
+    name: "Dashboard Overview", 
+    path: "/admin-dashboard", 
+    icon: <Dashboard /> 
+  },
+  { 
+    name: "Listings", 
+    path: "/admin-dashboard/listings", 
+    icon: <ListAlt /> 
+  },
+  { 
+    name: "All Users", 
+    path: "/admin-dashboard/users", 
+    icon: <People /> 
+  },
+  // {
+  //   name: "Seller Management", 
+  //   path: "/admin-dashboard/seller-management",
+  //   icon: <ManageAccounts />, 
+  // },
   {
     name: "Seller Account",
     path: "/admin-dashboard/seller-accounts",
-    icon: <PeopleOutline />,
-  }, 
+    icon: <ManageAccounts />,
+  },
   {
     name: "All Deposit",
     path: "/admin-dashboard/deposits",
@@ -46,14 +64,14 @@ const mainNavItems: NavItem[] = [
     icon: <CompareArrows />,
   },
   {
-    name: "Ratings & Reputation",
-    path: "/admin-dashboard/ratings",
-    icon: <Star />,
-  },
-  {
     name: "All Reports",
     path: "/admin-dashboard/report",
     icon: <Assessment />,
+  },
+  {
+    name: "Ratings & Reputation",
+    path: "/admin-dashboard/ratings",
+    icon: <Star />,
   },
   {
     name: "Referral Management",
@@ -71,7 +89,9 @@ const AdminAdmins: React.FC = () => {
 
   const handelLogout = () => {
     // @ts-ignore (যদি AuthContext এ টাইপ ইস্যু থাকে)
-    user.logout();
+    if (user && typeof user.logout === 'function') {
+        user.logout();
+    }
     toast.success("Logged out successfully");
     navigate("/");
   };
@@ -99,7 +119,6 @@ const AdminAdmins: React.FC = () => {
             onClick={toggleSidebar}
             className="text-white hover:bg-[#D1A148]/20 p-2 rounded-lg transition"
           >
-            {/* MUI Icons ব্যবহার করা হয়েছে, এখানে size={20} এর বদলে fontSize ব্যবহার করতে হয় */}
             {collapsed ? <MuiChevronRight fontSize="small" /> : <MuiChevronLeft fontSize="small" />}
           </button>
         </div>

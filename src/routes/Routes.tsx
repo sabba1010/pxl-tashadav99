@@ -53,6 +53,7 @@ import SubscriptionPayment from "../components/Payment/SubscriptionPayment";
 import Test from "../components/Test";
 import ReportAdmin from "../dashboard/admin-dashboard/ReportAdmin";
 import RefDetails from "../dashboard/admin-dashboard/RefDetails";
+import SellerManagement from "../dashboard/admin-dashboard/SellerManagement";
 
 const Routes = createBrowserRouter([
   {
@@ -240,6 +241,10 @@ const Routes = createBrowserRouter([
         path: "ref",
         element:<RefDetails/>,
       },
+      // {
+      //   path: "seller-management",
+      //   element: <SellerManagement/>      
+      // }
     ],
   },
   // admin routes can be added here for admin route
