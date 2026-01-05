@@ -43,15 +43,15 @@ const mainNavItems: NavItem[] = [
     path: "/admin-dashboard/users", 
     icon: <People /> 
   },
-  {
-    name: "Seller Management", 
-    path: "/admin-dashboard/seller-management",
-    icon: <ManageAccounts />, 
-  },
+  // {
+  //   name: "Seller Management", 
+  //   path: "/admin-dashboard/seller-management",
+  //   icon: <ManageAccounts />, 
+  // },
   {
     name: "Seller Account",
     path: "/admin-dashboard/seller-accounts",
-    icon: <PeopleOutline />,
+    icon: <ManageAccounts />,
   },
   {
     name: "All Deposit",

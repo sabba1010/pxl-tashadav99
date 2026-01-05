@@ -241,10 +241,10 @@ const Routes = createBrowserRouter([
         path: "ref",
         element:<RefDetails/>,
       },
-      {
-        path: "seller-management",
-        element: <SellerManagement/>      
-      }
+      // {
+      //   path: "seller-management",
+      //   element: <SellerManagement/>      
+      // }
     ],
   },
   // admin routes can be added here for admin route
