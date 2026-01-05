@@ -8,7 +8,6 @@ import axios from "axios";
 import { useAuth } from "../context/AuthContext";
 import { getAllNotifications } from "../components/Notification/Notification";
 import headerlogo from "../assets/headerlogo.png";
-import sellerGuide from "../assets/Saller guide.pdf";
 import { useAuthHook } from "../hook/useAuthHook";
 import {
   ListCheck,
@@ -280,15 +279,15 @@ export default function Navbar() {
                 ""
               )}
               {loginUser?.role === "seller" || loginUser?.role === "admin" ? (
-                <a
-                  href={sellerGuide}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <NavLink
+                  to="/seller-guide"
                   className="font-medium"
-                  style={{ color: CHARCOAL }}
+                  style={({ isActive }) => ({
+                    color: isActive ? ROYAL_GOLD : CHARCOAL,
+                  })}
                 >
                   Seller Guide
-                </a>
+                </NavLink>
               ) : (
                 ""
               )}
@@ -553,16 +552,16 @@ export default function Navbar() {
                         </span>
                       </NavLink>
                       {loginUser?.role === "seller" || loginUser?.role === "admin" ? (
-                        <a
-                          href={sellerGuide}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                        <NavLink
+                          to="/seller-guide"
                           onClick={() => setOpen(false)}
                           className="flex items-center gap-4 px-6 py-3 hover:bg-gray-50 transition lg:hidden"
-                          style={{ color: CHARCOAL }}
+                          style={({ isActive }) => ({
+                            color: isActive ? ROYAL_GOLD : CHARCOAL,
+                          })}
                         >
                           <span className="text-sm font-medium">Seller Guide</span>
-                        </a>
+                        </NavLink>
                       ) : null}
                       <NavLink
                         to="/account-settings"
