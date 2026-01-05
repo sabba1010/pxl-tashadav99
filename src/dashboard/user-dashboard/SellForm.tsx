@@ -50,6 +50,10 @@ const SellForm: React.FC = () => {
   const user = data;
   console.log(user?.name);
 
+  // --- Block logic start ---
+  const isBlocked = (user as any)?.status === "blocked";
+  // --- Block logic end ---
+
   const [platforms, setPlatforms] = useState<Platform[]>([]);
   const [loadingPlatforms, setLoadingPlatforms] = useState(true);
 
@@ -88,7 +92,7 @@ const SellForm: React.FC = () => {
         );
         const data = Array.isArray(response.data)
           ? response.data
-          : response.data.data || [];
+          : (response as any).data.data || [];
         setPlatforms(data);
       } catch (error) {
         toast.error("Failed to load platforms.");
@@ -177,6 +181,12 @@ const SellForm: React.FC = () => {
   };
 
   const nextStep = () => {
+    // Block check
+    if (isBlocked) {
+      toast.error("You are blocked and cannot perform this action.");
+      return;
+    }
+
     if (step === 0 && validateStep0()) {
       setStep(step + 1);
     } else if (step === 1 && validateStep1()) {
@@ -197,7 +207,7 @@ const SellForm: React.FC = () => {
   const prevStep = () => setStep(step - 1);
 
   const handleSubmit = async () => {
-    if (!validateStep1()) return;
+    if (!validateStep1() || isBlocked) return;
 
     try {
       const response = await axios.post(
@@ -232,6 +242,16 @@ const SellForm: React.FC = () => {
   };
 
   const renderCreditBanner = () => {
+    // Render block message if blocked
+    if (isBlocked) {
+      return (
+        <Box sx={{ bgcolor: "#fee2e2", color: "#b91c1c", p: 3, borderRadius: 2, mb: 4, textAlign: "center", border: "1px solid #fca5a5" }}>
+          <Typography variant="h6" fontWeight="bold">🚫 Account Restricted</Typography>
+          <Typography variant="body2">Your account is currently blocked from selling. Please contact support.</Typography>
+        </Box>
+      );
+    }
+
     if (loadingCredit) {
       return (
         <Box sx={{ textAlign: "center", py: 2 }}>
@@ -528,7 +548,7 @@ const SellForm: React.FC = () => {
           </Box>
 
           <Box sx={{ p: { xs: 4, md: 6 } }}>
-            {/* Credit Banner */}
+            {/* Credit/Block Banner */}
             {renderCreditBanner()}
 
             <Stepper activeStep={step} alternativeLabel sx={{ mb: 8 }}>
@@ -547,7 +567,10 @@ const SellForm: React.FC = () => {
               ))}
             </Stepper>
 
-            {getStepContent(step)}
+            {/* Content area with block protection */}
+            <Box sx={{ opacity: isBlocked ? 0.5 : 1, pointerEvents: isBlocked ? 'none' : 'auto' }}>
+               {getStepContent(step)}
+            </Box>
 
             {/* Navigation Buttons */}
             <Box
@@ -571,7 +594,7 @@ const SellForm: React.FC = () => {
 
               <Button
                 onClick={nextStep}
-                disabled={loadingCredit || hasNoCredit}
+                disabled={loadingCredit || hasNoCredit || isBlocked}
                 size="large"
                 variant="contained"
                 sx={{
@@ -581,15 +604,14 @@ const SellForm: React.FC = () => {
                   textTransform: "none",
                   fontSize: "1.1rem",
                   fontWeight: 600,
-                  background:
-                    "linear-gradient(90deg, rgb(10, 26, 58) 0%, rgb(212, 166, 67) 100%)",
+                  background: isBlocked ? "#9ca3af" : "linear-gradient(90deg, rgb(10, 26, 58) 0%, rgb(212, 166, 67) 100%)",
                   boxShadow: "0 8px 20px rgba(102, 126, 234, 0.3)",
                   "&:hover": {
                     boxShadow: "0 12px 25px rgba(102, 126, 234, 0.4)",
                   },
                 }}
               >
-                {step === steps.length - 1 ? "Submit Listing" : "Continue"}
+                {isBlocked ? "Blocked" : step === steps.length - 1 ? "Submit Listing" : "Continue"}
               </Button>
             </Box>
           </Box>
