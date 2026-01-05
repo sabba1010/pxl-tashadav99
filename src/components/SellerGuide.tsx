@@ -1,8 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
-// Import the PDF from assets
-import sellerGuide from "../assets/Saller guide.pdf";
+// Import the PDF from asse
 
 const SellerGuide: React.FC = () => {
   return (
@@ -15,11 +14,7 @@ const SellerGuide: React.FC = () => {
           </div>
 
           <div className="w-full h-[80vh] border">
-            <iframe
-              src={sellerGuide}
-              title="Seller Guide"
-              className="w-full h-full"
-            />
+           
           </div>
         </div>
       </div>
