@@ -19,6 +19,7 @@ import React, { useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuth } from "../../context/AuthContext";
+import SellerManagement from "./SellerManagement";
 
 interface NavItem {
   name: string;
@@ -59,6 +60,11 @@ const mainNavItems: NavItem[] = [
     name: "Referral Management",
     path: "/admin-dashboard/ref",
     icon: <Diversity3 />,
+  },
+   {
+    name: "Seller Management",
+    path: "/admin-dashboard/seller-management",
+    icon: <SellerManagement/>,
   },
 ];
 
