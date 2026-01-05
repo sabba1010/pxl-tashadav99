@@ -133,8 +133,8 @@ const TotalListings: React.FC = () => {
     switch (status?.toLowerCase()) {
       case "active": return { color: "#34C759", bg: "#E8F9EE" };
       case "pending": return { color: "#FF9500", bg: "#FFF4E6" };
-      case "reject": return { color: "#FF3B30", bg: "#FFEBEB" };
-      case "sold": return { color: "#007AFF", bg: "#EBF5FF" };
+      // case "reject": return { color: "#FF3B30", bg: "#FFEBEB" };
+      // case "sold": return { color: "#007AFF", bg: "#EBF5FF" };
       default: return { color: "#8E8E93", bg: "#F2F2F7" };
     }
   };
@@ -146,10 +146,10 @@ const TotalListings: React.FC = () => {
 
   const handleUpdateStatus = async () => {
     if (!selected) return;
-    if (newStatus === "reject" && !rejectReason.trim()) {
-      alert("Please provide a rejection reason.");
-      return;
-    }
+    // if (newStatus === "reject" && !rejectReason.trim()) {
+    //   alert("Please provide a rejection reason.");
+    //   return;
+    // }
 
     try {
       const res = await fetch(`http://localhost:3200/product/update-status/${selected._id}`, {
@@ -532,8 +532,8 @@ const TotalListings: React.FC = () => {
             >
               <MenuItem value="active">Active</MenuItem>
               <MenuItem value="pending">Pending</MenuItem>
-              <MenuItem value="reject">Reject</MenuItem>
-              <MenuItem value="sold">Sold</MenuItem>
+              {/* <MenuItem value="reject">Reject</MenuItem>
+              <MenuItem value="sold">Sold</MenuItem> */}
             </Select>
           </FormControl>
 
