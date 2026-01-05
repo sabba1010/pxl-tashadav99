@@ -8,7 +8,7 @@ const SellerGuide: React.FC = () => {
       <div className="max-w-5xl mx-auto px-6 lg:px-8">
         {/* Header Card */}
         <div className="bg-white rounded-3xl shadow-xl border border-gray-200 overflow-hidden mb-12">
-          <div className="bg-gradient-to-r from-indigo-600 to-purple-700 px-10 py-12 text-white">
+          <div className="bg-gradient-to-r from-[#002a5c] to-[#00183b] px-10 py-12 text-white">
             <h1 className="text-4xl font-extrabold tracking-tight">Welcome to AcctEmpire</h1>
             <p className="text-2xl font-semibold mt-2">Seller Upload Guide</p>
             <p className="mt-6 text-lg opacity-90">
@@ -224,7 +224,7 @@ const SellerGuide: React.FC = () => {
           </section>
 
           {/* Final Reminder */}
-          <div className="bg-gradient-to-r from-indigo-600 to-purple-700 rounded-3xl shadow-2xl p-12 text-white text-center">
+          <div className="bg-gradient-to-r from-[#002a5c] to-[#00183b] rounded-3xl shadow-2xl p-12 text-white text-center">
             <h2 className="text-3xl font-bold mb-6">Final Reminder</h2>
             <p className="text-xl mb-4">What you list must exactly match what you deliver.</p>
             <p className="text-lg opacity-90">
