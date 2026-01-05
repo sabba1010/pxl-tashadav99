@@ -427,7 +427,7 @@
     {
       
       "name": "Fortnite",
-      "link": "hhttps://acctbazaar.com/assets/product/fortnite.png"
+      "link": "https://acctbazaar.com/assets/product/fortnite.png"
     },
     {
       
@@ -447,7 +447,7 @@
     {
         
         "name": "TrustWallet",
-        "link": "https://acctbazaar.com/assets/product/trustwallet.png"
+        "link": "https://i.ibb.co.com/Bxjs08s/Screenshot-2026-01-05-165312.png"
     },
     {
       
@@ -562,5 +562,25 @@
     {
         "name": "Other",
         "link": "https://acctbazaar.com/assets/product/other.png"
+    },
+    {
+      "name": "eSIM (US)",
+      "link": "https://i.ibb.co.com/jv5MQ42C/logo-1.png"
+    },
+    {
+      "name": "eSIM (EU)",
+      "link": "https://i.ibb.co.com/zHxp0ySV/logo-2.png"
+    },
+    {
+      "name": "Roaming eSIM",
+      "link": "https://i.ibb.co.com/BHNByJ3X/logo-3.png"
+    },
+    {
+      "name": "Temporary SMS",
+      "link": "https://i.ibb.co.com/fzJ5dfL3/logo-4.png"
+    },
+    {
+      "name": "Disposable Numbers",
+      "link": "https://i.ibb.co.com/S7fcJCCY/logo-6.png"
     }
   ]
