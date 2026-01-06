@@ -18,6 +18,7 @@ import WithdrawalRequests from "../dashboard/admin-dashboard/WithdrawalRequests"
 import BuyerAddProduct from "../dashboard/buyer-dahboard/BuyerAddProduct";
 
 import Marketplace from "../components/Marketplace/Marketplace";
+import ContactUs from "../components/ContactUs/ContactUs";
 
 // import path from "path";
 import Mypurchase from "../components/Mypurchase/Mypurchase";
@@ -71,6 +72,14 @@ const Routes = createBrowserRouter([
         element: (
           <PrivateRoute>
             <Marketplace />
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "/contact-us",
+        element: (
+          <PrivateRoute>
+            <ContactUs />
           </PrivateRoute>
         ),
       },
