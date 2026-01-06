@@ -1,6 +1,11 @@
 // src/components/HomeAboutSection.tsx
+import React from "react";
+import { Link } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
 export default function HomeAboutSection() {
+    const { isLoggedIn, user } = useAuth();
+    const sellTarget = !isLoggedIn ? "/login" : (user?.role === "seller" || user?.role === "admin") ? "/selling-form" : "/seller-pay";
     return (
         <section className="relative  pb-10 lg:pt-6 pb-28 bg-gradient-to-br from-[#00183b] via-[#002a5c] to-[#003d80] overflow-hidden">
             {/* Subtle gradient blobs matching hero */}
@@ -94,12 +99,12 @@ export default function HomeAboutSection() {
                         >
                             Browse Accounts
                         </a>
-                        <a
-                            href="/sell"
+                        <Link
+                            to={sellTarget}
                             className="px-5 py-2 md:px-10 md:py-4 bg-transparent border-2 border-[#daab4c] text-[#daab4c] hover:bg-[#daab4c] hover:text-white font-bold text-sm md:text-lg rounded-lg transition-all duration-300"
                         >
                             Sell Your Account
-                        </a>
+                        </Link>
                     </div>
                 </div>
             </div>
