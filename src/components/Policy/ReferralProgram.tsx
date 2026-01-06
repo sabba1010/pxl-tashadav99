@@ -110,6 +110,8 @@ const ReferralProgram: React.FC = () => {
               "Credit expires in 90 days",
               "No self-referrals or fake accounts",
               "We reserve the right to cancel abusive referrals",
+              "Follow the all the website social media quality",
+              "Post atleast or repost 1 website video to qualify"
             ].map((rule, i) => (
               <li key={i} className="flex items-start gap-3">
                 <CheckCircle className="w-6 h-6 text-[#33ac6f] flex-shrink-0 mt-0.5" />
