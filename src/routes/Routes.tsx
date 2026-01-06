@@ -18,6 +18,7 @@ import WithdrawalRequests from "../dashboard/admin-dashboard/WithdrawalRequests"
 import BuyerAddProduct from "../dashboard/buyer-dahboard/BuyerAddProduct";
 
 import Marketplace from "../components/Marketplace/Marketplace";
+import ContactUs from "../components/ContactUs/ContactUs";
 
 // import path from "path";
 import Mypurchase from "../components/Mypurchase/Mypurchase";
@@ -45,6 +46,8 @@ import SellerPay from "../components/Seller/SellerPay";
 import SellerAccount from "../dashboard/admin-dashboard/SellerAccount";
 import AddAccountCredentials from "../dashboard/buyer-dahboard/AddAccount";
 import Review from "../dashboard/buyer-dahboard/Review";
+import NotFound from "../components/NotFound/NotFound";
+import CookiePolicy from "../components/Policy/CookiePolicy";
 import SellForm from "../dashboard/user-dashboard/SellForm";
 import AdminRoute from "./AdminRoute";
 import PrivateRoute from "./PrivateRoute";
@@ -71,6 +74,14 @@ const Routes = createBrowserRouter([
         element: (
           <PrivateRoute>
             <Marketplace />
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "/contact-us",
+        element: (
+          <PrivateRoute>
+            <ContactUs />
           </PrivateRoute>
         ),
       },
@@ -189,6 +200,18 @@ const Routes = createBrowserRouter([
       {
         path: "/test",
         element: <Test />,
+      },
+      {
+        path: "/terms",
+        element: <NotFound />,
+      },
+      {
+        path: "/cookie-policy",
+        element: <CookiePolicy />,
+      },
+      {
+        path: "*",
+        element: <NotFound />,
       }
     ],
   },

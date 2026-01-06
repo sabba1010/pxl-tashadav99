@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 import {
   Shield,
   Mail,
@@ -18,6 +19,8 @@ const ReportTransaction: React.FC = () => {
     { title: "Attach Proof", desc: "Upload all evidence. Wait for 100% upload before submitting.", icon: Upload },
     { title: "Submit Securely", desc: "Our Trust & Safety team reviews every report within 24–72 hours.", icon: Shield },
   ];
+
+  const { isLoggedIn } = useAuth();
 
   return (
     <div className="min-h-screen bg-white text-gray-900 pt-10 pb-12 px-6">
@@ -75,13 +78,13 @@ const ReportTransaction: React.FC = () => {
           </Link>
 
           {/* Secondary Button */}
-          <a
-            href="/"
+          <Link
+            to={isLoggedIn ? "/contact-us" : "/login"}
             className="inline-flex items-center justify-center gap-3 w-full md:w-auto px-8 py-5 text-lg md:text-xl font-medium text-gray-800 bg-gray-100 border-2 border-gray-300 rounded-2xl hover:bg-gray-200 hover:border-gray-400 active:scale-95 transition-all duration-300"
           >
             <Mail className="w-6 h-6 md:w-7 md:h-7" />
             Email Support Team
-          </a>
+          </Link>
         </div>
 
         {/* Security Notice */}
