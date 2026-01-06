@@ -1,13 +1,11 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Home, FileText, Cookie, ArrowLeft } from "lucide-react";
+import { Home, ArrowLeft } from "lucide-react";
 import { motion } from "framer-motion";
 
 const NotFound: React.FC = () => {
   const quickLinks = [
     { to: "/", icon: Home, label: "Home", description: "Back to safety" },
-    { to: "/terms", icon: FileText, label: "Terms", description: "Legal stuff" },
-    { to: "/cookie-policy", icon: Cookie, label: "Cookies", description: "We respect your data" },
   ];
 
   return (
@@ -65,7 +63,7 @@ const NotFound: React.FC = () => {
               Return Home
             </Link>
 
-            <div className="flex gap-3">
+            {/* <div className="flex gap-3">
               {quickLinks.map((link, i) => (
                 <motion.div
                   key={link.to}
@@ -83,7 +81,7 @@ const NotFound: React.FC = () => {
                   </Link>
                 </motion.div>
               ))}
-            </div>
+            </div> */}
           </motion.div>
 
           {/* Fun footer note */}
