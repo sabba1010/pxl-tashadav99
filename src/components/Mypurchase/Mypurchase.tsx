@@ -142,7 +142,7 @@ const MyPurchase: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  const BASE_URL = "http://localhost:3200";
+  const BASE_URL = "https://vps-backend-server-beta.vercel.app";
   const PURCHASE_API = `${BASE_URL}/purchase`;
   const CHAT_API = `${BASE_URL}/chat`;
 

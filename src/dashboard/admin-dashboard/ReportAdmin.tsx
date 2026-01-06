@@ -11,8 +11,8 @@ import {
 } from "lucide-react";
 import Swal from "sweetalert2";
 
-const API_BASE = "http://localhost:3200/purchase";
-const USER_API = "http://localhost:3200/user";
+const API_BASE = "https://vps-backend-server-beta.vercel.app/purchase";
+const USER_API = "https://vps-backend-server-beta.vercel.app/user";
 
 interface IReport {
   _id: string;

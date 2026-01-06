@@ -32,7 +32,7 @@ const AllTransactions: React.FC = () => {
         setLoading(true);
         setError(null);
 
-        const response = await fetch("http://localhost:3200/api/payments");
+        const response = await fetch("https://vps-backend-server-beta.vercel.app/api/payments");
 
         if (!response.ok) {
           throw new Error(`Failed to fetch: ${response.status}`);
