@@ -191,6 +191,17 @@ const Routes = createBrowserRouter([
         element: <Buyer />,
       },
       {
+        path: "/payment",
+        element: <Payment />,
+      },
+      {
+        path: "/post-data",
+        element: <Post />,
+      },
+      {
+        path: "/test",
+        element: <Test />,
+      },
       {
         path: "/terms",
         element: <TermsOfService />,
@@ -202,17 +213,6 @@ const Routes = createBrowserRouter([
       {
         path: "*",
         element: <NotFound />,
-      }
-        path: "/payment",
-        element: <Payment />,
-      },
-      {
-        path: "/post-data",
-        element: <Post />,
-      },
-      {
-        path: "/test",
-        element: <Test />,
       }
     ],
   },
