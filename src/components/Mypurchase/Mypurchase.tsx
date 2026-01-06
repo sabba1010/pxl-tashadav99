@@ -4,7 +4,6 @@ import axios from "axios";
 import { useAuthHook } from "../../hook/useAuthHook";
 import { toast } from "sonner";
 
-import type { IconType } from "react-icons";
 import {
   FaInstagram,
   FaFacebookF,
@@ -18,10 +17,12 @@ import {
   FaPaperPlane,
   FaClock,
   FaFlag,
+  FaCheckCircle,
+  FaTimesCircle,
 } from "react-icons/fa";
 
 /* ---------------------------------------------
-   Type Casting Icons (For TS Safety)
+   Type Casting Icons to fix TS2786 Error
 ---------------------------------------------- */
 const FaTimesIcon = FaTimes as any;
 const FaEyeIcon = FaEye as any;
@@ -29,6 +30,8 @@ const FaCommentsIcon = FaComments as any;
 const FaPaperPlaneIcon = FaPaperPlane as any;
 const FaClockIcon = FaClock as any;
 const FaFlagIcon = FaFlag as any;
+const FaCheckCircleIcon = FaCheckCircle as any;
+const FaTimesCircleIcon = FaTimesCircle as any;
 
 /* ---------------------------------------------
    Types & Interfaces
@@ -69,7 +72,7 @@ interface ChatMessage {
   createdAt: string;
 }
 
-const ICON_COLOR_MAP = new Map<IconType, string>([
+const ICON_COLOR_MAP = new Map<any, string>([
   [FaInstagram, "#E1306C"],
   [FaFacebookF, "#1877F2"],
   [FaTwitter, "#1DA1F2"],
@@ -92,7 +95,7 @@ const inferPlatform = (name: string): PlatformType => {
   return "other";
 };
 
-const getPlatformIcon = (platform: PlatformType): IconType => {
+const getPlatformIcon = (platform: PlatformType): any => {
   switch (platform) {
     case "instagram": return FaInstagram;
     case "facebook": return FaFacebookF;
@@ -113,9 +116,6 @@ const formatDate = (d: string) => {
 const TABS = ["All", "Pending", "Completed", "Cancelled"] as const;
 type Tab = (typeof TABS)[number];
 
-/* ---------------------------------------------
-   Main Component
----------------------------------------------- */
 const MyPurchase: React.FC = () => {
   const [activeTab, setActiveTab] = useState<Tab>("All");
   const [selected, setSelected] = useState<Purchase | null>(null);
@@ -146,24 +146,10 @@ const MyPurchase: React.FC = () => {
   const PURCHASE_API = `${BASE_URL}/purchase`;
   const CHAT_API = `${BASE_URL}/chat`;
 
-  // Timer refresh & Auto-Confirm logic
   useEffect(() => {
-    const timer = setInterval(() => {
-      const currentTime = Date.now();
-      setNow(currentTime);
-
-      purchases.forEach((p) => {
-        if (p.status === "Pending") {
-          const startTime = new Date(p.rawDate).getTime();
-          const deadline = startTime + (24 * 60 * 60 * 1000);
-          if (deadline - currentTime <= 0) {
-            handleUpdateStatus("completed", p.sellerEmail, p.id);
-          }
-        }
-      });
-    }, 1000);
+    const timer = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(timer);
-  }, [purchases]);
+  }, []);
 
   const getRemainingTime = (rawDate: string) => {
     const diff = (new Date(rawDate).getTime() + 86400000) - now;
@@ -193,11 +179,7 @@ const MyPurchase: React.FC = () => {
         purchaseNumber: `ORD-${item._id.slice(-6).toUpperCase()}`,
       }));
       setPurchases(mapped);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsLoading(false);
-    }
+    } catch (err) { console.error(err); } finally { setIsLoading(false); }
   };
 
   useEffect(() => { fetchPurchases(); }, [buyerId]);
@@ -207,14 +189,10 @@ const MyPurchase: React.FC = () => {
     if (!id) return;
     try {
       await axios.patch(`${PURCHASE_API}/update-status/${id}`, { status, sellerEmail });
-      if (!orderId) {
-        toast.success(`Order ${status} successfully!`);
-        setSelected(null);
-      }
+      toast.success(`Order ${status} successfully!`);
+      setSelected(null);
       fetchPurchases();
-    } catch (err) {
-      if (!orderId) toast.error("Failed to update status");
-    }
+    } catch (err) { toast.error("Failed to update status"); }
   };
 
   const handleOpenChat = (p: Purchase) => {
@@ -243,9 +221,7 @@ const MyPurchase: React.FC = () => {
   }, [isChatOpen, activeChatSellerEmail]);
 
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollIntoView({ behavior: "smooth" });
-    }
+    if (scrollRef.current) scrollRef.current.scrollIntoView({ behavior: "smooth" });
   }, [chatMessages]);
 
   const sendChat = async (e: React.FormEvent) => {
@@ -260,12 +236,9 @@ const MyPurchase: React.FC = () => {
       });
       setTypedMessage("");
       fetchChat();
-    } catch (err) {
-      toast.error("Failed to send");
-    }
+    } catch (err) { toast.error("Failed to send"); }
   };
 
-  /* --- MODIFIED: Role logic added here --- */
   const handleReportSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!reportMessage.trim() || !reportTargetOrder) return;
@@ -277,16 +250,12 @@ const MyPurchase: React.FC = () => {
         sellerEmail: reportTargetOrder.sellerEmail,
         reason: reportReason,
         message: reportMessage,
-        role: "buyer" // <--- This sends the role to backend
+        role: "buyer"
       });
       toast.success("Report submitted successfully.");
       setIsReportModalOpen(false);
       setReportMessage("");
-    } catch (err) {
-      toast.error("Error submitting report");
-    } finally {
-      setIsSubmittingReport(false);
-    }
+    } catch (err) { toast.error("Error submitting report"); } finally { setIsSubmittingReport(false); }
   };
 
   const filtered = useMemo(() => {
@@ -300,14 +269,12 @@ const MyPurchase: React.FC = () => {
   }, [filtered, currentPage]);
 
   const renderBadge = (platform: PlatformType, size = 36) => {
-    const RawIcon = getPlatformIcon(platform);
-    const IconComponent = RawIcon as any;
-    
+    const IconComponent = getPlatformIcon(platform) as any;
     return (
       <div style={{
         width: size, height: size, borderRadius: 12, display: "inline-flex",
         alignItems: "center", justifyContent: "center",
-        background: ICON_COLOR_MAP.get(RawIcon) || "#33ac6f"
+        background: ICON_COLOR_MAP.get(getPlatformIcon(platform)) || "#33ac6f"
       }}>
         <IconComponent size={size * 0.6} color="#fff" />
       </div>
@@ -318,7 +285,6 @@ const MyPurchase: React.FC = () => {
     <div className="min-h-screen bg-[#F3EFEE] pt-16 pb-20 px-4 sm:px-6 font-sans">
       <div className="max-w-screen-xl mx-auto">
         <h1 className="text-2xl sm:text-3xl font-bold text-[#0A1A3A] mb-6">My Purchase</h1>
-
         <div className="bg-white rounded-2xl shadow-sm border overflow-hidden">
           <div className="flex gap-6 p-4 border-b overflow-x-auto">
             {TABS.map((t) => (
@@ -330,9 +296,7 @@ const MyPurchase: React.FC = () => {
           </div>
 
           <div className="p-4 sm:p-6 space-y-4">
-            {isLoading ? (
-              <p className="text-center py-10 text-gray-400">Loading...</p>
-            ) : filtered.length === 0 ? (
+            {isLoading ? <p className="text-center py-10 text-gray-400">Loading...</p> : filtered.length === 0 ? (
               <div className="text-center py-20">
                 <p className="text-gray-500 mb-4">No purchases found.</p>
                 <Link to="/" className="bg-[#33ac6f] text-white px-6 py-2 rounded-full text-sm font-bold">Browse Shop</Link>
@@ -356,16 +320,28 @@ const MyPurchase: React.FC = () => {
                       </div>
                     </div>
                   </div>
-
                   <div className="w-full sm:w-auto flex flex-row sm:flex-col items-center sm:items-end justify-between gap-2">
                     <div className="text-right">
                       <p className="text-lg font-bold text-[#0A1A3A]">${p.price.toFixed(2)}</p>
                       <p className="text-[10px] text-gray-400">{p.date}</p>
                     </div>
+                    
+                    {/* BUTTONS LOGIC: Hide View/Chat if Completed or Cancelled */}
                     <div className="flex gap-2">
-                      <button onClick={() => { setReportTargetOrder(p); setIsReportModalOpen(true); }} className="p-2 text-red-500 border border-red-100 rounded bg-white hover:bg-red-50" title="Report Issue"><FaFlagIcon size={14} /></button>
-                      <button onClick={() => setSelected(p)} className="p-2 text-gray-600 border rounded bg-white hover:bg-gray-50" title="View Details"><FaEyeIcon size={14} /></button>
-                      <button onClick={() => handleOpenChat(p)} className="p-2 text-blue-600 border border-blue-100 rounded bg-white hover:bg-blue-50" title="Chat with Seller"><FaCommentsIcon size={14} /></button>
+                      <button onClick={() => { setReportTargetOrder(p); setIsReportModalOpen(true); }} className="p-2 text-red-500 border border-red-100 rounded bg-white hover:bg-red-50" title="Report Issue">
+                        <FaFlagIcon size={14} />
+                      </button>
+                      
+                      {p.status === "Pending" && (
+                        <>
+                          <button onClick={() => setSelected(p)} className="p-2 text-gray-600 border rounded bg-white hover:bg-gray-50" title="View Details">
+                            <FaEyeIcon size={14} />
+                          </button>
+                          <button onClick={() => handleOpenChat(p)} className="p-2 text-blue-600 border border-blue-100 rounded bg-white hover:bg-blue-50" title="Chat with Seller">
+                            <FaCommentsIcon size={14} />
+                          </button>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -375,23 +351,31 @@ const MyPurchase: React.FC = () => {
         </div>
       </div>
 
-      {/* Details Modal */}
+      {/* Details Modal (Only for Pending) */}
       {selected && (
         <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-white w-full max-w-lg rounded-t-3xl sm:rounded-2xl p-6 relative">
-            <button onClick={() => setSelected(null)} className="absolute right-6 top-6 text-gray-400"><FaTimesIcon size={20} /></button>
-            <div className="text-center mb-6">
-              {renderBadge(selected.platform, 60)}
-              <h2 className="text-xl font-bold mt-4">{selected.title}</h2>
+          <div className="bg-white w-full max-w-lg rounded-t-3xl sm:rounded-2xl p-6 relative overflow-hidden">
+            <button onClick={() => setSelected(null)} className="absolute right-6 top-6 text-gray-400 z-10 hover:text-red-500 transition"><FaTimesIcon size={20} /></button>
+            <div className="text-center mb-6 pt-4">
+              {renderBadge(selected.platform, 70)}
+              <h2 className="text-xl font-bold mt-4 text-[#0A1A3A]">{selected.title}</h2>
               <p className="text-3xl font-black text-[#33ac6f] mt-2">${selected.price.toFixed(2)}</p>
             </div>
+            <div className="bg-gray-50 rounded-2xl p-4 space-y-3 border border-gray-100 mb-6 text-sm">
+               <div className="flex justify-between border-b pb-2"><span className="text-gray-500">Order Number</span><span className="font-bold">{selected.purchaseNumber}</span></div>
+               <div className="flex justify-between border-b pb-2"><span className="text-gray-500">Purchase Date</span><span className="font-bold">{selected.date}</span></div>
+               <div className="flex justify-between border-b pb-2"><span className="text-gray-500">Order ID</span><span className="font-bold font-mono text-[11px]">{selected.id}</span></div>
+               <div className="flex justify-between"><span className="text-gray-500">Status</span><span className="font-bold">{selected.status}</span></div>
+            </div>
             {selected.status === "Pending" && (
-              <div className="mt-8 space-y-3">
-                <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 flex flex-col items-center gap-2">
-                   <p className="text-[10px] text-blue-500 font-bold uppercase tracking-wider">Auto-Confirm Timer</p>
+              <div className="space-y-3">
+                <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 flex flex-col items-center gap-1">
+                   <p className="text-[10px] text-blue-500 font-bold uppercase">Auto-Confirm Timer</p>
                    <p className="text-2xl font-mono font-black text-blue-900">{getRemainingTime(selected.rawDate)}</p>
                 </div>
-                <button onClick={() => handleUpdateStatus("completed", selected.sellerEmail)} className="w-full bg-[#33ac6f] text-white py-3 rounded-xl font-bold hover:bg-[#2aa46a] shadow-lg transition-all active:scale-95">Confirm & Complete Order</button>
+                <button onClick={() => handleUpdateStatus("completed", selected.sellerEmail)} className="w-full bg-[#33ac6f] text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition active:scale-95 shadow-lg">
+                  <FaCheckCircleIcon /> Confirm & Complete Order
+                </button>
               </div>
             )}
           </div>
@@ -401,19 +385,17 @@ const MyPurchase: React.FC = () => {
       {/* Report Modal */}
       {isReportModalOpen && reportTargetOrder && (
          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md">
-            <div className="bg-white w-full max-w-md rounded-2xl overflow-hidden shadow-2xl animate-in zoom-in-95">
+            <div className="bg-white w-full max-w-md rounded-2xl overflow-hidden shadow-2xl">
                <div className="bg-red-600 p-4 text-white font-bold flex justify-between items-center">
                   <span className="flex items-center gap-2"><FaFlagIcon /> Report Order</span>
                   <button onClick={() => setIsReportModalOpen(false)}><FaTimesIcon /></button>
                </div>
                <form onSubmit={handleReportSubmit} className="p-6 space-y-4">
-                  <label className="block text-xs font-bold text-gray-700">Reason</label>
-                  <select value={reportReason} onChange={(e) => setReportReason(e.target.value)} className="w-full border p-2 rounded-lg text-sm outline-none">
+                  <select value={reportReason} onChange={(e) => setReportReason(e.target.value)} className="w-full border p-2.5 rounded-xl text-sm outline-none">
                      {REPORT_REASONS.map(r => <option key={r} value={r}>{r}</option>)}
                   </select>
-                  <label className="block text-xs font-bold text-gray-700">Message</label>
-                  <textarea value={reportMessage} onChange={(e) => setReportMessage(e.target.value)} placeholder="Describe the issue..." className="w-full border p-3 rounded-lg text-sm h-32 outline-none" required />
-                  <button type="submit" disabled={isSubmittingReport} className="w-full bg-red-600 text-white py-3 rounded-xl font-bold hover:bg-red-700 transition disabled:opacity-50">{isSubmittingReport ? "Sending..." : "Submit Report"}</button>
+                  <textarea value={reportMessage} onChange={(e) => setReportMessage(e.target.value)} placeholder="Describe the issue..." className="w-full border p-3 rounded-xl text-sm h-32 outline-none" required />
+                  <button type="submit" disabled={isSubmittingReport} className="w-full bg-red-600 text-white py-3 rounded-xl font-bold">{isSubmittingReport ? "Sending..." : "Submit Report"}</button>
                </form>
             </div>
          </div>
@@ -422,25 +404,22 @@ const MyPurchase: React.FC = () => {
       {/* Chat UI */}
       {isChatOpen && (
         <div className="fixed inset-0 z-[120] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div className="bg-[#ECE5DD] w-full max-w-md h-[90vh] sm:h-[600px] sm:rounded-2xl flex flex-col overflow-hidden shadow-2xl">
+          <div className="bg-[#ECE5DD] w-full max-w-md h-[90vh] sm:h-[600px] sm:rounded-3xl flex flex-col overflow-hidden shadow-2xl">
             <div className="bg-white p-4 flex justify-between items-center border-b">
-               <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-[#33ac6f] rounded-full flex items-center justify-center text-white text-xs font-bold">{activeChatSellerEmail?.[0].toUpperCase()}</div>
-                  <span className="font-bold text-sm truncate max-w-[150px]">{activeChatSellerEmail}</span>
-               </div>
+               <span className="font-bold text-sm">{activeChatSellerEmail}</span>
                <button onClick={() => setIsChatOpen(false)} className="text-gray-400 hover:text-red-500"><FaTimesIcon size={20} /></button>
             </div>
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
                {chatMessages.map((m, i) => (
                   <div key={i} className={`flex ${m.senderId === buyerId ? 'justify-end' : 'justify-start'}`}>
-                     <div className={`p-3 rounded-2xl text-sm max-w-[80%] ${m.senderId === buyerId ? 'bg-[#D9FDD3] rounded-tr-none' : 'bg-white shadow-sm rounded-tl-none'}`}>{m.message}</div>
+                     <div className={`p-3 rounded-2xl text-sm max-w-[85%] ${m.senderId === buyerId ? 'bg-[#D9FDD3] rounded-tr-none' : 'bg-white rounded-tl-none shadow-sm'}`}>{m.message}</div>
                   </div>
                ))}
                <div ref={scrollRef} />
             </div>
             <form onSubmit={sendChat} className="p-3 bg-white flex gap-2 border-t">
-               <input value={typedMessage} onChange={(e) => setTypedMessage(e.target.value)} className="flex-1 bg-gray-100 p-2 rounded-full px-4 outline-none text-sm" placeholder="Type a message..." />
-               <button type="submit" className="bg-[#33ac6f] text-white p-3 rounded-full hover:bg-[#2aa46a] transition"><FaPaperPlaneIcon size={16} /></button>
+               <input value={typedMessage} onChange={(e) => setTypedMessage(e.target.value)} className="flex-1 bg-gray-100 p-2.5 rounded-full px-5 outline-none text-sm" placeholder="Type a message..." />
+               <button type="submit" className="bg-[#33ac6f] text-white p-3.5 rounded-full hover:bg-[#2aa46a] transition shadow-md"><FaPaperPlaneIcon size={16} /></button>
             </form>
           </div>
         </div>
