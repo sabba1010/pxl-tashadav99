@@ -1,7 +1,11 @@
 import React from "react";
+import { Link } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 import images from "../../assets/social media (1).png";
 
 const HeroBannerSection = () => {
+  const { isLoggedIn } = useAuth();
+
   return (
     <section className="relative text-white pt-6 pb-10 lg:py-20 px-6 md:px-12 lg:px-20 overflow-hidden bg-gradient-to-br from-[#00183b] via-[#002a5c] to-[#003d80]">
       {/* Subtle dark overlay for depth */}
@@ -39,7 +43,7 @@ const HeroBannerSection = () => {
             />
 
             {/* Button with modern hover effect */}
-            <button className="
+            <Link to={isLoggedIn ? "/marketplace" : "/login"} className="
               px-10 py-5 
               bg-[#33ac6f] hover:bg-[#e7c06c] 
               text-white font-bold text-base
@@ -51,7 +55,7 @@ const HeroBannerSection = () => {
             ">
               <span className="relative z-10">Get Started</span>
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-0 group-hover:opacity-30 -skew-x-12 translate-x-full group-hover:translate-x-0 transition-transform duration-700"></div>
-            </button>
+            </Link>
           </div>
         </div>
 

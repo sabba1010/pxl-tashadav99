@@ -152,7 +152,7 @@ const ReferralProgram = () => {
           className="text-center"
         >
           <a
-            href="/dashboard/referrals"
+            href="/referral"
             className="inline-block px-10 py-5 bg-gradient-to-r from-[#daab4c] to-[#b8860b] text-[#00183b] font-bold rounded-full text-xl hover:scale-105 hover:shadow-2xl transition-all duration-300 shadow-lg text-white"
           >
             Get Your Referral Link Now →
