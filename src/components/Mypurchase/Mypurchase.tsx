@@ -110,19 +110,6 @@ const formatDate = (d: string) => {
   });
 };
 
-const timeAgo = (dateString?: string) => {
-  if (!dateString) return null;
-  const date = new Date(dateString);
-  const now = new Date();
-  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-  if (diffInSeconds < 60) return "Just now";
-  const diffInMinutes = Math.floor(diffInSeconds / 60);
-  if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
-  const diffInHours = Math.floor(diffInMinutes / 60);
-  if (diffInHours < 24) return `${diffInHours}h ago`;
-  return date.toLocaleDateString();
-};
-
 const TABS = ["All", "Pending", "Completed", "Cancelled"] as const;
 type Tab = (typeof TABS)[number];
 
@@ -255,6 +242,12 @@ const MyPurchase: React.FC = () => {
     return () => clearInterval(timer);
   }, [isChatOpen, activeChatSellerEmail]);
 
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [chatMessages]);
+
   const sendChat = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!typedMessage.trim()) return;
@@ -272,6 +265,7 @@ const MyPurchase: React.FC = () => {
     }
   };
 
+  /* --- MODIFIED: Role logic added here --- */
   const handleReportSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!reportMessage.trim() || !reportTargetOrder) return;
@@ -283,9 +277,11 @@ const MyPurchase: React.FC = () => {
         sellerEmail: reportTargetOrder.sellerEmail,
         reason: reportReason,
         message: reportMessage,
+        role: "buyer" // <--- This sends the role to backend
       });
-      toast.success("Report submitted.");
+      toast.success("Report submitted successfully.");
       setIsReportModalOpen(false);
+      setReportMessage("");
     } catch (err) {
       toast.error("Error submitting report");
     } finally {
@@ -305,7 +301,7 @@ const MyPurchase: React.FC = () => {
 
   const renderBadge = (platform: PlatformType, size = 36) => {
     const RawIcon = getPlatformIcon(platform);
-    const IconComponent = RawIcon as any; // Error Fix: Cast to any for JSX rendering
+    const IconComponent = RawIcon as any;
     
     return (
       <div style={{
@@ -326,7 +322,7 @@ const MyPurchase: React.FC = () => {
         <div className="bg-white rounded-2xl shadow-sm border overflow-hidden">
           <div className="flex gap-6 p-4 border-b overflow-x-auto">
             {TABS.map((t) => (
-              <button key={t} onClick={() => setActiveTab(t)}
+              <button key={t} onClick={() => {setActiveTab(t); setCurrentPage(1);}}
                 className={`pb-2 text-sm whitespace-nowrap transition-all ${activeTab === t ? "text-[#d4a643] border-b-2 border-[#d4a643] font-bold" : "text-gray-500"}`}>
                 {t}
               </button>
@@ -367,13 +363,9 @@ const MyPurchase: React.FC = () => {
                       <p className="text-[10px] text-gray-400">{p.date}</p>
                     </div>
                     <div className="flex gap-2">
-                      {p.status === "Pending" && (
-                        <>
-                          <button onClick={() => { setReportTargetOrder(p); setIsReportModalOpen(true); }} className="p-2 text-red-500 border border-red-100 rounded bg-white hover:bg-red-50" title="Report Issue"><FaFlagIcon size={14} /></button>
-                          <button onClick={() => setSelected(p)} className="p-2 text-gray-600 border rounded bg-white hover:bg-gray-50" title="View Details"><FaEyeIcon size={14} /></button>
-                          <button onClick={() => handleOpenChat(p)} className="p-2 text-blue-600 border border-blue-100 rounded bg-white hover:bg-blue-50" title="Chat with Seller"><FaCommentsIcon size={14} /></button>
-                        </>
-                      )}
+                      <button onClick={() => { setReportTargetOrder(p); setIsReportModalOpen(true); }} className="p-2 text-red-500 border border-red-100 rounded bg-white hover:bg-red-50" title="Report Issue"><FaFlagIcon size={14} /></button>
+                      <button onClick={() => setSelected(p)} className="p-2 text-gray-600 border rounded bg-white hover:bg-gray-50" title="View Details"><FaEyeIcon size={14} /></button>
+                      <button onClick={() => handleOpenChat(p)} className="p-2 text-blue-600 border border-blue-100 rounded bg-white hover:bg-blue-50" title="Chat with Seller"><FaCommentsIcon size={14} /></button>
                     </div>
                   </div>
                 </div>
@@ -386,7 +378,7 @@ const MyPurchase: React.FC = () => {
       {/* Details Modal */}
       {selected && (
         <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-white w-full max-w-lg rounded-t-3xl sm:rounded-2xl p-6 relative animate-in slide-in-from-bottom-5">
+          <div className="bg-white w-full max-w-lg rounded-t-3xl sm:rounded-2xl p-6 relative">
             <button onClick={() => setSelected(null)} className="absolute right-6 top-6 text-gray-400"><FaTimesIcon size={20} /></button>
             <div className="text-center mb-6">
               {renderBadge(selected.platform, 60)}
