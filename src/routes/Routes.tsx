@@ -47,7 +47,6 @@ import SellerAccount from "../dashboard/admin-dashboard/SellerAccount";
 import AddAccountCredentials from "../dashboard/buyer-dahboard/AddAccount";
 import Review from "../dashboard/buyer-dahboard/Review";
 import NotFound from "../components/NotFound/NotFound";
-import TermsOfService from "../components/Policy/TermsOfService";
 import CookiePolicy from "../components/Policy/CookiePolicy";
 import SellForm from "../dashboard/user-dashboard/SellForm";
 import AdminRoute from "./AdminRoute";
@@ -204,7 +203,7 @@ const Routes = createBrowserRouter([
       },
       {
         path: "/terms",
-        element: <TermsOfService />,
+        element: <NotFound />,
       },
       {
         path: "/cookie-policy",
