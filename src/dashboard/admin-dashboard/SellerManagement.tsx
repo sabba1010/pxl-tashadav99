@@ -16,7 +16,7 @@ const SellerManagement = () => {
   const [sellers, setSellers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const API_BASE_URL = "http://localhost:3200";
+  const API_BASE_URL = "https://vps-backend-server-beta.vercel.app";
 
   useEffect(() => {
     fetchSellers();
