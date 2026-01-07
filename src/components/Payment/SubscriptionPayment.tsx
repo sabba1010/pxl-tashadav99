@@ -77,7 +77,7 @@ const DeductAndCreditAction: React.FC<DeductAndCreditActionProps> = ({
 
     try {
       const response = await fetch(
-        `http://localhost:3200/api/user/getall/${userId}`,
+        `https://vps-backend-server-beta.vercel.app/api/user/getall/${userId}`,
         {
           method: "POST",
           headers: {
