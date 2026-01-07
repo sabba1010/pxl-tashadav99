@@ -160,7 +160,7 @@ const MyAds: React.FC = () => {
     toast.success("Ad restored to Active");
   };
 
-  const handleEdit = (id: string) => navigate(`/edit-product/${id}`);
+  // const handleEdit = (id: string) => navigate(`/edit-product/${id}`);
 
   const getStatusColor = (s?: string) => {
     const st = statusOf(s);
@@ -303,12 +303,12 @@ const MyAds: React.FC = () => {
                             <RefreshCw size={14} />
                           </button>
                         )}
-                        <button
+                        {/* <button
                           onClick={() => handleEdit(item._id)}
                           className="p-1.5 sm:p-2 border rounded-lg hover:bg-gray-50 text-gray-600 transition"
                         >
                           <Edit size={14} />
-                        </button>
+                        </button> */}
                         <button
                           onClick={() => handleDelete(item._id)}
                           className="p-1.5 sm:p-2 border rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-600 transition"

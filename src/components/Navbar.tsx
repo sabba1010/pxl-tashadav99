@@ -599,63 +599,80 @@ export default function Navbar() {
         </nav>
       </header>
 
-      {/* Mobile Bottom Nav */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 lg:hidden">
-        <div className="relative max-w-screen-xl mx-auto">
-          <div className="flex items-end justify-between h-20 px-4">
-            <NavLink
-              to="/marketplace"
-              className="flex flex-col items-center justify-center flex-1 pt-3 pb-5"
-              style={({ isActive }) => ({
-                color: isActive ? ROYAL_GOLD : CHARCOAL,
-              })}
-            >
-              <ShoppingBag />
-              <span className="text-xs">Marketplace</span>
-            </NavLink>
-            <NavLink
-              to="/purchases"
-              className="flex flex-col items-center justify-center flex-1 pt-3 pb-5"
-              style={({ isActive }) => ({
-                color: isActive ? ROYAL_GOLD : CHARCOAL,
-              })}
-            >
-              <ShoppingCart />
-              <span className="text-xs">Purchases</span>
-            </NavLink>
-            <NavLink
-              to="/orders"
-              className="flex flex-col items-center justify-center flex-1 pt-3 pb-5"
-              style={({ isActive }) => ({
-                color: isActive ? ROYAL_GOLD : CHARCOAL,
-              })}
-            >
-              <ListCheck />
-              <span className="text-xs">Orders</span>
-            </NavLink>
-            <NavLink
-              to="/myproducts"
-              className="flex flex-col items-center justify-center flex-1 pt-3 pb-5"
-              style={({ isActive }) => ({
-                color: isActive ? ROYAL_GOLD : CHARCOAL,
-              })}
-            >
-              <FaBreadSliceIcon className="w-5 h-5 mb-1" />
-              <span className="text-xs">My Ads</span>
-            </NavLink>
-            <NavLink
-              to="/wallet"
-              className="flex flex-col items-center justify-center flex-1 pt-3 pb-5"
-              style={({ isActive }) => ({
-                color: isActive ? ROYAL_GOLD : CHARCOAL,
-              })}
-            >
-              <WalletMinimal />
-              <span className="text-xs">Wallet</span>
-            </NavLink>
-          </div>
-        </div>
-      </nav>
+   {/* Mobile Bottom Nav */}
+<nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 lg:hidden">
+  <div className="relative max-w-screen-xl mx-auto">
+    <div className="flex items-end justify-between h-20 px-4">
+
+      {/* Marketplace – all */}
+      <NavLink
+        to="/marketplace"
+        className="flex flex-col items-center justify-center flex-1 pt-3 pb-5"
+        style={({ isActive }) => ({
+          color: isActive ? ROYAL_GOLD : CHARCOAL,
+        })}
+      >
+        <ShoppingBag />
+        <span className="text-xs">Marketplace</span>
+      </NavLink>
+
+      {/* Purchases – all */}
+      <NavLink
+        to="/purchases"
+        className="flex flex-col items-center justify-center flex-1 pt-3 pb-5"
+        style={({ isActive }) => ({
+          color: isActive ? ROYAL_GOLD : CHARCOAL,
+        })}
+      >
+        <ShoppingCart />
+        <span className="text-xs">Purchases</span>
+      </NavLink>
+
+      {/* Sell Product – all */}
+      <NavLink
+        to="/selling-form"
+        className="flex flex-col items-center justify-center flex-1 pt-3 pb-5"
+        style={({ isActive }) => ({
+          color: isActive ? ROYAL_GOLD : CHARCOAL,
+        })}
+      >
+        <FaBreadSliceIcon className="w-5 h-5 mb-1" />
+        <span className="text-xs">Sell</span>
+      </NavLink>
+
+      {/* Orders – seller / admin */}
+      {(loginUser?.role === "seller" || loginUser?.role === "admin") && (
+        <NavLink
+          to="/orders"
+          className="flex flex-col items-center justify-center flex-1 pt-3 pb-5"
+          style={({ isActive }) => ({
+            color: isActive ? ROYAL_GOLD : CHARCOAL,
+          })}
+        >
+          <ListCheck />
+          <span className="text-xs">Orders</span>
+        </NavLink>
+      )}
+
+      {/* Wallet – logged in */}
+      {loginUser && (
+        <NavLink
+          to="/wallet"
+          className="flex flex-col items-center justify-center flex-1 pt-3 pb-5"
+          style={({ isActive }) => ({
+            color: isActive ? ROYAL_GOLD : CHARCOAL,
+          })}
+        >
+          <WalletMinimal />
+          <span className="text-xs">Wallet</span>
+        </NavLink>
+      )}
+
+    </div>
+  </div>
+</nav>
+
+
     </>
   );
 }
