@@ -10,8 +10,8 @@ import {
 } from "lucide-react";
 import Swal from "sweetalert2";
 
-// API URL (আপনার দেওয়া VPS/Vercel URL)
-const API_BASE = "https://vps-backend-server-beta.vercel.app/purchase";
+// API URL
+const API_BASE = "http://localhost:3200/purchase";
 
 // TypeScript Interfaces
 interface IReport {
@@ -22,6 +22,7 @@ interface IReport {
   reason: string;
   message: string;
   status: string;
+  role?: string; // ডাটাবেস থেকে আসা 'role' কি
   createdAt: string;
 }
 
@@ -43,7 +44,6 @@ const ReportAdmin: React.FC = () => {
     fetchReports();
   }, []);
 
-  // ১. সকল রিপোর্ট লোড করা
   const fetchReports = async () => {
     try {
       setLoading(true);
@@ -62,7 +62,6 @@ const ReportAdmin: React.FC = () => {
     }
   };
 
-  // ২. স্ট্যাটাস পরিবর্তন (Sold/Refunded) - ফিক্সড ভার্সন
   const handleStatusChange = async (id: string, newStatus: string) => {
     if (!newStatus || newStatus === "Pending") return;
 
@@ -76,7 +75,7 @@ const ReportAdmin: React.FC = () => {
     });
 
     if (!confirmResult.isConfirmed) {
-      fetchReports(); // ড্রপডাউন রিসেট করার জন্য
+      fetchReports();
       return;
     }
 
@@ -90,7 +89,6 @@ const ReportAdmin: React.FC = () => {
         return;
       }
 
-      // TypeScript এরর ফিক্স করার জন্য এখানে টাইপ ডিক্লেয়ার করা হয়েছে
       const res = await axios.patch<IUpdateResponse>(endpoint);
 
       if (res.data.success) {
@@ -102,7 +100,7 @@ const ReportAdmin: React.FC = () => {
           showConfirmButton: false,
           timer: 2000
         });
-        fetchReports(); // ডেটা রিফ্রেশ
+        fetchReports();
       }
     } catch (error: any) {
       console.error("Update Error:", error);
@@ -111,7 +109,6 @@ const ReportAdmin: React.FC = () => {
     }
   };
 
-  // সার্চ ফিল্টারিং
   useEffect(() => {
     const result = reports.filter(
       (r) =>
@@ -123,7 +120,6 @@ const ReportAdmin: React.FC = () => {
     setCurrentPage(1);
   }, [search, reports]);
 
-  // পেজিনেশন লজিক
   const indexOfLast = currentPage * reportsPerPage;
   const currentReports = filteredReports.slice(indexOfLast - reportsPerPage, indexOfLast);
   const totalPages = Math.ceil(filteredReports.length / reportsPerPage);
@@ -156,8 +152,8 @@ const ReportAdmin: React.FC = () => {
               <thead>
                 <tr className="bg-slate-50 border-b border-slate-100">
                   <th className="p-4 text-xs font-bold text-slate-500 uppercase">Date</th>
-                  <th className="p-4 text-xs font-bold text-slate-500 uppercase">Reporter</th>
-                  <th className="p-4 text-xs font-bold text-slate-500 uppercase">Seller</th>
+                  <th className="p-4 text-xs font-bold text-slate-500 uppercase">Reporter (Role)</th>
+                  <th className="p-4 text-xs font-bold text-slate-500 uppercase">Seller Email</th>
                   <th className="p-4 text-xs font-bold text-slate-500 uppercase text-center">Status Action</th>
                   <th className="p-4 text-xs font-bold text-slate-500 uppercase text-right">Details</th>
                 </tr>
@@ -167,14 +163,21 @@ const ReportAdmin: React.FC = () => {
                   <tr key={r._id} className="hover:bg-slate-50/80 transition-colors">
                     <td className="p-4 text-sm text-slate-600">{new Date(r.createdAt).toLocaleDateString()}</td>
                     <td className="p-4">
-                      <div className="flex flex-col">
+                      <div className="flex flex-col gap-1">
                         <span className="text-sm font-semibold text-slate-700">{r.reporterEmail}</span>
-                        <span className="text-[10px] text-slate-400 font-mono bg-slate-100 w-fit px-1.5 py-0.5 rounded mt-1">
-                          ID: {r.orderId}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] text-slate-400 font-mono bg-slate-100 px-1.5 py-0.5 rounded">
+                            ID: {r.orderId}
+                          </span>
+                          <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded uppercase ${
+                            r.role === 'buyer' ? 'bg-indigo-50 text-indigo-600' : 'bg-orange-50 text-orange-600'
+                          }`}>
+                            {r.role || "seller"}
+                          </span>
+                        </div>
                       </div>
                     </td>
-                    <td className="p-4 text-sm text-slate-600">{r.sellerEmail}</td>
+                    <td className="p-4 text-sm text-slate-600 font-medium">{r.sellerEmail}</td>
                     <td className="p-4 text-center">
                       <div className="relative inline-block w-32">
                         <select
@@ -208,17 +211,15 @@ const ReportAdmin: React.FC = () => {
           </div>
         </div>
 
-        {/* Pagination */}
         {totalPages > 1 && (
           <div className="flex justify-center items-center gap-2 mt-8">
-            <button className="p-2 border rounded-lg bg-white" disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}><ChevronLeft size={18}/></button>
+            <button className="p-2 border rounded-lg bg-white disabled:opacity-50" disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}><ChevronLeft size={18}/></button>
             <span className="text-sm font-bold text-slate-600">Page {currentPage} of {totalPages}</span>
-            <button className="p-2 border rounded-lg bg-white" disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)}><ChevronRight size={18}/></button>
+            <button className="p-2 border rounded-lg bg-white disabled:opacity-50" disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)}><ChevronRight size={18}/></button>
           </div>
         )}
       </div>
 
-      {/* Modal Details */}
       {selectedReport && (
         <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-[1.5rem] w-full max-w-md overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
