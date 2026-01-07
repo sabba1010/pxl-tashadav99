@@ -57,6 +57,7 @@ import Test from "../components/Test";
 import ReportAdmin from "../dashboard/admin-dashboard/ReportAdmin";
 import RefDetails from "../dashboard/admin-dashboard/RefDetails";
 import SellerManagement from "../dashboard/admin-dashboard/SellerManagement";
+import MyReport from "../components/Seller/MyReport";
 
 const Routes = createBrowserRouter([
   {
@@ -116,6 +117,10 @@ const Routes = createBrowserRouter([
       {
         path: "/seller-pay",
         element: <SellerPay />,
+      },
+      {
+        path: "report-seller",
+        element:<MyReport/>,
       },
       {
         path: "/login",
