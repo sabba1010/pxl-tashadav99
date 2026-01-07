@@ -151,14 +151,18 @@ const MyPurchase: React.FC = () => {
     return () => clearInterval(timer);
   }, []);
 
-  const getRemainingTime = (rawDate: string) => {
-    const diff = (new Date(rawDate).getTime() + 86400000) - now;
+ const getRemainingTime = (rawDate: string) => {
+    // ৪ ঘণ্টা = ৪ * ৬০ * ৬০ * ১০০০ = ১৪৪০০০০০ মিলিসেকেন্ড
+    const diff = (new Date(rawDate).getTime() + 14400000) - now;
+    
     if (diff <= 0) return "Confirming...";
+    
     const h = Math.floor(diff / 3600000).toString().padStart(2, '0');
     const m = Math.floor((diff % 3600000) / 60000).toString().padStart(2, '0');
     const s = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
+    
     return `${h}h ${m}m ${s}s`;
-  };
+};
 
   const fetchPurchases = async () => {
     if (!buyerId) return;
