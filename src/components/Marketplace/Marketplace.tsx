@@ -663,7 +663,7 @@ const Marketplace: React.FC = () => {
         if (!res.ok) throw new Error("Failed to fetch");
         const data = await res.json();
         const mapped: Item[] = data
-          .filter((p: any) => p.status === "active")
+          .filter((p: any) => p.status === "active" || p.status === "approved")
           .map((p: any) => ({
             id: p._id,
             title: p.name,
