@@ -100,7 +100,7 @@ export default function Footer({ theme = "dark" }: Props) {
                   href="mailto:support@acctempire.com" 
                   className={`hover:text-[#33ac6f] ${isDark ? "text-gray-300" : "text-gray-600"}`}
                 >
-                  support@acctempire.com
+                  Yourmail@gmail.com
                 </a>
               </li>
               <li className="flex items-start gap-3">
@@ -109,13 +109,13 @@ export default function Footer({ theme = "dark" }: Props) {
                   href="tel:+8801234567890" 
                   className={`hover:text-[#33ac6f] ${isDark ? "text-gray-300" : "text-gray-600"}`}
                 >
-                  +880 1234-567890
+                  +1234567890
                 </a>
               </li>
               <li className="flex items-start gap-3">
                 <MapPin className="w-5 h-5 text-[#33ac6f] mt-0.5 flex-shrink-0" />
                 <span className={isDark ? "text-gray-300" : "text-gray-600"}>
-                  Dhaka, Bangladesh
+                  your location here
                 </span>
               </li>
             </ul>
