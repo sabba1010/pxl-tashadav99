@@ -80,7 +80,7 @@ export default function Navbar() {
   const handelLougt = () => {
     user.logout();
     toast.success("Logged out successfully");
-    navigate("/");
+    navigate("/login");
   };
 
   // --- FETCH NOTIFICATIONS ---
