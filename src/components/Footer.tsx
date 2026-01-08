@@ -43,7 +43,7 @@ export default function Footer({ theme = "dark" }: Props) {
               </NavLink>
             </div>
             <p className="text-sm leading-relaxed max-w-xs">
-              Your trusted marketplace for premium CCTV cameras, NVRs, DVRs, and complete security solutions in Bangladesh.
+              Buy and sell verified social media and digital accounts securely — fast delivery, escrow protection, and dedicated support.
             </p>
             
             {/* Social Icons */}
