@@ -66,8 +66,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (res.data?.success && res.data.status === "blocked" && res.data.role === "seller") {
           toast.error("Your account was blocked by admin");
           logout();
-          // Optionally force a reload to update app state
-          window.location.reload();
+          // Router isn't mounted inside this provider in index.tsx, so use full navigation
+          window.location.href = "/login";
         }
       } catch (err) {
         // ignore network errors silently
