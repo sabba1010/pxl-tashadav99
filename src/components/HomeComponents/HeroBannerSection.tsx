@@ -33,14 +33,14 @@ const HeroBannerSection = () => {
 
           <div className="flex flex-col sm:flex-row gap-5 max-w-xl">
             {/* Modern glassmorphism input */}
-            <input
+            {/* <input
               type="email"
               placeholder="Enter Your Email"
               className="px-7 py-5 rounded-2xl bg-white/10 backdrop-blur-lg border border-white/20 
                          placeholder-gray-400 text-white text-base
                          focus:outline-none focus:border-[#33ac6f] focus:ring-4 focus:ring-[#33ac6f]/40 
                          transition-all duration-500 shadow-lg"
-            />
+            /> */}
 
             {/* Button with modern hover effect */}
             <Link to={isLoggedIn ? "/marketplace" : "/login"} className="
