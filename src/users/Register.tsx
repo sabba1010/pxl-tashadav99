@@ -650,7 +650,7 @@ const Register = () => {
                     <input type="tel" name="phone" required className="w-full pl-14 pr-5 py-4 bg-gray-900/60 border border-gray-700 rounded-xl text-white outline-none" />
                   </div>
                   {isCountryOpen && (
-                    <div className="absolute top-full left-0 w-full mt-2 bg-gray-900 border border-gray-700 rounded-xl z-50 max-h-40 overflow-y-auto">
+                    <div className="absolute top-full left-0 w-full mt-2 bg-gray-900 text-white border border-gray-700 rounded-xl z-50 max-h-40 overflow-y-auto">
                       {countries.map((c) => (
                         <div key={c.code} onClick={() => { setSelectedCountry(c); setIsCountryOpen(false); }} className="p-3 hover:bg-gray-800 cursor-pointer">{c.label} ({c.code})</div>
                       ))}
