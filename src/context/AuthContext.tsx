@@ -58,7 +58,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const checkStatus = async () => {
       try {
         const res = await axios.get<StatusResponse>(
-          `http://localhost:3200/api/user/status?email=${encodeURIComponent(user.email)}`
+          `https://vps-backend-server-beta.vercel.app/api/user/status?email=${encodeURIComponent(user.email)}`
         );
 
         if (cancelled) return;

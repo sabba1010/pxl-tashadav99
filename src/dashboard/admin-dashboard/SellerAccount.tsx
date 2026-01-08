@@ -36,7 +36,7 @@ const SellerAccount: React.FC = () => {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
 
-  const API_BASE_URL = "http://localhost:3200";
+  const API_BASE_URL = "https://vps-backend-server-beta.vercel.app";
 
   // --- Fetch Data ---
   const fetchSellers = async () => {
