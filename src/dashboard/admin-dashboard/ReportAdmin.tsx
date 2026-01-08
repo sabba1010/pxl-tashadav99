@@ -11,7 +11,7 @@ import {
 import Swal from "sweetalert2";
 
 // API URL
-const API_BASE = "https://vps-backend-server-beta.vercel.app/purchase";
+const API_BASE = "http://localhost:3200/purchase";
 
 // TypeScript Interfaces
 interface IReport {
