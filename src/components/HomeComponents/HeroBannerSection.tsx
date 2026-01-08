@@ -44,14 +44,7 @@ const HeroBannerSection = () => {
 
             {/* Button with modern hover effect */}
             <Link to={isLoggedIn ? "/marketplace" : "/login"} className="
-              px-10 py-5 
-              bg-[#33ac6f] hover:bg-[#e7c06c] 
-              text-white font-bold text-base
-              rounded-2xl shadow-2xl 
-              hover:shadow-[#e7c06c]/50 
-              transform hover:scale-105 active:scale-100
-              transition-all duration-500 
-              relative overflow-hidden group
+              px-5 py-2 md:px-10 md:py-4 bg-[#33ac6f] hover:bg-[#3ed987] text-white font-bold text-sm md:text-lg rounded-lg shadow-md hover:shadow-[#33ac6f]/40 transform hover:scale-105 transition-all duration-300
             ">
               <span className="relative z-10">Get Started</span>
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-0 group-hover:opacity-30 -skew-x-12 translate-x-full group-hover:translate-x-0 transition-transform duration-700"></div>
