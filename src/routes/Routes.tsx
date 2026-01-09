@@ -58,6 +58,8 @@ import ReportAdmin from "../dashboard/admin-dashboard/ReportAdmin";
 import RefDetails from "../dashboard/admin-dashboard/RefDetails";
 import SellerManagement from "../dashboard/admin-dashboard/SellerManagement";
 import MyReport from "../components/Seller/MyReport";
+import DashboardSeller from "../dashboard/buyer-dahboard/dashbordseller";
+
 
 const Routes = createBrowserRouter([
   {
@@ -213,6 +215,10 @@ const Routes = createBrowserRouter([
       {
         path: "/cookie-policy",
         element: <CookiePolicy />,
+      },
+      {
+        path: "/seller-dashboard",
+        element: <DashboardSeller/>,
       },
       {
         path: "*",
