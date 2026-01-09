@@ -83,7 +83,7 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, Icon, gradient }) => 
 const DashboardSeller: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-amber-50/20 to-white">
-      <div className="max-w-7xl mx-auto p-6 md:p-10">
+      <div className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-10">
         {/* Header */}
         <div className="mb-10">
           <h1 className="text-4xl font-bold text-gray-900 tracking-tight">My Seller Dashboard</h1>
