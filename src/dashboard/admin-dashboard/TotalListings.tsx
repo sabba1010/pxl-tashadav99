@@ -624,6 +624,7 @@ interface Listing {
   password: string;
   userEmail: string;
   status: string;
+  previewLink?: string;
 }
 
 interface User {
@@ -913,7 +914,7 @@ const TotalListings: React.FC = () => {
         <Table>
           <TableHead sx={{ bgcolor: "#F9FAFB" }}>
             <TableRow>
-              {["ID", "Title", "Seller Name", "Seller Email", "Price", "Status", "Actions"].map(
+              {["ID", "Title", "Seller Name", "Seller Email", "Preview", "Price", "Status", "Actions"].map(
                 (h) => (
                   <TableCell
                     key={h}
@@ -948,6 +949,20 @@ const TotalListings: React.FC = () => {
                     {getDisplayName(row.userEmail)}
                   </TableCell>
                   <TableCell sx={{ color: "#6B7280" }}>{row.userEmail}</TableCell>
+                  <TableCell>
+                    {row.previewLink ? (
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        onClick={() => window.open(row.previewLink, "_blank")}
+                        sx={{ textTransform: "none", borderRadius: 1 }}
+                      >
+                        Preview
+                      </Button>
+                    ) : (
+                      <Typography variant="caption" color="#9CA3AF">-</Typography>
+                    )}
+                  </TableCell>
                   <TableCell sx={{ fontWeight: 700, color: "#1F2A44" }}>
                     ${parseFloat(row.price).toFixed(2)}
                   </TableCell>
@@ -1103,6 +1118,17 @@ const TotalListings: React.FC = () => {
                   <strong>Password:</strong> {selected.password}
                 </Typography>
               </Paper>
+              {selected.previewLink && (
+                <Paper variant="outlined" sx={{ p: 2, bgcolor: "#F8F9FA", borderRadius: 2, mb: 2 }}>
+                  <Typography variant="body2" sx={{ mb: 1 }}>
+                    <strong>Preview Link:</strong>
+                  </Typography>
+                  <Box display="flex" gap={2} alignItems="center">
+                    <a href={selected.previewLink} target="_blank" rel="noreferrer" style={{ color: '#2a8e5b', fontWeight: 700 }}>{selected.previewLink}</a>
+                    <Button size="small" onClick={() => window.open(selected.previewLink, '_blank')} variant="contained" sx={{ bgcolor: '#33ac6f', '&:hover': { bgcolor: '#2a8e5b' } }}>Open</Button>
+                  </Box>
+                </Paper>
+              )}
               <Typography variant="body2">
                 <strong>Seller:</strong> {selected.userEmail}
               </Typography>
