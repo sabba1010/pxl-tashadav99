@@ -156,7 +156,7 @@
 //   const fetchRequests = async () => {
 //     setLoading(true);
 //     try {
-//       const response = await fetch("https://vps-backend-server-beta.vercel.app/withdraw/getall");
+//       const response = await fetch("http://localhost:3200/withdraw/getall");
 //       const data = await response.json();
 //       if (Array.isArray(data)) setRequests(data);
 //     } catch (error) {
@@ -184,7 +184,7 @@
 //         );
 
 //         const response = await fetch(
-//           `https://vps-backend-server-beta.vercel.app/withdraw/approve/${id}`,
+//           `http://localhost:3200/withdraw/approve/${id}`,
 //           {
 //             method: "PUT",
 //             headers: { "Content-Type": "application/json" },
@@ -596,14 +596,14 @@ const WithdrawalRequests: React.FC = () => {
   const fetchRequests = async () => {
     setLoading(true);
     try {
-      const response = await fetch("https://vps-backend-server-beta.vercel.app/withdraw/getall");
+      const response = await fetch("http://localhost:3200/withdraw/getall");
       const data = await response.json();
       if (Array.isArray(data)) {
         // fetch purchases and reports to compute seller state
         try {
           const [purchasesRes, reportsRes] = await Promise.all([
-            fetch("https://vps-backend-server-beta.vercel.app/purchase/getall"),
-            fetch("https://vps-backend-server-beta.vercel.app/purchase/report/getall"),
+            fetch("http://localhost:3200/purchase/getall"),
+            fetch("http://localhost:3200/purchase/report/getall"),
           ]);
           const purchases = await (purchasesRes.ok ? purchasesRes.json() : Promise.resolve([]));
           const reports = await (reportsRes.ok ? reportsRes.json() : Promise.resolve([]));
@@ -662,7 +662,7 @@ const WithdrawalRequests: React.FC = () => {
         );
 
         const response = await fetch(
-          `https://vps-backend-server-beta.vercel.app/withdraw/approve/${id}`,
+          `http://localhost:3200/withdraw/approve/${id}`,
           {
             method: "PUT",
             headers: { "Content-Type": "application/json" },

@@ -13,7 +13,7 @@ const RefDetails = () => {
     const fetchData = async () => {
         setLoading(true);
         try {
-            const response = await axios.get(`https://vps-backend-server-beta.vercel.app/api/user/getall`);
+            const response = await axios.get(`http://localhost:3200/api/user/getall`);
             const users = (response.data as any[]) || [];
             setAllUsers(users);
             const refs = users.filter((u: any) => u.referredBy);
