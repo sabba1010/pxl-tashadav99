@@ -538,6 +538,18 @@ export default function Navbar() {
                           </span>
                         </NavLink>
                       )}
+                      {loginUser?.role === "seller" && (
+                        <NavLink
+                          to="/seller-dashboard"
+                          onClick={() => setOpen(false)}
+                          className="flex items-center gap-4 px-6 py-3 hover:bg-gray-50 transition"
+                          style={{ color: CHARCOAL }}
+                        >
+                          <span className="text-sm font-medium">
+                            My Dashboard
+                          </span>
+                        </NavLink>
+                      )}
                       <NavLink
                         to="/referral"
                         onClick={() => setOpen(false)}
