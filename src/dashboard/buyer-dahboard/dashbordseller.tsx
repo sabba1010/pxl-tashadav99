@@ -182,8 +182,8 @@ const DashboardSeller: React.FC = () => {
                   </div>
                 </div>
                 <p className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight">
-                  {/* ${(userData?.balance || 0).toFixed(2)} */}
-                  ${totalDeposits.toFixed(2)}
+                   ${(userData?.balance || 0).toFixed(2)} 
+                  {/* ${totalDeposits.toFixed(2)} */}
                 </p>
               </div>
             </div>
