@@ -3,12 +3,11 @@ import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 import { useAuthHook } from '../../hook/useAuthHook';
 import { useDepositByUser } from '../../hook/useDepositByUser';
-import { 
-  DollarSign, 
-  Users, 
-  UserCheck, 
-  ShoppingBag, 
-  ArrowUpRight, 
+import {
+  DollarSign,
+  Users,
+  UserCheck,
+  ShoppingBag,
   ArrowDownLeft,
   Clock,
   CheckCircle,
@@ -109,7 +108,7 @@ const DashboardSeller: React.FC = () => {
     sold: listedAccounts.filter(a => a.status === 'sold').length,
     approved: listedAccounts.filter(a => a.status === 'approved' || a.status === 'active').length,
     pending: listedAccounts.filter(a => a.status === 'pending').length,
-    cancelled: listedAccounts.filter(a => ['reject','denied','cancelled'].includes(String(a.status).toLowerCase())).length,
+    cancelled: listedAccounts.filter(a => ['reject', 'denied', 'cancelled'].includes(String(a.status).toLowerCase())).length,
   } as any;
 
   return (
@@ -130,10 +129,10 @@ const DashboardSeller: React.FC = () => {
         </div>
 
         {/* Payments & Sales Chart Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 mb-10">
-          {/* Payments Overview */}
-          <div className="bg-white/80 backdrop-blur-md border border-white/30 rounded-3xl shadow-2xl p-8">
-            <h3 className="text-2xl font-bold text-gray-900 mb-8">Payments Overview</h3>
+        {/* <div className="grid grid-cols-1 lg:grid-cols-2 mb-10 gap-8">
+         
+          <div className="bg-white/80 backdrop-blur-md border border-white/30 rounded-3xl shadow-2xl p-8 ">
+            <h3 className="text-2xl font-bold text-gray-900 mb-8 ">Payments Overview</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div className="bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 rounded-2xl p-8 border border-emerald-200/50">
                 <div className="flex justify-between items-center mb-4">
@@ -143,34 +142,52 @@ const DashboardSeller: React.FC = () => {
                 <p className="text-4xl font-bold text-gray-900">${totalDeposits.toFixed(2)}</p>
               </div>
             </div>
-          </div>
 
-          {/* Sales Growth Chart */}
-          {/* <div className="bg-white/80 backdrop-blur-md border border-white/30 rounded-3xl shadow-2xl p-8">
-            <h3 className="text-2xl font-bold text-gray-900 mb-8">Sales Growth (2025)</h3>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={salesData}>
-                <defs>
-                  <linearGradient id="goldGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#d4a643" stopOpacity={0.9}/>
-                    <stop offset="100%" stopColor="#d4a643" stopOpacity={0.3}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="4 6" stroke="#f1f5f9" vertical={false} />
-                <XAxis dataKey="month" tick={{ fill: '#64748b' }} />
-                <YAxis tick={{ fill: '#64748b' }} />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: 'rgba(255,255,255,0.95)', 
-                    borderRadius: '12px', 
-                    border: 'none', 
-                    boxShadow: '0 10px 25px rgba(0,0,0,0.1)' 
-                  }}
-                />
-                <Bar dataKey="sales" radius={[12, 12, 0, 0]} barSize={28} fill="url(#goldGradient)" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div> */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div className="bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 rounded-2xl p-8 border border-emerald-200/50">
+                <div className="flex justify-between items-center mb-4">
+                  <span className="text-gray-600 font-medium">Available Balance</span>
+                  <ArrowDownLeft className="w-5 h-5 text-emerald-600" />
+                </div>
+                <p className="text-4xl font-bold text-gray-900">${totalDeposits.toFixed(2)}</p>
+              </div>
+            </div>
+          </div>
+        </div> */}
+
+        <div className="mb-10">
+          <div className="bg-white/80 backdrop-blur-lg border border-white/30 rounded-2xl shadow-xl p-7 md:p-8">
+            <h3 className="text-2xl font-bold text-gray-900 mb-7">Payments Overview</h3>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 lg:gap-8">
+              {/* Total Deposits */}
+              <div className="bg-gradient-to-br from-emerald-50 to-emerald-100/70 rounded-xl p-7 border border-emerald-200/60 shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-gray-600 font-medium">Total Deposits</span>
+                  <div className="p-2 rounded-lg bg-emerald-100/80">
+                    <ArrowDownLeft className="w-6 h-6 text-emerald-600" strokeWidth={2.5} />
+                  </div>
+                </div>
+                <p className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight">
+                  ${totalDeposits.toFixed(2)}
+                </p>
+              </div>
+
+              {/* Available Balance */}
+              <div className="bg-gradient-to-br from-amber-50 to-amber-100/70 rounded-xl p-7 border border-amber-200/60 shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-gray-600 font-medium">Available Balance</span>
+                  <div className="p-2 rounded-lg bg-amber-100/80">
+                    <DollarSign className="w-6 h-6 text-amber-600" strokeWidth={2.5} />
+                  </div>
+                </div>
+                <p className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight">
+                  {/* ${(userData?.balance || 0).toFixed(2)} */}
+                  ${totalDeposits.toFixed(2)}
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* My Listed Accounts & Recent Activity */}
@@ -200,11 +217,10 @@ const DashboardSeller: React.FC = () => {
                       <td className="px-6 py-4 text-sm text-gray-700">{acc.followers || acc.stats || '-'}</td>
                       <td className="px-6 py-4 text-sm font-semibold text-gray-900">${acc.price}</td>
                       <td className="px-6 py-4">
-                        <span className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${
-                          acc.status === 'approved' ? 'bg-emerald-100 text-emerald-800' :
-                          acc.status === 'sold' ? 'bg-gray-100 text-gray-800' :
-                          'bg-yellow-100 text-yellow-800'
-                        }`}>
+                        <span className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${acc.status === 'approved' ? 'bg-emerald-100 text-emerald-800' :
+                            acc.status === 'sold' ? 'bg-gray-100 text-gray-800' :
+                              'bg-yellow-100 text-yellow-800'
+                          }`}>
                           {(String(acc.status || '').charAt(0).toUpperCase() + String(acc.status || '').slice(1)) || 'Unknown'}
                         </span>
                       </td>
