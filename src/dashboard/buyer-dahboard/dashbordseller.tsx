@@ -1,4 +1,8 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import { useAuth } from '../../context/AuthContext';
+import { useAuthHook } from '../../hook/useAuthHook';
+import { useDepositByUser } from '../../hook/useDepositByUser';
 import { 
   DollarSign, 
   Users, 
@@ -6,56 +10,15 @@ import {
   ShoppingBag, 
   ArrowUpRight, 
   ArrowDownLeft,
-  Edit,
-  Trash2,
-  Eye,
   Clock,
   CheckCircle,
-  AlertCircle,
   LucideIcon
 } from 'lucide-react';
-import { 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer
-} from 'recharts';
+
 
 // Mock sales data (2025)
-const salesData = [
-  { month: 'Jan', sales: 300 },
-  { month: 'Feb', sales: 450 },
-  { month: 'Mar', sales: 620 },
-  { month: 'Apr', sales: 780 },
-  { month: 'May', sales: 920 },
-  { month: 'Jun', sales: 50 },
-  { month: 'Jul', sales: 350 },
-  { month: 'Aug', sales: 650 },
-  { month: 'Sep', sales: 1150 },
-  { month: 'Oct', sales: 620 },
-  { month: 'Nov', sales: 710 },
-  { month: 'Dec', sales: 480 },
-];
 
-// Mock listed accounts
-const listedAccounts = [
-  { id: 'ACC001', platform: 'Instagram', followers: '15.2K', price: 450, status: 'approved', date: '2025-12-20' },
-  { id: 'ACC002', platform: 'TikTok', followers: '42.1K', price: 890, status: 'sold', date: '2025-12-15' },
-  { id: 'ACC003', platform: 'YouTube', followers: '8.7K', price: 320, status: 'pending', date: '2026-01-05' },
-  { id: 'ACC004', platform: 'Facebook', followers: '25K', price: 600, status: 'approved', date: '2025-11-28' },
-  { id: 'ACC005', platform: 'Twitter', followers: '18.9K', price: 510, status: 'approved', date: '2025-12-10' },
-];
-
-// Recent activity
-const activities = [
-  { Icon: ShoppingBag, color: 'text-emerald-600', title: 'Account Sold', desc: 'ACC002 (TikTok 42.1K) sold for $890', time: '2 hours ago' },
-  { Icon: CheckCircle, color: 'text-[#d4a643]', title: 'Account Approved', desc: 'ACC001 (Instagram 15.2K) approved', time: '5 hours ago' },
-  { Icon: ArrowUpRight, color: 'text-[#d4a643]', title: 'Withdrawal Requested', desc: '$500 requested to PayPal', time: 'Yesterday' },
-  { Icon: AlertCircle, color: 'text-orange-600', title: 'Review Needed', desc: 'ACC003 pending moderation', time: '2 days ago' },
-];
+// dynamic data comes from backend
 
 // Typed StatCard Props
 interface StatCardProps {
@@ -81,6 +44,74 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, Icon, gradient }) => 
 );
 
 const DashboardSeller: React.FC = () => {
+  const { user } = useAuth();
+  const { data: userData } = useAuthHook();
+  const { payments } = useDepositByUser();
+
+  const [listedAccounts, setListedAccounts] = useState<any[]>([]);
+  const [recentActivities, setRecentActivities] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user?.email) return;
+
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const [prodRes, purchaseRes] = await Promise.all([
+          axios.get<any[]>("http://localhost:3200/product/all-sells"),
+          axios.get<any[]>("http://localhost:3200/purchase/getall", { params: { email: user.email, role: 'seller' } }),
+        ]);
+
+        const myAds = (prodRes.data || []).filter((p: any) => p.userEmail === user.email);
+        setListedAccounts(myAds || []);
+
+        const purchases: any[] = purchaseRes.data || [];
+
+        // Build recent activities: include recent completed purchases (sold) and recent approved ads
+        const soldActivities = purchases
+          .filter(p => p.status === 'completed' || p.status === 'ongoing' || p.status === 'confirmed')
+          .slice(0, 6)
+          .map(p => ({
+            Icon: ShoppingBag,
+            color: 'text-emerald-600',
+            title: 'Account Sold',
+            desc: `${p.productName || p.name || 'Account'} sold for $${p.price}`,
+            time: new Date(p.purchaseDate || p.createdAt || Date.now()).toLocaleString(),
+          }));
+
+        const approvedActivities = (myAds || [])
+          .filter((a: any) => a.status === 'approved' || a.status === 'active')
+          .slice(0, 6)
+          .map((a: any) => ({
+            Icon: CheckCircle,
+            color: 'text-[#d4a643]',
+            title: 'Account Approved',
+            desc: `${a.name || a.category} approved`,
+            time: new Date(a.createdAt || a.date || Date.now()).toLocaleString(),
+          }));
+
+        setRecentActivities([...soldActivities, ...approvedActivities].slice(0, 6));
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [user?.email]);
+
+  const totalDeposits = payments.reduce((s, p) => s + (Number(p.amount) || 0), 0);
+
+  const counts = {
+    total: listedAccounts.length,
+    sold: listedAccounts.filter(a => a.status === 'sold').length,
+    approved: listedAccounts.filter(a => a.status === 'approved' || a.status === 'active').length,
+    pending: listedAccounts.filter(a => a.status === 'pending').length,
+    cancelled: listedAccounts.filter(a => ['reject','denied','cancelled'].includes(String(a.status).toLowerCase())).length,
+  } as any;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-amber-50/20 to-white">
       <div className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-10">
@@ -92,37 +123,30 @@ const DashboardSeller: React.FC = () => {
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-10">
-          <StatCard title="Account Balance" value="$67.13" Icon={DollarSign} gradient="from-[#d4a643] to-[#b5892c]" />
-          <StatCard title="Total Accounts" value="1,791" Icon={Users} gradient="from-blue-500 to-blue-600" />
-          <StatCard title="Accounts Sold" value="511" Icon={ShoppingBag} gradient="from-emerald-500 to-emerald-600" />
-          <StatCard title="Approved Accounts" value="1,684" Icon={UserCheck} gradient="from-purple-500 to-purple-600" />
+          <StatCard title="Account Balance" value={`$${(userData?.balance || 0).toFixed(2)}`} Icon={DollarSign} gradient="from-[#d4a643] to-[#b5892c]" />
+          <StatCard title="Total Accounts" value={counts.total} Icon={Users} gradient="from-blue-500 to-blue-600" />
+          <StatCard title="Accounts Sold" value={counts.sold} Icon={ShoppingBag} gradient="from-emerald-500 to-emerald-600" />
+          <StatCard title="Approved Accounts" value={counts.approved} Icon={UserCheck} gradient="from-purple-500 to-purple-600" />
         </div>
 
         {/* Payments & Sales Chart Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
+        <div className="grid grid-cols-1 lg:grid-cols-2 mb-10">
           {/* Payments Overview */}
           <div className="bg-white/80 backdrop-blur-md border border-white/30 rounded-3xl shadow-2xl p-8">
             <h3 className="text-2xl font-bold text-gray-900 mb-8">Payments Overview</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <div className="bg-gradient-to-br from-[#d4a643]/10 to-[#d4a643]/5 rounded-2xl p-8 border border-[#d4a643]/30">
-                <div className="flex justify-between items-center mb-4">
-                  <span className="text-gray-600 font-medium">Total Withdrawals</span>
-                  <ArrowUpRight className="w-5 h-5 text-[#d4a643]" />
-                </div>
-                <p className="text-4xl font-bold text-gray-900">$2,691</p>
-              </div>
               <div className="bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 rounded-2xl p-8 border border-emerald-200/50">
                 <div className="flex justify-between items-center mb-4">
                   <span className="text-gray-600 font-medium">Total Deposits</span>
                   <ArrowDownLeft className="w-5 h-5 text-emerald-600" />
                 </div>
-                <p className="text-4xl font-bold text-gray-900">$12</p>
+                <p className="text-4xl font-bold text-gray-900">${totalDeposits.toFixed(2)}</p>
               </div>
             </div>
           </div>
 
           {/* Sales Growth Chart */}
-          <div className="bg-white/80 backdrop-blur-md border border-white/30 rounded-3xl shadow-2xl p-8">
+          {/* <div className="bg-white/80 backdrop-blur-md border border-white/30 rounded-3xl shadow-2xl p-8">
             <h3 className="text-2xl font-bold text-gray-900 mb-8">Sales Growth (2025)</h3>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={salesData}>
@@ -146,7 +170,7 @@ const DashboardSeller: React.FC = () => {
                 <Bar dataKey="sales" radius={[12, 12, 0, 0]} barSize={28} fill="url(#goldGradient)" />
               </BarChart>
             </ResponsiveContainer>
-          </div>
+          </div> */}
         </div>
 
         {/* My Listed Accounts & Recent Activity */}
@@ -165,15 +189,15 @@ const DashboardSeller: React.FC = () => {
                     <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Followers</th>
                     <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
                     <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Listed On</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
-                  {listedAccounts.map((acc) => (
-                    <tr key={acc.id} className="hover:bg-gray-50/50 transition-colors">
-                      <td className="px-6 py-4 text-sm font-medium text-gray-900">{acc.id}</td>
-                      <td className="px-6 py-4 text-sm text-gray-700">{acc.platform}</td>
-                      <td className="px-6 py-4 text-sm text-gray-700">{acc.followers}</td>
+                  {listedAccounts.map((acc: any) => (
+                    <tr key={acc._id || acc.id} className="hover:bg-gray-50/50 transition-colors">
+                      <td className="px-6 py-4 text-sm font-medium text-gray-900">{acc._id || acc.id}</td>
+                      <td className="px-6 py-4 text-sm text-gray-700">{acc.category || acc.platform || acc.name}</td>
+                      <td className="px-6 py-4 text-sm text-gray-700">{acc.followers || acc.stats || '-'}</td>
                       <td className="px-6 py-4 text-sm font-semibold text-gray-900">${acc.price}</td>
                       <td className="px-6 py-4">
                         <span className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${
@@ -181,16 +205,10 @@ const DashboardSeller: React.FC = () => {
                           acc.status === 'sold' ? 'bg-gray-100 text-gray-800' :
                           'bg-yellow-100 text-yellow-800'
                         }`}>
-                          {acc.status.charAt(0).toUpperCase() + acc.status.slice(1)}
+                          {(String(acc.status || '').charAt(0).toUpperCase() + String(acc.status || '').slice(1)) || 'Unknown'}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-sm">
-                        <div className="flex gap-3">
-                          <button className="text-blue-600 hover:text-blue-800"><Eye className="w-4 h-4" /></button>
-                          <button className="text-[#d4a643] hover:text-[#b5892c]"><Edit className="w-4 h-4" /></button>
-                          <button className="text-red-600 hover:text-red-800"><Trash2 className="w-4 h-4" /></button>
-                        </div>
-                      </td>
+                      <td className="px-6 py-4 text-sm">{new Date(acc.createdAt || acc.date || Date.now()).toLocaleDateString()}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -202,7 +220,7 @@ const DashboardSeller: React.FC = () => {
           <div className="bg-white/80 backdrop-blur-md border border-white/30 rounded-3xl shadow-2xl p-8">
             <h3 className="text-2xl font-bold text-gray-900 mb-6">Recent Activity</h3>
             <div className="space-y-6">
-              {activities.map((activity, i) => (
+              {recentActivities.map((activity, i) => (
                 <div key={i} className="flex gap-4">
                   <div className="p-3 rounded-xl bg-gray-100">
                     <activity.Icon className={`w-5 h-5 ${activity.color}`} />
