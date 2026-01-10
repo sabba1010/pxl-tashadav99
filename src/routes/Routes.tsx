@@ -40,6 +40,7 @@ import WhyChooseUs from "../pages/why/WhyChooseUs";
 import CartPage from "../components/Cart/CartPage";
 import MyAds from "../components/Myproducts/MyAds";
 import SellerGuide from "../components/SellerGuide";
+import BuyerGuide from "../components/BuyerGuide";
 import Post from "../components/Notification/Post";
 import PaymentForm from "../components/Payment/Withdraw";
 import SellerPay from "../components/Seller/SellerPay";
@@ -52,6 +53,7 @@ import SellForm from "../dashboard/user-dashboard/SellForm";
 import AdminRoute from "./AdminRoute";
 import PrivateRoute from "./PrivateRoute";
 import SellerPrivateRoute from "./SellerPrivateRoute";
+import BuyerPrivateRoute from "./BuyerPrivateRoute";
 import SubscriptionPayment from "../components/Payment/SubscriptionPayment";
 import Test from "../components/Test";
 import ReportAdmin from "../dashboard/admin-dashboard/ReportAdmin";
@@ -154,6 +156,14 @@ const Routes = createBrowserRouter([
           <SellerPrivateRoute>
             <SellerGuide />
           </SellerPrivateRoute>
+        ),
+      },
+      {
+        path: "/buyer-guide",
+        element: (
+          <BuyerPrivateRoute>
+            <BuyerGuide />
+          </BuyerPrivateRoute>
         ),
       },
       {
