@@ -1,5 +1,5 @@
 import { Button } from "@mui/material";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { FaBreadSlice, FaTrash } from "react-icons/fa";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -84,7 +84,7 @@ export default function Navbar() {
   };
 
   // --- FETCH NOTIFICATIONS ---
-  const fetchNotifications = async () => {
+  const fetchNotifications = useCallback(async () => {
     if (!currentUserEmail) return;
 
     try {
@@ -108,7 +108,7 @@ export default function Navbar() {
     } finally {
       setLoadingNotifs(false);
     }
-  };
+  }, [currentUserEmail, notifications.length, notifOpen]);
 
   // --- CLICK HANDLER (MARK READ) ---
   const handleShowNotifications = async () => {
@@ -159,7 +159,7 @@ export default function Navbar() {
     fetchNotifications();
     const id = setInterval(fetchNotifications, 8000);
     return () => clearInterval(id);
-  }, [currentUserEmail]);
+  }, [currentUserEmail, fetchNotifications]);
 
   // Count only unread notifications
   const unreadCount = notifications.filter((n) => !n.read).length;
@@ -585,6 +585,18 @@ export default function Navbar() {
                           })}
                         >
                           <span className="text-sm font-medium">Seller Guide</span>
+                        </NavLink>
+                      ) : null}
+                      {loginUser?.role === "buyer" || loginUser?.role === "admin" ? (
+                        <NavLink
+                          to="/buyer-guide"
+                          onClick={() => setOpen(false)}
+                          className="flex items-center gap-4 px-6 py-3 hover:bg-gray-50 transition lg:hidden"
+                          style={({ isActive }) => ({
+                            color: isActive ? ROYAL_GOLD : CHARCOAL,
+                          })}
+                        >
+                          <span className="text-sm font-medium">Buyer Guide</span>
                         </NavLink>
                       ) : null}
                       <NavLink
