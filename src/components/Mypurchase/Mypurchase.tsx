@@ -571,6 +571,7 @@ const MyPurchase: React.FC = () => {
   const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [now, setNow] = useState(Date.now());
+  const autoCompletedRef = useRef<Set<string>>(new Set());
 
   const loginUserData = useAuthHook();
   const buyerId = loginUserData.data?.email || localStorage.getItem("userEmail");
@@ -619,6 +620,19 @@ const MyPurchase: React.FC = () => {
     const timer = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(timer);
   }, []);
+
+  // Auto-complete pending orders when their timer expires (based on rawDate + 4 hours)
+  useEffect(() => {
+    if (!purchases || purchases.length === 0) return;
+    purchases.forEach((p) => {
+      if (p.status !== 'Pending') return;
+      const expiresAt = new Date(p.rawDate).getTime() + 14400000; // 4 hours
+      if (Date.now() >= expiresAt && !autoCompletedRef.current.has(p.id)) {
+        autoCompletedRef.current.add(p.id);
+        handleUpdateStatus('completed', p.sellerEmail, p.id);
+      }
+    });
+  }, [purchases, now]);
 
  const getRemainingTime = (rawDate: string) => {
     // ৪ ঘণ্টা = ৪ * ৬০ * ৬০ * ১০০০ = ১৪৪০০০০০ মিলিসেকেন্ড
