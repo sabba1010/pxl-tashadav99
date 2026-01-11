@@ -42,7 +42,7 @@ const Payment: React.FC = () => {
   const payWithFlutterwave = async () => {
     try {
       setLoading("flw");
-      const res = await fetch("http://localhost:3200/flutterwave/create", {
+      const res = await fetch("https://vps-backend-server-beta.vercel.app/flutterwave/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -65,7 +65,7 @@ const Payment: React.FC = () => {
   const payWithKorapay = async () => {
     try {
       setLoading("kora");
-      const res = await fetch("http://localhost:3200/korapay/create", {
+      const res = await fetch("https://vps-backend-server-beta.vercel.app/korapay/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
