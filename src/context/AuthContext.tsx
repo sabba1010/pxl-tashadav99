@@ -112,7 +112,7 @@ import Cookies from "js-cookie";
 import axios from "axios";
 import { toast } from "sonner";
 
-const CHAT_API = "https://vps-backend-server-beta.vercel.app/chat";
+const CHAT_API = "http://localhost:3200/chat";
 
 interface StatusResponse {
   success: boolean;
@@ -174,7 +174,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const checkStatus = async () => {
       try {
         const res = await axios.get<StatusResponse>(
-          `https://vps-backend-server-beta.vercel.app/api/user/status?email=${encodeURIComponent(user.email)}`
+          `http://localhost:3200/api/user/status?email=${encodeURIComponent(user.email)}`
         );
 
         if (cancelled) return;

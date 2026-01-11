@@ -58,8 +58,8 @@ const DashboardSeller: React.FC = () => {
       setLoading(true);
       try {
         const [prodRes, purchaseRes] = await Promise.all([
-          axios.get<any[]>("https://vps-backend-server-beta.vercel.app/product/all-sells"),
-          axios.get<any[]>("https://vps-backend-server-beta.vercel.app/purchase/getall", { params: { email: user.email, role: 'seller' } }),
+          axios.get<any[]>("http://localhost:3200/product/all-sells"),
+          axios.get<any[]>("http://localhost:3200/purchase/getall", { params: { email: user.email, role: 'seller' } }),
         ]);
 
         const myAds = (prodRes.data || []).filter((p: any) => p.userEmail === user.email);
