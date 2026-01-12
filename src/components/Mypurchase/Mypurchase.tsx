@@ -561,6 +561,20 @@ const formatDate = (d: string) => {
   });
 };
 
+/////
+const timeAgo = (dateString?: string | null) => {
+  if (!dateString) return "a while ago";
+  const date = new Date(dateString);
+  const now = new Date();
+  const diff = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+  if (diff < 60) return "just now";
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+  return `${Math.floor(diff / 86400)}d ago`;
+};
+
+
 const TABS = ["All", "Pending", "Completed", "Cancelled"] as const;
 type Tab = (typeof TABS)[number];
 
@@ -964,10 +978,19 @@ const MyPurchase: React.FC = () => {
             <div className="bg-white p-4 flex justify-between items-center border-b">
                <div className="flex items-center gap-3">
                  <span className="font-bold text-sm">{activeChatSellerEmail}</span>
-                 <span className="flex items-center gap-2 text-xs text-gray-500">
-                   <span className={`w-2 h-2 rounded-full ${sellerOnline ? 'bg-green-500' : 'bg-gray-400'}`} />
-                   {sellerOnline ? <span className="text-green-600">Online</span> : <span>Offline</span>}
-                 </span>
+               <span className="flex items-center gap-2 text-xs text-gray-500">
+  <span
+    className={`w-2 h-2 rounded-full ${
+      sellerOnline ? "bg-green-500" : "bg-gray-400"
+    }`}
+  />
+  {sellerOnline ? (
+    <span className="text-green-600">Online</span>
+  ) : (
+    <span>Last seen {timeAgo(sellerLastSeen)}</span>
+  )}
+</span>
+
                </div>
                <button onClick={() => { setIsChatOpen(false); setPresence('offline'); }} className="text-gray-400 hover:text-red-500"><FaTimesIcon size={20} /></button>
             </div>
