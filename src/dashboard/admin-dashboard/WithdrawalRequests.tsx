@@ -234,17 +234,17 @@ const WithdrawalRequests: React.FC = () => {
     setLoading(true);
     try {
       const withdrawRes = await fetch(
-        "https://vps-backend-server-beta.vercel.app/withdraw/getall"
+        "http://localhost:3200/withdraw/getall"
       );
       const withdrawData = await withdrawRes.json();
 
       const purchasesRes = await fetch(
-        "https://vps-backend-server-beta.vercel.app/purchase/getall"
+        "http://localhost:3200/purchase/getall"
       );
       const purchases = purchasesRes.ok ? await purchasesRes.json() : [];
 
       const reportsRes = await fetch(
-        "https://vps-backend-server-beta.vercel.app/purchase/report/getall"
+        "http://localhost:3200/purchase/report/getall"
       );
       const reports = reportsRes.ok ? await reportsRes.json() : [];
 

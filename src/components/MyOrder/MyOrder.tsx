@@ -190,9 +190,9 @@
 //   const [currentPage, setCurrentPage] = useState(1);
 //   const itemsPerPage = 10;
 
-//   const PURCHASE_API = "https://vps-backend-server-beta.vercel.app/purchase";
-//   const CHAT_API = "https://vps-backend-server-beta.vercel.app/chat";
-//   const USER_API = "https://vps-backend-server-beta.vercel.app/user";
+//   const PURCHASE_API = "http://localhost:3200/purchase";
+//   const CHAT_API = "http://localhost:3200/chat";
+//   const USER_API = "http://localhost:3200/user";
 
 //   // Report states
 //   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
@@ -870,9 +870,9 @@ const MyOrder: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  const PURCHASE_API = "https://vps-backend-server-beta.vercel.app/purchase";
-  const CHAT_API = "https://vps-backend-server-beta.vercel.app/chat";
-  const USER_API = "https://vps-backend-server-beta.vercel.app/user";
+  const PURCHASE_API = "http://localhost:3200/purchase";
+  const CHAT_API = "http://localhost:3200/chat";
+  const USER_API = "http://localhost:3200/user";
 
   const fetchPresence = async (email: string) => {
     if (!email) return;
@@ -1161,7 +1161,8 @@ const MyOrder: React.FC = () => {
                     <div className="text-right">
                       <p className="text-lg font-bold">${order.price.toFixed(2)}</p>
                       <p className="text-xs text-gray-500">{order.date}</p>
-                      {order.status === "Pending" && (
+                     {!["Cancelled", "Refunded"].includes(order.status) && (
+
                         <div className="flex gap-2 mt-3" onClick={(e) => e.stopPropagation()}>
                           <button onClick={() => setSelected(order)} className="p-2 border rounded hover:bg-gray-100">
                             <FaEyeIcon size={14} />
@@ -1215,7 +1216,7 @@ const MyOrder: React.FC = () => {
                 <p><span className="text-gray-500">Buyer:</span> {getBuyerDisplayName(selected.buyerEmail)}</p>
                 <p><span className="text-gray-500">Description:</span> {selected.desc}</p>
               </div>
-              {selected.status === "Pending" && (
+           {selected.status !== "Cancelled" && (
                 <div className="mt-8 grid grid-cols-2 gap-4">
                   <button
                     disabled={isUpdating}
@@ -1236,17 +1237,18 @@ const MyOrder: React.FC = () => {
                 </div>
               )}
               <div className="mt-6 flex gap-3">
-                {selected.status === "Pending" && (
-                  <button
-                    onClick={() => {
-                      setSelected(null);
-                      handleOpenChat(selected);
-                    }}
-                    className="flex-1 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2"
-                  >
-                    <FaCommentsIcon /> Chat with Buyer
-                  </button>
-                )}
+               {selected.status !== "Cancelled" && (
+  <button
+    onClick={() => {
+      setSelected(null);
+      handleOpenChat(selected);
+    }}
+    className="flex-1 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2"
+  >
+    <FaCommentsIcon /> Chat with Buyer
+  </button>
+)}
+
                 <button onClick={() => setSelected(null)} className="flex-1 py-3 border rounded-lg">
                   Close
                 </button>
