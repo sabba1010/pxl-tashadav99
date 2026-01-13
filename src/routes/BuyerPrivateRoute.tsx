@@ -12,11 +12,11 @@ const BuyerPrivateRoute: FC<PrivateRouteProps> = ({ children }) => {
   const { user, loading } = useAuth();
   const location = useLocation();
 
-  const isAuthorized = user && user.role === "buyer";
+  const isAuthorized = user && (user.role === "buyer" || user.role === "admin");
 
   useEffect(() => {
     if (!loading && !isAuthorized) {
-      toast.error("Please login as a buyer to see this page");
+      toast.error("Please login as a buyer or admin to see this page");
     }
   }, [loading, isAuthorized]);
 
