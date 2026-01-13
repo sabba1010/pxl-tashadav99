@@ -5,14 +5,13 @@ import { useAuth } from '../../context/AuthContext';
 import { useAuthHook } from '../../hook/useAuthHook';
 import { useDepositByUser } from '../../hook/useDepositByUser';
 import {
-  DollarSign,
-  ShoppingBag,
+ 
   ArrowRight,
-  Clock,
+
   LucideIcon,
   Star,
   TrendingUp,
-  BarChart3,
+
   Wallet,
   ArrowUpRight,
   ShieldCheck,
