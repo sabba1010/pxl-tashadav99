@@ -742,10 +742,10 @@ const TotalListings: React.FC = () => {
 
   const handleUpdateStatus = async () => {
     if (!selected) return;
-    // if (newStatus === "reject" && !rejectReason.trim()) {
-    //   alert("Please provide a rejection reason.");
-    //   return;
-    // }
+    if (newStatus === "reject" && !rejectReason.trim()) {
+      alert("Please provide a rejection reason.");
+      return;
+    }
 
     try {
       const res = await fetch(`http://localhost:3200/product/update-status/${selected._id}`, {
@@ -760,7 +760,9 @@ const TotalListings: React.FC = () => {
       if (res.ok) {
         setListings((prev) =>
           prev.map((item) =>
-            item._id === selected._id ? { ...item, status: newStatus } : item
+            item._id === selected._id
+              ? { ...item, status: newStatus, rejectReason: newStatus === "reject" ? rejectReason : "" }
+              : item
           )
         );
         setOpenEdit(false);
@@ -1005,6 +1007,18 @@ const TotalListings: React.FC = () => {
                     >
                       <Edit fontSize="small" />
                     </IconButton>
+                    <IconButton
+                      size="small"
+                      onClick={() => {
+                        setSelected(row);
+                        setNewStatus("reject");
+                        setRejectReason("");
+                        setOpenEdit(true);
+                      }}
+                      sx={{ "&:hover": { bgcolor: "rgba(255,59,48,0.08)" }, color: "#EF4444" }}
+                    >
+                      <Close fontSize="small" />
+                    </IconButton>
                   </TableCell>
                 </TableRow>
               );
@@ -1163,8 +1177,8 @@ const TotalListings: React.FC = () => {
             >
               <MenuItem value="active">Active</MenuItem>
               <MenuItem value="pending">Pending</MenuItem>
-              {/* <MenuItem value="reject">Reject</MenuItem>
-              <MenuItem value="sold">Sold</MenuItem> */}
+              <MenuItem value="reject">Reject</MenuItem>
+              {/* <MenuItem value="sold">Sold</MenuItem> */}
             </Select>
           </FormControl>
 
