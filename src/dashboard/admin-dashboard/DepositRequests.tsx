@@ -84,24 +84,34 @@ const DepositRequests: React.FC = () => {
         p.status.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    filtered.sort((a, b) => {
-      let comp = 0;
-      switch (sortBy) {
-        case "amount":
-          comp = a.amount - b.amount;
-          break;
-        case "status":
-          comp = a.status.localeCompare(b.status);
-          break;
-        case "customerEmail":
-          comp = a.customerEmail.localeCompare(b.customerEmail);
-          break;
-        default:
-          comp =
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-      }
-      return sortOrder === "asc" ? comp : -comp;
-    });
+ filtered.sort((a, b) => {
+  let comp = 0;
+
+  switch (sortBy) {
+    case "amount":
+      comp = a.amount - b.amount;
+      break;
+
+    case "status":
+      comp = a.status.localeCompare(b.status);
+      break;
+
+    case "customerEmail":
+      comp = a.customerEmail.localeCompare(b.customerEmail);
+      break;
+
+    case "createdAt":
+    default:
+      comp =
+        new Date(a.createdAt).getTime() -
+        new Date(b.createdAt).getTime();
+      break;
+  }
+
+  // 🔥 desc হলে newest উপরে
+  return sortOrder === "asc" ? comp : -comp;
+});
+
 
     return filtered;
   }, [payments, searchTerm, sortBy, sortOrder]);
