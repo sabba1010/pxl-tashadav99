@@ -7,11 +7,9 @@ import { useDepositByUser } from '../../hook/useDepositByUser';
 import {
  
   ArrowRight,
-
   LucideIcon,
   Star,
   TrendingUp,
-
   Wallet,
   ArrowUpRight,
   ShieldCheck,
