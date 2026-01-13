@@ -19,6 +19,7 @@ import React, { useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuth } from "../../context/AuthContext";
+import AdminSettings from "./AdminSettings";
 
 interface NavItem {
   name: string;
@@ -77,6 +78,11 @@ const mainNavItems: NavItem[] = [
     name: "Referral Management",
     path: "/admin-dashboard/ref",
     icon: <Diversity3 />,
+  },
+  {
+    name: "Settings",
+    path: "/admin-dashboard/settings",
+    icon: <ManageAccounts />,
   },
 ];
 
@@ -200,7 +206,21 @@ const AdminAdmins: React.FC = () => {
 
       {/* Main Content */}
       <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50">
-          <Outlet />
+        <div className="p-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2">
+              <Outlet />
+            </div>
+
+            {!location.pathname.startsWith("/admin-dashboard/settings") && (
+              <aside className="hidden lg:block lg:col-span-1">
+                <div className="sticky top-6">
+                  <AdminSettings />
+                </div>
+              </aside>
+            )}
+          </div>
+        </div>
       </main>
     </div>
   );
