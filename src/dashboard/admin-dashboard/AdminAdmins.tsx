@@ -8,7 +8,6 @@ import {
   ListAlt,
   Logout,
   People,
-  PeopleOutline,
   Person,
   Star,
   Diversity3,
@@ -88,6 +87,7 @@ const mainNavItems: NavItem[] = [
 
 const AdminAdmins: React.FC = () => {
   const location = useLocation();
+  const showSettingsAside = location.pathname.startsWith("/admin-dashboard/settings");
   const [collapsed, setCollapsed] = useState(false);
   const user = useAuth();
   const toggleSidebar = () => setCollapsed((prev) => !prev);
@@ -208,11 +208,11 @@ const AdminAdmins: React.FC = () => {
       <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50">
         <div className="p-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
+            <div className={showSettingsAside ? "lg:col-span-2" : "lg:col-span-3"}>
               <Outlet />
             </div>
 
-            {!location.pathname.startsWith("/admin-dashboard/settings") && (
+            {showSettingsAside && (
               <aside className="hidden lg:block lg:col-span-1">
                 <div className="sticky top-6">
                   <AdminSettings />
