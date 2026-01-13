@@ -433,7 +433,7 @@ const ReportAdmin: React.FC = () => {
                 <tr className="bg-slate-50 border-b border-slate-100">
                   <th className="p-4 text-xs font-bold text-slate-500 uppercase">Date</th>
                   <th className="p-4 text-xs font-bold text-slate-500 uppercase">Reporter (Role)</th>
-                  <th className="p-4 text-xs font-bold text-slate-500 uppercase">Seller Email</th>
+                  <th className="p-4 text-xs font-bold text-slate-500 uppercase">Reported</th>
                   <th className="p-4 text-xs font-bold text-slate-500 uppercase text-center">Status Action</th>
                   <th className="p-4 text-xs font-bold text-slate-500 uppercase text-right">Details</th>
                 </tr>
