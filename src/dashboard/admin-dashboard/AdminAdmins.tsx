@@ -8,7 +8,6 @@ import {
   ListAlt,
   Logout,
   People,
-  PeopleOutline,
   Person,
   Star,
   Diversity3,
@@ -19,6 +18,7 @@ import React, { useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuth } from "../../context/AuthContext";
+import AdminSettings from "./AdminSettings";
 
 interface NavItem {
   name: string;
@@ -78,10 +78,19 @@ const mainNavItems: NavItem[] = [
     path: "/admin-dashboard/ref",
     icon: <Diversity3 />,
   },
+  {
+    name: "Settings",
+    path: "/admin-dashboard/settings",
+    icon: <ManageAccounts />,
+  },
 ];
 
 const AdminAdmins: React.FC = () => {
   const location = useLocation();
+  // Always hide the right-hand AdminSettings aside.
+  // The settings page (`/admin-dashboard/settings`) already renders `AdminSettings`
+  // inside the main Outlet, so rendering it in the aside causes duplicates.
+  const showSettingsAside = false;
   const [collapsed, setCollapsed] = useState(false);
   const user = useAuth();
   const toggleSidebar = () => setCollapsed((prev) => !prev);
@@ -200,7 +209,21 @@ const AdminAdmins: React.FC = () => {
 
       {/* Main Content */}
       <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50">
-          <Outlet />
+        <div className="p-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className={showSettingsAside ? "lg:col-span-2" : "lg:col-span-3"}>
+              <Outlet />
+            </div>
+
+            {showSettingsAside && (
+              <aside className="hidden lg:block lg:col-span-1">
+                <div className="sticky top-6">
+                  <AdminSettings />
+                </div>
+              </aside>
+            )}
+          </div>
+        </div>
       </main>
     </div>
   );

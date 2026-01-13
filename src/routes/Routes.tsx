@@ -36,6 +36,7 @@ import ReferralProgram from "../components/Policy/ReferralProgram";
 import RefundPolicy from "../components/Policy/RefundPolicy";
 import RatingsReputationPanel from "../dashboard/admin-dashboard/RatingsReputationPanel";
 import WhyChooseUs from "../pages/why/WhyChooseUs";
+import AdminSettings from "../dashboard/admin-dashboard/AdminSettings";
 
 import CartPage from "../components/Cart/CartPage";
 import MyAds from "../components/Myproducts/MyAds";
@@ -284,6 +285,10 @@ const Routes = createBrowserRouter([
       {
         path: "ref",
         element:<RefDetails/>,
+      },
+      {
+        path: "settings",
+        element: <AdminSettings />,
       },
       // {
       //   path: "seller-management",

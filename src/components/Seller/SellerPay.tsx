@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Store, Wallet, CheckCircle2, X, Lock, RefreshCw } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2"; // Alerts এর জন্য
@@ -35,7 +35,27 @@ const SellerPay = () => {
     : 0;
 
   const userEmail = user?.email;
-  const activationFee = 15;
+  const [activationFee, setActivationFee] = useState<number>(15);
+
+  useEffect(() => {
+    let mounted = true;
+    const fetchFee = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/settings`);
+        const data = await res.json();
+        const fee = data?.settings?.registrationFee;
+        if (mounted && fee !== undefined && !isNaN(Number(fee))) {
+          setActivationFee(Number(fee));
+        }
+      } catch (err) {
+        console.error("Failed to fetch activation fee:", err);
+      }
+    };
+    fetchFee();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   // --- SAFE LOGOUT ---
   const handleSafeLogout = () => {

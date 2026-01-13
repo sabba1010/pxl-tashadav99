@@ -675,7 +675,6 @@ const TotalListings: React.FC = () => {
     fetchData();
   }, []);
 
-  // Sellers derived from actual listings (unique userEmail + display name)
   const sellersFromListings = useMemo(() => {
     const uniqueEmails = Array.from(new Set(listings.map((l) => l.userEmail)));
 
@@ -688,7 +687,6 @@ const TotalListings: React.FC = () => {
       };
     });
 
-    // Sort alphabetically by display name
     sellerOptions.sort((a, b) =>
       a.displayName.toLowerCase().localeCompare(b.displayName.toLowerCase())
     );
@@ -696,7 +694,6 @@ const TotalListings: React.FC = () => {
     return sellerOptions;
   }, [listings, users]);
 
-  // Unique statuses + "all"
   const statusOptions = useMemo(() => {
     const unique = new Set(
       listings
@@ -706,7 +703,6 @@ const TotalListings: React.FC = () => {
     return ["all", ...Array.from(unique)];
   }, [listings]);
 
-  // Filtered listings
   const filteredListings = useMemo(() => {
     return listings.filter(
       (l) =>
@@ -717,7 +713,6 @@ const TotalListings: React.FC = () => {
     );
   }, [listings, search, selectedUser, selectedStatus]);
 
-  // Paginated data
   const paginated = useMemo(() => {
     const start = (page - 1) * ITEMS_PER_PAGE;
     return filteredListings.slice(start, start + ITEMS_PER_PAGE);
@@ -729,8 +724,9 @@ const TotalListings: React.FC = () => {
     switch (status?.toLowerCase()) {
       case "active": return { color: "#34C759", bg: "#E8F9EE" };
       case "pending": return { color: "#FF9500", bg: "#FFF4E6" };
-      // case "reject": return { color: "#FF3B30", bg: "#FFEBEB" };
-      // case "sold": return { color: "#007AFF", bg: "#EBF5FF" };
+      case "reject":
+      case "denied":
+        return { color: "#EF4444", bg: "#FFEBEB" };
       default: return { color: "#8E8E93", bg: "#F2F2F7" };
     }
   };
@@ -742,10 +738,10 @@ const TotalListings: React.FC = () => {
 
   const handleUpdateStatus = async () => {
     if (!selected) return;
-    // if (newStatus === "reject" && !rejectReason.trim()) {
-    //   alert("Please provide a rejection reason.");
-    //   return;
-    // }
+    if (newStatus === "reject" && !rejectReason.trim()) {
+      alert("Please provide a rejection reason.");
+      return;
+    }
 
     try {
       const res = await fetch(`http://localhost:3200/product/update-status/${selected._id}`, {
@@ -760,7 +756,9 @@ const TotalListings: React.FC = () => {
       if (res.ok) {
         setListings((prev) =>
           prev.map((item) =>
-            item._id === selected._id ? { ...item, status: newStatus } : item
+            item._id === selected._id
+              ? { ...item, status: newStatus, rejectReason: newStatus === "reject" ? rejectReason : "" }
+              : item
           )
         );
         setOpenEdit(false);
@@ -812,7 +810,6 @@ const TotalListings: React.FC = () => {
           </Box>
 
           <Box display="flex" gap={2} alignItems="center">
-            {/* Search */}
             <Box sx={{ position: "relative", width: 280 }}>
               <Search
                 sx={{
@@ -847,7 +844,6 @@ const TotalListings: React.FC = () => {
               />
             </Box>
 
-            {/* Seller Filter - Now based on actual listings */}
             <FormControl sx={{ minWidth: 200 }}>
               <InputLabel>Seller</InputLabel>
               <Select
@@ -873,7 +869,6 @@ const TotalListings: React.FC = () => {
               </Select>
             </FormControl>
 
-            {/* Status Filter */}
             <FormControl sx={{ minWidth: 140 }}>
               <InputLabel>Status</InputLabel>
               <Select
@@ -1005,6 +1000,7 @@ const TotalListings: React.FC = () => {
                     >
                       <Edit fontSize="small" />
                     </IconButton>
+                    {/* REPORT ICON REMOVED FROM TABLE */}
                   </TableCell>
                 </TableRow>
               );
@@ -1038,7 +1034,6 @@ const TotalListings: React.FC = () => {
               boxShadow: "0 1px 2px rgba(16,24,40,0.04)",
               "&:hover": {
                 bgcolor: "#E6F4EA",
-               
                 transform: "translateY(-2px)",
                 boxShadow: "0 6px 16px rgba(51,172,111,0.12)",
               },
@@ -1135,12 +1130,30 @@ const TotalListings: React.FC = () => {
               <Typography mt={1} color="#6B7280">
                 <strong>Description:</strong> {selected.description}
               </Typography>
+
+              {/* Optional: You can add Reject button here later if you want */}
+              {/* <Box mt={3} display="flex" justifyContent="flex-end">
+                {selected.status.toLowerCase() !== "reject" && (
+                  <Button
+                    variant="outlined"
+                    color="error"
+                    onClick={() => {
+                      setOpenView(false);
+                      setNewStatus("reject");
+                      setRejectReason("");
+                      setOpenEdit(true);
+                    }}
+                  >
+                    Reject This Listing
+                  </Button>
+                )}
+              </Box> */}
             </Box>
           )}
         </DialogContent>
       </Dialog>
 
-      {/* Edit Modal */}
+      {/* Edit / Status Update Modal */}
       <Dialog
         open={openEdit}
         onClose={() => setOpenEdit(false)}
@@ -1163,8 +1176,7 @@ const TotalListings: React.FC = () => {
             >
               <MenuItem value="active">Active</MenuItem>
               <MenuItem value="pending">Pending</MenuItem>
-              {/* <MenuItem value="reject">Reject</MenuItem>
-              <MenuItem value="sold">Sold</MenuItem> */}
+              <MenuItem value="reject">Reject</MenuItem>
             </Select>
           </FormControl>
 

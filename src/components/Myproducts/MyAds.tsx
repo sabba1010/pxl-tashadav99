@@ -259,7 +259,7 @@ const MyAds: React.FC = () => {
                 {(paginated.length > 0 ? paginated : filtered).map((item) => (
                   <div
                     key={item._id}
-                    className="bg-[#f8fafb] rounded-xl border border-gray-100 p-3 sm:p-4 flex items-center gap-3 sm:gap-4 hover:shadow-md transition-shadow"
+                    className="bg-[#f8fafb] rounded-xl border border-gray-100 p-3 sm:p-4 flex flex-wrap items-center gap-3 sm:gap-4 hover:shadow-md transition-shadow"
                   >
                     {/* Icon */}
                     <div className="flex-shrink-0">
@@ -289,7 +289,7 @@ const MyAds: React.FC = () => {
                     </div>
 
                     {/* Price & Actions */}
-                    <div className="flex flex-col items-end gap-2 sm:gap-3">
+                    <div className="flex flex-col items-end gap-2 sm:gap-3 flex-none">
                       <div className="text-base sm:text-lg font-bold text-[#0A1A3A]">
                         ${item.price}
                       </div>
@@ -319,10 +319,10 @@ const MyAds: React.FC = () => {
                     </div>
 
                     {/* Reject Reason */}
-                    {(statusOf(item.status) === "denied" ||
+                      {(statusOf(item.status) === "denied" ||
                       statusOf(item.status) === "reject") &&
                       item.rejectReason && (
-                        <div className="basis-full w-full mt-3 p-2.5 bg-rose-50 border border-rose-100 rounded-lg flex items-start gap-2 text-[10px] sm:text-xs">
+                        <div className="w-full flex-shrink-0 mt-3 p-2.5 bg-rose-50 border border-rose-100 rounded-lg flex items-start gap-2 text-[10px] sm:text-xs">
                           <AlertCircle size={12} className="text-rose-600 mt-0.5 flex-shrink-0" />
                           <div>
                             <p className="font-bold text-rose-800">Action Required</p>
