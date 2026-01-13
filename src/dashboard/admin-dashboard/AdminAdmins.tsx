@@ -79,7 +79,7 @@ const mainNavItems: NavItem[] = [
     icon: <Diversity3 />,
   },
   {
-    name: "Settings",
+    name: "Seller Account Activation",
     path: "/admin-dashboard/settings",
     icon: <ManageAccounts />,
   },
