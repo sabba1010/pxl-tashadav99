@@ -34,7 +34,6 @@ const FaCheckCircleIcon = FaCheckCircle as any;
 /* ---------------------------------------------
    Types & Interfaces
 ---------------------------------------------- */
-// Added 'Refunded' to the type definition
 type PurchaseStatus = "Pending" | "Completed" | "Cancelled" | "Refunded";
 type PlatformType = "instagram" | "facebook" | "twitter" | "whatsapp" | "telegram" | "other";
 
@@ -129,6 +128,12 @@ const timeAgo = (dateString?: string | null) => {
   return `${Math.floor(diff / 86400)}d ago`;
 };
 
+// Helper to mask email (show only part before @)
+const maskEmail = (email: string) => {
+  if (!email) return "User";
+  return email.split('@')[0];
+};
+
 const TABS = ["All", "Pending", "Completed", "Cancelled"] as const;
 type Tab = (typeof TABS)[number];
 
@@ -158,6 +163,9 @@ const MyPurchase: React.FC = () => {
   const [activeChatOrderId, setActiveChatOrderId] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [orderUnreadMap, setOrderUnreadMap] = useState<Record<string, number>>({});
+  
+  // Track online status of all sellers in the list
+  const [onlineSellersMap, setOnlineSellersMap] = useState<Record<string, boolean>>({});
 
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
@@ -183,10 +191,32 @@ const MyPurchase: React.FC = () => {
     } catch (err) { setSellerOnline(false); setSellerLastSeen(null); }
   };
 
+  // Fetch online status for all sellers in the current list
+  const fetchAllSellersStatus = async () => {
+    const sellers = Array.from(new Set(purchases.map(p => p.sellerEmail)));
+    const statusMap: Record<string, boolean> = {};
+    for (const email of sellers) {
+      try {
+        const res = await axios.get<PresenceResponse>(`${CHAT_API}/status/${email}`);
+        statusMap[email] = Boolean(res.data?.online);
+      } catch (err) { statusMap[email] = false; }
+    }
+    setOnlineSellersMap(statusMap);
+  };
+
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+    if (!purchases || purchases.length === 0) return;
+    // Initial fetch of statuses
+    fetchAllSellersStatus();
+    // Poll for status every 10 seconds
+    const interval = setInterval(fetchAllSellersStatus, 10000);
+    return () => clearInterval(interval);
+  }, [purchases]);
 
   useEffect(() => {
     if (!purchases || purchases.length === 0) return;
@@ -395,9 +425,11 @@ const MyPurchase: React.FC = () => {
                     <div>
                       <h3 className="font-bold text-[#0A1A3A] text-sm sm:text-base">{p.title}</h3>
                       <div className="flex items-center gap-2 mt-0.5">
-                         <span className="text-xs text-gray-400 font-medium">Buyer: {p.buyerEmail.split('@')[0]}</span>
-                         {/* Dot: Gray if Refunded or Cancelled, Green otherwise */}
-                         <span className={`w-2 h-2 rounded-full ${(p.status === 'Cancelled' || p.status === 'Refunded') ? 'bg-gray-300' : 'bg-green-500'}`} />
+                         {/* ১. ইমেইল মাস্কিং (শুধু @ এর আগের অংশ) */}
+                         <span className="text-xs text-gray-400 font-medium">Seller: {maskEmail(p.sellerEmail)}</span>
+                         
+                         {/* ২. অনলাইন স্ট্যাটাস ডট (Online হলে Green, Offline হলে Gray) */}
+                         <span className={`w-2 h-2 rounded-full ${onlineSellersMap[p.sellerEmail] ? 'bg-green-500' : 'bg-gray-300'}`} />
                       </div>
                       <div className="flex items-center gap-2 mt-1.5">
                         <span className={`text-[10px] px-2 py-0.5 rounded-full border font-bold ${
@@ -421,7 +453,6 @@ const MyPurchase: React.FC = () => {
                       <p className="text-[10px] text-gray-400">{p.date}</p>
                     </div>
                     
-                    {/* Hide buttons if status is Cancelled OR Refunded */}
                     {p.status !== "Cancelled" && p.status !== "Refunded" && (
                       <div className="flex gap-2">
                         <button onClick={() => { setReportTargetOrder(p); setIsReportModalOpen(true); }} className="p-2 text-red-500 border border-red-100 rounded bg-white hover:bg-red-50" title="Report Issue">
@@ -510,10 +541,11 @@ const MyPurchase: React.FC = () => {
           <div className="bg-[#ECE5DD] w-full max-w-md h-[90vh] sm:h-[600px] sm:rounded-3xl flex flex-col overflow-hidden shadow-2xl">
             <div className="bg-white p-4 flex justify-between items-center border-b">
                 <div className="flex items-center gap-3">
-                  <span className="font-bold text-sm">{activeChatSellerEmail}</span>
+                  {/* ইমেইল মাস্কিং চ্যাটেও রাখা হয়েছে */}
+                  <span className="font-bold text-sm">{maskEmail(activeChatSellerEmail || "")}</span>
                   <span className="flex items-center gap-2 text-xs text-gray-500">
                     <span className={`w-2 h-2 rounded-full ${sellerOnline ? "bg-green-500" : "bg-gray-400"}`} />
-                    {sellerOnline ? <span className="text-green-600">Online</span> : <span>Last seen {timeAgo(sellerLastSeen)}</span>}
+                    {sellerOnline ? <span className="text-green-600">Online</span> : <span>Offline</span>}
                   </span>
                 </div>
                 <button onClick={() => { setIsChatOpen(false); setPresence('offline'); }} className="text-gray-400 hover:text-red-500"><FaTimesIcon size={20} /></button>

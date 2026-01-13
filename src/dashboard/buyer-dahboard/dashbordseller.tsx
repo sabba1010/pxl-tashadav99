@@ -228,7 +228,7 @@ const DashboardSeller: React.FC = () => {
                  </table>
                </div>
             </div>
-          </div>
+        </div>
 
           {/* --- Sidebar Section --- */}
           <div className="lg:col-span-4 space-y-8">
