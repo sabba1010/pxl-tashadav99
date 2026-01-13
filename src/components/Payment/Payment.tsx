@@ -7,9 +7,11 @@ import { toast } from "sonner";
 import axios from "axios";
 import { useAuthHook } from "../../hook/useAuthHook";
 
+// ================= TYPES =================
 interface ApiResponse {
   success?: boolean;
   link?: string;
+  checkoutUrl?: string;
   message?: string;
 }
 
@@ -20,18 +22,20 @@ const Payment: React.FC = () => {
   const [step, setStep] = useState<"amount" | "methods">("amount");
   const [amount, setAmount] = useState("");
   const [finalAmount, setFinalAmount] = useState(0);
-  const [loading, setLoading] = useState<"flw" | "verifying" | null>(null);
+  const [loading, setLoading] = useState<
+    "flw" | "kora" | "verifying" | null
+  >(null);
 
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  // 🔐 SAME AS WALLET
+  // 🔐 SAME LOGIN USER AS WALLET
   const loginUserData = useAuthHook();
   const userEmail = loginUserData?.data?.email;
 
   const quickAmounts = [10, 25, 50, 100];
 
-  // ================= VERIFY PAYMENT =================
+  // ================= VERIFY FLUTTERWAVE =================
   useEffect(() => {
     const tx_ref = searchParams.get("tx_ref");
     if (!tx_ref) return;
@@ -50,7 +54,7 @@ const Payment: React.FC = () => {
           toast.success("Payment successful! Balance added.");
           navigate("/payment", { replace: true });
         } else {
-          toast.error("Verification failed");
+          toast.error(res.data.message || "Verification failed");
         }
       } catch {
         toast.error("Payment verification failed");
@@ -62,6 +66,7 @@ const Payment: React.FC = () => {
     verifyPayment();
   }, [searchParams, navigate]);
 
+  // ================= STEP HANDLER =================
   const handleNext = () => {
     const num = Number(amount);
     if (!num || num <= 0) {
@@ -72,7 +77,7 @@ const Payment: React.FC = () => {
     setStep("methods");
   };
 
-  // ================= CREATE PAYMENT =================
+  // ================= FLUTTERWAVE =================
   const payWithFlutterwave = async () => {
     if (!userEmail) {
       toast.error("User not logged in");
@@ -86,7 +91,7 @@ const Payment: React.FC = () => {
         "http://localhost:3200/flutterwave/create",
         {
           amount: finalAmount,
-          email: userEmail, // ✅ SAME AS WALLET
+          email: userEmail,
         }
       );
 
@@ -100,10 +105,39 @@ const Payment: React.FC = () => {
     }
   };
 
+  // ================= KORAPAY =================
+  const payWithKorapay = async () => {
+    if (!userEmail) {
+      toast.error("User not logged in");
+      return;
+    }
+
+    try {
+      setLoading("kora");
+
+      const res = await axios.post<ApiResponse>(
+        "http://localhost:3200/korapay/create",
+        {
+          amount: finalAmount,
+          email: userEmail,
+        }
+      );
+
+      if (res.data.checkoutUrl) {
+        window.location.href = res.data.checkoutUrl;
+      }
+    } catch {
+      toast.error("Korapay payment failed");
+    } finally {
+      setLoading(null);
+    }
+  };
+
+  // ================= VERIFY SCREEN =================
   if (loading === "verifying") {
     return (
-      <div className="h-screen flex items-center justify-center">
-        <p>Verifying payment...</p>
+      <div className="h-screen flex items-center justify-center text-lg">
+        Verifying payment...
       </div>
     );
   }
@@ -137,7 +171,7 @@ const Payment: React.FC = () => {
 
             <button
               onClick={handleNext}
-              className="w-full bg-yellow-500 text-black p-3 rounded flex items-center justify-center gap-2"
+              className="w-full bg-yellow-500 text-black p-3 rounded flex justify-center gap-2"
             >
               Continue <ChevronRightIcon />
             </button>
@@ -151,10 +185,19 @@ const Payment: React.FC = () => {
             <button
               onClick={payWithFlutterwave}
               disabled={loading !== null}
-              className="w-full bg-orange-500 p-3 rounded flex items-center justify-center gap-2"
+              className="w-full bg-orange-500 p-3 rounded flex justify-center gap-2 mb-3"
             >
               <CreditCardIcon />
               {loading === "flw" ? "Loading..." : "Pay with Flutterwave"}
+            </button>
+
+            <button
+              onClick={payWithKorapay}
+              disabled={loading !== null}
+              className="w-full bg-indigo-600 p-3 rounded flex justify-center gap-2"
+            >
+              <CreditCardIcon />
+              {loading === "kora" ? "Loading..." : "Pay with Korapay"}
             </button>
 
             <button
