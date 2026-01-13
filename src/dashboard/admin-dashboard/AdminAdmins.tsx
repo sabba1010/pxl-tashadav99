@@ -87,7 +87,10 @@ const mainNavItems: NavItem[] = [
 
 const AdminAdmins: React.FC = () => {
   const location = useLocation();
-  const showSettingsAside = location.pathname.startsWith("/admin-dashboard/settings");
+  // Always hide the right-hand AdminSettings aside.
+  // The settings page (`/admin-dashboard/settings`) already renders `AdminSettings`
+  // inside the main Outlet, so rendering it in the aside causes duplicates.
+  const showSettingsAside = false;
   const [collapsed, setCollapsed] = useState(false);
   const user = useAuth();
   const toggleSidebar = () => setCollapsed((prev) => !prev);
