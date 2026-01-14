@@ -62,6 +62,7 @@ import RefDetails from "../dashboard/admin-dashboard/RefDetails";
 import SellerManagement from "../dashboard/admin-dashboard/SellerManagement";
 import MyReport from "../components/Seller/MyReport";
 import DashboardSeller from "../dashboard/buyer-dahboard/dashbordseller";
+import AccountSettings from "../components/Accountsettings";
 
 
 const Routes = createBrowserRouter([
@@ -230,6 +231,10 @@ const Routes = createBrowserRouter([
       {
         path: "/seller-dashboard",
         element: <DashboardSeller/>,
+      },
+      {
+        path: "/account-settings",
+        element: <AccountSettings/>,
       },
       {
         path: "*",
