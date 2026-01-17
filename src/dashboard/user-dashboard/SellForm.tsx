@@ -3,8 +3,15 @@ import {
   Box,
   Button,
   CircularProgress,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  Divider,
+  FormControlLabel,
   InputAdornment,
   Paper,
+  Radio,
+  RadioGroup,
   Step,
   StepLabel,
   Stepper,
@@ -61,6 +68,12 @@ const SellForm: React.FC = () => {
   const [salesCredit, setSalesCredit] = useState<number | null>(null);
   const [loadingCredit, setLoadingCredit] = useState(true);
   const [hasNoCredit, setHasNoCredit] = useState(false);
+
+  // Modal states
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [deliveryMethod, setDeliveryMethod] = useState<string | null>(null);
+  const [selectedDeliveryTime, setSelectedDeliveryTime] = useState<string | null>(null);
+  const [customDeliveryTime, setCustomDeliveryTime] = useState("");
 
   const [formData, setFormData] = useState<FormData>({
     category: "",
@@ -424,6 +437,57 @@ const SellForm: React.FC = () => {
                   ),
                 }}
               />
+
+              {/* Selling From Section */}
+              <Box sx={{ pt: 3, textAlign: "center" }}>
+                <Typography variant="h6" fontWeight="600" gutterBottom>
+                  Selling From
+                </Typography>
+                <Typography variant="body2" color="text.secondary" mb={3}>
+                  Manage your account listings
+                </Typography>
+                <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", justifyContent: "center" }}>
+                  <Button
+                    variant="outlined"
+                    size="large"
+                    sx={{
+                      px: 4,
+                      py: 1.5,
+                      borderRadius: 2,
+                      textTransform: "none",
+                      fontSize: "1rem",
+                      borderColor: "#667eea",
+                      color: "#667eea",
+                      "&:hover": {
+                        bgcolor: "#f0f4ff",
+                        borderColor: "#667eea",
+                      },
+                    }}
+                  >
+                    Add Account
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    size="large"
+                    onClick={() => setShowReviewModal(true)}
+                    sx={{
+                      px: 4,
+                      py: 1.5,
+                      borderRadius: 2,
+                      textTransform: "none",
+                      fontSize: "1rem",
+                      borderColor: "#764ba2",
+                      color: "#764ba2",
+                      "&:hover": {
+                        bgcolor: "#faf5ff",
+                        borderColor: "#764ba2",
+                      },
+                    }}
+                  >
+                    Review
+                  </Button>
+                </Box>
+              </Box>
             </Box>
           </>
         );
@@ -502,6 +566,223 @@ const SellForm: React.FC = () => {
                 rows={4}
                 placeholder="2FA status, original email included, monetization details, etc."
               />
+
+              {/* Delivery Method Section */}
+              <Divider sx={{ my: 3 }} />
+              <Box>
+                <Typography variant="h6" fontWeight="600" gutterBottom>
+                  Release Options
+                </Typography>
+
+                <RadioGroup
+                  value={deliveryMethod}
+                  onChange={(e) => setDeliveryMethod(e.target.value)}
+                >
+                  {/* Auto Confirm Order */}
+                  <FormControlLabel
+                    value="automated"
+                    control={<Radio />}
+                    label={
+                      <Box sx={{ ml: 1 }}>
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                          <Typography variant="subtitle1" fontWeight="600">
+                            Auto Confirm Order
+                          </Typography>
+                          <Typography
+                            sx={{
+                              bgcolor: "#d1fae5",
+                              color: "#047857",
+                              px: 1.5,
+                              py: 0.5,
+                              borderRadius: 1,
+                              fontSize: "0.75rem",
+                              fontWeight: 600,
+                            }}
+                          >
+                            Recommended
+                          </Typography>
+                        </Box>
+                        <Typography
+                          variant="body2"
+                          color="#d97706"
+                          sx={{ mt: 0.5 }}
+                        >
+                          Perfect for products that don't need your attention.
+                          Logins are sent and the order is confirmed automatically —
+                          no action required.
+                        </Typography>
+                      </Box>
+                    }
+                    sx={{
+                      p: 2.5,
+                      border: "1px solid #e5e7eb",
+                      borderRadius: 2,
+                      mb: 2,
+                      alignItems: "flex-start",
+                      "&:hover": {
+                        bgcolor: "#fafafa",
+                      },
+                    }}
+                  />
+
+                  {/* Manual Release */}
+                  <FormControlLabel
+                    value="manual"
+                    control={<Radio />}
+                    label={
+                      <Box sx={{ ml: 1 }}>
+                        <Typography variant="subtitle1" fontWeight="600">
+                          Manual Release
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          color="#d97706"
+                          sx={{ mt: 0.5 }}
+                        >
+                          Ideal for products that need your input - like those
+                          requiring a code or extra authentication before access.
+                          You'll manually send login details and confirm orders
+                          after each sale.
+                        </Typography>
+                      </Box>
+                    }
+                    sx={{
+                      p: 2.5,
+                      border:
+                        deliveryMethod === "manual"
+                          ? "2px solid #f97316"
+                          : "1px solid #e5e7eb",
+                      borderRadius: 2,
+                      mb: 2,
+                      alignItems: "flex-start",
+                      bgcolor:
+                        deliveryMethod === "manual" ? "#fef3c7" : "transparent",
+                      "&:hover": {
+                        bgcolor:
+                          deliveryMethod === "manual" ? "#fef3c7" : "#fafafa",
+                      },
+                    }}
+                  />
+                </RadioGroup>
+
+                {/* Show delivery time options when Manual is selected */}
+                {deliveryMethod === "manual" && (
+                  <Box
+                    sx={{
+                      p: 3,
+                      bgcolor: "#fffbeb",
+                      borderRadius: 2,
+                      border: "1px solid #fcd34d",
+                      mt: 3,
+                    }}
+                  >
+                    <Typography variant="subtitle2" fontWeight="600" mb={2}>
+                      Expected Delivery Time
+                    </Typography>
+                    <Typography variant="caption" color="#6b7280" display="block" mb={2}>
+                      Delivery time
+                    </Typography>
+                    <Box
+                      sx={{
+                        display: "grid",
+                        gridTemplateColumns: {
+                          xs: "repeat(2, 1fr)",
+                          sm: "repeat(5, 1fr)",
+                        },
+                        gap: 1.5,
+                        mb: 3,
+                      }}
+                    >
+                      {["5 mins", "10 mins", "15 mins", "30 mins"].map((time) => (
+                        <Button
+                          key={time}
+                          onClick={() => {
+                            setSelectedDeliveryTime(time);
+                            setCustomDeliveryTime("");
+                          }}
+                          variant={selectedDeliveryTime === time ? "contained" : "outlined"}
+                          fullWidth
+                          sx={{
+                            py: 1,
+                            px: 1,
+                            borderRadius: 2,
+                            textTransform: "none",
+                            fontSize: "0.9rem",
+                            fontWeight: 500,
+                            borderColor: "#06b6d4",
+                            color: selectedDeliveryTime === time ? "white" : "#06b6d4",
+                            bgcolor: selectedDeliveryTime === time ? "#06b6d4" : "transparent",
+                            "&:hover": {
+                              borderColor: "#0891b2",
+                              bgcolor: selectedDeliveryTime === time ? "#06b6d4" : "#ecf0f1",
+                            },
+                          }}
+                        >
+                          {time}
+                        </Button>
+                      ))}
+                      <Button
+                        onClick={() => {
+                          setSelectedDeliveryTime("custom");
+                          setCustomDeliveryTime("");
+                        }}
+                        variant={selectedDeliveryTime === "custom" ? "contained" : "outlined"}
+                        fullWidth
+                        sx={{
+                          py: 1,
+                          px: 1,
+                          borderRadius: 2,
+                          textTransform: "none",
+                          fontSize: "0.9rem",
+                          fontWeight: 500,
+                          borderColor: selectedDeliveryTime === "custom" ? "#16a34a" : "#06b6d4",
+                          color: selectedDeliveryTime === "custom" ? "white" : "#06b6d4",
+                          bgcolor: selectedDeliveryTime === "custom" ? "#16a34a" : "transparent",
+                          "&:hover": {
+                            borderColor: selectedDeliveryTime === "custom" ? "#15803d" : "#0891b2",
+                            bgcolor: selectedDeliveryTime === "custom" ? "#16a34a" : "#ecf0f1",
+                          },
+                        }}
+                      >
+                        Custom
+                      </Button>
+                    </Box>
+
+                    {/* Custom Delivery Time Input */}
+                    {selectedDeliveryTime === "custom" && (
+                      <TextField
+                        fullWidth
+                        placeholder="e.g., 45 minutes, 2 hours, 1 day"
+                        value={customDeliveryTime}
+                        onChange={(e) => setCustomDeliveryTime(e.target.value)}
+                        size="small"
+                        sx={{
+                          mb: 2,
+                          "& .MuiOutlinedInput-root": {
+                            borderColor: "#fcd34d",
+                            "&:hover fieldset": {
+                              borderColor: "#fcd34d",
+                            },
+                            "&.Mui-focused fieldset": {
+                              borderColor: "#06b6d4",
+                            },
+                          },
+                        }}
+                      />
+                    )}
+
+                    <Typography
+                      variant="caption"
+                      color="#6b7280"
+                      sx={{ display: "block", mt: 2 }}
+                    >
+                      Select a delivery time that reflects how quickly you can
+                      consistently provide the account login after payment. Fast and
+                      timely delivery boosts your rating and builds buyer trust.
+                    </Typography>
+                  </Box>
+                )}
+              </Box>
             </Box>
           </>
         );
@@ -616,6 +897,97 @@ const SellForm: React.FC = () => {
             </Box>
           </Box>
         </Paper>
+
+        {/* Review Modal */}
+        <Dialog
+          open={showReviewModal}
+          onClose={() => setShowReviewModal(false)}
+          maxWidth="sm"
+          fullWidth
+        >
+          <DialogTitle sx={{ fontWeight: 700, fontSize: "1.3rem" }}>
+            Account Listings Review
+          </DialogTitle>
+          <DialogContent sx={{ pt: 2 }}>
+            {formData.name && formData.category ? (
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                <Paper
+                  sx={{
+                    p: 3,
+                    bgcolor: "#f9fafb",
+                    border: "1px solid #e5e7eb",
+                    borderRadius: 2,
+                  }}
+                >
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "start",
+                      gap: 2,
+                      mb: 2,
+                    }}
+                  >
+                    {formData.categoryIcon && (
+                      <img
+                        src={formData.categoryIcon}
+                        alt={formData.category}
+                        width={40}
+                        height={40}
+                        style={{ objectFit: "contain" }}
+                      />
+                    )}
+                    <Box sx={{ flex: 1 }}>
+                      <Typography variant="subtitle1" fontWeight="600">
+                        {formData.name}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Platform: {formData.category}
+                      </Typography>
+                    </Box>
+                  </Box>
+                  <Divider sx={{ my: 2 }} />
+                  <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                    <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                      <Typography variant="body2" color="text.secondary">
+                        Price:
+                      </Typography>
+                      <Typography variant="body2" fontWeight="600">
+                        ${formData.price} USD
+                      </Typography>
+                    </Box>
+                    <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                      <Typography variant="body2" color="text.secondary">
+                        Status:
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        fontWeight="600"
+                        sx={{ color: "#f59e0b" }}
+                      >
+                        Pending Review
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Paper>
+                {formData.description && (
+                  <Box>
+                    <Typography variant="subtitle2" fontWeight="600" mb={1}>
+                      Description
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: "#6b7280" }}>
+                      {formData.description}
+                    </Typography>
+                  </Box>
+                )}
+              </Box>
+            ) : (
+              <Typography variant="body1" color="text.secondary" align="center" py={4}>
+                No accounts added yet. Start by filling in the account details above
+                and then use this button to review.
+              </Typography>
+            )}
+          </DialogContent>
+        </Dialog>
       </Box>
     </Box>
   );
