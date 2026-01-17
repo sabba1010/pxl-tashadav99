@@ -438,136 +438,7 @@ const SellForm: React.FC = () => {
                 }}
               />
 
-              {/* Selling From Section */}
-              <Box sx={{ pt: 3, textAlign: "center" }}>
-                <Typography variant="h6" fontWeight="600" gutterBottom>
-                  Selling From
-                </Typography>
-                <Typography variant="body2" color="text.secondary" mb={3}>
-                  Manage your account listings
-                </Typography>
-                <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", justifyContent: "center" }}>
-                  <Button
-                    variant="outlined"
-                    size="large"
-                    sx={{
-                      px: 4,
-                      py: 1.5,
-                      borderRadius: 2,
-                      textTransform: "none",
-                      fontSize: "1rem",
-                      borderColor: "#667eea",
-                      color: "#667eea",
-                      "&:hover": {
-                        bgcolor: "#f0f4ff",
-                        borderColor: "#667eea",
-                      },
-                    }}
-                  >
-                    Add Account
-                  </Button>
-                  <Button
-                    variant="outlined"
-                    size="large"
-                    onClick={() => setShowReviewModal(true)}
-                    sx={{
-                      px: 4,
-                      py: 1.5,
-                      borderRadius: 2,
-                      textTransform: "none",
-                      fontSize: "1rem",
-                      borderColor: "#764ba2",
-                      color: "#764ba2",
-                      "&:hover": {
-                        bgcolor: "#faf5ff",
-                        borderColor: "#764ba2",
-                      },
-                    }}
-                  >
-                    Review
-                  </Button>
-                </Box>
-              </Box>
-            </Box>
-          </>
-        );
-
-      case 1:
-        return (
-          <>
-            <Typography variant="h5" fontWeight="600" gutterBottom>
-              Account Access Details
-            </Typography>
-            <Typography variant="body1" color="text.secondary" mb={4}>
-              Provide login credentials securely. This information is encrypted
-              and only shown to buyers after purchase.
-            </Typography>
-
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-              <TextField
-                fullWidth
-                label="Username / Handle"
-                name="username"
-                value={formData.username}
-                onChange={handleChange}
-                required
-                error={!!errors.username}
-                helperText={errors.username}
-              />
-
-              <TextField
-                fullWidth
-                label="Account Password"
-                name="accountPass"
-                value={formData.accountPass}
-                onChange={handleChange}
-                type="password"
-                required
-                error={!!errors.accountPass}
-                helperText={errors.accountPass || "Current login password"}
-              />
-
-              <TextField
-                fullWidth
-                label="Recovery Email (if any)"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                type="email"
-                placeholder="recovery@example.com"
-              />
-
-              <TextField
-                fullWidth
-                label="Recovery Email Password (if different)"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                type="password"
-              />
-
-              <TextField
-                fullWidth
-                label="Profile Preview Link"
-                name="previewLink"
-                value={formData.previewLink}
-                onChange={handleChange}
-                placeholder="https://instagram.com/username"
-                helperText="Public link to view the account (highly recommended)"
-              />
-
-              <TextField
-                fullWidth
-                label="Additional Notes"
-                name="additionalInfo"
-                value={formData.additionalInfo}
-                onChange={handleChange}
-                multiline
-                rows={4}
-                placeholder="2FA status, original email included, monetization details, etc."
-              />
-
-              {/* Delivery Method Section */}
+              {/* Release Options Section */}
               <Divider sx={{ my: 3 }} />
               <Box>
                 <Typography variant="h6" fontWeight="600" gutterBottom>
@@ -782,6 +653,135 @@ const SellForm: React.FC = () => {
                     </Typography>
                   </Box>
                 )}
+              </Box>
+            </Box>
+          </>
+        );
+
+      case 1:
+        return (
+          <>
+            <Typography variant="h5" fontWeight="600" gutterBottom>
+              Account Access Details
+            </Typography>
+            <Typography variant="body1" color="text.secondary" mb={4}>
+              Provide login credentials securely. This information is encrypted
+              and only shown to buyers after purchase.
+            </Typography>
+
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+              <TextField
+                fullWidth
+                label="Username / Handle"
+                name="username"
+                value={formData.username}
+                onChange={handleChange}
+                required
+                error={!!errors.username}
+                helperText={errors.username}
+              />
+
+              <TextField
+                fullWidth
+                label="Account Password"
+                name="accountPass"
+                value={formData.accountPass}
+                onChange={handleChange}
+                type="password"
+                required
+                error={!!errors.accountPass}
+                helperText={errors.accountPass || "Current login password"}
+              />
+
+              <TextField
+                fullWidth
+                label="Recovery Email (if any)"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                type="email"
+                placeholder="recovery@example.com"
+              />
+
+              <TextField
+                fullWidth
+                label="Recovery Email Password (if different)"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                type="password"
+              />
+
+              <TextField
+                fullWidth
+                label="Profile Preview Link"
+                name="previewLink"
+                value={formData.previewLink}
+                onChange={handleChange}
+                placeholder="https://instagram.com/username"
+                helperText="Public link to view the account (highly recommended)"
+              />
+
+              <TextField
+                fullWidth
+                label="Additional Notes"
+                name="additionalInfo"
+                value={formData.additionalInfo}
+                onChange={handleChange}
+                multiline
+                rows={4}
+                placeholder="2FA status, original email included, monetization details, etc."
+              />
+
+              {/* Selling From Section */}
+              <Box sx={{ pt: 3, textAlign: "center" }}>
+                <Typography variant="h6" fontWeight="600" gutterBottom>
+                  Selling From
+                </Typography>
+                <Typography variant="body2" color="text.secondary" mb={3}>
+                  Manage your account listings
+                </Typography>
+                <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", justifyContent: "center" }}>
+                  <Button
+                    variant="outlined"
+                    size="large"
+                    sx={{
+                      px: 4,
+                      py: 1.5,
+                      borderRadius: 2,
+                      textTransform: "none",
+                      fontSize: "1rem",
+                      borderColor: "#667eea",
+                      color: "#667eea",
+                      "&:hover": {
+                        bgcolor: "#f0f4ff",
+                        borderColor: "#667eea",
+                      },
+                    }}
+                  >
+                    Add Account
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    size="large"
+                    onClick={() => setShowReviewModal(true)}
+                    sx={{
+                      px: 4,
+                      py: 1.5,
+                      borderRadius: 2,
+                      textTransform: "none",
+                      fontSize: "1rem",
+                      borderColor: "#764ba2",
+                      color: "#764ba2",
+                      "&:hover": {
+                        bgcolor: "#faf5ff",
+                        borderColor: "#764ba2",
+                      },
+                    }}
+                  >
+                    Review
+                  </Button>
+                </Box>
               </Box>
             </Box>
           </>
