@@ -215,7 +215,7 @@ const RefDetails = () => {
 
                     {user.referralStatus !== "pending" && (
                       <p className="text-[10px] text-gray-400 mt-1">
-                        Completed
+                       
                       </p>
                     )}
                   </td>
