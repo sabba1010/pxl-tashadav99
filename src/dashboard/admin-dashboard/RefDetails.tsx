@@ -194,3 +194,234 @@ const RefDetails = () => {
 };
 
 export default RefDetails;
+
+
+
+// import React, { useEffect, useState } from 'react';
+// import { Search, RotateCcw, Info, Loader2, User, X, Fingerprint, DollarSign, Calendar } from 'lucide-react';
+// import axios from 'axios';
+// import { toast } from 'sonner';
+
+// const RefDetails = () => {
+//     const [allUsers, setAllUsers] = useState<any[]>([]);
+//     const [referralData, setReferralData] = useState<any[]>([]);
+//     const [loading, setLoading] = useState(true);
+//     const [updatingId, setUpdatingId] = useState<string | null>(null);
+//     const [searchTerm, setSearchTerm] = useState("");
+//     const [selectedUser, setSelectedUser] = useState<any>(null);
+
+//     // API theke data fetch kora
+//     const fetchData = async () => {
+//         setLoading(true);
+//         try {
+//             const response = await axios.get(`http://localhost:3200/api/user/getall`);
+//             const users = (response.data as any[]) || [];
+//             setAllUsers(users);
+            
+//             // Shudhu tader filter kora hocche jara referral code use koreche
+//             const refs = users.filter((u: any) => u.referredBy);
+//             setReferralData(refs);
+//         } catch (error) {
+//             console.error("Error:", error);
+//             toast.error("Failed to fetch referral data");
+//         } finally {
+//             setLoading(false);
+//         }
+//     };
+
+//     useEffect(() => { 
+//         fetchData(); 
+//     }, []);
+
+//     // Dropdown change handle korar function
+//     const handleStatusUpdate = async (userId: string, newStatus: string) => {
+//         setUpdatingId(userId);
+//         try {
+//             // Backend URL onujayi endpoint change kore nite paren
+//             await axios.patch(`http://localhost:3200/api/user/update-status/${userId}`, { 
+//                 referralStatus: newStatus 
+//             });
+            
+//             toast.success(`Status updated to ${newStatus}`);
+//             fetchData(); // Table refresh kora update dekhar jonno
+//         } catch (error) {
+//             console.error(error);
+//             toast.error("Status update failed!");
+//         } finally {
+//             setUpdatingId(null);
+//         }
+//     };
+
+//     const getReferrerEmail = (code: string) => {
+//         const referrer = allUsers.find(u => u.referralCode === code);
+//         return referrer ? referrer.email : "N/A";
+//     };
+
+//     const filteredData = referralData.filter(item => 
+//         item.email.toLowerCase().includes(searchTerm.toLowerCase()) || 
+//         item.referredBy.toLowerCase().includes(searchTerm.toLowerCase())
+//     );
+
+//     return (
+//         <div className="p-6 bg-[#f8fafc] min-h-screen text-[#1e293b] font-sans relative">
+            
+//             {/* Header Section */}
+//             <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-6 flex justify-between items-center">
+//                 <div>
+//                     <h1 className="text-2xl font-bold flex items-center gap-2">
+//                         Referral Tracking ({filteredData.length})
+//                     </h1>
+//                     <p className="text-sm text-gray-500 mt-1">Manual Admin Approval Panel</p>
+//                 </div>
+//                 <div className="flex gap-3 items-center">
+//                     <button onClick={fetchData} className="p-2 bg-[#22c55e] text-white rounded-lg hover:bg-green-600 transition shadow-sm">
+//                         <RotateCcw size={20} />
+//                     </button>
+//                     <div className="relative">
+//                         <Search className="absolute left-3 top-2.5 text-gray-400" size={18} />
+//                         <input 
+//                             type="text" 
+//                             placeholder="Search email or code..." 
+//                             className="pl-10 pr-4 py-2 border border-gray-200 rounded-lg w-64 outline-none focus:ring-2 focus:ring-green-500/20 transition-all"
+//                             onChange={(e) => setSearchTerm(e.target.value)}
+//                         />
+//                     </div>
+//                 </div>
+//             </div>
+
+//             {/* Table Section */}
+//             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+//                 <table className="w-full text-left border-collapse">
+//                     <thead className="bg-[#f8fafc] border-b border-gray-100">
+//                         <tr className="text-[11px] uppercase text-gray-400 font-bold tracking-wider">
+//                             <th className="px-6 py-4">Referrer (User)</th>
+//                             <th className="px-6 py-4 text-center">Referral Status</th>
+//                             <th className="px-6 py-4">Referee (New User)</th>
+//                             <th className="px-6 py-4">Join Date</th>
+//                             <th className="px-6 py-4 text-center">Profile</th>
+//                         </tr>
+//                     </thead>
+//                     <tbody className="divide-y divide-gray-50">
+//                         {loading ? (
+//                             <tr><td colSpan={5} className="px-6 py-20 text-center text-gray-400 animate-pulse font-medium">Loading data...</td></tr>
+//                         ) : filteredData.length === 0 ? (
+//                             <tr><td colSpan={5} className="px-6 py-20 text-center text-gray-400 font-medium">No referral records found.</td></tr>
+//                         ) : filteredData.map((item) => (
+//                             <tr key={item._id} className="hover:bg-gray-50/50 transition group">
+//                                 <td className="px-6 py-4">
+//                                     <div className="flex flex-col">
+//                                         <span className="font-bold text-sm text-[#1e293b]">{getReferrerEmail(item.referredBy)}</span>
+//                                         <span className="text-[11px] text-gray-400 font-mono">Code: {item.referredBy}</span>
+//                                     </div>
+//                                 </td>
+                                
+//                                 <td className="px-6 py-4 text-center">
+//                                     <div className="flex flex-col items-center gap-1">
+//                                         <div className="relative">
+//                                             {updatingId === item._id && (
+//                                                 <div className="absolute -left-6 top-1.5">
+//                                                     <Loader2 size={14} className="animate-spin text-green-500" />
+//                                                 </div>
+//                                             )}
+//                                             <select 
+//                                                 value={item.referralStatus || "pending"}
+//                                                 onChange={(e) => handleStatusUpdate(item._id, e.target.value)}
+//                                                 className={`text-[11px] font-bold uppercase py-1.5 px-3 rounded-lg border outline-none cursor-pointer transition-all ${
+//                                                     item.referralStatus === 'verified' ? 'bg-green-50 text-green-600 border-green-200' :
+//                                                     item.referralStatus === 'rejected' ? 'bg-red-50 text-red-600 border-red-200' :
+//                                                     'bg-yellow-50 text-yellow-600 border-yellow-200'
+//                                                 }`}
+//                                             >
+//                                                 <option value="pending">🟡 Pending</option>
+//                                                 <option value="verified">🟢 Verified</option>
+//                                                 <option value="rejected">🔴 Rejected</option>
+//                                             </select>
+//                                         </div>
+//                                     </div>
+//                                 </td>
+
+//                                 <td className="px-6 py-4">
+//                                     <div className="flex flex-col">
+//                                         <span className="font-bold text-sm text-[#1e293b]">{item.email}</span>
+//                                         <span className="text-[11px] text-gray-400 italic capitalize">Role: {item.role || 'User'}</span>
+//                                     </div>
+//                                 </td>
+
+//                                 <td className="px-6 py-4 text-xs text-gray-500 font-medium">
+//                                     {item.accountCreationDate ? new Date(item.accountCreationDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : 'N/A'}
+//                                 </td>
+
+//                                 <td className="px-6 py-4 text-center">
+//                                     <button 
+//                                         onClick={() => setSelectedUser(item)}
+//                                         className="bg-gray-100 text-gray-600 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-gray-200 transition-all inline-flex items-center gap-1 shadow-sm"
+//                                     >
+//                                         <Info size={14} /> View
+//                                     </button>
+//                                 </td>
+//                             </tr>
+//                         ))}
+//                     </tbody>
+//                 </table>
+//             </div>
+
+//             {/* View Details Modal */}
+//             {selectedUser && (
+//                 <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+//                     <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
+//                         <div className="bg-[#22c55e] p-6 text-white flex justify-between items-center">
+//                             <h2 className="text-xl font-bold flex items-center gap-2">
+//                                 <User size={22} /> Profile Info
+//                             </h2>
+//                             <button onClick={() => setSelectedUser(null)} className="hover:bg-white/20 p-1 rounded-full transition">
+//                                 <X size={24} />
+//                             </button>
+//                         </div>
+                        
+//                         <div className="p-6 space-y-4">
+//                             <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl border border-gray-100">
+//                                 <div className="w-12 h-12 bg-green-100 text-[#22c55e] rounded-full flex items-center justify-center font-bold text-lg uppercase">
+//                                     {selectedUser.email[0]}
+//                                 </div>
+//                                 <div>
+//                                     <p className="text-sm font-bold text-[#1e293b]">{selectedUser.email}</p>
+//                                     <p className="text-xs text-gray-400 truncate">ID: {selectedUser._id}</p>
+//                                 </div>
+//                             </div>
+
+//                             <div className="grid grid-cols-2 gap-3">
+//                                 <div className="p-3 border border-gray-100 rounded-xl">
+//                                     <p className="text-[10px] uppercase font-bold text-gray-400 flex items-center gap-1"><Fingerprint size={10} /> User Code</p>
+//                                     <p className="text-sm font-bold mt-1 text-green-600">{selectedUser.referralCode || 'N/A'}</p>
+//                                 </div>
+//                                 <div className="p-3 border border-gray-100 rounded-xl">
+//                                     <p className="text-[10px] uppercase font-bold text-gray-400 flex items-center gap-1"><DollarSign size={10} /> Wallet</p>
+//                                     <p className="text-sm font-bold mt-1">${selectedUser.balance || 0}</p>
+//                                 </div>
+//                                 <div className="p-3 border border-gray-100 rounded-xl">
+//                                     <p className="text-[10px] uppercase font-bold text-gray-400 flex items-center gap-1"><Calendar size={10} /> Join Date</p>
+//                                     <p className="text-sm font-bold mt-1 text-gray-600">
+//                                         {selectedUser.accountCreationDate ? new Date(selectedUser.accountCreationDate).toLocaleDateString() : 'N/A'}
+//                                     </p>
+//                                 </div>
+//                                 <div className="p-3 border border-gray-100 rounded-xl">
+//                                     <p className="text-[10px] uppercase font-bold text-gray-400 flex items-center gap-1"><User size={10} /> Referred By</p>
+//                                     <p className="text-sm font-bold mt-1 text-orange-500">{selectedUser.referredBy}</p>
+//                                 </div>
+//                             </div>
+
+//                             <button 
+//                                 onClick={() => setSelectedUser(null)}
+//                                 className="w-full bg-gray-900 text-white py-3 rounded-xl font-bold hover:bg-black transition mt-4"
+//                             >
+//                                 Close Details
+//                             </button>
+//                         </div>
+//                     </div>
+//                 </div>
+//             )}
+//         </div>
+//     );
+// };
+
+// export default RefDetails;
