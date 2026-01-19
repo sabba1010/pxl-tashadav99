@@ -16,7 +16,7 @@ const Chat: React.FC = () => {
 
     const senderId = "buyer123"; 
     const receiverId = "seller456"; 
-    const API_URL = "http://localhost:3200/chat"; 
+    const API_URL = "https://vps-backend-server-beta.vercel.app/chat"; 
 
     const fetchChats = async () => {
         try {

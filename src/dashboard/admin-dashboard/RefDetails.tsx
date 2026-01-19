@@ -34,7 +34,7 @@ const RefDetails = () => {
     setLoading(true);
     try {
       const res = await axios.get<UserType[]>(
-        "http://localhost:3200/api/user/getall"
+        "https://vps-backend-server-beta.vercel.app/api/user/getall"
       );
 
       const users = res.data;
@@ -84,7 +84,7 @@ const RefDetails = () => {
     setUpdatingId(userId);
     try {
       await axios.patch(
-        "http://localhost:3200/api/user/admin/update-referral-status",
+        "https://vps-backend-server-beta.vercel.app/api/user/admin/update-referral-status",
         { userId, status }
       );
       toast.success(`Referral ${status}`);

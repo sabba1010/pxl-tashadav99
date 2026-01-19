@@ -110,7 +110,7 @@
 //     const fetchPlatforms = async () => {
 //       try {
 //         const response = await axios.get<{ data: Platform[] }>(
-//           "http://localhost:3200/icon-data"
+//           "https://vps-backend-server-beta.vercel.app/icon-data"
 //         );
 //         const data = Array.isArray(response.data)
 //           ? response.data
@@ -137,7 +137,7 @@
 
 //       try {
 //         const response = await axios.get<{ salesCredit: number }>(
-//           `http://localhost:3200/product/credit?email=${encodeURIComponent(
+//           `https://vps-backend-server-beta.vercel.app/product/credit?email=${encodeURIComponent(
 //             user.email
 //           )}`
 //         );
@@ -277,7 +277,7 @@
 
 //     try {
 //       const response = await axios.post(
-//         "http://localhost:3200/product/sell",
+//         "https://vps-backend-server-beta.vercel.app/product/sell",
 //         formData
 //       );
 
@@ -1193,7 +1193,7 @@ const SellForm: React.FC = () => {
     const fetchPlatforms = async () => {
       try {
         const response = await axios.get<{ data: Platform[] }>(
-          "http://localhost:3200/icon-data"
+          "https://vps-backend-server-beta.vercel.app/icon-data"
         );
         const data = Array.isArray(response.data)
           ? response.data
@@ -1220,7 +1220,7 @@ const SellForm: React.FC = () => {
 
       try {
         const response = await axios.get<{ salesCredit: number }>(
-          `http://localhost:3200/product/credit?email=${encodeURIComponent(
+          `https://vps-backend-server-beta.vercel.app/product/credit?email=${encodeURIComponent(
             user.email
           )}`
         );
@@ -1359,7 +1359,7 @@ const SellForm: React.FC = () => {
 
       try {
         const response = await axios.post<SellResponse>(
-          "http://localhost:3200/product/sell",
+          "https://vps-backend-server-beta.vercel.app/product/sell",
           { products: accountsToSubmit }
         );
 
@@ -1392,7 +1392,7 @@ const SellForm: React.FC = () => {
 
       try {
         const response = await axios.post<SellResponse>(
-          "http://localhost:3200/product/sell",
+          "https://vps-backend-server-beta.vercel.app/product/sell",
           { products: [formData] }
         );
 
@@ -2308,6 +2308,7 @@ export default SellForm;
 
 
 
+
 // import {
 //   Autocomplete,
 //   Box,
@@ -2427,7 +2428,7 @@ export default SellForm;
 //     const fetchPlatforms = async () => {
 //       try {
 //         const response = await axios.get<{ data: Platform[] }>(
-//           "http://localhost:3200/icon-data"
+//           "https://vps-backend-server-beta.vercel.app/icon-data"
 //         );
 //         const data = Array.isArray(response.data)
 //           ? response.data
@@ -2454,7 +2455,7 @@ export default SellForm;
 
 //       try {
 //         const response = await axios.get<{ salesCredit: number }>(
-//           `http://localhost:3200/product/credit?email=${encodeURIComponent(
+//           `https://vps-backend-server-beta.vercel.app/product/credit?email=${encodeURIComponent(
 //             user.email
 //           )}`
 //         );
@@ -2593,7 +2594,7 @@ export default SellForm;
 
 //       try {
 //         const response = await axios.post<SellResponse>(
-//           "http://localhost:3200/product/sell",
+//           "https://vps-backend-server-beta.vercel.app/product/sell",
 //           { products: accountsToSubmit }
 //         );
 
@@ -2626,7 +2627,7 @@ export default SellForm;
 
 //       try {
 //         const response = await axios.post<SellResponse>(
-//           "http://localhost:3200/product/sell",
+//           "https://vps-backend-server-beta.vercel.app/product/sell",
 //           { products: [formData] }
 //         );
 
