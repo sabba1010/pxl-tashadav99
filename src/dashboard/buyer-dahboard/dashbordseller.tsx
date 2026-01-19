@@ -165,7 +165,7 @@ const DashboardSeller: React.FC = () => {
           {/* --- Main Section --- */}
           <div className="lg:col-span-8 space-y-8">
             {/* Rating Breakdown Card */}
-            <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm flex flex-col md:flex-row gap-10 items-center">
+            {/* <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm flex flex-col md:flex-row gap-10 items-center">
                 <div className="text-center md:text-left">
                     <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Customer Feedback</p>
                     <div className="flex items-end gap-2 justify-center md:justify-start">
@@ -187,7 +187,7 @@ const DashboardSeller: React.FC = () => {
                         </div>
                     ))}
                 </div>
-            </div>
+            </div> */}
 
             {/* Inventory Table */}
             <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm overflow-hidden">
