@@ -46,7 +46,7 @@ const Payment: React.FC = () => {
         toast.info("Verifying payment...");
 
         const res = await axios.get<ApiResponse>(
-          "http://localhost:3200/flutterwave/verify",
+          "https://vps-backend-server-beta.vercel.app/flutterwave/verify",
           { params: { tx_ref } }
         );
 
@@ -88,7 +88,7 @@ const Payment: React.FC = () => {
       setLoading("flw");
 
       const res = await axios.post<ApiResponse>(
-        "http://localhost:3200/flutterwave/create",
+        "https://vps-backend-server-beta.vercel.app/flutterwave/create",
         {
           amount: finalAmount,
           email: userEmail,
@@ -116,7 +116,7 @@ const Payment: React.FC = () => {
       setLoading("kora");
 
       const res = await axios.post<ApiResponse>(
-        "http://localhost:3200/korapay/create",
+        "https://vps-backend-server-beta.vercel.app/korapay/create",
         {
           amount: finalAmount,
           email: userEmail,
