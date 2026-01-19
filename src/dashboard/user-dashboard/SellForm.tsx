@@ -1907,19 +1907,20 @@ const SellForm: React.FC = () => {
                 <Typography variant="body2" color="text.secondary" mb={3}>
                   Manage your account listings
                 </Typography>
-                <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", justifyContent: "center" }}>
+                <Box sx={{ display: "flex", gap: { xs: 1, sm: 2 }, flexWrap: "wrap", justifyContent: "center" }}>
                   <Button
                     variant="outlined"
                     size="large"
                     onClick={handleAddAccount}
                     sx={{
-                      px: 4,
-                      py: 1.5,
+                      px: { xs: 2, sm: 4 },
+                      py: { xs: 1, sm: 1.5 },
                       borderRadius: 2,
                       textTransform: "none",
-                      fontSize: "1rem",
+                      fontSize: { xs: "0.9rem", sm: "1rem" },
                       borderColor: "#667eea",
                       color: "#667eea",
+                      flex: { xs: 1, sm: "auto" },
                       "&:hover": {
                         bgcolor: "#f0f4ff",
                         borderColor: "#667eea",
@@ -1933,13 +1934,14 @@ const SellForm: React.FC = () => {
                     size="large"
                     onClick={() => setShowReviewModal(true)}
                     sx={{
-                      px: 4,
-                      py: 1.5,
+                      px: { xs: 2, sm: 4 },
+                      py: { xs: 1, sm: 1.5 },
                       borderRadius: 2,
                       textTransform: "none",
-                      fontSize: "1rem",
+                      fontSize: { xs: "0.9rem", sm: "1rem" },
                       borderColor: "#764ba2",
                       color: "#764ba2",
+                      flex: { xs: 1, sm: "auto" },
                       "&:hover": {
                         bgcolor: "#faf5ff",
                         borderColor: "#764ba2",
@@ -1976,8 +1978,8 @@ const SellForm: React.FC = () => {
             sx={{
               bgcolor: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
               color: "white",
-              py: 6,
-              px: 4,
+              py: { xs: 3, sm: 4, md: 6 },
+              px: { xs: 2, sm: 3, md: 4 },
               textAlign: "center",
             }}
           >
@@ -1986,20 +1988,25 @@ const SellForm: React.FC = () => {
               fontWeight="bold"
               gutterBottom
               color="black"
+              sx={{ fontSize: { xs: "1.75rem", sm: "2.25rem", md: "2.5rem" } }}
             >
               Sell Your Account
             </Typography>
-            <Typography className="md:w-2/3 md:mx-auto text-center text-black text-xl">
+            <Typography sx={{ 
+              color: "black",
+              fontSize: { xs: "0.9rem", sm: "1rem", md: "1.25rem" },
+              lineHeight: 1.5
+            }}>
               List your social media or gaming account securely and reach
               thousands of buyers
             </Typography>
           </Box>
 
-          <Box sx={{ p: { xs: 4, md: 6 } }}>
+          <Box sx={{ p: { xs: 2.5, sm: 4, md: 6 } }}>
             {/* Credit/Block Banner */}
             {renderCreditBanner()}
 
-            <Stepper activeStep={step} alternativeLabel sx={{ mb: 8 }}>
+            <Stepper activeStep={step} alternativeLabel sx={{ mb: { xs: 4, md: 8 } }}>
               {steps.map((label, index) => (
                 <Step key={label}>
                   <StepLabel>
@@ -2007,6 +2014,7 @@ const SellForm: React.FC = () => {
                       variant="subtitle1"
                       fontWeight={step === index ? 700 : 500}
                       color={step === index ? "primary" : "text.secondary"}
+                      sx={{ fontSize: { xs: "0.8rem", sm: "1rem" } }}
                     >
                       {label}
                     </Typography>
@@ -2022,7 +2030,13 @@ const SellForm: React.FC = () => {
 
             {/* Navigation Buttons */}
             <Box
-              sx={{ display: "flex", justifyContent: "space-between", mt: 8 }}
+              sx={{ 
+                display: "flex", 
+                justifyContent: "space-between", 
+                gap: { xs: 1, sm: 2 },
+                mt: { xs: 4, md: 8 },
+                flexDirection: { xs: "row", sm: "row" }
+              }}
             >
               <Button
                 onClick={prevStep}
@@ -2030,11 +2044,12 @@ const SellForm: React.FC = () => {
                 size="large"
                 variant="outlined"
                 sx={{
-                  px: 5,
-                  py: 1.5,
+                  px: { xs: 2, sm: 5 },
+                  py: { xs: 1, sm: 1.5 },
                   borderRadius: 3,
                   textTransform: "none",
-                  fontSize: "1.1rem",
+                  fontSize: { xs: "0.9rem", sm: "1.1rem" },
+                  minWidth: { xs: "70px", sm: "auto" },
                 }}
               >
                 Back
@@ -2046,14 +2061,15 @@ const SellForm: React.FC = () => {
                 size="large"
                 variant="contained"
                 sx={{
-                  px: 7,
-                  py: 1.5,
+                  px: { xs: 2, sm: 7 },
+                  py: { xs: 1, sm: 1.5 },
                   borderRadius: 3,
                   textTransform: "none",
-                  fontSize: "1.1rem",
+                  fontSize: { xs: "0.9rem", sm: "1.1rem" },
                   fontWeight: 600,
                   background: isBlocked ? "#9ca3af" : "linear-gradient(90deg, rgb(10, 26, 58) 0%, rgb(212, 166, 67) 100%)",
                   boxShadow: "0 8px 20px rgba(102, 126, 234, 0.3)",
+                  minWidth: { xs: "100px", sm: "auto" },
                   "&:hover": {
                     boxShadow: "0 12px 25px rgba(102, 126, 234, 0.4)",
                   },
@@ -2071,18 +2087,24 @@ const SellForm: React.FC = () => {
           onClose={() => setShowReviewModal(false)}
           maxWidth="sm"
           fullWidth
+          PaperProps={{
+            sx: {
+              borderRadius: 2,
+              mx: { xs: 1, sm: 0 }
+            }
+          }}
         >
-          <DialogTitle sx={{ fontWeight: 700, fontSize: "1.3rem" }}>
+          <DialogTitle sx={{ fontWeight: 700, fontSize: { xs: "1rem", sm: "1.3rem" }, p: { xs: 1.5, sm: 2 } }}>
             Account Listings Review ({savedAccounts.length})
           </DialogTitle>
-          <DialogContent sx={{ pt: 2, maxHeight: "700px", overflowY: "auto" }}>
+          <DialogContent sx={{ pt: { xs: 1, sm: 2 }, maxHeight: { xs: "60vh", sm: "70vh" }, overflowY: "auto", p: { xs: 1.5, sm: 2 } }}>
             {savedAccounts.length > 0 ? (
               <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
                 {savedAccounts.map((account, index) => (
                   <Paper
                     key={account.id}
                     sx={{
-                      p: 3,
+                      p: { xs: 1.5, sm: 3 },
                       bgcolor: "#f9fafb",
                       border: "1px solid #e5e7eb",
                       borderRadius: 2,
@@ -2093,8 +2115,9 @@ const SellForm: React.FC = () => {
                       sx={{
                         display: "flex",
                         alignItems: "start",
-                        gap: 2,
-                        mb: 3,
+                        gap: 1,
+                        mb: 2,
+                        flexWrap: "wrap",
                       }}
                     >
                       {account.categoryIcon && (
@@ -2106,11 +2129,11 @@ const SellForm: React.FC = () => {
                           style={{ objectFit: "contain" }}
                         />
                       )}
-                      <Box sx={{ flex: 1 }}>
-                        <Typography variant="subtitle1" fontWeight="600">
+                      <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Typography variant="subtitle1" fontWeight="600" sx={{ fontSize: { xs: "0.9rem", sm: "1rem" }, wordBreak: "break-word" }}>
                           Account #{index + 1}: {account.name}
                         </Typography>
-                        <Typography variant="body2" color="text.secondary">
+                        <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>
                           Platform: {account.category}
                         </Typography>
                       </Box>
@@ -2119,32 +2142,33 @@ const SellForm: React.FC = () => {
                         color="error"
                         variant="outlined"
                         onClick={() => handleRemoveAccount(account.id)}
+                        sx={{ flexShrink: 0 }}
                       >
                         Remove
                       </Button>
                     </Box>
                     
                     {/* SELL YOUR ACCOUNT DETAILS SECTION */}
-                    <Typography variant="subtitle2" fontWeight="700" sx={{ mb: 1.5, color: "#667eea" }}>
+                    <Typography variant="subtitle2" fontWeight="700" sx={{ mb: 1.5, color: "#667eea", fontSize: { xs: "0.85rem", sm: "1rem" } }}>
                       📋 Sell Your Account Details
                     </Typography>
-                    <Box sx={{ display: "flex", flexDirection: "column", gap: 1, mb: 3, pl: 2, borderLeft: "3px solid #667eea" }}>
-                      <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                        <Typography variant="body2" color="text.secondary">
+                    <Box sx={{ display: "flex", flexDirection: "column", gap: 1, mb: 3, pl: { xs: 1, sm: 2 }, borderLeft: "3px solid #667eea" }}>
+                      <Box sx={{ display: "flex", justifyContent: "space-between", gap: 1, flexWrap: "wrap" }}>
+                        <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>
                           Price:
                         </Typography>
-                        <Typography variant="body2" fontWeight="600">
+                        <Typography variant="body2" fontWeight="600" sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>
                           ${account.price} USD
                         </Typography>
                       </Box>
-                      <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                        <Typography variant="body2" color="text.secondary">
+                      <Box sx={{ display: "flex", justifyContent: "space-between", gap: 1, flexWrap: "wrap" }}>
+                        <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>
                           Status:
                         </Typography>
                         <Typography
                           variant="body2"
                           fontWeight="600"
-                          sx={{ color: "#f59e0b" }}
+                          sx={{ color: "#f59e0b", fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
                         >
                           Pending Review
                         </Typography>
@@ -2165,52 +2189,52 @@ const SellForm: React.FC = () => {
                     <Divider sx={{ my: 2 }} />
 
                     {/* ACCOUNT ACCESS DETAILS SECTION */}
-                    <Typography variant="subtitle2" fontWeight="700" sx={{ mb: 1.5, color: "#764ba2" }}>
+                    <Typography variant="subtitle2" fontWeight="700" sx={{ mb: 1.5, color: "#764ba2", fontSize: { xs: "0.85rem", sm: "1rem" } }}>
                       🔐 Account Access Details
                     </Typography>
-                    <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5, pl: 2, borderLeft: "3px solid #764ba2" }}>
-                      <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                        <Typography variant="body2" color="text.secondary">
+                    <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5, pl: { xs: 1, sm: 2 }, borderLeft: "3px solid #764ba2" }}>
+                      <Box sx={{ display: "flex", justifyContent: "space-between", gap: 1, flexWrap: "wrap" }}>
+                        <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>
                           Username:
                         </Typography>
-                        <Typography variant="body2" fontWeight="600">
+                        <Typography variant="body2" fontWeight="600" sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" }, wordBreak: "break-word" }}>
                           {account.username}
                         </Typography>
                       </Box>
-                      <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                        <Typography variant="body2" color="text.secondary">
+                      <Box sx={{ display: "flex", justifyContent: "space-between", gap: 1, flexWrap: "wrap" }}>
+                        <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>
                           Password:
                         </Typography>
-                        <Typography variant="body2" fontWeight="600">
+                        <Typography variant="body2" fontWeight="600" sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>
                           {'•'.repeat(account.accountPass.length)} (hidden for security)
                         </Typography>
                       </Box>
                       {account.previewLink && (
-                        <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                          <Typography variant="body2" color="text.secondary">
+                        <Box sx={{ display: "flex", justifyContent: "space-between", gap: 1, flexWrap: "wrap" }}>
+                          <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>
                             Preview Link:
                           </Typography>
-                          <Typography variant="body2" fontWeight="600" sx={{ color: "#0891b2" }}>
+                          <Typography variant="body2" fontWeight="600" sx={{ color: "#0891b2", fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>
                             ✓ Provided
                           </Typography>
                         </Box>
                       )}
                       {account.email && (
-                        <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                          <Typography variant="body2" color="text.secondary">
+                        <Box sx={{ display: "flex", justifyContent: "space-between", gap: 1, flexWrap: "wrap" }}>
+                          <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>
                             Recovery Email:
                           </Typography>
-                          <Typography variant="body2" fontWeight="600">
+                          <Typography variant="body2" fontWeight="600" sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" }, wordBreak: "break-word" }}>
                             {account.email}
                           </Typography>
                         </Box>
                       )}
                       {account.password && (
-                        <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                          <Typography variant="body2" color="text.secondary">
+                        <Box sx={{ display: "flex", justifyContent: "space-between", gap: 1, flexWrap: "wrap" }}>
+                          <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>
                             Email Password:
                           </Typography>
-                          <Typography variant="body2" fontWeight="600">
+                          <Typography variant="body2" fontWeight="600" sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>
                             {'•'.repeat(account.password.length)} (hidden)
                           </Typography>
                         </Box>
@@ -2240,10 +2264,12 @@ const SellForm: React.FC = () => {
               </Typography>
             )}
           </DialogContent>
-          <DialogActions sx={{ p: 2, borderTop: "1px solid #e5e7eb" }}>
+          <DialogActions sx={{ p: { xs: 1.5, sm: 2 }, borderTop: "1px solid #e5e7eb", gap: 1 }}>
             <Button 
               onClick={() => setShowReviewModal(false)}
               variant="outlined"
+              size="small"
+              sx={{ fontSize: { xs: "0.85rem", sm: "1rem" } }}
             >
               Cancel
             </Button>
@@ -2254,8 +2280,10 @@ const SellForm: React.FC = () => {
               }}
               variant="contained"
               disabled={savedAccounts.length === 0 || loadingCredit}
+              size="small"
               sx={{
                 background: "linear-gradient(90deg, rgb(10, 26, 58) 0%, rgb(212, 166, 67) 100%)",
+                fontSize: { xs: "0.85rem", sm: "1rem" },
               }}
             >
               Submit Listing ({savedAccounts.length})
