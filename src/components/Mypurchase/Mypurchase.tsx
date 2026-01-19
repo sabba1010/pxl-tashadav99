@@ -20,9 +20,6 @@ import {
   FaCheckCircle,
 } from "react-icons/fa";
 
-/* ---------------------------------------------
-   Type Casting Icons 
----------------------------------------------- */
 const FaTimesIcon = FaTimes as any;
 const FaEyeIcon = FaEye as any;
 const FaCommentsIcon = FaComments as any;
@@ -31,9 +28,6 @@ const FaClockIcon = FaClock as any;
 const FaFlagIcon = FaFlag as any;
 const FaCheckCircleIcon = FaCheckCircle as any;
 
-/* ---------------------------------------------
-   Types & Interfaces
----------------------------------------------- */
 type PurchaseStatus = "Pending" | "Completed" | "Cancelled" | "Refunded";
 type PlatformType = "instagram" | "facebook" | "twitter" | "whatsapp" | "telegram" | "other";
 
@@ -66,6 +60,7 @@ interface ChatMessage {
   senderId: string;
   receiverId: string;
   message: string;
+  imageUrl?: string;
   orderId?: string;
   createdAt: string;
 }
@@ -86,11 +81,8 @@ const ICON_COLOR_MAP = new Map<any, string>([
 
 const REPORT_REASONS = ["Scam or Fraud", "Item not received", "Wrong item delivered", "Abusive behavior", "Other"];
 
-/* ---------------------------------------------
-   Helpers
----------------------------------------------- */
 const inferPlatform = (name: string): PlatformType => {
-  const n = name ? name.toLowerCase() : "";
+  const n = name?.toLowerCase() || "";
   if (n.includes("instagram")) return "instagram";
   if (n.includes("facebook")) return "facebook";
   if (n.includes("twitter")) return "twitter";
@@ -117,18 +109,6 @@ const formatDate = (d: string) => {
   });
 };
 
-const timeAgo = (dateString?: string | null) => {
-  if (!dateString) return "a while ago";
-  const date = new Date(dateString);
-  const now = new Date();
-  const diff = Math.floor((now.getTime() - date.getTime()) / 1000);
-  if (diff < 60) return "just now";
-  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-  return `${Math.floor(diff / 86400)}d ago`;
-};
-
-// Helper to mask email (show only part before @)
 const maskEmail = (email: string) => {
   if (!email) return "User";
   return email.split('@')[0];
@@ -153,6 +133,10 @@ const MyPurchase: React.FC = () => {
   const [sellerOnline, setSellerOnline] = useState<boolean>(false);
   const [sellerLastSeen, setSellerLastSeen] = useState<string | null>(null);
   const [typedMessage, setTypedMessage] = useState("");
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [reportTargetOrder, setReportTargetOrder] = useState<Purchase | null>(null);
   const [reportReason, setReportReason] = useState(REPORT_REASONS[0]);
@@ -161,25 +145,22 @@ const MyPurchase: React.FC = () => {
 
   const [activeChatSellerEmail, setActiveChatSellerEmail] = useState<string | null>(null);
   const [activeChatOrderId, setActiveChatOrderId] = useState<string | null>(null);
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const [orderUnreadMap, setOrderUnreadMap] = useState<Record<string, number>>({});
-  
-  // Track online status of all sellers in the list
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+
   const [onlineSellersMap, setOnlineSellersMap] = useState<Record<string, boolean>>({});
 
-  const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+  const [currentPage, setCurrentPage] = useState(1);
 
   const BASE_URL = "http://localhost:3200";
   const PURCHASE_API = `${BASE_URL}/purchase`;
   const CHAT_API = `${BASE_URL}/chat`;
-  const NOTIF_API = `${BASE_URL}/api/notification`;
 
   const setPresence = async (status: 'online' | 'offline') => {
     if (!buyerId) return;
     try {
       await axios.post(`${CHAT_API}/status`, { userId: buyerId, status });
-    } catch (err) { /* ignore */ }
+    } catch (err) {}
   };
 
   const fetchSellerStatus = async () => {
@@ -188,10 +169,12 @@ const MyPurchase: React.FC = () => {
       const res = await axios.get<PresenceResponse>(`${CHAT_API}/status/${activeChatSellerEmail}`);
       setSellerOnline(Boolean(res.data?.online));
       setSellerLastSeen(res.data.lastSeen || null);
-    } catch (err) { setSellerOnline(false); setSellerLastSeen(null); }
+    } catch (err) {
+      setSellerOnline(false);
+      setSellerLastSeen(null);
+    }
   };
 
-  // Fetch online status for all sellers in the current list
   const fetchAllSellersStatus = async () => {
     const sellers = Array.from(new Set(purchases.map(p => p.sellerEmail)));
     const statusMap: Record<string, boolean> = {};
@@ -199,7 +182,9 @@ const MyPurchase: React.FC = () => {
       try {
         const res = await axios.get<PresenceResponse>(`${CHAT_API}/status/${email}`);
         statusMap[email] = Boolean(res.data?.online);
-      } catch (err) { statusMap[email] = false; }
+      } catch (err) {
+        statusMap[email] = false;
+      }
     }
     setOnlineSellersMap(statusMap);
   };
@@ -210,19 +195,17 @@ const MyPurchase: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (!purchases || purchases.length === 0) return;
-    // Initial fetch of statuses
+    if (purchases.length === 0) return;
     fetchAllSellersStatus();
-    // Poll for status every 10 seconds
     const interval = setInterval(fetchAllSellersStatus, 10000);
     return () => clearInterval(interval);
   }, [purchases]);
 
   useEffect(() => {
-    if (!purchases || purchases.length === 0) return;
+    if (purchases.length === 0) return;
     purchases.forEach((p) => {
       if (p.status !== 'Pending') return;
-      const expiresAt = new Date(p.rawDate).getTime() + 14400000; 
+      const expiresAt = new Date(p.rawDate).getTime() + 14400000;
       if (Date.now() >= expiresAt && !autoCompletedRef.current.has(p.id)) {
         autoCompletedRef.current.add(p.id);
         handleUpdateStatus('completed', p.sellerEmail, p.id);
@@ -258,10 +241,16 @@ const MyPurchase: React.FC = () => {
         purchaseNumber: `ORD-${item._id.slice(-6).toUpperCase()}`,
       }));
       setPurchases(mapped);
-    } catch (err) { console.error(err); } finally { setIsLoading(false); }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  useEffect(() => { fetchPurchases(); }, [buyerId]);
+  useEffect(() => {
+    fetchPurchases();
+  }, [buyerId]);
 
   const handleUpdateStatus = async (status: string, sellerEmail: string, orderId?: string) => {
     const id = orderId || selected?.id;
@@ -271,7 +260,9 @@ const MyPurchase: React.FC = () => {
       toast.success(`Order ${status} successfully!`);
       setSelected(null);
       fetchPurchases();
-    } catch (err) { toast.error("Failed to update status"); }
+    } catch (err) {
+      toast.error("Failed to update status");
+    }
   };
 
   const handleOpenChat = (p: Purchase) => {
@@ -287,16 +278,21 @@ const MyPurchase: React.FC = () => {
         params: { orderId: activeChatOrderId }
       });
       setChatMessages(res.data);
-    } catch (err) {}
+    } catch (err) {
+      console.error("Fetch chat error:", err);
+    }
   };
 
   useEffect(() => {
-    let timer: any;
+    let timer: NodeJS.Timeout;
     if (isChatOpen) {
       setPresence('online');
       fetchChat();
       fetchSellerStatus();
-      timer = setInterval(() => { fetchChat(); fetchSellerStatus(); }, 3000);
+      timer = setInterval(() => {
+        fetchChat();
+        fetchSellerStatus();
+      }, 4000);
     } else {
       setPresence('offline');
       setSellerOnline(false);
@@ -305,54 +301,30 @@ const MyPurchase: React.FC = () => {
   }, [isChatOpen, activeChatSellerEmail]);
 
   useEffect(() => {
-    if (scrollRef.current) scrollRef.current.scrollIntoView({ behavior: "smooth" });
-  }, [chatMessages]);
-
-  const fetchOrderUnreadCounts = async () => {
-    if (!buyerId) return;
-    try {
-      const res = await axios.get(`${NOTIF_API}/getall`, { params: { userId: buyerId } });
-      const data = Array.isArray(res.data) ? (res.data as any[]) : [];
-      const counts: Record<string, number> = {};
-      data.forEach((n) => {
-        if (n.type === 'chat' && !n.read && n.orderId) {
-          counts[n.orderId] = (counts[n.orderId] || 0) + 1;
-        }
-      });
-      setOrderUnreadMap(counts);
-    } catch (e) {}
-  };
-
-  useEffect(() => {
-    if (!buyerId) return;
-    fetchOrderUnreadCounts();
-    const id = setInterval(fetchOrderUnreadCounts, 8000);
-    return () => clearInterval(id);
-  }, [buyerId]);
-
-  useEffect(() => {
-    if (!isChatOpen || !activeChatOrderId || !buyerId) return;
-    (async () => {
-      try {
-        await axios.post(`${NOTIF_API}/mark-read/order`, { email: buyerId, orderId: activeChatOrderId });
-        setOrderUnreadMap((m) => { const copy = { ...m }; delete copy[activeChatOrderId!]; return copy; });
-      } catch (e) {}
-    })();
-  }, [isChatOpen, activeChatOrderId, buyerId]);
+    const container = messagesContainerRef.current;
+    if (!container) return;
+    container.scrollTo({ top: container.scrollHeight, behavior: "smooth" });
+  }, [chatMessages, imagePreview]);
 
   const sendChat = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!typedMessage.trim()) return;
+    if (!typedMessage.trim() && !selectedImage) return;
     try {
-      await axios.post(`${CHAT_API}/send`, {
-        senderId: buyerId,
-        receiverId: activeChatSellerEmail,
-        message: typedMessage,
-        orderId: activeChatOrderId,
-      });
+      const formData = new FormData();
+      formData.append("senderId", buyerId!);
+      formData.append("receiverId", activeChatSellerEmail!);
+      formData.append("message", typedMessage.trim());
+      if (activeChatOrderId) formData.append("orderId", activeChatOrderId);
+      if (selectedImage) formData.append("image", selectedImage);
+
+      await axios.post(`${CHAT_API}/send`, formData);
       setTypedMessage("");
+      setSelectedImage(null);
+      setImagePreview(null);
       fetchChat();
-    } catch (err) { toast.error("Failed to send"); }
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || "Failed to send message");
+    }
   };
 
   const handleReportSubmit = async (e: React.FormEvent) => {
@@ -371,7 +343,11 @@ const MyPurchase: React.FC = () => {
       toast.success("Report submitted successfully.");
       setIsReportModalOpen(false);
       setReportMessage("");
-    } catch (err) { toast.error("Error submitting report"); } finally { setIsSubmittingReport(false); }
+    } catch (err) {
+      toast.error("Error submitting report");
+    } finally {
+      setIsSubmittingReport(false);
+    }
   };
 
   const filtered = useMemo(() => {
@@ -404,32 +380,39 @@ const MyPurchase: React.FC = () => {
         <div className="bg-white rounded-2xl shadow-sm border overflow-hidden">
           <div className="flex gap-6 p-4 border-b overflow-x-auto">
             {TABS.map((t) => (
-              <button key={t} onClick={() => {setActiveTab(t); setCurrentPage(1);}}
-                className={`pb-2 text-sm whitespace-nowrap transition-all ${activeTab === t ? "text-[#d4a643] border-b-2 border-[#d4a643] font-bold" : "text-gray-500"}`}>
+              <button 
+                key={t} 
+                onClick={() => {setActiveTab(t); setCurrentPage(1);}}
+                className={`pb-2 text-sm whitespace-nowrap transition-all ${activeTab === t ? "text-[#d4a643] border-b-2 border-[#d4a643] font-bold" : "text-gray-500"}`}
+              >
                 {t}
               </button>
             ))}
           </div>
 
           <div className="p-4 sm:p-6 space-y-4">
-            {isLoading ? <p className="text-center py-10 text-gray-400">Loading...</p> : filtered.length === 0 ? (
+            {isLoading ? (
+              <p className="text-center py-10 text-gray-400">Loading...</p>
+            ) : filtered.length === 0 ? (
               <div className="text-center py-20">
                 <p className="text-gray-500 mb-4">No purchases found.</p>
-                <Link to="/" className="bg-[#33ac6f] text-white px-6 py-2 rounded-full text-sm font-bold">Browse Shop</Link>
+                <Link to="/" className="bg-[#33ac6f] text-white px-6 py-2 rounded-full text-sm font-bold">
+                  Browse Shop
+                </Link>
               </div>
             ) : (
               paginated.map((p) => (
-                <div key={p.id} className="bg-[#F8FAFB] border rounded-xl p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:shadow-md transition">
+                <div 
+                  key={p.id} 
+                  className="bg-[#F8FAFB] border rounded-xl p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:shadow-md transition"
+                >
                   <div className="flex gap-4">
                     {renderBadge(p.platform)}
                     <div>
                       <h3 className="font-bold text-[#0A1A3A] text-sm sm:text-base">{p.title}</h3>
                       <div className="flex items-center gap-2 mt-0.5">
-                         {/* ১. ইমেইল মাস্কিং (শুধু @ এর আগের অংশ) */}
-                         <span className="text-xs text-gray-400 font-medium">Seller: {maskEmail(p.sellerEmail)}</span>
-                         
-                         {/* ২. অনলাইন স্ট্যাটাস ডট (Online হলে Green, Offline হলে Gray) */}
-                         <span className={`w-2 h-2 rounded-full ${onlineSellersMap[p.sellerEmail] ? 'bg-green-500' : 'bg-gray-300'}`} />
+                        <span className="text-xs text-gray-400 font-medium">Seller: {maskEmail(p.sellerEmail)}</span>
+                        <span className={`w-2 h-2 rounded-full ${onlineSellersMap[p.sellerEmail] ? 'bg-green-500' : 'bg-gray-300'}`} />
                       </div>
                       <div className="flex items-center gap-2 mt-1.5">
                         <span className={`text-[10px] px-2 py-0.5 rounded-full border font-bold ${
@@ -437,7 +420,7 @@ const MyPurchase: React.FC = () => {
                           (p.status === 'Cancelled' || p.status === 'Refunded') ? 'bg-red-50 text-red-600' : 
                           'bg-amber-50 text-amber-600'
                         }`}>
-                            {p.status}
+                          {p.status}
                         </span>
                         {p.status === "Pending" && (
                           <span className="text-[10px] text-blue-600 font-bold flex items-center gap-1">
@@ -455,22 +438,26 @@ const MyPurchase: React.FC = () => {
                     
                     {p.status !== "Cancelled" && p.status !== "Refunded" && (
                       <div className="flex gap-2">
-                        <button onClick={() => { setReportTargetOrder(p); setIsReportModalOpen(true); }} className="p-2 text-red-500 border border-red-100 rounded bg-white hover:bg-red-50" title="Report Issue">
+                        <button 
+                          onClick={() => { setReportTargetOrder(p); setIsReportModalOpen(true); }} 
+                          className="p-2 text-red-500 border border-red-100 rounded bg-white hover:bg-red-50 transition" 
+                        >
                           <FaFlagIcon size={14} />
                         </button>
                         
-                        <button onClick={() => setSelected(p)} className="p-2 text-gray-600 border rounded bg-white hover:bg-gray-50" title="View Details">
+                        <button 
+                          onClick={() => setSelected(p)} 
+                          className="p-2 text-gray-600 border rounded bg-white hover:bg-gray-50 transition" 
+                        >
                           <FaEyeIcon size={14} />
                         </button>
                         
-                        <div className="relative">
-                          <button onClick={() => handleOpenChat(p)} className="p-2 text-blue-600 border border-blue-100 rounded bg-white hover:bg-blue-50" title="Chat with Seller">
-                            <FaCommentsIcon size={14} />
-                          </button>
-                          {orderUnreadMap[p.id] > 0 && (
-                            <span className="absolute -top-1 -right-1 inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-bold leading-none text-white bg-red-600 rounded-full">{orderUnreadMap[p.id]}</span>
-                          )}
-                        </div>
+                        <button 
+                          onClick={() => handleOpenChat(p)} 
+                          className="p-2 text-blue-600 border border-blue-100 rounded bg-white hover:bg-blue-50 transition" 
+                        >
+                          <FaCommentsIcon size={14} />
+                        </button>
                       </div>
                     )}
                   </div>
@@ -484,16 +471,26 @@ const MyPurchase: React.FC = () => {
       {/* Details Modal */}
       {selected && (
         <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-white w-full max-w-lg rounded-t-3xl sm:rounded-2xl p-6 relative overflow-hidden">
-            <button onClick={() => setSelected(null)} className="absolute right-6 top-6 text-gray-400 z-10 hover:text-red-500 transition"><FaTimesIcon size={20} /></button>
+          <div className="bg-white w-full max-w-lg rounded-t-3xl sm:rounded-2xl p-6 relative">
+            <button onClick={() => setSelected(null)} className="absolute right-6 top-6 text-gray-400 hover:text-red-500">
+              <FaTimesIcon size={20} />
+            </button>
             <div className="text-center mb-6 pt-4">
               {renderBadge(selected.platform, 70)}
               <h2 className="text-xl font-bold mt-4 text-[#0A1A3A]">{selected.title}</h2>
               <p className="text-3xl font-black text-[#33ac6f] mt-2">${selected.price.toFixed(2)}</p>
             </div>
             <div className="bg-gray-50 rounded-2xl p-4 space-y-3 border border-gray-100 mb-6 text-sm">
-               <div className="flex justify-between border-b pb-2"><span className="text-gray-500">Order Number</span><span className="font-bold">{selected.purchaseNumber}</span></div>
-               <div className="flex justify-between border-b pb-2"><span className="text-gray-500">Status</span><span className={`font-bold ${selected.status === 'Completed' ? 'text-green-600' : 'text-amber-600'}`}>{selected.status}</span></div>
+               <div className="flex justify-between border-b pb-2">
+                 <span className="text-gray-500">Order Number</span>
+                 <span className="font-bold">{selected.purchaseNumber}</span>
+               </div>
+               <div className="flex justify-between border-b pb-2">
+                 <span className="text-gray-500">Status</span>
+                 <span className={`font-bold ${selected.status === 'Completed' ? 'text-green-600' : 'text-amber-600'}`}>
+                   {selected.status}
+                 </span>
+               </div>
                <div className="pt-2">
                  <p className="text-gray-500 mb-1">Product Details</p>
                  <div className="bg-white p-3 rounded-lg border font-mono text-xs break-all">
@@ -502,15 +499,12 @@ const MyPurchase: React.FC = () => {
                </div>
             </div>
             {selected.status === "Pending" && (
-              <div className="space-y-3">
-                <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 flex flex-col items-center gap-1">
-                   <p className="text-[10px] text-blue-500 font-bold uppercase">Auto-Confirm Timer</p>
-                   <p className="text-2xl font-mono font-black text-blue-900">{getRemainingTime(selected.rawDate)}</p>
-                </div>
-                <button onClick={() => handleUpdateStatus("completed", selected.sellerEmail)} className="w-full bg-[#33ac6f] text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition active:scale-95 shadow-lg">
-                  <FaCheckCircleIcon /> Confirm & Complete Order
-                </button>
-              </div>
+              <button 
+                onClick={() => handleUpdateStatus("completed", selected.sellerEmail)} 
+                className="w-full bg-[#33ac6f] text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition active:scale-95 shadow-lg"
+              >
+                <FaCheckCircleIcon /> Confirm & Complete Order
+              </button>
             )}
           </div>
         </div>
@@ -518,50 +512,168 @@ const MyPurchase: React.FC = () => {
 
       {/* Report Modal */}
       {isReportModalOpen && reportTargetOrder && (
-          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md">
-             <div className="bg-white w-full max-w-md rounded-2xl overflow-hidden shadow-2xl">
-                <div className="bg-red-600 p-4 text-white font-bold flex justify-between items-center">
-                   <span className="flex items-center gap-2"><FaFlagIcon /> Report Order</span>
-                   <button onClick={() => setIsReportModalOpen(false)}><FaTimesIcon /></button>
-                </div>
-                <form onSubmit={handleReportSubmit} className="p-6 space-y-4">
-                   <select value={reportReason} onChange={(e) => setReportReason(e.target.value)} className="w-full border p-2.5 rounded-xl text-sm outline-none">
-                      {REPORT_REASONS.map(r => <option key={r} value={r}>{r}</option>)}
-                   </select>
-                   <textarea value={reportMessage} onChange={(e) => setReportMessage(e.target.value)} placeholder="Describe the issue..." className="w-full border p-3 rounded-xl text-sm h-32 outline-none" required />
-                   <button type="submit" disabled={isSubmittingReport} className="w-full bg-red-600 text-white py-3 rounded-xl font-bold">{isSubmittingReport ? "Sending..." : "Submit Report"}</button>
-                </form>
-             </div>
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md">
+          <div className="bg-white w-full max-w-md rounded-2xl overflow-hidden shadow-2xl">
+            <div className="bg-red-600 p-4 text-white font-bold flex justify-between items-center">
+              <span className="flex items-center gap-2"><FaFlagIcon /> Report Order</span>
+              <button onClick={() => setIsReportModalOpen(false)}>
+                <FaTimesIcon />
+              </button>
+            </div>
+            <form onSubmit={handleReportSubmit} className="p-6 space-y-4">
+              <select 
+                value={reportReason} 
+                onChange={(e) => setReportReason(e.target.value)} 
+                className="w-full border p-2.5 rounded-xl text-sm outline-none"
+              >
+                {REPORT_REASONS.map(r => (
+                  <option key={r} value={r}>{r}</option>
+                ))}
+              </select>
+              <textarea 
+                value={reportMessage} 
+                onChange={(e) => setReportMessage(e.target.value)} 
+                placeholder="Describe the issue..." 
+                className="w-full border p-3 rounded-xl text-sm h-32 outline-none" 
+                required 
+              />
+              <button 
+                type="submit" 
+                disabled={isSubmittingReport} 
+                className="w-full bg-red-600 text-white py-3 rounded-xl font-bold"
+              >
+                {isSubmittingReport ? "Sending..." : "Submit Report"}
+              </button>
+            </form>
           </div>
+        </div>
       )}
 
-      {/* Chat UI */}
+      {/* Chat Modal - UPDATED DESIGN */}
       {isChatOpen && (
-        <div className="fixed inset-0 z-[120] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div className="bg-[#ECE5DD] w-full max-w-md h-[90vh] sm:h-[600px] sm:rounded-3xl flex flex-col overflow-hidden shadow-2xl">
-            <div className="bg-white p-4 flex justify-between items-center border-b">
-                <div className="flex items-center gap-3">
-                  {/* ইমেইল মাস্কিং চ্যাটেও রাখা হয়েছে */}
-                  <span className="font-bold text-sm">{maskEmail(activeChatSellerEmail || "")}</span>
-                  <span className="flex items-center gap-2 text-xs text-gray-500">
-                    <span className={`w-2 h-2 rounded-full ${sellerOnline ? "bg-green-500" : "bg-gray-400"}`} />
-                    {sellerOnline ? <span className="text-green-600">Online</span> : <span>Offline</span>}
-                  </span>
+        <div className="fixed inset-0 z-[120] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4">
+          <div className="bg-[#F8FAFB] w-full max-w-md h-full sm:h-[620px] sm:rounded-2xl flex flex-col overflow-hidden shadow-2xl border">
+            
+            {/* Header */}
+            <div className="bg-white p-4 flex justify-between items-center border-b shadow-sm">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center border text-[#0A1A3A] font-bold text-sm">
+                  {maskEmail(activeChatSellerEmail || "").charAt(0).toUpperCase()}
                 </div>
-                <button onClick={() => { setIsChatOpen(false); setPresence('offline'); }} className="text-gray-400 hover:text-red-500"><FaTimesIcon size={20} /></button>
-            </div>
-            <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                {chatMessages.map((m, i) => (
-                  <div key={i} className={`flex ${m.senderId === buyerId ? 'justify-end' : 'justify-start'}`}>
-                     <div className={`p-3 rounded-2xl text-sm max-w-[85%] ${m.senderId === buyerId ? 'bg-[#D9FDD3] rounded-tr-none' : 'bg-white rounded-tl-none shadow-sm'}`}>{m.message}</div>
+                <div>
+                  <h4 className="font-bold text-sm text-[#0A1A3A]">{maskEmail(activeChatSellerEmail || "")}</h4>
+                  <div className="flex items-center gap-1.5 text-[10px]">
+                    <span className={`w-2 h-2 rounded-full ${sellerOnline ? "bg-green-500" : "bg-gray-300"}`} />
+                    <span className="text-gray-500 font-medium">{sellerOnline ? "Online" : "Offline"}</span>
                   </div>
-                ))}
-                <div ref={scrollRef} />
+                </div>
+              </div>
+              <button 
+                onClick={() => { setIsChatOpen(false); setPresence('offline'); }} 
+                className="p-2 text-gray-400 hover:text-red-500 transition rounded-full hover:bg-gray-100"
+              >
+                <FaTimesIcon size={20} />
+              </button>
             </div>
-            <form onSubmit={sendChat} className="p-3 bg-white flex gap-2 border-t">
-                <input value={typedMessage} onChange={(e) => setTypedMessage(e.target.value)} className="flex-1 bg-gray-100 p-2.5 rounded-full px-5 outline-none text-sm" placeholder="Type a message..." />
-                <button type="submit" className="bg-[#33ac6f] text-white p-3.5 rounded-full hover:bg-[#2aa46a] transition shadow-md"><FaPaperPlaneIcon size={16} /></button>
-            </form>
+
+            {/* Messages Area */}
+            <div 
+              ref={messagesContainerRef}
+              className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#F3EFEE]/30 scroll-smooth"
+            >
+              {chatMessages.map((m, index) => (
+                <div
+                  key={`${m.createdAt}-${index}`}
+                  className={`flex ${m.senderId === buyerId ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div className={`max-w-[85%] ${m.senderId === buyerId ? 'items-end' : 'items-start'} flex flex-col`}>
+                    <div 
+                      className={`rounded-2xl px-4 py-2.5 shadow-sm text-sm ${
+                        m.senderId === buyerId 
+                          ? 'bg-[#33ac6f] text-white rounded-tr-none' 
+                          : 'bg-white text-[#0A1A3A] border rounded-tl-none font-medium'
+                      }`}
+                    >
+                      {m.imageUrl && (
+                        <div className="mb-2 -mx-1 -mt-1">
+                          <img
+                            src={m.imageUrl.startsWith('http') ? m.imageUrl : `${BASE_URL}${m.imageUrl}`}
+                            alt="attachment"
+                            className="rounded-xl max-w-full h-auto border border-black/5"
+                            onError={(e) => (e.currentTarget.style.display = 'none')}
+                          />
+                        </div>
+                      )}
+                      <p className="leading-relaxed break-words">{m.message}</p>
+                    </div>
+                    <span className="text-[9px] text-gray-400 mt-1 px-1 font-bold">
+                      {new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  </div>
+                </div>
+              ))}
+
+              {imagePreview && (
+                <div className="flex justify-end">
+                  <div className="max-w-[70%] p-1 bg-[#33ac6f] rounded-2xl rounded-tr-none shadow-md">
+                    <div className="relative">
+                      <img src={imagePreview} alt="preview" className="rounded-xl w-full" />
+                      <button
+                        onClick={() => { setSelectedImage(null); setImagePreview(null); }}
+                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center shadow-lg border-2 border-white"
+                      > × </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Input Bar */}
+            <div className="p-4 bg-white border-t">
+              <form 
+                onSubmit={sendChat} 
+                className="flex items-center gap-2 bg-[#F8FAFB] border rounded-2xl p-1.5 focus-within:border-[#33ac6f] transition-all"
+              >
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="p-2.5 text-gray-500 hover:text-[#33ac6f]"
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+                  </svg>
+                </button>
+
+                <input
+                  type="file"
+                  accept="image/*"
+                  ref={fileInputRef}
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      setSelectedImage(file);
+                      setImagePreview(URL.createObjectURL(file));
+                    }
+                  }}
+                />
+
+                <input
+                  value={typedMessage}
+                  onChange={(e) => setTypedMessage(e.target.value)}
+                  className="flex-1 bg-transparent px-2 py-2 text-sm outline-none text-[#0A1A3A]"
+                  placeholder="Your message..."
+                />
+
+                <button
+                  type="submit"
+                  disabled={!typedMessage.trim() && !selectedImage}
+                  className="bg-[#33ac6f] text-white p-2.5 rounded-xl hover:shadow-lg transition disabled:opacity-30"
+                >
+                  <FaPaperPlaneIcon size={14} />
+                </button>
+              </form>
+            </div>
           </div>
         </div>
       )}
