@@ -3,7 +3,6 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useAuthHook } from '../../hook/useAuthHook';
-import { useDepositByUser } from '../../hook/useDepositByUser';
 import {
  
   ArrowRight,
@@ -49,21 +48,23 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, Icon, color, trend })
 const DashboardSeller: React.FC = () => {
   const { user } = useAuth();
   const { data: userData } = useAuthHook();
-  const { payments } = useDepositByUser();
   const navigate = useNavigate();
 
   const [listedAccounts, setListedAccounts] = useState<any[]>([]);
   const [recentActivities, setRecentActivities] = useState<any[]>([]);
+  const [ratings, setRatings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
+  const [ratingsPage, setRatingsPage] = useState(1);
   const itemsPerPage = 10;
+  const ratingsPerPage = 5;
   const [analytics, setAnalytics] = useState({
     totalEarned: 0,
     soldCount: 0,
     pendingClearance: 0,
     successRate: 0,
-    avgRating: 4.8,
-    totalReviews: 124
+    avgRating: 0,
+    totalReviews: 0
   });
 
   useEffect(() => {
@@ -72,13 +73,15 @@ const DashboardSeller: React.FC = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const [prodRes, purchaseRes] = await Promise.all([
+        const [prodRes, purchaseRes, ratingsRes] = await Promise.all([
           axios.get<any[]>("http://localhost:3200/product/all-sells"),
           axios.get<any[]>("http://localhost:3200/purchase/getall", { params: { email: user.email, role: 'seller' } }),
+          axios.get<any>(`http://localhost:3200/rating/seller/${user.email}`),
         ]);
 
         const myProducts = (prodRes.data || []).filter((p: any) => p.userEmail === user.email);
         const sales = purchaseRes.data || [];
+        const ratingsData = ratingsRes.data || {};
         
         // REAL EARNINGS: Sum of completed/confirmed purchases
         const earned = sales
@@ -94,10 +97,13 @@ const DashboardSeller: React.FC = () => {
           totalEarned: earned,
           soldCount: sales.filter(p => p.status === 'completed' || p.status === 'confirmed').length,
           pendingClearance: pending,
-          successRate: myProducts.length > 0 ? (sales.length / myProducts.length) * 100 : 0
+          successRate: myProducts.length > 0 ? (sales.length / myProducts.length) * 100 : 0,
+          avgRating: parseFloat(ratingsData.averageRating) || 0,
+          totalReviews: ratingsData.totalReviews || 0
         }));
 
         setListedAccounts(myProducts);
+        setRatings(ratingsData.ratings || []);
 
         const activities = [
           ...sales.map(s => ({ Icon: Zap, color: 'text-blue-500', title: 'Payment Received', desc: `Sold ${s.productName || 'Account'} - $${s.price}`, time: s.createdAt })),
@@ -118,11 +124,17 @@ const DashboardSeller: React.FC = () => {
   }, [user?.email]);
 
   const totalPages = Math.max(1, Math.ceil(listedAccounts.length / itemsPerPage));
+  const totalRatingsPages = Math.max(1, Math.ceil(ratings.length / ratingsPerPage));
 
   const paginatedAccounts = React.useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
     return listedAccounts.slice(start, start + itemsPerPage);
   }, [listedAccounts, currentPage]);
+
+  const paginatedRatings = React.useMemo(() => {
+    const start = (ratingsPage - 1) * ratingsPerPage;
+    return ratings.slice(start, start + ratingsPerPage);
+  }, [ratings, ratingsPage]);
 
   const getPageNumbers = () => {
     if (totalPages <= 7) {
@@ -151,8 +163,6 @@ const DashboardSeller: React.FC = () => {
 
     return pages;
   };
-
-  const totalDeposits = payments.reduce((s, p) => s + (Number(p.amount) || 0), 0);
 
   if (loading) return (
     <div className="flex items-center justify-center min-h-screen bg-white">
@@ -201,30 +211,116 @@ const DashboardSeller: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* --- Main Section --- */}
           <div className="lg:col-span-8 space-y-8">
-            {/* Rating Breakdown Card */}
-            {/* <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm flex flex-col md:flex-row gap-10 items-center">
-                <div className="text-center md:text-left">
-                    <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Customer Feedback</p>
-                    <div className="flex items-end gap-2 justify-center md:justify-start">
-                        <h3 className="text-6xl font-black text-gray-900">{analytics.avgRating}</h3>
-                        <span className="text-2xl font-bold text-gray-300 mb-2">/5</span>
+          {/* Rating Breakdown Card */}
+            <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm">
+                <div className="flex justify-between items-center mb-8">
+                    <h3 className="font-black text-xl text-gray-900 tracking-tight uppercase italic">Client Ratings & Reviews</h3>
+                    <div className="flex items-center gap-2">
+                        <Star className="text-amber-400 fill-current" size={20}/>
+                        <span className="text-2xl font-black text-gray-900">{analytics.avgRating}</span>
+                        <span className="text-sm font-bold text-gray-400">/5</span>
                     </div>
-                    <div className="flex gap-1 mt-3 justify-center md:justify-start">
-                        {[1,2,3,4,5].map(s => <Star key={s} size={18} className={`${s <= 4 ? 'text-amber-400 fill-current' : 'text-gray-200'}`} />)}
-                    </div>
-                    <p className="text-[10px] font-bold text-emerald-500 mt-4 uppercase">98% Positive Satisfaction</p>
                 </div>
-                <div className="flex-1 w-full space-y-3">
-                    {[5, 4, 3, 2, 1].map((star) => (
-                        <div key={star} className="flex items-center gap-4">
-                            <span className="text-[10px] font-bold text-gray-400 w-4">{star}★</span>
-                            <div className="flex-1 h-2 bg-gray-50 rounded-full overflow-hidden border border-gray-100">
-                                <div className="h-full bg-amber-400 rounded-full" style={{ width: star === 5 ? '85%' : star === 4 ? '10%' : '5%' }} />
+
+                {ratings.length > 0 ? (
+                    <div className="space-y-6">
+                        {/* Rating Summary */}
+                        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 pb-6 border-b border-gray-100">
+                            <div className="text-center">
+                                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Total Reviews</p>
+                                <p className="text-2xl font-black text-gray-900 mt-2">{analytics.totalReviews}</p>
+                            </div>
+                            <div className="text-center">
+                                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Avg Rating</p>
+                                <p className="text-2xl font-black text-amber-500 mt-2">{analytics.avgRating}</p>
+                            </div>
+                            <div className="text-center">
+                                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">5 Star</p>
+                                <p className="text-2xl font-black text-emerald-500 mt-2">{ratings.filter(r => r.rating === 5).length}</p>
+                            </div>
+                            <div className="text-center">
+                                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">4 Star</p>
+                                <p className="text-2xl font-black text-blue-500 mt-2">{ratings.filter(r => r.rating === 4).length}</p>
+                            </div>
+                            <div className="text-center">
+                                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Below 4</p>
+                                <p className="text-2xl font-black text-orange-500 mt-2">{ratings.filter(r => r.rating < 4).length}</p>
                             </div>
                         </div>
-                    ))}
-                </div>
-            </div> */}
+
+                        {/* Individual Reviews */}
+                        <div className="space-y-4 max-h-96 overflow-y-auto pr-4">
+                            {paginatedRatings.map((review, idx) => (
+                                <div key={idx} className="p-4 bg-gray-50 rounded-xl border border-gray-100 hover:border-amber-200 hover:bg-amber-50/30 transition-all">
+                                    <div className="flex items-start justify-between mb-3">
+                                        <div>
+                                            <p className="font-bold text-sm text-gray-900">{review.buyerEmail?.split('@')[0]}</p>
+                                            <p className="text-[9px] font-mono text-gray-400">{review.buyerEmail}</p>
+                                        </div>
+                                        <div className="flex gap-1">
+                                            {[1, 2, 3, 4, 5].map(star => (
+                                                <Star
+                                                    key={star}
+                                                    size={14}
+                                                    className={`${star <= review.rating ? 'text-amber-400 fill-current' : 'text-gray-200'}`}
+                                                />
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <p className="text-sm text-gray-700 mb-2">{review.message}</p>
+                                    <p className="text-[9px] font-bold text-gray-400">
+                                        {review.productName && `Product: ${review.productName} • `}
+                                        {new Date(review.createdAt).toLocaleDateString()}
+                                    </p>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Pagination */}
+                        {totalRatingsPages > 1 && (
+                            <div className="flex justify-center items-center gap-2 pt-4 border-t border-gray-100">
+                                <button
+                                    disabled={ratingsPage === 1}
+                                    onClick={() => setRatingsPage((p) => p - 1)}
+                                    className="w-8 h-8 flex items-center justify-center rounded-md border bg-white disabled:opacity-30 hover:bg-gray-50 transition shadow-sm"
+                                >
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="m15 18-6-6 6-6" />
+                                    </svg>
+                                </button>
+                                {Array.from({ length: totalRatingsPages }, (_, i) => i + 1).map(page => (
+                                    <button
+                                        key={page}
+                                        onClick={() => setRatingsPage(page)}
+                                        className={`w-8 h-8 rounded-md text-xs font-semibold border transition-all duration-200 shadow-sm ${
+                                            ratingsPage === page
+                                                ? 'bg-[#d4a643] border-[#d4a643] text-white scale-105 shadow-md'
+                                                : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+                                        }`}
+                                    >
+                                        {page}
+                                    </button>
+                                ))}
+                                <button
+                                    disabled={ratingsPage === totalRatingsPages}
+                                    onClick={() => setRatingsPage((p) => p + 1)}
+                                    className="w-8 h-8 flex items-center justify-center rounded-md border bg-white disabled:opacity-30 hover:bg-gray-50 transition shadow-sm"
+                                >
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="m9 18 6-6-6-6" />
+                                    </svg>
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                ) : (
+                    <div className="text-center py-12">
+                        <Star size={48} className="mx-auto text-gray-200 mb-4" />
+                        <p className="text-gray-400 font-bold">No reviews yet</p>
+                        <p className="text-xs text-gray-300 mt-2">Start selling to receive customer reviews</p>
+                    </div>
+                )}
+            </div>
 
             {/* Inventory Table */}
             <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm overflow-hidden">
