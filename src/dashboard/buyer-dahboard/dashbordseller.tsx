@@ -21,8 +21,10 @@ import {
   CheckCircle2,
   Share2,
   Gift,
-  Copy
+  Copy,
+  Bell
 } from 'lucide-react';
+import { getAllNotifications } from '../../components/Notification/Notification';
 
 // --- Stat Card Component ---
 interface StatCardProps {
@@ -67,6 +69,7 @@ const DashboardSeller: React.FC = () => {
   const [dateRange, setDateRange] = useState({ start: '', end: '' });
   const [bestSellingProducts, setBestSellingProducts] = useState<any[]>([]);
   const [dailyEarnings, setDailyEarnings] = useState<any[]>([]);
+  const [notifications, setNotifications] = useState<any[]>([]);
   const itemsPerPage = 10;
   const ratingsPerPage = 5;
   const [analytics, setAnalytics] = useState({
@@ -207,6 +210,41 @@ const DashboardSeller: React.FC = () => {
 
     fetchData();
   }, [user?.email]);
+
+  // Fetch notifications for Compliance & Account Notices section
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const res = await getAllNotifications();
+        const userRole = userData?.role;
+
+        const myNotifs = Array.isArray(res)
+          ? res.filter((n: any) => {
+              const isDirect = n.userEmail === user?.email;
+              const isAll = n.target === "all";
+              const isRoleMatch = userRole && n.target === `${userRole}s`;
+              return isDirect || isAll || isRoleMatch;
+            })
+          : [];
+
+        const sortedNotifs = myNotifs.sort(
+          (a: any, b: any) =>
+            new Date(b.createdAt || 0).getTime() -
+            new Date(a.createdAt || 0).getTime()
+        );
+
+        setNotifications(sortedNotifs);
+      } catch (err) {
+        console.error("Failed to fetch notifications:", err);
+      }
+    };
+
+    if (user?.email) {
+      fetchNotifications();
+      const interval = setInterval(fetchNotifications, 8000);
+      return () => clearInterval(interval);
+    }
+  }, [user?.email, userData?.role]);
 
   const totalPages = Math.max(1, Math.ceil(listedAccounts.length / itemsPerPage));
   const totalRatingsPages = Math.max(1, Math.ceil(ratings.length / ratingsPerPage));
@@ -866,6 +904,65 @@ const DashboardSeller: React.FC = () => {
                   View All 8 Reports →
                 </button>
               </div>
+            </div>
+
+            {/* Compliance & Account Notices Section */}
+            <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm">
+              <h3 className="font-black text-lg text-gray-900 mb-6 uppercase tracking-tighter flex items-center gap-2">
+                <Bell size={18} className="text-blue-600" />Compliance & Account Notices
+              </h3>
+              
+              {notifications.length > 0 ? (
+                <div className="space-y-3 max-h-96 overflow-y-auto pr-3">
+                  {notifications.map((notification, idx) => (
+                    <div 
+                      key={notification._id || idx} 
+                      className={`p-4 rounded-xl border-l-4 hover:shadow-md transition-all ${
+                        notification.read 
+                          ? 'bg-gray-50 border-l-gray-300' 
+                          : 'bg-blue-50 border-l-blue-600'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <p className="text-xs font-black text-gray-900 uppercase">{notification.title}</p>
+                            {!notification.read && (
+                              <span className="inline-block w-2 h-2 rounded-full bg-blue-600"></span>
+                            )}
+                          </div>
+                          <p className="text-sm text-gray-700 mb-2 leading-relaxed">
+                            {notification.message || notification.description || 'No description'}
+                          </p>
+                          <p className="text-[9px] text-gray-500 font-semibold">
+                            {notification.createdAt 
+                              ? new Date(notification.createdAt).toLocaleString() 
+                              : 'Date not available'}
+                          </p>
+                        </div>
+                        {notification.type && (
+                          <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase whitespace-nowrap"
+                            style={{
+                              backgroundColor: notification.type === 'warning' ? '#FEF3C7' : 
+                                             notification.type === 'alert' ? '#FEE2E2' : '#DBEAFE',
+                              color: notification.type === 'warning' ? '#92400E' : 
+                                    notification.type === 'alert' ? '#991B1B' : '#1E40AF'
+                            }}
+                          >
+                            {notification.type}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <Bell size={48} className="mx-auto text-gray-200 mb-4" />
+                  <p className="text-gray-400 font-bold">No notices at this time</p>
+                  <p className="text-xs text-gray-300 mt-2">You're all set! No compliance issues or account notices.</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
