@@ -18,6 +18,7 @@ import {
   FaClock,
   FaFlag,
   FaCheckCircle,
+  FaStar,
 } from "react-icons/fa";
 
 const FaTimesIcon = FaTimes as any;
@@ -27,6 +28,7 @@ const FaPaperPlaneIcon = FaPaperPlane as any;
 const FaClockIcon = FaClock as any;
 const FaFlagIcon = FaFlag as any;
 const FaCheckCircleIcon = FaCheckCircle as any;
+const FaStarIcon = FaStar as any;
 
 type PurchaseStatus = "Pending" | "Completed" | "Cancelled" | "Refunded";
 type PlatformType = "instagram" | "facebook" | "twitter" | "whatsapp" | "telegram" | "other";
@@ -142,6 +144,12 @@ const MyPurchase: React.FC = () => {
   const [reportReason, setReportReason] = useState(REPORT_REASONS[0]);
   const [reportMessage, setReportMessage] = useState("");
   const [isSubmittingReport, setIsSubmittingReport] = useState(false);
+
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [reviewTargetOrder, setReviewTargetOrder] = useState<Purchase | null>(null);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewMessage, setReviewMessage] = useState("");
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
   const [activeChatSellerEmail, setActiveChatSellerEmail] = useState<string | null>(null);
   const [activeChatOrderId, setActiveChatOrderId] = useState<string | null>(null);
@@ -350,6 +358,31 @@ const MyPurchase: React.FC = () => {
     }
   };
 
+  const handleReviewSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!reviewMessage.trim() || !reviewTargetOrder) return;
+    setIsSubmittingReview(true);
+    try {
+      await axios.post(`http://localhost:3200/rating/create`, {
+        orderId: reviewTargetOrder.id,
+        productId: reviewTargetOrder.id,
+        buyerEmail: buyerId,
+        sellerEmail: reviewTargetOrder.sellerEmail,
+        rating: reviewRating,
+        message: reviewMessage,
+        productName: reviewTargetOrder.title
+      });
+      toast.success("Review submitted successfully!");
+      setIsReviewModalOpen(false);
+      setReviewMessage("");
+      setReviewRating(5);
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Error submitting review");
+    } finally {
+      setIsSubmittingReview(false);
+    }
+  };
+
   const filtered = useMemo(() => {
     if (activeTab === "All") return purchases;
     return purchases.filter((p) => p.status === activeTab);
@@ -504,6 +537,18 @@ const MyPurchase: React.FC = () => {
                 className="w-full bg-[#33ac6f] text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition active:scale-95 shadow-lg"
               >
                 <FaCheckCircleIcon /> Confirm & Complete Order
+              </button>
+            )}
+            {selected.status === "Completed" && (
+              <button 
+                onClick={() => {
+                  setReviewTargetOrder(selected);
+                  setIsReviewModalOpen(true);
+                  setSelected(null);
+                }} 
+                className="w-full bg-amber-500 text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition active:scale-95 shadow-lg hover:bg-amber-600"
+              >
+                <FaStarIcon /> Leave a Review
               </button>
             )}
           </div>
@@ -674,6 +719,56 @@ const MyPurchase: React.FC = () => {
                 </button>
               </form>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Review Modal */}
+      {isReviewModalOpen && reviewTargetOrder && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md">
+          <div className="bg-white w-full max-w-md rounded-2xl overflow-hidden shadow-2xl">
+            <div className="bg-amber-500 p-4 text-white font-bold flex justify-between items-center">
+              <span className="flex items-center gap-2"><FaStarIcon /> Leave a Review</span>
+              <button onClick={() => setIsReviewModalOpen(false)}>
+                <FaTimesIcon />
+              </button>
+            </div>
+            <form onSubmit={handleReviewSubmit} className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Rating</label>
+                <div className="flex gap-2 text-3xl">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      type="button"
+                      onClick={() => setReviewRating(star)}
+                      className={`cursor-pointer transition-transform hover:scale-110 ${
+                        star <= reviewRating ? 'text-amber-400' : 'text-gray-300'
+                      }`}
+                    >
+                      <FaStarIcon />
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Review Message</label>
+                <textarea 
+                  value={reviewMessage} 
+                  onChange={(e) => setReviewMessage(e.target.value)} 
+                  placeholder="Share your experience with this purchase..." 
+                  className="w-full border border-gray-300 p-3 rounded-xl text-sm h-32 outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-200" 
+                  required 
+                />
+              </div>
+              <button 
+                type="submit" 
+                disabled={isSubmittingReview} 
+                className="w-full bg-amber-500 text-white py-3 rounded-xl font-bold hover:bg-amber-600 disabled:opacity-50 transition"
+              >
+                {isSubmittingReview ? "Submitting..." : "Submit Review"}
+              </button>
+            </form>
           </div>
         </div>
       )}
