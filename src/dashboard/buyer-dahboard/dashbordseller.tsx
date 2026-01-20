@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useAuthHook } from '../../hook/useAuthHook';
 import {
- 
   ArrowRight,
   LucideIcon,
   Star,
@@ -14,8 +13,12 @@ import {
   ShieldCheck,
   Zap,
   LayoutGrid,
-  Award,
-  Users
+  Users,
+  BarChart3,
+  Calendar,
+  AlertTriangle,
+  Clock,
+  CheckCircle2
 } from 'lucide-react';
 
 // --- Stat Card Component ---
@@ -38,7 +41,7 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, Icon, color, trend })
         <p className="text-gray-400 text-[10px] font-black uppercase tracking-[0.15em]">{title}</p>
         <div className="flex items-end gap-2">
           <h2 className="text-3xl font-black text-gray-900 mt-1">{value}</h2>
-          {trend && <span className="text-[10px] font-bold text-emerald-500 mb-1 flex items-center"><ArrowUpRight size={12}/>{trend}</span>}
+          {trend && <span className="text-[10px] font-bold text-emerald-500 mb-1 flex items-center"><ArrowUpRight size={12} />{trend}</span>}
         </div>
       </div>
     </div>
@@ -56,6 +59,11 @@ const DashboardSeller: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [ratingsPage, setRatingsPage] = useState(1);
+  const [showReports, setShowReports] = useState(false);
+  const [reportFilter, setReportFilter] = useState<'daily' | 'weekly' | 'monthly'>('monthly');
+  const [dateRange, setDateRange] = useState({ start: '', end: '' });
+  const [bestSellingProducts, setBestSellingProducts] = useState<any[]>([]);
+  const [dailyEarnings, setDailyEarnings] = useState<any[]>([]);
   const itemsPerPage = 10;
   const ratingsPerPage = 5;
   const [analytics, setAnalytics] = useState({
@@ -82,7 +90,7 @@ const DashboardSeller: React.FC = () => {
         const myProducts = (prodRes.data || []).filter((p: any) => p.userEmail === user.email);
         const sales = purchaseRes.data || [];
         const ratingsData = ratingsRes.data || {};
-        
+
         // REAL EARNINGS: Sum of completed/confirmed purchases
         const earned = sales
           .filter(p => p.status === 'completed' || p.status === 'confirmed')
@@ -95,17 +103,17 @@ const DashboardSeller: React.FC = () => {
         // SUCCESS RATE: Based on successful vs failed transactions
         // Successful = completed, confirmed, ongoing
         // Failed = rejected, cancelled, failed
-        const successfulTransactions = sales.filter(p => 
+        const successfulTransactions = sales.filter(p =>
           p.status === 'completed' || p.status === 'confirmed' || p.status === 'ongoing'
         ).length;
 
-        const failedTransactions = sales.filter(p => 
+        const failedTransactions = sales.filter(p =>
           p.status === 'rejected' || p.status === 'cancelled' || p.status === 'failed'
         ).length;
 
         const totalTransactions = successfulTransactions + failedTransactions;
-        const successRate = totalTransactions > 0 
-          ? (successfulTransactions / totalTransactions) * 100 
+        const successRate = totalTransactions > 0
+          ? (successfulTransactions / totalTransactions) * 100
           : 0;
 
         setAnalytics(prev => ({
@@ -121,12 +129,49 @@ const DashboardSeller: React.FC = () => {
         setListedAccounts(myProducts);
         setRatings(ratingsData.ratings || []);
 
+        // Get top selling products - show individual products without grouping
+        const completedSales = sales.filter(p => {
+          const status = p.status?.toLowerCase();
+          return status === 'completed' || status === 'confirmed' || status === 'sold';
+        });
+
+        const topProducts = completedSales
+          .map((sale: any) => ({
+            name: sale.productName || 'Unknown',
+            sales: 1,
+            revenue: Number(sale.price) || 0,
+            createdAt: sale.createdAt
+          }))
+          .sort((a: any, b: any) => b.revenue - a.revenue)
+          .slice(0, 5);
+
+        setBestSellingProducts(topProducts);
+
+        // Calculate daily earnings
+        const dailyData: any = {};
+        sales
+          .filter(p => p.status === 'completed' || p.status === 'confirmed' || p.status === 'sold')
+          .forEach((sale: any) => {
+            const date = new Date(sale.createdAt).toLocaleDateString();
+            if (!dailyData[date]) {
+              dailyData[date] = 0;
+            }
+            dailyData[date] += Number(sale.price) || 0;
+          });
+
+        const sortedDaily = Object.entries(dailyData)
+          .sort((a: any, b: any) => new Date(a[0]).getTime() - new Date(b[0]).getTime())
+          .slice(-30)
+          .map(([date, amount]: any) => ({ date, amount }));
+
+        setDailyEarnings(sortedDaily);
+
         const activities = [
           ...sales.map(s => ({ Icon: Zap, color: 'text-blue-500', title: 'Payment Received', desc: `Sold ${s.productName || 'Account'} - $${s.price}`, time: s.createdAt })),
           ...myProducts.filter(a => a.status === 'approved' || a.status === 'active').map(a => ({ Icon: ShieldCheck, color: 'text-emerald-500', title: 'Listing Live', desc: a.name, time: a.createdAt }))
         ]
-        .sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime())
-        .slice(0, 5);
+          .sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime())
+          .slice(0, 5);
 
         setRecentActivities(activities);
       } catch (err) {
@@ -182,7 +227,7 @@ const DashboardSeller: React.FC = () => {
 
   if (loading) return (
     <div className="flex items-center justify-center min-h-screen bg-white">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#d4a643]"></div>
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#d4a643]"></div>
     </div>
   );
 
@@ -199,17 +244,17 @@ const DashboardSeller: React.FC = () => {
           </div>
           <div className="flex items-center gap-6">
             <div className="hidden md:flex flex-col items-end border-r pr-6 border-gray-100">
-                <div className="flex items-center gap-1 text-amber-500">
-                    <Star size={14} className="fill-current"/> <span className="font-black text-sm text-black">{analytics.avgRating}</span>
-                </div>
-                <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Global Rep</p>
+              <div className="flex items-center gap-1 text-amber-500">
+                <Star size={14} className="fill-current" /> <span className="font-black text-sm text-black">{analytics.avgRating}</span>
+              </div>
+              <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Global Rep</p>
             </div>
             <div className="flex items-center gap-3">
-                <div className="text-right hidden sm:block">
-                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tight">Verified Seller</p>
-                    <p className="text-xs font-bold text-gray-900">{user?.email?.split('@')[0]}</p>
-                </div>
-                <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#d4a643] to-amber-200 border-2 border-white shadow-md" />
+              <div className="text-right hidden sm:block">
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tight">Verified Seller</p>
+                <p className="text-xs font-bold text-gray-900">{user?.email?.split('@')[0]}</p>
+              </div>
+              <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#d4a643] to-amber-200 border-2 border-white shadow-md" />
             </div>
           </div>
         </div>
@@ -227,281 +272,519 @@ const DashboardSeller: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* --- Main Section --- */}
           <div className="lg:col-span-8 space-y-8">
-          {/* Rating Breakdown Card */}
+            {/* Rating Breakdown Card */}
             <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm">
-                <div className="flex justify-between items-center mb-8">
-                    <h3 className="font-black text-xl text-gray-900 tracking-tight uppercase italic">Client Ratings & Reviews</h3>
-                    <div className="flex items-center gap-2">
-                        <Star className="text-amber-400 fill-current" size={20}/>
-                        <span className="text-2xl font-black text-gray-900">{analytics.avgRating}</span>
-                        <span className="text-sm font-bold text-gray-400">/5</span>
-                    </div>
+              <div className="flex justify-between items-center mb-8">
+                <h3 className="font-black text-xl text-gray-900 tracking-tight uppercase italic">Client Ratings & Reviews</h3>
+                <div className="flex items-center gap-2">
+                  <Star className="text-amber-400 fill-current" size={20} />
+                  <span className="text-2xl font-black text-gray-900">{analytics.avgRating}</span>
+                  <span className="text-sm font-bold text-gray-400">/5</span>
                 </div>
+              </div>
 
-                {ratings.length > 0 ? (
-                    <div className="space-y-6">
-                        {/* Rating Summary */}
-                        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 pb-6 border-b border-gray-100">
-                            <div className="text-center">
-                                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Total Reviews</p>
-                                <p className="text-2xl font-black text-gray-900 mt-2">{analytics.totalReviews}</p>
-                            </div>
-                            <div className="text-center">
-                                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Avg Rating</p>
-                                <p className="text-2xl font-black text-amber-500 mt-2">{analytics.avgRating}</p>
-                            </div>
-                            <div className="text-center">
-                                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">5 Star</p>
-                                <p className="text-2xl font-black text-emerald-500 mt-2">{ratings.filter(r => r.rating === 5).length}</p>
-                            </div>
-                            <div className="text-center">
-                                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">4 Star</p>
-                                <p className="text-2xl font-black text-blue-500 mt-2">{ratings.filter(r => r.rating === 4).length}</p>
-                            </div>
-                            <div className="text-center">
-                                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Below 4</p>
-                                <p className="text-2xl font-black text-orange-500 mt-2">{ratings.filter(r => r.rating < 4).length}</p>
-                            </div>
-                        </div>
+              {ratings.length > 0 ? (
+                <div className="space-y-6">
+                  {/* Rating Summary */}
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-4 pb-6 border-b border-gray-100">
+                    <div className="text-center">
+                      <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Total Reviews</p>
+                      <p className="text-2xl font-black text-gray-900 mt-2">{analytics.totalReviews}</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Avg Rating</p>
+                      <p className="text-2xl font-black text-amber-500 mt-2">{analytics.avgRating}</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">5 Star</p>
+                      <p className="text-2xl font-black text-emerald-500 mt-2">{ratings.filter(r => r.rating === 5).length}</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">4 Star</p>
+                      <p className="text-2xl font-black text-blue-500 mt-2">{ratings.filter(r => r.rating === 4).length}</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Below 4</p>
+                      <p className="text-2xl font-black text-orange-500 mt-2">{ratings.filter(r => r.rating < 4).length}</p>
+                    </div>
+                  </div>
 
-                        {/* Individual Reviews */}
-                        <div className="space-y-4 max-h-96 overflow-y-auto pr-4">
-                            {paginatedRatings.map((review, idx) => (
-                                <div key={idx} className="p-4 bg-gray-50 rounded-xl border border-gray-100 hover:border-amber-200 hover:bg-amber-50/30 transition-all">
-                                    <div className="flex items-start justify-between mb-3">
-                                        <div>
-                                            <p className="font-bold text-sm text-gray-900">{review.buyerEmail?.split('@')[0]}</p>
-                                            <p className="text-[9px] font-mono text-gray-400">{review.buyerEmail}</p>
-                                        </div>
-                                        <div className="flex gap-1">
-                                            {[1, 2, 3, 4, 5].map(star => (
-                                                <Star
-                                                    key={star}
-                                                    size={14}
-                                                    className={`${star <= review.rating ? 'text-amber-400 fill-current' : 'text-gray-200'}`}
-                                                />
-                                            ))}
-                                        </div>
-                                    </div>
-                                    <p className="text-sm text-gray-700 mb-2">{review.message}</p>
-                                    <p className="text-[9px] font-bold text-gray-400">
-                                        {review.productName && `Product: ${review.productName} • `}
-                                        {new Date(review.createdAt).toLocaleDateString()}
-                                    </p>
-                                </div>
+                  {/* Individual Reviews */}
+                  <div className="space-y-4 max-h-96 overflow-y-auto pr-4">
+                    {paginatedRatings.map((review, idx) => (
+                      <div key={idx} className="p-4 bg-gray-50 rounded-xl border border-gray-100 hover:border-amber-200 hover:bg-amber-50/30 transition-all">
+                        <div className="flex items-start justify-between mb-3">
+                          <div>
+                            <p className="font-bold text-sm text-gray-900">{review.buyerEmail?.split('@')[0]}</p>
+                            <p className="text-[9px] font-mono text-gray-400">{review.buyerEmail}</p>
+                          </div>
+                          <div className="flex gap-1">
+                            {[1, 2, 3, 4, 5].map(star => (
+                              <Star
+                                key={star}
+                                size={14}
+                                className={`${star <= review.rating ? 'text-amber-400 fill-current' : 'text-gray-200'}`}
+                              />
                             ))}
+                          </div>
                         </div>
+                        <p className="text-sm text-gray-700 mb-2">{review.message}</p>
+                        <p className="text-[9px] font-bold text-gray-400">
+                          {review.productName && `Product: ${review.productName} • `}
+                          {new Date(review.createdAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
 
-                        {/* Pagination */}
-                        {totalRatingsPages > 1 && (
-                            <div className="flex justify-center items-center gap-2 pt-4 border-t border-gray-100">
-                                <button
-                                    disabled={ratingsPage === 1}
-                                    onClick={() => setRatingsPage((p) => p - 1)}
-                                    className="w-8 h-8 flex items-center justify-center rounded-md border bg-white disabled:opacity-30 hover:bg-gray-50 transition shadow-sm"
-                                >
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <path d="m15 18-6-6 6-6" />
-                                    </svg>
-                                </button>
-                                {Array.from({ length: totalRatingsPages }, (_, i) => i + 1).map(page => (
-                                    <button
-                                        key={page}
-                                        onClick={() => setRatingsPage(page)}
-                                        className={`w-8 h-8 rounded-md text-xs font-semibold border transition-all duration-200 shadow-sm ${
-                                            ratingsPage === page
-                                                ? 'bg-[#d4a643] border-[#d4a643] text-white scale-105 shadow-md'
-                                                : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
-                                        }`}
-                                    >
-                                        {page}
-                                    </button>
-                                ))}
-                                <button
-                                    disabled={ratingsPage === totalRatingsPages}
-                                    onClick={() => setRatingsPage((p) => p + 1)}
-                                    className="w-8 h-8 flex items-center justify-center rounded-md border bg-white disabled:opacity-30 hover:bg-gray-50 transition shadow-sm"
-                                >
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <path d="m9 18 6-6-6-6" />
-                                    </svg>
-                                </button>
+                  {/* Pagination */}
+                  {totalRatingsPages > 1 && (
+                    <div className="flex justify-center items-center gap-2 pt-4 border-t border-gray-100">
+                      <button
+                        disabled={ratingsPage === 1}
+                        onClick={() => setRatingsPage((p) => p - 1)}
+                        className="w-8 h-8 flex items-center justify-center rounded-md border bg-white disabled:opacity-30 hover:bg-gray-50 transition shadow-sm"
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="m15 18-6-6 6-6" />
+                        </svg>
+                      </button>
+                      {Array.from({ length: totalRatingsPages }, (_, i) => i + 1).map(page => (
+                        <button
+                          key={page}
+                          onClick={() => setRatingsPage(page)}
+                          className={`w-8 h-8 rounded-md text-xs font-semibold border transition-all duration-200 shadow-sm ${ratingsPage === page
+                              ? 'bg-[#d4a643] border-[#d4a643] text-white scale-105 shadow-md'
+                              : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+                            }`}
+                        >
+                          {page}
+                        </button>
+                      ))}
+                      <button
+                        disabled={ratingsPage === totalRatingsPages}
+                        onClick={() => setRatingsPage((p) => p + 1)}
+                        className="w-8 h-8 flex items-center justify-center rounded-md border bg-white disabled:opacity-30 hover:bg-gray-50 transition shadow-sm"
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="m9 18 6-6-6-6" />
+                        </svg>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <Star size={48} className="mx-auto text-gray-200 mb-4" />
+                  <p className="text-gray-400 font-bold">No reviews yet</p>
+                  <p className="text-xs text-gray-300 mt-2">Start selling to receive customer reviews</p>
+                </div>
+              )}
+            </div>
+
+            {/* Sales Analytics & Reports Section */}
+            <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm overflow-hidden">
+              <div className="p-8 flex justify-between items-center border-b border-gray-50">
+                <h3 className="font-black text-xl text-gray-900 tracking-tight uppercase italic flex items-center gap-2">
+                  <BarChart3 size={24} className="text-blue-500" />Sales Analytics
+                </h3>
+                <button
+                  onClick={() => setShowReports(!showReports)}
+                  className="text-[11px] font-black text-[#d4a643] uppercase tracking-widest flex items-center gap-2 hover:bg-amber-50 px-4 py-2 rounded-full transition-all"
+                >
+                  {showReports ? 'Hide Report' : 'View Report'} <BarChart3 size={14} />
+                </button>
+              </div>
+
+              {showReports && (
+                <div className="p-8 space-y-8">
+                  {/* Report Controls */}
+                  <div className="flex flex-col sm:flex-row gap-4 items-center">
+                    <div className="flex gap-2">
+                      {(['daily', 'weekly', 'monthly'] as const).map((filter) => (
+                        <button
+                          key={filter}
+                          onClick={() => setReportFilter(filter)}
+                          className={`px-4 py-2 rounded-lg text-xs font-bold uppercase transition-all ${reportFilter === filter
+                              ? 'bg-[#d4a643] text-white'
+                              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                            }`}
+                        >
+                          {filter}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="flex gap-3 items-center ml-auto">
+                      <Calendar size={16} className="text-gray-400" />
+                      <input
+                        type="date"
+                        className="px-3 py-2 border border-gray-300 rounded-lg text-xs"
+                        onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
+                      />
+                      <span className="text-gray-400">to</span>
+                      <input
+                        type="date"
+                        className="px-3 py-2 border border-gray-300 rounded-lg text-xs"
+                        onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Sales Summary Cards */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-xl border border-blue-200">
+                      <p className="text-xs font-bold text-blue-600 uppercase tracking-widest mb-2">Total Sales</p>
+                      <p className="text-3xl font-black text-blue-900">{analytics.soldCount}</p>
+                      <p className="text-[10px] text-blue-600 mt-2">transactions completed</p>
+                    </div>
+                    <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 p-6 rounded-xl border border-emerald-200">
+                      <p className="text-xs font-bold text-emerald-600 uppercase tracking-widest mb-2">Total Revenue</p>
+                      <p className="text-3xl font-black text-emerald-900">${analytics.totalEarned.toFixed(2)}</p>
+                      <p className="text-[10px] text-emerald-600 mt-2">all-time earnings</p>
+                    </div>
+                    <div className="bg-gradient-to-br from-amber-50 to-amber-100 p-6 rounded-xl border border-amber-200">
+                      <p className="text-xs font-bold text-amber-600 uppercase tracking-widest mb-2">Avg per Sale</p>
+                      <p className="text-3xl font-black text-amber-900">${analytics.soldCount > 0 ? (analytics.totalEarned / analytics.soldCount).toFixed(2) : '0'}</p>
+                      <p className="text-[10px] text-amber-600 mt-2">average transaction</p>
+                    </div>
+                  </div>
+
+                  {/* Best Selling Products - Completed Only */}
+                  <div>
+                    <h4 className="font-bold text-lg text-gray-900 mb-2 flex items-center gap-2">
+                      Top Selling Products
+                      <span className="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full font-black uppercase tracking-widest">Completed</span>
+                    </h4>
+                    <p className="text-xs text-gray-500 mb-4">Products ranked by completed sales & revenue</p>
+                    <div className="space-y-3">
+                      {bestSellingProducts.length > 0 ? (
+                        bestSellingProducts.map((product, idx) => (
+                          <div key={idx} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200 hover:border-[#d4a643] transition-all">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-full bg-[#d4a643] flex items-center justify-center text-white font-black text-xs">
+                                  {idx + 1}
+                                </div>
+                                <div>
+                                  <p className="font-bold text-gray-900">{product.name}</p>
+                                  <p className="text-[10px] text-gray-500">{product.sales} sales</p>
+                                </div>
+                              </div>
                             </div>
-                        )}
+                            <div className="text-right">
+                              <p className="font-black text-gray-900">${product.revenue.toFixed(2)}</p>
+                              <p className="text-[10px] text-gray-500 flex items-center gap-1 justify-end">
+                                <TrendingUp size={12} className="text-emerald-500" /> {((product.revenue / analytics.totalEarned) * 100).toFixed(1)}%
+                              </p>
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="text-center py-8 text-gray-400">
+                          <p>No sales data available yet</p>
+                        </div>
+                      )}
                     </div>
-                ) : (
-                    <div className="text-center py-12">
-                        <Star size={48} className="mx-auto text-gray-200 mb-4" />
-                        <p className="text-gray-400 font-bold">No reviews yet</p>
-                        <p className="text-xs text-gray-300 mt-2">Start selling to receive customer reviews</p>
+                  </div>
+
+                  {/* Earnings Trend Chart (Simple Bar Representation) */}
+                  <div>
+                    <h4 className="font-bold text-lg text-gray-900 mb-4">Earnings Trend (Last 30 Days)</h4>
+                    <div className="bg-gray-50 p-6 rounded-lg border border-gray-200 min-h-64">
+                      {dailyEarnings.length > 0 ? (
+                        <div className="space-y-4">
+                          {/* Chart Container */}
+                          <div className="flex items-end justify-center gap-1 h-48 bg-white rounded-lg p-4 relative">
+                            {dailyEarnings.map((item, idx) => {
+                              const maxAmount = Math.max(...dailyEarnings.map((d: any) => d.amount), 1);
+                              const heightPercent = (item.amount / maxAmount) * 100;
+                              return (
+                                <div key={idx} className="flex-1 flex flex-col items-center gap-2 group cursor-pointer relative">
+                                  <div className="w-full bg-gradient-to-t from-[#d4a643] to-amber-300 rounded-t hover:opacity-80 transition-all"
+                                    style={{ height: `${heightPercent}%`, minHeight: '4px' }}>
+                                  </div>
+                                  <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-gray-900 text-white text-[8px] rounded px-2 py-1 whitespace-nowrap absolute -top-8 left-1/2 transform -translate-x-1/2 pointer-events-none">
+                                    ${item.amount.toFixed(2)}
+                                  </div>
+                                  <span className="text-[8px] text-gray-600 text-center truncate">{item.date.split('/')[1]}</span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                          {/* Stats */}
+                          <div className="grid grid-cols-3 gap-4 text-center text-xs">
+                            <div>
+                              <p className="text-gray-500">Highest Day</p>
+                              <p className="font-bold text-gray-900">${Math.max(...dailyEarnings.map((d: any) => d.amount)).toFixed(2)}</p>
+                            </div>
+                            <div>
+                              <p className="text-gray-500">Avg per Day</p>
+                              <p className="font-bold text-gray-900">${(dailyEarnings.reduce((sum: number, d: any) => sum + d.amount, 0) / dailyEarnings.length).toFixed(2)}</p>
+                            </div>
+                            <div>
+                              <p className="text-gray-500">Days Active</p>
+                              <p className="font-bold text-gray-900">{dailyEarnings.length}</p>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-center h-48 text-gray-400">
+                          <p>No earnings data available yet</p>
+                        </div>
+                      )}
                     </div>
-                )}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Inventory Table */}
             <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm overflow-hidden">
-               <div className="p-8 flex justify-between items-center border-b border-gray-50">
-                  <h3 className="font-black text-xl text-gray-900 tracking-tight uppercase italic">Inventory Pulse</h3>
-                  <button onClick={() => navigate('/myproducts')} className="text-[11px] font-black text-[#d4a643] uppercase tracking-widest flex items-center gap-2 hover:bg-amber-50 px-4 py-2 rounded-full transition-all">
-                    View Listings <ArrowRight size={14}/>
+              <div className="p-8 flex justify-between items-center border-b border-gray-50">
+                <h3 className="font-black text-xl text-gray-900 tracking-tight uppercase italic">Inventory Pulse</h3>
+                <button onClick={() => navigate('/myproducts')} className="text-[11px] font-black text-[#d4a643] uppercase tracking-widest flex items-center gap-2 hover:bg-amber-50 px-4 py-2 rounded-full transition-all">
+                  View Listings <ArrowRight size={14} />
+                </button>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left">
+                  <thead className="bg-[#FAFAFA] text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">
+                    <tr>
+                      <th className="px-8 py-5">Product Name</th>
+                      <th className="px-8 py-5 text-center">Value</th>
+                      <th className="px-8 py-5 text-center">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-50">
+                    {paginatedAccounts.map((acc) => {
+                      const getStatusColor = (status: string) => {
+                        switch (status?.toLowerCase()) {
+                          case 'active':
+                          case 'approved':
+                            return 'bg-emerald-50 text-emerald-600';
+                          case 'sold':
+                            return 'bg-blue-50 text-blue-600';
+                          case 'pending':
+                            return 'bg-yellow-50 text-yellow-600';
+                          case 'cancelled':
+                          case 'cancel':
+                            return 'bg-orange-50 text-orange-600';
+                          case 'rejected':
+                          case 'reject':
+                            return 'bg-red-50 text-red-600';
+                          default:
+                            return 'bg-gray-50 text-gray-600';
+                        }
+                      };
+                      return (
+                        <tr key={acc._id} className="hover:bg-gray-50/50 transition-colors">
+                          <td className="px-8 py-6">
+                            <p className="text-sm font-bold text-gray-900">{acc.name || acc.category}</p>
+                            <p className="text-[9px] font-mono text-gray-400">ID: {acc._id.slice(-6).toUpperCase()}</p>
+                          </td>
+                          <td className="px-8 py-6 text-center font-black text-gray-900 text-sm">${acc.price}</td>
+                          <td className="px-8 py-6 text-center">
+                            <span className={`px-4 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest ${getStatusColor(acc.status)}`}>
+                              {acc.status}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Pagination View */}
+              {totalPages > 1 && (
+                <div className="flex justify-center items-center gap-2 p-8 border-t border-gray-50">
+                  {/* Prev Button */}
+                  <button
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage((p) => p - 1)}
+                    className="w-8 h-8 flex items-center justify-center rounded-md border bg-white disabled:opacity-30 hover:bg-gray-50 transition shadow-sm"
+                  >
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="m15 18-6-6 6-6" />
+                    </svg>
                   </button>
-               </div>
-               <div className="overflow-x-auto">
-                 <table className="w-full text-left">
-                   <thead className="bg-[#FAFAFA] text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">
-                     <tr>
-                       <th className="px-8 py-5">Product Name</th>
-                       <th className="px-8 py-5 text-center">Value</th>
-                       <th className="px-8 py-5 text-center">Status</th>
-                     </tr>
-                   </thead>
-                   <tbody className="divide-y divide-gray-50">
-                     {paginatedAccounts.map((acc) => {
-                       const getStatusColor = (status: string) => {
-                         switch(status?.toLowerCase()) {
-                           case 'active':
-                           case 'approved':
-                             return 'bg-emerald-50 text-emerald-600';
-                           case 'sold':
-                             return 'bg-blue-50 text-blue-600';
-                           case 'pending':
-                             return 'bg-yellow-50 text-yellow-600';
-                           case 'cancelled':
-                           case 'cancel':
-                             return 'bg-orange-50 text-orange-600';
-                           case 'rejected':
-                           case 'reject':
-                             return 'bg-red-50 text-red-600';
-                           default:
-                             return 'bg-gray-50 text-gray-600';
-                         }
-                       };
-                       return (
-                       <tr key={acc._id} className="hover:bg-gray-50/50 transition-colors">
-                         <td className="px-8 py-6">
-                           <p className="text-sm font-bold text-gray-900">{acc.name || acc.category}</p>
-                           <p className="text-[9px] font-mono text-gray-400">ID: {acc._id.slice(-6).toUpperCase()}</p>
-                         </td>
-                         <td className="px-8 py-6 text-center font-black text-gray-900 text-sm">${acc.price}</td>
-                         <td className="px-8 py-6 text-center">
-                           <span className={`px-4 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest ${getStatusColor(acc.status)}`}>
-                             {acc.status}
-                           </span>
-                         </td>
-                       </tr>
-                       );
-                     })}
-                   </tbody>
-                 </table>
-               </div>
 
-               {/* Pagination View */}
-               {totalPages > 1 && (
-                 <div className="flex justify-center items-center gap-2 p-8 border-t border-gray-50">
-                   {/* Prev Button */}
-                   <button
-                     disabled={currentPage === 1}
-                     onClick={() => setCurrentPage((p) => p - 1)}
-                     className="w-8 h-8 flex items-center justify-center rounded-md border bg-white disabled:opacity-30 hover:bg-gray-50 transition shadow-sm"
-                   >
-                     <svg
-                       width="14"
-                       height="14"
-                       viewBox="0 0 24 24"
-                       fill="none"
-                       stroke="currentColor"
-                       strokeWidth="2"
-                       strokeLinecap="round"
-                       strokeLinejoin="round"
-                     >
-                       <path d="m15 18-6-6 6-6" />
-                     </svg>
-                   </button>
+                  {/* Page Numbers */}
+                  {getPageNumbers().map((page, idx) =>
+                    page === "..." ? (
+                      <span
+                        key={`dots-${idx}`}
+                        className="px-2 text-gray-400 text-xs font-semibold"
+                      >
+                        ...
+                      </span>
+                    ) : (
+                      <button
+                        key={`page-${page}`}
+                        onClick={() => setCurrentPage(page as number)}
+                        className={`w-8 h-8 rounded-md text-xs font-semibold border transition-all duration-200 shadow-sm ${currentPage === page
+                          ? "bg-[#d4a643] border-[#d4a643] text-white scale-105 shadow-md"
+                          : "bg-white border-gray-200 text-gray-600 hover:bg-gray-50"
+                          }`}
+                      >
+                        {page}
+                      </button>
+                    )
+                  )}
 
-                   {/* Page Numbers */}
-                   {getPageNumbers().map((page, idx) =>
-                     page === "..." ? (
-                       <span
-                         key={`dots-${idx}`}
-                         className="px-2 text-gray-400 text-xs font-semibold"
-                       >
-                         ...
-                       </span>
-                     ) : (
-                       <button
-                         key={`page-${page}`}
-                         onClick={() => setCurrentPage(page as number)}
-                         className={`w-8 h-8 rounded-md text-xs font-semibold border transition-all duration-200 shadow-sm ${currentPage === page
-                             ? "bg-[#d4a643] border-[#d4a643] text-white scale-105 shadow-md"
-                             : "bg-white border-gray-200 text-gray-600 hover:bg-gray-50"
-                           }`}
-                       >
-                         {page}
-                       </button>
-                     )
-                   )}
-
-                   {/* Next Button */}
-                   <button
-                     disabled={currentPage === totalPages}
-                     onClick={() => setCurrentPage((p) => p + 1)}
-                     className="w-8 h-8 flex items-center justify-center rounded-md border bg-white disabled:opacity-30 hover:bg-gray-50 transition shadow-sm"
-                   >
-                     <svg
-                       width="14"
-                       height="14"
-                       viewBox="0 0 24 24"
-                       fill="none"
-                       stroke="currentColor"
-                       strokeWidth="2"
-                       strokeLinecap="round"
-                       strokeLinejoin="round"
-                     >
-                       <path d="m9 18 6-6-6-6" />
-                     </svg>
-                   </button>
-                 </div>
-               )}
+                  {/* Next Button */}
+                  <button
+                    disabled={currentPage === totalPages}
+                    onClick={() => setCurrentPage((p) => p + 1)}
+                    className="w-8 h-8 flex items-center justify-center rounded-md border bg-white disabled:opacity-30 hover:bg-gray-50 transition shadow-sm"
+                  >
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="m9 18 6-6-6-6" />
+                    </svg>
+                  </button>
+                </div>
+              )}
             </div>
-        </div>
+
+
+          </div>
 
           {/* --- Sidebar Section --- */}
           <div className="lg:col-span-4 space-y-8">
             <div className="bg-[#0A1A3A] p-8 rounded-[2.5rem] text-white shadow-2xl relative overflow-hidden group">
-               <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-white/5 rounded-full group-hover:scale-150 transition-transform duration-700" />
-               <div className="relative">
-                  {/* <div className="flex items-center gap-2 mb-6">
+              <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-white/5 rounded-full group-hover:scale-150 transition-transform duration-700" />
+              <div className="relative">
+                {/* <div className="flex items-center gap-2 mb-6">
                     <Award className="text-amber-400" size={20}/>
                     <span className="text-[10px] font-black uppercase tracking-widest text-white/60">Tier 1 Elite</span>
                   </div> */}
-                  <p className="text-xs font-bold text-white/40 uppercase tracking-widest">Lifetime Payout</p>
-                  <h3 className="text-5xl font-black mb-10 text-white italic">${analytics.totalEarned.toFixed(2)}</h3>
-                  <button onClick={() => navigate('/withdraw')} className="w-full bg-[#d4a643] hover:bg-white hover:text-black py-4 rounded-2xl text-xs font-black uppercase tracking-[0.1em] transition-all flex items-center justify-center gap-2">
-                    <Wallet size={16}/> Withdraw Earnings
-                  </button>
-               </div>
+                <p className="text-xs font-bold text-white/40 uppercase tracking-widest">Lifetime Payout</p>
+                <h3 className="text-5xl font-black mb-10 text-white italic">${analytics.totalEarned.toFixed(2)}</h3>
+                <button onClick={() => navigate('/withdraw')} className="w-full bg-[#d4a643] hover:bg-white hover:text-black py-4 rounded-2xl text-xs font-black uppercase tracking-[0.1em] transition-all flex items-center justify-center gap-2">
+                  <Wallet size={16} /> Withdraw Earnings
+                </button>
+              </div>
             </div>
 
             <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm">
-               <h3 className="font-black text-lg text-gray-900 mb-8 uppercase tracking-tighter flex items-center gap-2">
-                 <Zap size={18} className="text-blue-500 fill-current"/> Activity Stream
-               </h3>
-               <div className="space-y-8 relative before:absolute before:left-[19px] before:top-2 before:bottom-2 before:w-[1px] before:bg-gray-100">
-                 {recentActivities.map((act, i) => (
-                   <div key={i} className="flex gap-4 relative group">
-                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center z-10 shadow-sm transition-all group-hover:scale-110 border-4 border-white ${act.color.replace('text-', 'bg-').replace('500', '100')} ${act.color}`}>
-                       <act.Icon size={16} />
-                     </div>
-                     <div className="flex-1">
-                        <div className="flex justify-between items-center">
-                          <p className="text-xs font-black text-gray-900 uppercase">{act.title}</p>
-                          <span className="text-[9px] font-bold text-gray-400">{new Date(act.time).getHours()}:{new Date(act.time).getMinutes()}</span>
-                        </div>
-                        <p className="text-[10px] text-gray-500 font-medium mt-0.5">{act.desc}</p>
-                     </div>
-                   </div>
-                 ))}
-               </div>
+              <h3 className="font-black text-lg text-gray-900 mb-8 uppercase tracking-tighter flex items-center gap-2">
+                <Zap size={18} className="text-blue-500 fill-current" /> Activity Stream
+              </h3>
+              <div className="space-y-8 relative before:absolute before:left-[19px] before:top-2 before:bottom-2 before:w-[1px] before:bg-gray-100">
+                {recentActivities.map((act, i) => (
+                  <div key={i} className="flex gap-4 relative group">
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center z-10 shadow-sm transition-all group-hover:scale-110 border-4 border-white ${act.color.replace('text-', 'bg-').replace('500', '100')} ${act.color}`}>
+                      <act.Icon size={16} />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex justify-between items-center">
+                        <p className="text-xs font-black text-gray-900 uppercase">{act.title}</p>
+                        <span className="text-[9px] font-bold text-gray-400">{new Date(act.time).getHours()}:{new Date(act.time).getMinutes()}</span>
+                      </div>
+                      <p className="text-[10px] text-gray-500 font-medium mt-0.5">{act.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Buyer Reports Section */}
+            <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm">
+              <h3 className="font-black text-lg text-gray-900 mb-6 uppercase tracking-tighter flex items-center gap-2">
+                <AlertTriangle size={18} className="text-orange-500" /> Buyer Reports
+              </h3>
+              <div className="space-y-3">
+                {/* Report Item 1 */}
+                <div className="p-4 rounded-xl border-2 border-yellow-200 bg-yellow-50 hover:shadow-md transition-all group cursor-pointer">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <p className="text-xs font-black text-gray-900 uppercase">Report from john_buyer</p>
+                      </div>
+                      <p className="text-[10px] text-gray-600 font-semibold">Item not received</p>
+                      <p className="text-[9px] text-gray-500 mt-2">Paid for Twitter account but didn't receive login details...</p>
+                    </div>
+                    <div className="flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-bold text-yellow-700 bg-yellow-100 border border-yellow-200">
+                      <Clock size={12} />
+                      <span>Pending</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4 text-[9px] text-gray-500">
+                    <span>📋 Order: #45892731</span>
+                    <span>👤 Role: buyer</span>
+                    <span>📅 01/18/2026</span>
+                  </div>
+                </div>
+
+                {/* Report Item 2 */}
+                <div className="p-4 rounded-xl border-2 border-emerald-200 bg-emerald-50 hover:shadow-md transition-all group cursor-pointer">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <p className="text-xs font-black text-gray-900 uppercase">Report from sarah_m</p>
+                      </div>
+                      <p className="text-[10px] text-gray-600 font-semibold">Account compromised</p>
+                      <p className="text-[9px] text-gray-500 mt-2">Received account but password doesn't work anymore...</p>
+                    </div>
+                    <div className="flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-bold text-emerald-700 bg-emerald-100 border border-emerald-200">
+                      <CheckCircle2 size={12} />
+                      <span>Resolved</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4 text-[9px] text-gray-500">
+                    <span>📋 Order: #45892098</span>
+                    <span>👤 Role: buyer</span>
+                    <span>📅 01/17/2026</span>
+                  </div>
+                </div>
+
+                {/* Report Item 3 */}
+                <div className="p-4 rounded-xl border-2 border-blue-200 bg-blue-50 hover:shadow-md transition-all group cursor-pointer">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <p className="text-xs font-black text-gray-900 uppercase">Report from mike_deal</p>
+                      </div>
+                      <p className="text-[10px] text-gray-600 font-semibold">Wrong item delivered</p>
+                      <p className="text-[9px] text-gray-500 mt-2">Received different email account than what was advertised...</p>
+                    </div>
+                    <div className="flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-bold text-blue-700 bg-blue-100 border border-blue-200">
+                      <CheckCircle2 size={12} />
+                      <span>Refunded</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4 text-[9px] text-gray-500">
+                    <span>📋 Order: #45891654</span>
+                    <span>👤 Role: buyer</span>
+                    <span>📅 01/16/2026</span>
+                  </div>
+                </div>
+
+                {/* View All Button */}
+                <button 
+                  onClick={() => navigate('/reports')}
+                  className="w-full mt-4 text-center py-3 bg-orange-50 hover:bg-orange-100 border border-orange-200 rounded-xl text-[11px] font-black text-orange-600 uppercase tracking-widest transition-all">
+                  View All 8 Reports →
+                </button>
+              </div>
             </div>
           </div>
         </div>

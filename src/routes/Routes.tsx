@@ -23,6 +23,7 @@ import ContactUs from "../components/ContactUs/ContactUs";
 // import path from "path";
 import Mypurchase from "../components/Mypurchase/Mypurchase";
 import Report from "../components/Mypurchase/Report";
+import Reports from "../components/Reports/Reports";
 import Payment from "../components/Payment/Payment";
 import Walet from "../components/Walte/Walet";
 import Buyer from "../dashboard/buyer-dahboard/Buyer";
@@ -137,6 +138,14 @@ const Routes = createBrowserRouter([
         element: (
           <PrivateRoute>
             <Mypurchase />
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "/reports",
+        element: (
+          <PrivateRoute>
+            <Reports />
           </PrivateRoute>
         ),
       },
