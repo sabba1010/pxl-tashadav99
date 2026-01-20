@@ -63,25 +63,6 @@ const NotFound: React.FC = () => {
               Return Home
             </Link>
 
-            {/* <div className="flex gap-3">
-              {quickLinks.map((link, i) => (
-                <motion.div
-                  key={link.to}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.8 + i * 0.1 }}
-                >
-                  <Link
-                    to={link.to}
-                    className="flex flex-col items-center gap-2 p-5 bg-white/80 backdrop-blur-lg rounded-2xl border border-gray-200 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 min-w-32"
-                  >
-                    <link.icon className="w-8 h-8 text-indigo-600" />
-                    <span className="text-sm font-medium text-gray-800">{link.label}</span>
-                    <span className="text-xs text-gray-500">{link.description}</span>
-                  </Link>
-                </motion.div>
-              ))}
-            </div> */}
           </motion.div>
 
           {/* Fun footer note */}

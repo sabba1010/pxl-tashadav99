@@ -63,6 +63,7 @@ import SellerManagement from "../dashboard/admin-dashboard/SellerManagement";
 import MyReport from "../components/Seller/MyReport";
 import DashboardSeller from "../dashboard/buyer-dahboard/dashbordseller";
 import AccountSettings from "../components/Accountsettings";
+import SentNotification from "../dashboard/admin-dashboard/SentNotification";
 
 
 const Routes = createBrowserRouter([
@@ -290,6 +291,9 @@ const Routes = createBrowserRouter([
       {
         path: "ref",
         element:<RefDetails/>,
+      },  {
+        path: "Sent-Notifications",
+        element: <SentNotification />,
       },
       {
         path: "settings",
