@@ -704,13 +704,20 @@ const TotalListings: React.FC = () => {
   }, [listings]);
 
   const filteredListings = useMemo(() => {
-    return listings.filter(
+    const filtered = listings.filter(
       (l) =>
         (l.name.toLowerCase().includes(search.toLowerCase()) ||
           l._id.toLowerCase().includes(search.toLowerCase())) &&
         (selectedUser === "all" || l.userEmail === selectedUser) &&
         (selectedStatus === "all" || l.status.toLowerCase() === selectedStatus)
     );
+
+    // Sort by updatedAt (newest first), then by createdAt
+    return filtered.sort((a: any, b: any) => {
+      const dateA = new Date(a.updatedAt || a.createdAt || 0).getTime();
+      const dateB = new Date(b.updatedAt || b.createdAt || 0).getTime();
+      return dateB - dateA; // Descending order (newest first)
+    });
   }, [listings, search, selectedUser, selectedStatus]);
 
   const paginated = useMemo(() => {
