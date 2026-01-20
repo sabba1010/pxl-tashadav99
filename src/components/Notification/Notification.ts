@@ -1,4 +1,16 @@
 // src/services/notification.ts
+
+// --- Types ---
+export type TargetAudience = "all" | "buyers" | "sellers";
+export type DisplayType = "alert" | "popup";
+
+export type AnnouncementPayload = {
+  title: string;
+  message: string;
+  target: TargetAudience;
+  displayType: DisplayType;
+};
+
 export type NotificationPayload = {
   userId?: string;
   type?: string;
@@ -7,6 +19,7 @@ export type NotificationPayload = {
   data?: Record<string, any>;
 };
 
+// --- Config & Helpers ---
 const API_BASE =
   process.env.REACT_APP_API_URL?.replace(/\/$/, "") ?? "http://localhost:3200";
 
@@ -24,12 +37,10 @@ async function handleRes(res: Response) {
     return parsed;
   } catch (e: any) {
     if (!res.ok) throw new Error(txt || res.statusText);
-    // if json parse failed but status ok, return empty obj
     return {};
   }
 }
 
-/** helper to do fetch with timeout */
 async function fetchWithTimeout(
   input: RequestInfo,
   init?: RequestInit,
@@ -45,44 +56,62 @@ async function fetchWithTimeout(
   }
 }
 
-export async function sendNotification(payload: NotificationPayload) {
-  const url = `${API_BASE}/api/notification/notify`;
+// --- Exported Functions ---
+
+/**
+ * ১. এডমিনের জন্য নতুন এনাউন্সমেন্ট (Buyer/Seller/All) তৈরির ফাংশন
+ */
+export async function createAnnouncement(payload: AnnouncementPayload) {
+  const url = `${API_BASE}/api/notification/announcement`;
   try {
-    const res = await fetchWithTimeout(
-      url,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...getAuthHeaders(),
-        },
-        body: JSON.stringify(payload),
+    const res = await fetchWithTimeout(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...getAuthHeaders(),
       },
-      8000
-    );
+      body: JSON.stringify(payload),
+    });
     return await handleRes(res);
   } catch (err) {
-    // don't throw blindly — bubble up or return null depending on your app needs
-    // Here we rethrow so callers can show UI error/toast if they want:
     throw err;
   }
 }
 
+/**
+ * ২. স্পেসিফিক নোটিফিকেশন পাঠানোর ফাংশন (Admin events)
+ */
+export async function sendNotification(payload: NotificationPayload) {
+  const url = `${API_BASE}/api/notification/notify`;
+  try {
+    const res = await fetchWithTimeout(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...getAuthHeaders(),
+      },
+      body: JSON.stringify(payload),
+    });
+    return await handleRes(res);
+  } catch (err) {
+    throw err;
+  }
+}
+
+/**
+ * ৩. সব নোটিফিকেশন ফেচ করার ফাংশন
+ */
 export async function getAllNotifications(userId?: string) {
   const url = `${API_BASE}/api/notification/getall${
     userId ? "?userId=" + encodeURIComponent(userId) : ""
   }`;
   try {
-    const res = await fetchWithTimeout(
-      url,
-      {
-        headers: {
-          "Content-Type": "application/json",
-          ...getAuthHeaders(),
-        },
+    const res = await fetchWithTimeout(url, {
+      headers: {
+        "Content-Type": "application/json",
+        ...getAuthHeaders(),
       },
-      8000
-    );
+    });
     return await handleRes(res);
   } catch (err) {
     throw err;
