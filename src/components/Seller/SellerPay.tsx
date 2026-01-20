@@ -11,7 +11,7 @@ import { sendNotification } from "../../components/Notification/Notification";
 // Components
 import Loading from "../../components/Loading"; // ✅ আপনার কাস্টম লোডিং কম্পোনেন্ট
 
-const API_URL = "https://vps-backend-server-beta.vercel.app";
+const API_URL = "http://localhost:3200";
 
 const SellerPay = () => {
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
