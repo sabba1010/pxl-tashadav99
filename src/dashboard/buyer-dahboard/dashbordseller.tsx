@@ -18,7 +18,10 @@ import {
   Calendar,
   AlertTriangle,
   Clock,
-  CheckCircle2
+  CheckCircle2,
+  Share2,
+  Gift,
+  Copy
 } from 'lucide-react';
 
 // --- Stat Card Component ---
@@ -75,16 +78,25 @@ const DashboardSeller: React.FC = () => {
     totalReviews: 0
   });
 
+  const [referralData, setReferralData] = useState({
+    referralCode: '',
+    referralLink: '',
+    referredBuyers: 0,
+    referredSellers: 0,
+    referralEarnings: 0
+  });
+
   useEffect(() => {
     if (!user?.email) return;
 
     const fetchData = async () => {
       setLoading(true);
       try {
-        const [prodRes, purchaseRes, ratingsRes] = await Promise.all([
+        const [prodRes, purchaseRes, ratingsRes, referralRes] = await Promise.all([
           axios.get<any[]>("http://localhost:3200/product/all-sells"),
           axios.get<any[]>("http://localhost:3200/purchase/getall", { params: { email: user.email, role: 'seller' } }),
           axios.get<any>(`http://localhost:3200/rating/seller/${user.email}`),
+          axios.get<any>("http://localhost:3200/referral/stats", { params: { email: user.email } }),
         ]);
 
         const myProducts = (prodRes.data || []).filter((p: any) => p.userEmail === user.email);
@@ -128,6 +140,18 @@ const DashboardSeller: React.FC = () => {
 
         setListedAccounts(myProducts);
         setRatings(ratingsData.ratings || []);
+
+        // Set referral data from backend
+        if (referralRes.data?.success && referralRes.data?.data) {
+          const refData = referralRes.data.data;
+          setReferralData({
+            referralCode: refData.referralCode || '',
+            referralLink: refData.referralLink || '',
+            referredBuyers: refData.referredBuyers || 0,
+            referredSellers: refData.referredSellers || 0,
+            referralEarnings: refData.referralEarnings || 0
+          });
+        }
 
         // Get top selling products - show individual products without grouping
         const completedSales = sales.filter(p => {
@@ -680,6 +704,63 @@ const DashboardSeller: React.FC = () => {
                 <h3 className="text-5xl font-black mb-10 text-white italic">${analytics.totalEarned.toFixed(2)}</h3>
                 <button onClick={() => navigate('/withdraw')} className="w-full bg-[#d4a643] hover:bg-white hover:text-black py-4 rounded-2xl text-xs font-black uppercase tracking-[0.1em] transition-all flex items-center justify-center gap-2">
                   <Wallet size={16} /> Withdraw Earnings
+                </button>
+              </div>
+            </div>
+
+            {/* Referral Dashboard Section */}
+            <div className="bg-gradient-to-br from-purple-50 to-blue-50 p-8 rounded-[2.5rem] border border-purple-200 shadow-sm">
+              <h3 className="font-black text-lg text-gray-900 mb-6 uppercase tracking-tighter flex items-center gap-2">
+                <Share2 size={18} className="text-purple-600" /> Referral Dashboard
+              </h3>
+              <div className="space-y-4">
+                {/* Referral Link Card */}
+                <div className="bg-white p-5 rounded-xl border border-purple-100 hover:shadow-md transition-all">
+                  <p className="text-xs font-bold text-purple-600 uppercase tracking-widest mb-2 flex items-center gap-2">
+                    <Gift size={14} /> Your Personal Referral Link
+                  </p>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="text"
+                      value={referralData.referralLink}
+                      readOnly
+                      className="flex-1 px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg text-xs text-gray-600 font-mono"
+                    />
+                    <button 
+                      onClick={() => {
+                        navigator.clipboard.writeText(referralData.referralLink);
+                        alert('Referral link copied to clipboard!');
+                      }}
+                      className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-bold uppercase transition-all flex items-center gap-2"
+                    >
+                      <Copy size={12} /> Copy
+                    </button>
+                  </div>
+                  <p className="text-[9px] text-gray-500 mt-2">Share this link to earn commissions on referrals</p>
+                </div>
+
+                {/* Referral Stats Grid */}
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="bg-white p-4 rounded-xl border border-purple-100 text-center hover:shadow-md transition-all">
+                    <p className="text-2xl font-black text-purple-600">{referralData.referredBuyers}</p>
+                    <p className="text-[9px] text-gray-600 font-bold uppercase mt-1">Referred Buyers</p>
+                  </div>
+                  <div className="bg-white p-4 rounded-xl border border-blue-100 text-center hover:shadow-md transition-all">
+                    <p className="text-2xl font-black text-blue-600">{referralData.referredSellers}</p>
+                    <p className="text-[9px] text-gray-600 font-bold uppercase mt-1">Referred Sellers</p>
+                  </div>
+                  <div className="bg-white p-4 rounded-xl border border-green-100 text-center hover:shadow-md transition-all">
+                    <p className="text-2xl font-black text-green-600">${referralData.referralEarnings.toFixed(2)}</p>
+                    <p className="text-[9px] text-gray-600 font-bold uppercase mt-1">Referral Earnings</p>
+                  </div>
+                </div>
+
+                {/* Referral Button */}
+                <button 
+                  onClick={() => navigate('/referral')}
+                  className="w-full py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2"
+                >
+                  <Share2 size={14} /> View Full Referral Dashboard
                 </button>
               </div>
             </div>
