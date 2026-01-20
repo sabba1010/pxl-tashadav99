@@ -167,7 +167,7 @@ const AllUsers: React.FC = () => {
           </Box>
           <Tabs value={tabValue} onChange={(_, v) => setTabValue(v)} sx={{ mb: 2, borderBottom: 1, borderColor: "#E2E8F0" }}>
             <Tab label="Purchase History" sx={{ fontWeight: 700 }} />
-            <Tab label="Payment Logs" sx={{ fontWeight: 700 }} />
+            <Tab label="Deposit" sx={{ fontWeight: 700 }} />
           </Tabs>
           {isHistoryLoading ? <CircularProgress /> : 
             <TableContainer sx={{ maxHeight: 400 }}>
