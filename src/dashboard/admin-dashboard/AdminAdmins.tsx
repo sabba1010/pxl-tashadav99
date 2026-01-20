@@ -39,7 +39,7 @@ const mainNavItems: NavItem[] = [
     icon: <ListAlt /> 
   },
   { 
-    name: "All Users", 
+    name: "Buyer Account", 
     path: "/admin-dashboard/users", 
     icon: <People /> 
   },
