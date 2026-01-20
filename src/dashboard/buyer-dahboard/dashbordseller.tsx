@@ -92,12 +92,28 @@ const DashboardSeller: React.FC = () => {
           .filter(p => p.status === 'ongoing' || p.status === 'pending')
           .reduce((sum, p) => sum + (Number(p.price) || 0), 0);
 
+        // SUCCESS RATE: Based on successful vs failed transactions
+        // Successful = completed, confirmed, ongoing
+        // Failed = rejected, cancelled, failed
+        const successfulTransactions = sales.filter(p => 
+          p.status === 'completed' || p.status === 'confirmed' || p.status === 'ongoing'
+        ).length;
+
+        const failedTransactions = sales.filter(p => 
+          p.status === 'rejected' || p.status === 'cancelled' || p.status === 'failed'
+        ).length;
+
+        const totalTransactions = successfulTransactions + failedTransactions;
+        const successRate = totalTransactions > 0 
+          ? (successfulTransactions / totalTransactions) * 100 
+          : 0;
+
         setAnalytics(prev => ({
           ...prev,
           totalEarned: earned,
           soldCount: sales.filter(p => p.status === 'completed' || p.status === 'confirmed').length,
           pendingClearance: pending,
-          successRate: myProducts.length > 0 ? (sales.length / myProducts.length) * 100 : 0,
+          successRate: Math.round(successRate * 10) / 10, // Round to 1 decimal place
           avgRating: parseFloat(ratingsData.averageRating) || 0,
           totalReviews: ratingsData.totalReviews || 0
         }));
@@ -454,10 +470,10 @@ const DashboardSeller: React.FC = () => {
             <div className="bg-[#0A1A3A] p-8 rounded-[2.5rem] text-white shadow-2xl relative overflow-hidden group">
                <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-white/5 rounded-full group-hover:scale-150 transition-transform duration-700" />
                <div className="relative">
-                  <div className="flex items-center gap-2 mb-6">
+                  {/* <div className="flex items-center gap-2 mb-6">
                     <Award className="text-amber-400" size={20}/>
                     <span className="text-[10px] font-black uppercase tracking-widest text-white/60">Tier 1 Elite</span>
-                  </div>
+                  </div> */}
                   <p className="text-xs font-bold text-white/40 uppercase tracking-widest">Lifetime Payout</p>
                   <h3 className="text-5xl font-black mb-10 text-white italic">${analytics.totalEarned.toFixed(2)}</h3>
                   <button onClick={() => navigate('/withdraw')} className="w-full bg-[#d4a643] hover:bg-white hover:text-black py-4 rounded-2xl text-xs font-black uppercase tracking-[0.1em] transition-all flex items-center justify-center gap-2">
