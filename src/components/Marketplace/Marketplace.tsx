@@ -256,7 +256,7 @@ const RenderIcon = ({
   size?: number;
   realTime?: boolean;
 }) => {
-const badgeSize = Math.max(34, size + 6); // 🔽 smaller
+  const badgeSize = Math.max(34, size + 6); // 🔽 smaller
 
   let bg = VIBRANT_GRADIENTS[0];
   if (typeof icon !== "string") {
@@ -265,7 +265,7 @@ const badgeSize = Math.max(34, size + 6); // 🔽 smaller
     else
       bg =
         VIBRANT_GRADIENTS[
-          Math.abs(hashCode(icon.toString())) % VIBRANT_GRADIENTS.length
+        Math.abs(hashCode(icon.toString())) % VIBRANT_GRADIENTS.length
         ];
   } else if (!icon.startsWith("http")) {
     bg = VIBRANT_GRADIENTS[Math.abs(hashCode(icon)) % VIBRANT_GRADIENTS.length];
@@ -295,7 +295,7 @@ const badgeSize = Math.max(34, size + 6); // 🔽 smaller
         IconComponent && <IconComponent size={Math.round(size * 0.65)} />
       )}
       {realTime && (
-      <span className="absolute -right-0.5 -bottom-0.5 w-2.5 h-2.5 rounded-full bg-green-500 border-2 border-white" />
+        <span className="absolute -right-0.5 -bottom-0.5 w-2.5 h-2.5 rounded-full bg-green-500 border-2 border-white" />
 
       )}
     </div>
@@ -378,9 +378,8 @@ const CategorySelector: React.FC<{
                 )}
               </div>
               <svg
-                className={`w-4 h-4 transition-transform ${
-                  openMain[main] ? "rotate-180" : ""
-                }`}
+                className={`w-4 h-4 transition-transform ${openMain[main] ? "rotate-180" : ""
+                  }`}
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -449,68 +448,65 @@ const ItemCard: React.FC<{
   isProcessing,
   isAdded,
 }) => {
-  const isList = viewMode === "list";
-  return (
-    <div
-      className={`bg-white rounded-xl shadow-sm border hover:shadow-md transition p-4 ${
-        isList ? "flex items-center gap-4" : "flex flex-col text-center"
-      }`}
-    >
-      <div className={isList ? "" : "flex justify-center mb-3"}>
-      <RenderIcon
-  icon={item.icon}
-  size={isList ? 32 : 44} // 🔽 smaller
-  realTime={item.realTime}
-/>
-
-      </div>
-      <div className="flex-1 min-w-0">
-        <h3 className="font-bold text-sm text-[#0A1A3A] truncate">
-          {item.title}
-        </h3>
-        <p className="text-xs text-gray-600 mt-1 line-clamp-2">
-          {item.desc || "Premium account • Instant delivery"}
-        </p>
-        <div className="text-xs text-gray-400 mt-2">
-          Verified Seller •{" "}
-          <span className="text-green-600">{item.delivery}</span>
-        </div>
-      </div>
+    const isList = viewMode === "list";
+    return (
       <div
-        className={`flex flex-col ${
-          isList ? "items-end text-right" : "mt-4 items-center w-full"
-        }`}
+        className={`bg-white rounded-xl shadow-sm border hover:shadow-md transition p-4 ${isList ? "flex items-center gap-4" : "flex flex-col text-center"
+          }`}
       >
-        <div className="text-base font-bold text-[#0A1A3A] mb-1">
-          ${item.price.toFixed(2)}
+        <div className={isList ? "" : "flex justify-center mb-3"}>
+          <RenderIcon
+            icon={item.icon}
+            size={isList ? 32 : 44} // 🔽 smaller
+            realTime={item.realTime}
+          />
+
         </div>
-        <div className="flex items-center gap-1 w-full justify-center">
-          <button
-            onClick={() => onAddToCart(item)}
-            disabled={isAdded}
-            className={`p-1.5 border rounded-md transition-all duration-200 flex items-center justify-center
-              ${
-                isAdded
+        <div className="flex-1 min-w-0">
+          <h3 className="font-bold text-sm text-[#0A1A3A] truncate">
+            {item.title}
+          </h3>
+          <p className="text-xs text-gray-600 mt-1 line-clamp-2">
+            {item.desc || "Premium account • Instant delivery"}
+          </p>
+          <div className="text-xs text-gray-400 mt-2">
+            Verified Seller •{" "}
+            <span className="text-green-600">{item.delivery}</span>
+          </div>
+        </div>
+        <div
+          className={`flex flex-col ${isList ? "items-end text-right" : "mt-4 items-center w-full"
+            }`}
+        >
+          <div className="text-base font-bold text-[#0A1A3A] mb-1">
+            ${item.price.toFixed(2)}
+          </div>
+          <div className="flex items-center gap-1 w-full justify-center">
+            <button
+              onClick={() => onAddToCart(item)}
+              disabled={isAdded}
+              className={`p-1.5 border rounded-md transition-all duration-200 flex items-center justify-center
+              ${isAdded
                   ? "bg-green-100 text-green-600 border-green-200 cursor-default"
                   : "hover:bg-gray-50 text-gray-600"
-              }`}
-            title={isAdded ? "Already in cart" : "Add to Cart"}
-          >
-            {isAdded ? <CheckIcon size={14} /> : <ShoppingCartIcon size={14} />}
-          </button>
+                }`}
+              title={isAdded ? "Already in cart" : "Add to Cart"}
+            >
+              {isAdded ? <CheckIcon size={14} /> : <ShoppingCartIcon size={14} />}
+            </button>
 
-          <button
-            onClick={() => onView(item)}
-            className="p-1.5 border rounded-md hover:bg-gray-50 text-gray-600 flex items-center justify-center"
-            title="View Details"
-          >
-            <EyeIcon size={14} />
-          </button>
+            <button
+              onClick={() => onView(item)}
+              className="p-1.5 border rounded-md hover:bg-gray-50 text-gray-600 flex items-center justify-center"
+              title="View Details"
+            >
+              <EyeIcon size={14} />
+            </button>
+          </div>
         </div>
       </div>
-    </div>
-  );
-};
+    );
+  };
 
 const ProductModal: React.FC<{
   item: Item;
@@ -596,22 +592,20 @@ const ProductModal: React.FC<{
             <button
               onClick={() => onAddToCart(item)}
               disabled={isAdded}
-              className={`py-3 border border-gray-300 rounded-xl font-semibold transition ${
-                isAdded
+              className={`py-3 border border-gray-300 rounded-xl font-semibold transition ${isAdded
                   ? "bg-green-50 text-green-600 cursor-not-allowed"
                   : "hover:bg-gray-100"
-              }`}
+                }`}
             >
               {isAdded ? "Added to Cart" : "Add to Cart"}
             </button>
             <button
               onClick={() => accepted && onBuy(item)}
               disabled={!accepted || isProcessing}
-              className={`py-3 rounded-xl font-bold text-white transition ${
-                accepted
+              className={`py-3 rounded-xl font-bold text-white transition ${accepted
                   ? "bg-[#33ac6f] hover:bg-[#28965e]"
                   : "bg-gray-300 cursor-not-allowed"
-              }`}
+                }`}
             >
               {isProcessing ? "Processing..." : "Purchase Now"}
             </button>
@@ -860,7 +854,7 @@ const Marketplace: React.FC = () => {
     }
   };
 
-const getPageNumbers = () => {
+  const getPageNumbers = () => {
     // যদি মোট পেজ ৭ বা তার কম হয়, তবে সব নম্বর সরাসরি দেখিয়ে দাও
     if (totalPages <= 7) {
       return Array.from({ length: totalPages }, (_, i) => i + 1);
@@ -1022,11 +1016,10 @@ const getPageNumbers = () => {
               </div>
             ) : (
               <div
-                className={`grid gap-4 ${
-                  viewMode === "grid"
+                className={`grid gap-4 ${viewMode === "grid"
                     ? "grid-cols-1 sm:grid-cols-2 xl:grid-cols-3"
                     : "grid-cols-1"
-                }`}
+                  }`}
               >
                 {paginatedItems.map((item) => (
                   <ItemCard
@@ -1042,74 +1035,73 @@ const getPageNumbers = () => {
               </div>
             )}
 
-           {/* Pagination View */}
-{totalPages > 1 && (
-  <div className="flex justify-center items-center gap-2 mt-10">
-    {/* Prev Button */}
-    <button
-      disabled={currentPage === 1}
-      onClick={() => setCurrentPage((p) => p - 1)}
-      className="w-8 h-8 flex items-center justify-center rounded-md border bg-white disabled:opacity-30 hover:bg-gray-50 transition shadow-sm"
-    >
-      <svg
-        width="14"
-        height="14"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="m15 18-6-6 6-6" />
-      </svg>
-    </button>
+            {/* Pagination View */}
+            {totalPages > 1 && (
+              <div className="flex justify-center items-center gap-2 mt-10">
+                {/* Prev Button */}
+                <button
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage((p) => p - 1)}
+                  className="w-8 h-8 flex items-center justify-center rounded-md border bg-white disabled:opacity-30 hover:bg-gray-50 transition shadow-sm"
+                >
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="m15 18-6-6 6-6" />
+                  </svg>
+                </button>
 
-    {/* Page Numbers */}
-    {getPageNumbers().map((page, idx) =>
-      page === "..." ? (
-        <span
-          key={`dots-${idx}`}
-          className="px-2 text-gray-400 text-xs font-semibold"
-        >
-          ...
-        </span>
-      ) : (
-        <button
-          key={`page-${page}`}
-          onClick={() => setCurrentPage(page as number)}
-          className={`w-8 h-8 rounded-md text-xs font-semibold border transition-all duration-200 shadow-sm ${
-            currentPage === page
-              ? "bg-[#33ac6f] border-[#33ac6f] text-white scale-105 shadow-md"
-              : "bg-white border-gray-200 text-gray-600 hover:bg-gray-50"
-          }`}
-        >
-          {page}
-        </button>
-      )
-    )}
+                {/* Page Numbers */}
+                {getPageNumbers().map((page, idx) =>
+                  page === "..." ? (
+                    <span
+                      key={`dots-${idx}`}
+                      className="px-2 text-gray-400 text-xs font-semibold"
+                    >
+                      ...
+                    </span>
+                  ) : (
+                    <button
+                      key={`page-${page}`}
+                      onClick={() => setCurrentPage(page as number)}
+                      className={`w-8 h-8 rounded-md text-xs font-semibold border transition-all duration-200 shadow-sm ${currentPage === page
+                          ? "bg-[#33ac6f] border-[#33ac6f] text-white scale-105 shadow-md"
+                          : "bg-white border-gray-200 text-gray-600 hover:bg-gray-50"
+                        }`}
+                    >
+                      {page}
+                    </button>
+                  )
+                )}
 
-    {/* Next Button */}
-    <button
-      disabled={currentPage === totalPages}
-      onClick={() => setCurrentPage((p) => p + 1)}
-      className="w-8 h-8 flex items-center justify-center rounded-md border bg-white disabled:opacity-30 hover:bg-gray-50 transition shadow-sm"
-    >
-      <svg
-        width="14"
-        height="14"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="m9 18 6-6-6-6" />
-      </svg>
-    </button>
-  </div>
-)}
+                {/* Next Button */}
+                <button
+                  disabled={currentPage === totalPages}
+                  onClick={() => setCurrentPage((p) => p + 1)}
+                  className="w-8 h-8 flex items-center justify-center rounded-md border bg-white disabled:opacity-30 hover:bg-gray-50 transition shadow-sm"
+                >
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="m9 18 6-6-6-6" />
+                  </svg>
+                </button>
+              </div>
+            )}
 
           </main>
         </div>
@@ -1127,9 +1119,8 @@ const getPageNumbers = () => {
       )}
 
       <div
-        className={`fixed inset-0 z-50 transform transition-transform duration-300 ${
-          drawerOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
+        className={`fixed inset-0 z-50 transform transition-transform duration-300 ${drawerOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
       >
         <div className="absolute inset-0 bg-black/50" onClick={() => setDrawerOpen(false)} />
         <aside className="relative bg-white w-80 h-full overflow-y-auto p-6 shadow-xl">

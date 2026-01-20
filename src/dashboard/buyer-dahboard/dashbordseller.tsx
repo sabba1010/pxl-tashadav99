@@ -55,6 +55,8 @@ const DashboardSeller: React.FC = () => {
   const [listedAccounts, setListedAccounts] = useState<any[]>([]);
   const [recentActivities, setRecentActivities] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
   const [analytics, setAnalytics] = useState({
     totalEarned: 0,
     soldCount: 0,
@@ -114,6 +116,41 @@ const DashboardSeller: React.FC = () => {
 
     fetchData();
   }, [user?.email]);
+
+  const totalPages = Math.max(1, Math.ceil(listedAccounts.length / itemsPerPage));
+
+  const paginatedAccounts = React.useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return listedAccounts.slice(start, start + itemsPerPage);
+  }, [listedAccounts, currentPage]);
+
+  const getPageNumbers = () => {
+    if (totalPages <= 7) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+
+    const pages: (number | string)[] = [];
+    pages.push(1);
+
+    if (currentPage <= 4) {
+      pages.push(2, 3, 4, 5);
+      pages.push("...");
+      pages.push(totalPages);
+    } else if (currentPage >= totalPages - 3) {
+      pages.push("...");
+      for (let i = totalPages - 4; i < totalPages; i++) {
+        pages.push(i);
+      }
+      pages.push(totalPages);
+    } else {
+      pages.push("...");
+      pages.push(currentPage - 1, currentPage, currentPage + 1);
+      pages.push("...");
+      pages.push(totalPages);
+    }
+
+    return pages;
+  };
 
   const totalDeposits = payments.reduce((s, p) => s + (Number(p.amount) || 0), 0);
 
@@ -207,7 +244,27 @@ const DashboardSeller: React.FC = () => {
                      </tr>
                    </thead>
                    <tbody className="divide-y divide-gray-50">
-                     {listedAccounts.slice(0, 5).map((acc) => (
+                     {paginatedAccounts.map((acc) => {
+                       const getStatusColor = (status: string) => {
+                         switch(status?.toLowerCase()) {
+                           case 'active':
+                           case 'approved':
+                             return 'bg-emerald-50 text-emerald-600';
+                           case 'sold':
+                             return 'bg-blue-50 text-blue-600';
+                           case 'pending':
+                             return 'bg-yellow-50 text-yellow-600';
+                           case 'cancelled':
+                           case 'cancel':
+                             return 'bg-orange-50 text-orange-600';
+                           case 'rejected':
+                           case 'reject':
+                             return 'bg-red-50 text-red-600';
+                           default:
+                             return 'bg-gray-50 text-gray-600';
+                         }
+                       };
+                       return (
                        <tr key={acc._id} className="hover:bg-gray-50/50 transition-colors">
                          <td className="px-8 py-6">
                            <p className="text-sm font-bold text-gray-900">{acc.name || acc.category}</p>
@@ -215,15 +272,84 @@ const DashboardSeller: React.FC = () => {
                          </td>
                          <td className="px-8 py-6 text-center font-black text-gray-900 text-sm">${acc.price}</td>
                          <td className="px-8 py-6 text-center">
-                           <span className={`px-4 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest ${acc.status === 'sold' ? 'bg-blue-50 text-blue-600' : 'bg-emerald-50 text-emerald-600'}`}>
+                           <span className={`px-4 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest ${getStatusColor(acc.status)}`}>
                              {acc.status}
                            </span>
                          </td>
                        </tr>
-                     ))}
+                       );
+                     })}
                    </tbody>
                  </table>
                </div>
+
+               {/* Pagination View */}
+               {totalPages > 1 && (
+                 <div className="flex justify-center items-center gap-2 p-8 border-t border-gray-50">
+                   {/* Prev Button */}
+                   <button
+                     disabled={currentPage === 1}
+                     onClick={() => setCurrentPage((p) => p - 1)}
+                     className="w-8 h-8 flex items-center justify-center rounded-md border bg-white disabled:opacity-30 hover:bg-gray-50 transition shadow-sm"
+                   >
+                     <svg
+                       width="14"
+                       height="14"
+                       viewBox="0 0 24 24"
+                       fill="none"
+                       stroke="currentColor"
+                       strokeWidth="2"
+                       strokeLinecap="round"
+                       strokeLinejoin="round"
+                     >
+                       <path d="m15 18-6-6 6-6" />
+                     </svg>
+                   </button>
+
+                   {/* Page Numbers */}
+                   {getPageNumbers().map((page, idx) =>
+                     page === "..." ? (
+                       <span
+                         key={`dots-${idx}`}
+                         className="px-2 text-gray-400 text-xs font-semibold"
+                       >
+                         ...
+                       </span>
+                     ) : (
+                       <button
+                         key={`page-${page}`}
+                         onClick={() => setCurrentPage(page as number)}
+                         className={`w-8 h-8 rounded-md text-xs font-semibold border transition-all duration-200 shadow-sm ${currentPage === page
+                             ? "bg-[#d4a643] border-[#d4a643] text-white scale-105 shadow-md"
+                             : "bg-white border-gray-200 text-gray-600 hover:bg-gray-50"
+                           }`}
+                       >
+                         {page}
+                       </button>
+                     )
+                   )}
+
+                   {/* Next Button */}
+                   <button
+                     disabled={currentPage === totalPages}
+                     onClick={() => setCurrentPage((p) => p + 1)}
+                     className="w-8 h-8 flex items-center justify-center rounded-md border bg-white disabled:opacity-30 hover:bg-gray-50 transition shadow-sm"
+                   >
+                     <svg
+                       width="14"
+                       height="14"
+                       viewBox="0 0 24 24"
+                       fill="none"
+                       stroke="currentColor"
+                       strokeWidth="2"
+                       strokeLinecap="round"
+                       strokeLinejoin="round"
+                     >
+                       <path d="m9 18 6-6-6-6" />
+                     </svg>
+                   </button>
+                 </div>
+               )}
             </div>
         </div>
 
