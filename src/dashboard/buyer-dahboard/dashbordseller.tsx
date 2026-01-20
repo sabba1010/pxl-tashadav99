@@ -61,6 +61,7 @@ const DashboardSeller: React.FC = () => {
   const [listedAccounts, setListedAccounts] = useState<any[]>([]);
   const [recentActivities, setRecentActivities] = useState<any[]>([]);
   const [ratings, setRatings] = useState<any[]>([]);
+  const [reports, setReports] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [ratingsPage, setRatingsPage] = useState(1);
@@ -245,6 +246,29 @@ const DashboardSeller: React.FC = () => {
       return () => clearInterval(interval);
     }
   }, [user?.email, userData?.role]);
+
+  // Fetch Reports data
+  useEffect(() => {
+    const fetchReports = async () => {
+      try {
+        const res = await axios.get("http://localhost:3200/purchase/report/getall");
+        
+        if (res.data && Array.isArray(res.data)) {
+          // Filter reports for this user if needed (by email or role as seller)
+          const userReports = res.data.filter((report: any) => 
+            report.sellerEmail === user?.email || report.reportedToEmail === user?.email
+          );
+          setReports(userReports);
+        }
+      } catch (err) {
+        console.error("Failed to fetch reports:", err);
+      }
+    };
+
+    if (user?.email) {
+      fetchReports();
+    }
+  }, [user?.email]);
 
   const totalPages = Math.max(1, Math.ceil(listedAccounts.length / itemsPerPage));
   const totalRatingsPages = Math.max(1, Math.ceil(ratings.length / ratingsPerPage));
@@ -831,78 +855,88 @@ const DashboardSeller: React.FC = () => {
                 <AlertTriangle size={18} className="text-orange-500" />Reports
               </h3>
               <div className="space-y-3">
-                {/* Report Item 1 */}
-                <div className="p-4 rounded-xl border-2 border-yellow-200 bg-yellow-50 hover:shadow-md transition-all group cursor-pointer">
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <p className="text-xs font-black text-gray-900 uppercase">Report from john_buyer</p>
-                      </div>
-                      <p className="text-[10px] text-gray-600 font-semibold">Item not received</p>
-                      <p className="text-[9px] text-gray-500 mt-2">Paid for Twitter account but didn't receive login details...</p>
-                    </div>
-                    <div className="flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-bold text-yellow-700 bg-yellow-100 border border-yellow-200">
-                      <Clock size={12} />
-                      <span>Pending</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4 text-[9px] text-gray-500">
-                    <span>📋 Order: #45892731</span>
-                    <span>👤 Role: buyer</span>
-                    <span>📅 01/18/2026</span>
-                  </div>
-                </div>
+                {reports.length > 0 ? (
+                  <>
+                    {reports.slice(0, 3).map((report: any, idx: number) => {
+                      const getStatusColor = (status: string) => {
+                        const lowerStatus = status?.toLowerCase();
+                        switch (lowerStatus) {
+                          case 'pending':
+                          case 'open':
+                            return {
+                              border: 'border-yellow-200',
+                              bg: 'bg-yellow-50',
+                              badge: 'bg-yellow-100 text-yellow-700 border-yellow-200',
+                              icon: Clock
+                            };
+                          case 'resolved':
+                          case 'resolved':
+                            return {
+                              border: 'border-emerald-200',
+                              bg: 'bg-emerald-50',
+                              badge: 'bg-emerald-100 text-emerald-700 border-emerald-200',
+                              icon: CheckCircle2
+                            };
+                          case 'refunded':
+                            return {
+                              border: 'border-blue-200',
+                              bg: 'bg-blue-50',
+                              badge: 'bg-blue-100 text-blue-700 border-blue-200',
+                              icon: CheckCircle2
+                            };
+                          default:
+                            return {
+                              border: 'border-gray-200',
+                              bg: 'bg-gray-50',
+                              badge: 'bg-gray-100 text-gray-700 border-gray-200',
+                              icon: AlertTriangle
+                            };
+                        }
+                      };
 
-                {/* Report Item 2 */}
-                <div className="p-4 rounded-xl border-2 border-emerald-200 bg-emerald-50 hover:shadow-md transition-all group cursor-pointer">
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <p className="text-xs font-black text-gray-900 uppercase">Report from sarah_m</p>
-                      </div>
-                      <p className="text-[10px] text-gray-600 font-semibold">Account compromised</p>
-                      <p className="text-[9px] text-gray-500 mt-2">Received account but password doesn't work anymore...</p>
-                    </div>
-                    <div className="flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-bold text-emerald-700 bg-emerald-100 border border-emerald-200">
-                      <CheckCircle2 size={12} />
-                      <span>Resolved</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4 text-[9px] text-gray-500">
-                    <span>📋 Order: #45892098</span>
-                    <span>👤 Role: buyer</span>
-                    <span>📅 01/17/2026</span>
-                  </div>
-                </div>
+                      const statusColor = getStatusColor(report.status);
+                      const StatusIcon = statusColor.icon;
+                      const reporterEmail = report.reportedByEmail || report.buyerEmail || 'Unknown';
+                      const reporterName = reporterEmail.split('@')[0];
 
-                {/* Report Item 3 */}
-                <div className="p-4 rounded-xl border-2 border-blue-200 bg-blue-50 hover:shadow-md transition-all group cursor-pointer">
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <p className="text-xs font-black text-gray-900 uppercase">Report from mike_deal</p>
-                      </div>
-                      <p className="text-[10px] text-gray-600 font-semibold">Wrong item delivered</p>
-                      <p className="text-[9px] text-gray-500 mt-2">Received different email account than what was advertised...</p>
-                    </div>
-                    <div className="flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-bold text-blue-700 bg-blue-100 border border-blue-200">
-                      <CheckCircle2 size={12} />
-                      <span>Refunded</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4 text-[9px] text-gray-500">
-                    <span>📋 Order: #45891654</span>
-                    <span>👤 Role: buyer</span>
-                    <span>📅 01/16/2026</span>
-                  </div>
-                </div>
+                      return (
+                        <div key={idx} className={`p-4 rounded-xl border-2 ${statusColor.border} ${statusColor.bg} hover:shadow-md transition-all group cursor-pointer`}>
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-1">
+                                <p className="text-xs font-black text-gray-900 uppercase">Report from {reporterName}</p>
+                              </div>
+                              <p className="text-[10px] text-gray-600 font-semibold">{report.reason || report.type || 'Report'}</p>
+                              <p className="text-[9px] text-gray-500 mt-2">{(report.description || report.message || 'No description provided').substring(0, 80)}...</p>
+                            </div>
+                            <div className={`flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-bold ${statusColor.badge} border`}>
+                              <StatusIcon size={12} />
+                              <span>{report.status || 'Unknown'}</span>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-4 text-[9px] text-gray-500">
+                            <span>📋 Order: #{report.orderId || report._id?.slice(-8).toUpperCase() || 'N/A'}</span>
+                            <span>👤 Role: {report.role || 'buyer'}</span>
+                            <span>📅 {report.createdAt ? new Date(report.createdAt).toLocaleDateString() : 'N/A'}</span>
+                          </div>
+                        </div>
+                      );
+                    })}
 
-                {/* View All Button */}
-                <button 
-                  onClick={() => navigate('/reports')}
-                  className="w-full mt-4 text-center py-3 bg-orange-50 hover:bg-orange-100 border border-orange-200 rounded-xl text-[11px] font-black text-orange-600 uppercase tracking-widest transition-all">
-                  View All 8 Reports →
-                </button>
+                    {/* View All Button */}
+                    <button 
+                      onClick={() => navigate('/reports')}
+                      className="w-full mt-4 text-center py-3 bg-orange-50 hover:bg-orange-100 border border-orange-200 rounded-xl text-[11px] font-black text-orange-600 uppercase tracking-widest transition-all">
+                      View All {reports.length} Reports →
+                    </button>
+                  </>
+                ) : (
+                  <div className="text-center py-8">
+                    <AlertTriangle size={40} className="mx-auto text-gray-200 mb-3" />
+                    <p className="text-gray-400 font-bold">No reports yet</p>
+                    <p className="text-xs text-gray-300 mt-2">You have no customer reports or disputes at this time.</p>
+                  </div>
+                )}
               </div>
             </div>
 
