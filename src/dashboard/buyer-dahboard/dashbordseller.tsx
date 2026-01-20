@@ -709,7 +709,7 @@ const DashboardSeller: React.FC = () => {
             {/* Buyer Reports Section */}
             <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm">
               <h3 className="font-black text-lg text-gray-900 mb-6 uppercase tracking-tighter flex items-center gap-2">
-                <AlertTriangle size={18} className="text-orange-500" /> Buyer Reports
+                <AlertTriangle size={18} className="text-orange-500" />Reports
               </h3>
               <div className="space-y-3">
                 {/* Report Item 1 */}
