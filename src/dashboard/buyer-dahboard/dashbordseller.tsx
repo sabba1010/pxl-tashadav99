@@ -207,7 +207,27 @@ const DashboardSeller: React.FC = () => {
                      </tr>
                    </thead>
                    <tbody className="divide-y divide-gray-50">
-                     {listedAccounts.slice(0, 5).map((acc) => (
+                     {listedAccounts.map((acc) => {
+                       const getStatusColor = (status: string) => {
+                         switch(status?.toLowerCase()) {
+                           case 'active':
+                           case 'approved':
+                             return 'bg-emerald-50 text-emerald-600';
+                           case 'sold':
+                             return 'bg-blue-50 text-blue-600';
+                           case 'pending':
+                             return 'bg-yellow-50 text-yellow-600';
+                           case 'cancelled':
+                           case 'cancel':
+                             return 'bg-orange-50 text-orange-600';
+                           case 'rejected':
+                           case 'reject':
+                             return 'bg-red-50 text-red-600';
+                           default:
+                             return 'bg-gray-50 text-gray-600';
+                         }
+                       };
+                       return (
                        <tr key={acc._id} className="hover:bg-gray-50/50 transition-colors">
                          <td className="px-8 py-6">
                            <p className="text-sm font-bold text-gray-900">{acc.name || acc.category}</p>
@@ -215,12 +235,13 @@ const DashboardSeller: React.FC = () => {
                          </td>
                          <td className="px-8 py-6 text-center font-black text-gray-900 text-sm">${acc.price}</td>
                          <td className="px-8 py-6 text-center">
-                           <span className={`px-4 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest ${acc.status === 'sold' ? 'bg-blue-50 text-blue-600' : 'bg-emerald-50 text-emerald-600'}`}>
+                           <span className={`px-4 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest ${getStatusColor(acc.status)}`}>
                              {acc.status}
                            </span>
                          </td>
                        </tr>
-                     ))}
+                       );
+                     })}
                    </tbody>
                  </table>
                </div>
