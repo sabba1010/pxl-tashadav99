@@ -1,5 +1,8 @@
-import React, { useState } from 'react';
-import { Camera, Eye, EyeOff, Calendar, User, Lock, Bell } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Eye, Calendar, User, Lock, Bell } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { useAuthHook } from '../hook/useAuthHook';
+import { getAllNotifications } from './Notification/Notification';
 
 const AccountSettings = () => {
   const [activeTab, setActiveTab] = useState('profile');
@@ -101,7 +104,7 @@ const ProfileSection = () => (
     </div>
 
     {/* Avatar */}
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 md:p-8">
+    {/* <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 md:p-8">
       <h2 className="text-xl font-semibold text-gray-900 mb-1">Avatar</h2>
       <p className="text-sm text-gray-500 mb-6">Select a nice picture of yourself.</p>
 
@@ -126,7 +129,7 @@ const ProfileSection = () => (
           </div>
         </div>
       </div>
-    </div>
+    </div> */}
 
     {/* Additional Information */}
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 md:p-8">
@@ -270,42 +273,169 @@ const SecuritySection = () => (
 );
 
 const NotificationsSection = () => {
-  const options = [
-    { title: 'Add Account Email Notification', desc: 'Get notified when a new account is added to the platform' },
-    { title: 'Messages SMS Notification', desc: 'Get notified when you get new messages' },
-    { title: 'Messages Email Notification', desc: 'Get notified when you get new messages' },
-    { title: 'Review Email Notification', desc: 'Be notified when your account gets approved' },
-  ];
+  const { user } = useAuth();
+  const { data: userData } = useAuthHook();
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const fetchNotifications = useCallback(async () => {
+    try {
+      const res = await getAllNotifications();
+      const userRole = userData?.role;
+
+      const myNotifs = Array.isArray(res)
+        ? res.filter((n: any) => {
+            const isDirect = n.userEmail === user?.email;
+            const isAll = n.target === "all";
+            const isRoleMatch = userRole && n.target === `${userRole}s`;
+            return isDirect || isAll || isRoleMatch;
+          })
+        : [];
+
+      const sortedNotifs = myNotifs.sort(
+        (a: any, b: any) =>
+          new Date(b.createdAt || 0).getTime() -
+          new Date(a.createdAt || 0).getTime()
+      );
+
+      setNotifications(sortedNotifs);
+    } catch (err) {
+      console.error("Failed to fetch notifications:", err);
+    }
+  }, [user?.email, userData?.role]);
+
+  useEffect(() => {
+    const loadNotifications = async () => {
+      setLoading(true);
+      await fetchNotifications();
+      setLoading(false);
+    };
+
+    if (user?.email) {
+      loadNotifications();
+      const interval = setInterval(async () => {
+        await fetchNotifications();
+      }, 8000);
+      return () => clearInterval(interval);
+    }
+  }, [user?.email, userData?.role, fetchNotifications]);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await fetchNotifications();
+    setRefreshing(false);
+  };
+
+  if (loading) {
+    return (
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 md:p-8">
+        <h2 className="text-xl font-semibold text-gray-900 mb-1">Notifications</h2>
+        <p className="text-sm text-gray-500 mb-6">
+          Get notified on activities within Acctbazaar
+        </p>
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-orange-500"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 md:p-8">
-      <h2 className="text-xl font-semibold text-gray-900 mb-1">Notifications</h2>
-      <p className="text-sm text-gray-500 mb-6">
-        Get notified on activities within Acctbazaar
-      </p>
-
-      <div className="space-y-6">
-        {options.map((opt, idx) => (
-          <label key={idx} className="flex items-start gap-4 cursor-pointer group">
-            <input
-              type="checkbox"
-              className="mt-1.5 w-5 h-5 rounded border-gray-300 text-orange-500 focus:ring-orange-500"
-            />
-            <div>
-              <p className="font-medium text-gray-800 group-hover:text-orange-700 transition-colors">
-                {opt.title}
-              </p>
-              <p className="text-sm text-gray-500">{opt.desc}</p>
-            </div>
-          </label>
-        ))}
-
-        <div className="flex justify-end pt-4">
-          <button className="bg-orange-500 text-white px-8 py-3 rounded-lg font-semibold hover:bg-orange-600 transition shadow-sm">
-            Save Preferences
-          </button>
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-1">Notifications</h2>
+          <p className="text-sm text-gray-500">
+            Get notified on activities within Acctbazaar
+          </p>
         </div>
+        <button
+          onClick={handleRefresh}
+          disabled={refreshing}
+          className={`px-4 py-2 rounded-lg font-semibold transition flex items-center gap-2 ${
+            refreshing
+              ? 'bg-gray-200 text-gray-600 cursor-not-allowed'
+              : 'bg-orange-500 hover:bg-orange-600 text-white'
+          }`}
+        >
+          <svg
+            className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+            />
+          </svg>
+          {refreshing ? 'Refreshing...' : 'Refresh'}
+        </button>
       </div>
+
+      {notifications.length > 0 ? (
+        <div className="space-y-3 max-h-[600px] overflow-y-auto pr-3">
+          {notifications.map((notification, idx) => (
+            <div
+              key={notification._id || idx}
+              className={`p-5 rounded-xl border-l-4 hover:shadow-lg transition-all ${
+                notification.read
+                  ? 'bg-gray-50 border-l-gray-300'
+                  : 'bg-blue-50 border-l-blue-600'
+              }`}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-2">
+                    <p className="text-sm font-semibold text-gray-900">{notification.title}</p>
+                    {!notification.read && (
+                      <span className="inline-block w-2 h-2 rounded-full bg-blue-600"></span>
+                    )}
+                  </div>
+                  <p className="text-sm text-gray-700 mb-3 leading-relaxed">
+                    {notification.message || notification.description || 'No description'}
+                  </p>
+                  <p className="text-[12px] text-gray-500 font-medium">
+                    {notification.createdAt
+                      ? new Date(notification.createdAt).toLocaleString()
+                      : 'Date not available'}
+                  </p>
+                </div>
+                {notification.type && (
+                  <span
+                    className="px-3 py-1 rounded-full text-[11px] font-bold uppercase whitespace-nowrap"
+                    style={{
+                      backgroundColor:
+                        notification.type === 'warning'
+                          ? '#FEF3C7'
+                          : notification.type === 'alert'
+                          ? '#FEE2E2'
+                          : '#DBEAFE',
+                      color:
+                        notification.type === 'warning'
+                          ? '#92400E'
+                          : notification.type === 'alert'
+                          ? '#991B1B'
+                          : '#1E40AF',
+                    }}
+                  >
+                    {notification.type}
+                  </span>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-16">
+          <Bell size={48} className="mx-auto text-gray-200 mb-4" />
+          <p className="text-gray-400 font-semibold">No notifications</p>
+          <p className="text-sm text-gray-300 mt-2">You're all set! No new notifications at this time.</p>
+        </div>
+      )}
     </div>
   );
 };
