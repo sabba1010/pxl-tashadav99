@@ -11,7 +11,8 @@ import {
   Person,
   Star,
   Diversity3,
-  ManageAccounts, // Seller Management এর জন্য পারফেক্ট আইকন
+  ManageAccounts,
+  NotificationsActive, // নোটিফিকেশনের জন্য আইকন যোগ করা হলো
 } from "@mui/icons-material";
 import { Box } from "@mui/material";
 import React, { useState } from "react";
@@ -26,7 +27,6 @@ interface NavItem {
   icon: React.ReactNode;
 }
 
-// আপনার চাহিদা অনুযায়ী লজিক্যাল সিরিয়ালে সাজানো হয়েছে
 const mainNavItems: NavItem[] = [
   { 
     name: "Dashboard Overview", 
@@ -43,11 +43,6 @@ const mainNavItems: NavItem[] = [
     path: "/admin-dashboard/users", 
     icon: <People /> 
   },
-  // {
-  //   name: "Seller Management", 
-  //   path: "/admin-dashboard/seller-management",
-  //   icon: <ManageAccounts />, 
-  // },
   {
     name: "Seller Account",
     path: "/admin-dashboard/seller-accounts",
@@ -78,6 +73,12 @@ const mainNavItems: NavItem[] = [
     path: "/admin-dashboard/ref",
     icon: <Diversity3 />,
   },
+  // --- Sent Notifications Route Added Below ---
+  {
+    name: "Sent Notifications",
+    path: "/admin-dashboard/sent-notifications",
+    icon: <NotificationsActive />,
+  },
   {
     name: "Account Rate",
     path: "/admin-dashboard/settings",
@@ -87,9 +88,6 @@ const mainNavItems: NavItem[] = [
 
 const AdminAdmins: React.FC = () => {
   const location = useLocation();
-  // Always hide the right-hand AdminSettings aside.
-  // The settings page (`/admin-dashboard/settings`) already renders `AdminSettings`
-  // inside the main Outlet, so rendering it in the aside causes duplicates.
   const showSettingsAside = false;
   const [collapsed, setCollapsed] = useState(false);
   const user = useAuth();
@@ -97,7 +95,7 @@ const AdminAdmins: React.FC = () => {
   const navigate = useNavigate();
 
   const handelLogout = () => {
-    // @ts-ignore (যদি AuthContext এ টাইপ ইস্যু থাকে)
+    // @ts-ignore
     if (user && typeof user.logout === 'function') {
         user.logout();
     }
