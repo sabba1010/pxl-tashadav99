@@ -6,6 +6,7 @@ import {
   AlertCircle,
   Filter,
   RefreshCw,
+  X,
 } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -49,6 +50,16 @@ const MyAds: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>("All");
   const [items, setItems] = useState<Ad[]>([]);
   const [loading, setLoading] = useState(true);
+  const [editingAd, setEditingAd] = useState<Ad | null>(null);
+  const [editFormData, setEditFormData] = useState<Partial<Ad>>({
+    username: "",
+    accountPass: "",
+    email: "",
+    password: "",
+    previewLink: "",
+    additionalInfo: "",
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
@@ -158,6 +169,65 @@ const MyAds: React.FC = () => {
       prev.map((it) => (it._id === id ? { ...it, status: "active" } : it))
     );
     toast.success("Ad restored to Active");
+  };
+
+  const handleEditDenied = (ad: Ad) => {
+    setEditingAd(ad);
+    setEditFormData({
+      username: ad.username,
+      accountPass: ad.accountPass,
+      email: ad.email,
+      password: ad.password,
+      previewLink: ad.previewLink,
+      additionalInfo: ad.additionalInfo,
+    });
+  };
+
+  const handleResubmit = async () => {
+    if (!editingAd) return;
+
+    // Validate required fields
+    if (!editFormData.username?.trim() || !editFormData.accountPass?.trim() || 
+        !editFormData.email?.trim() || !editFormData.password?.trim() ||
+        !editFormData.previewLink?.trim()) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const updateData = {
+        username: editFormData.username || "",
+        accountPass: editFormData.accountPass || "",
+        email: editFormData.email || "",
+        password: editFormData.password || "",
+        previewLink: editFormData.previewLink || "",
+        additionalInfo: editFormData.additionalInfo || "",
+        status: "pending",
+      };
+
+      await axios.patch(
+        `http://localhost:3200/product/update/${editingAd._id}`,
+        updateData
+      );
+
+      // Update local items
+      setItems((prev) =>
+        prev.map((it) =>
+          it._id === editingAd._id
+            ? { ...it, ...updateData }
+            : it
+        )
+      );
+
+      toast.success("Ad resubmitted successfully. Awaiting admin review.");
+      setEditingAd(null);
+      setEditFormData({});
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || "Failed to resubmit ad");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // const handleEdit = (id: string) => navigate(`/edit-product/${id}`);
@@ -303,12 +373,15 @@ const MyAds: React.FC = () => {
                             <RefreshCw size={14} />
                           </button>
                         )}
-                        {/* <button
-                          onClick={() => handleEdit(item._id)}
-                          className="p-1.5 sm:p-2 border rounded-lg hover:bg-gray-50 text-gray-600 transition"
-                        >
-                          <Edit size={14} />
-                        </button> */}
+                        {(statusOf(item.status) === "denied" || statusOf(item.status) === "reject") && (
+                          <button
+                            onClick={() => handleEditDenied(item)}
+                            className="p-1.5 sm:p-2 border rounded-lg hover:bg-blue-50 text-blue-600 transition"
+                            title="Edit and resubmit"
+                          >
+                            <Edit size={14} />
+                          </button>
+                        )}
                         <button
                           onClick={() => handleDelete(item._id)}
                           className="p-1.5 sm:p-2 border rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-600 transition"
@@ -383,6 +456,153 @@ const MyAds: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Edit Modal for Denied Ads */}
+      {editingAd && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-xl">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-6 border-b sticky top-0 bg-white">
+              <h2 className="text-xl sm:text-2xl font-bold text-[#0A1A3A]">
+                Edit & Resubmit Denied Ad
+              </h2>
+              <button
+                onClick={() => setEditingAd(null)}
+                className="p-1 hover:bg-gray-100 rounded-lg transition"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6 space-y-5">
+              {editingAd.rejectReason && (
+                <div className="p-4 bg-rose-50 border border-rose-200 rounded-lg">
+                  <p className="text-sm font-bold text-rose-800 mb-2">Rejection Reason:</p>
+                  <p className="text-sm text-rose-700">{editingAd.rejectReason}</p>
+                </div>
+              )}
+
+              {/* Form Fields */}
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">
+                    Username *
+                  </label>
+                  <input
+                    type="text"
+                    value={editFormData.username || ""}
+                    onChange={(e) =>
+                      setEditFormData({ ...editFormData, username: e.target.value })
+                    }
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                    placeholder="Enter username"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">
+                    Account Password *
+                  </label>
+                  <input
+                    type="password"
+                    value={editFormData.accountPass || ""}
+                    onChange={(e) =>
+                      setEditFormData({ ...editFormData, accountPass: e.target.value })
+                    }
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                    placeholder="Enter account password"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">
+                    Recovery Email *
+                  </label>
+                  <input
+                    type="email"
+                    value={editFormData.email || ""}
+                    onChange={(e) =>
+                      setEditFormData({ ...editFormData, email: e.target.value })
+                    }
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                    placeholder="Enter recovery email"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">
+                    Recovery Email Password *
+                  </label>
+                  <input
+                    type="password"
+                    value={editFormData.password || ""}
+                    onChange={(e) =>
+                      setEditFormData({ ...editFormData, password: e.target.value })
+                    }
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                    placeholder="Enter recovery email password"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">
+                    Profile Preview Link *
+                  </label>
+                  <input
+                    type="url"
+                    value={editFormData.previewLink || ""}
+                    onChange={(e) =>
+                      setEditFormData({ ...editFormData, previewLink: e.target.value })
+                    }
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                    placeholder="Enter profile preview link"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">
+                    Additional Note
+                  </label>
+                  <textarea
+                    value={editFormData.additionalInfo || ""}
+                    onChange={(e) =>
+                      setEditFormData({ ...editFormData, additionalInfo: e.target.value })
+                    }
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition resize-none"
+                    placeholder="Add any additional information..."
+                    rows={3}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="flex gap-3 p-6 border-t bg-gray-50 justify-end">
+              <button
+                onClick={() => setEditingAd(null)}
+                className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 font-semibold hover:bg-gray-100 transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleResubmit}
+                disabled={isSubmitting}
+                className="px-6 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed transition flex items-center gap-2"
+              >
+                {isSubmitting ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  "Resubmit"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
