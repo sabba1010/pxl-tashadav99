@@ -8,7 +8,7 @@ import {
 import { 
   Refresh, Close, TrendingUp, ShoppingBag, 
   MonetizationOn, HourglassEmpty, ErrorOutline, Info, Phone, Email, Event, 
-  WorkspacePremium, Speed, Star, Person
+  WorkspacePremium, Speed, Star, Person, AccountBalanceWallet
 } from "@mui/icons-material";
 import { toast } from "sonner";
 
@@ -20,7 +20,7 @@ interface Seller {
   phone: string;
   role: string;
   status?: string;
-  balance?: number;
+  balance?: number; // সেলারের ব্যালেন্স
   countryCode?: string;
   accountCreationDate?: string;
   subscribedPlan?: string; 
@@ -35,7 +35,6 @@ interface ProductRecord {
   userEmail: string;
 }
 
-// নতুন রিভিউ টাইপ
 interface ReviewRecord {
   _id: string;
   userEmail: string; 
@@ -52,7 +51,7 @@ const SellerAccount: React.FC = () => {
   
   const [selectedSeller, setSelectedSeller] = useState<Seller | null>(null);
   const [sellerProducts, setSellerProducts] = useState<ProductRecord[]>([]);
-  const [sellerReviews, setSellerReviews] = useState<ReviewRecord[]>([]); // রিভিউ স্টেট
+  const [sellerReviews, setSellerReviews] = useState<ReviewRecord[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   
   const [openPerformanceModal, setOpenPerformanceModal] = useState(false);
@@ -76,39 +75,27 @@ const SellerAccount: React.FC = () => {
     }
   };
 
-  // রিভিউ ফেচ করার জন্য হ্যান্ডলার
   const handleOpenDetails = async (seller: Seller) => {
     setSelectedSeller(seller);
     setOpenDetailsModal(true);
     setHistoryLoading(true);
-    setSellerReviews([]);
-
     try {
-      // আপনার দেওয়া রিভিউ এন্ডপয়েন্ট
       const res = await axios.get(`${API_BASE_URL}/rating/seller/${seller.email}`);
       setSellerReviews(Array.isArray(res.data) ? res.data : []);
-    } catch (err) {
-      console.error("Error loading reviews", err);
-    } finally {
-      setHistoryLoading(false);
-    }
+    } catch (err) { console.error(err); }
+    finally { setHistoryLoading(false); }
   };
 
   const handleViewPerformance = async (seller: Seller) => {
     setSelectedSeller(seller);
     setOpenPerformanceModal(true);
     setHistoryLoading(true);
-    setSellerProducts([]); 
-
     try {
       const res = await axios.get<ProductRecord[]>(`${API_BASE_URL}/product/all-sells`);
       const filteredAds = res.data.filter((ad) => ad.userEmail === seller.email);
       setSellerProducts(filteredAds);
-    } catch (err) {
-      toast.error("Failed to load products");
-    } finally {
-      setHistoryLoading(false);
-    }
+    } catch (err) { toast.error("Failed to load products"); }
+    finally { setHistoryLoading(false); }
   };
 
   useEffect(() => { fetchSellers(); }, []);
@@ -116,8 +103,6 @@ const SellerAccount: React.FC = () => {
   const stats = useMemo(() => {
     const approvedList = sellerProducts.filter(p => p.status === 'approved' || p.status === 'active');
     const total = sellerProducts.length;
-    
-    // এভারেজ রেটিং ক্যালকুলেশন
     const avgRating = sellerReviews.length > 0 
       ? sellerReviews.reduce((acc, curr) => acc + curr.rating, 0) / sellerReviews.length 
       : 0;
@@ -158,9 +143,11 @@ const SellerAccount: React.FC = () => {
         <Table>
           <TableHead sx={{ bgcolor: "#F8FAFC" }}>
             <TableRow>
-              {["Seller Info", "Active Plan", "Balance", "Performance", "Details"].map(h => (
-                <TableCell key={h} sx={{ fontWeight: 700, fontSize: "12px", color: "#64748B" }}>{h}</TableCell>
-              ))}
+              <TableCell sx={{ fontWeight: 700, fontSize: "12px", color: "#64748B" }}>Seller Info</TableCell>
+              <TableCell sx={{ fontWeight: 700, fontSize: "12px", color: "#64748B" }}>Active Plan</TableCell>
+              <TableCell sx={{ fontWeight: 700, fontSize: "12px", color: "#64748B" }}>Available Balance</TableCell>
+              <TableCell sx={{ fontWeight: 700, fontSize: "12px", color: "#64748B" }}>Performance</TableCell>
+              <TableCell sx={{ fontWeight: 700, fontSize: "12px", color: "#64748B" }}>Details</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -179,7 +166,12 @@ const SellerAccount: React.FC = () => {
                   <TableCell>
                     <Chip label={seller.subscribedPlan || "BASIC"} size="small" sx={{ fontWeight: 800, bgcolor: '#F1F5F9', fontSize: '10px' }} />
                   </TableCell>
-                  <TableCell sx={{ fontWeight: 800 }}>${(seller.balance || 0).toFixed(2)}</TableCell>
+                  {/* Table Balance Highlighting */}
+                  <TableCell>
+                    <Typography variant="body2" fontWeight={900} color="#10B981">
+                      ${(seller.balance || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                    </Typography>
+                  </TableCell>
                   <TableCell>
                     <IconButton onClick={() => handleViewPerformance(seller)} color="primary"><TrendingUp /></IconButton>
                   </TableCell>
@@ -193,93 +185,82 @@ const SellerAccount: React.FC = () => {
         </Table>
       </TableContainer>
 
-      {/* --- Seller Details & Real Rating Modal --- */}
+      {/* --- Details Modal with Balance Section --- */}
       <Modal open={openDetailsModal} onClose={() => setOpenDetailsModal(false)}>
-        <Box sx={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", width: 500, bgcolor: "#fff", borderRadius: 4, p: 4, outline: 'none', boxShadow: 24 }}>
+        <Box sx={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", width: 500, bgcolor: "#fff", borderRadius: 4, p: 4, outline: 'none' }}>
           <Box display="flex" justifyContent="space-between" mb={2}>
-            <Typography variant="h6" fontWeight={800}>Seller Insights</Typography>
+            <Typography variant="h6" fontWeight={800}>Seller Profile</Typography>
             <IconButton onClick={() => setOpenDetailsModal(false)}><Close /></IconButton>
           </Box>
           
-          <Stack alignItems="center" mb={3}>
-            <Avatar sx={{ width: 70, height: 70, mb: 1, bgcolor: '#6366F1' }}>{selectedSeller?.name?.[0]}</Avatar>
-            <Typography variant="h6" fontWeight={800}>{selectedSeller?.name}</Typography>
-            {/* গড় রেটিং প্রদর্শন */}
-            <Stack direction="row" alignItems="center" spacing={1}>
-                <Rating value={stats.avgRating} precision={0.5} readOnly size="small" />
-                <Typography variant="caption" fontWeight={700}>({stats.avgRating.toFixed(1)})</Typography>
-            </Stack>
-            <Typography variant="caption" color="textSecondary">{sellerReviews.length} total reviews</Typography>
+          <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3, p: 2, bgcolor: '#F8FAFC', borderRadius: 3 }}>
+            <Avatar sx={{ width: 60, height: 60, bgcolor: '#6366F1' }}>{selectedSeller?.name?.[0]}</Avatar>
+            <Box>
+                <Typography variant="h6" fontWeight={800}>{selectedSeller?.name}</Typography>
+                <Stack direction="row" spacing={1} alignItems="center">
+                    <Rating value={stats.avgRating} precision={0.5} readOnly size="small" />
+                    <Typography variant="caption" fontWeight={700}>({stats.avgRating.toFixed(1)})</Typography>
+                </Stack>
+            </Box>
           </Stack>
 
+          {/* Wallet Balance Card */}
+          <Paper variant="outlined" sx={{ p: 2, mb: 3, display: 'flex', alignItems: 'center', justifyContent: 'space-between', bgcolor: '#ECFDF5', borderColor: '#10B981' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                <AccountBalanceWallet sx={{ color: '#10B981' }} />
+                <Typography variant="subtitle2" fontWeight={800} color="#065F46">Current Balance</Typography>
+            </Box>
+            <Typography variant="h6" fontWeight={900} color="#059669">
+                ${(selectedSeller?.balance || 0).toFixed(2)}
+            </Typography>
+          </Paper>
+
           <Divider sx={{ mb: 2 }} />
-          
-          <Typography variant="subtitle2" fontWeight={800} color="primary" mb={1}>Recent Reviews</Typography>
-          
-          <Box sx={{ maxHeight: 300, overflowY: 'auto', pr: 1 }}>
-            {historyLoading ? <Box sx={{ textAlign: 'center', py: 2 }}><CircularProgress size={24} /></Box> : (
-              sellerReviews.length === 0 ? (
-                <Typography variant="caption" align="center" display="block" color="textSecondary" sx={{ py: 2 }}>No reviews yet for this seller.</Typography>
-              ) : (
-                sellerReviews.map((rev) => (
-                  <Paper key={rev._id} variant="outlined" sx={{ p: 2, mb: 1.5, borderRadius: 2, bgcolor: '#F8FAFC' }}>
-                    <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1}>
-                        <Stack direction="row" spacing={1} alignItems="center">
-                            <Person sx={{ fontSize: 16, color: '#64748B' }} />
-                            <Typography variant="caption" fontWeight={800}>{rev.userEmail.split('@')[0]}</Typography>
-                        </Stack>
-                        <Rating value={rev.rating} size="small" readOnly sx={{ fontSize: 12 }} />
-                    </Stack>
-                    <Typography variant="body2" sx={{ color: '#334155', fontStyle: 'italic', fontSize: '13px' }}>
-                        "{rev.comment}"
-                    </Typography>
-                    <Typography variant="caption" color="textSecondary" display="block" sx={{ mt: 1, textAlign: 'right' }}>
-                        {new Date(rev.createdAt).toLocaleDateString()}
-                    </Typography>
-                  </Paper>
-                ))
-              )
-            )}
-          </Box>
+          <Typography variant="subtitle2" fontWeight={800} color="primary" mb={1}>Contact Info</Typography>
+          <List dense>
+            <ListItem><Email sx={{ fontSize: 18, mr: 1, color: '#64748B' }} /><ListItemText secondary={selectedSeller?.email} /></ListItem>
+            <ListItem><Phone sx={{ fontSize: 18, mr: 1, color: '#64748B' }} /><ListItemText secondary={selectedSeller?.phone} /></ListItem>
+          </List>
         </Box>
       </Modal>
 
-      {/* --- Performance Modal --- */}
+      {/* --- Performance Modal with Balance Stats --- */}
       <Modal open={openPerformanceModal} onClose={() => setOpenPerformanceModal(false)}>
         <Box sx={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", width: 800, bgcolor: "#fff", borderRadius: 4, p: 4, outline: 'none' }}>
           <Box display="flex" justifyContent="space-between" mb={3}>
-            <Typography variant="h6" fontWeight={800}>Live Performance Center</Typography>
+            <Typography variant="h6" fontWeight={800}>Financial & Store Performance</Typography>
             <IconButton onClick={() => setOpenPerformanceModal(false)}><Close /></IconButton>
           </Box>
 
-          {historyLoading ? <Box sx={{ display: 'flex', justifyContent: 'center', p: 5 }}><CircularProgress /></Box> : (
-            <>
-              <Box sx={{ mb: 4, p: 3, bgcolor: '#EEF2FF', borderRadius: 3 }}>
-                <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1}>
-                    <Typography variant="subtitle2" fontWeight={800} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Speed color="primary" /> Store Health (Success Rate)
-                    </Typography>
-                    <Typography variant="h6" fontWeight={800} color="primary">{stats.successRate.toFixed(1)}%</Typography>
-                </Stack>
-                <LinearProgress variant="determinate" value={stats.successRate} sx={{ height: 10, borderRadius: 5 }} />
-              </Box>
+          <Stack direction="row" spacing={2} mb={4}>
+            {/* Balance Card */}
+            <Paper sx={{ p: 2, flex: 1.5, textAlign: 'left', bgcolor: '#065F46', color: '#fff', borderRadius: 3 }}>
+                <Typography variant="caption" sx={{ opacity: 0.8 }}>Current Wallet Balance</Typography>
+                <Typography variant="h4" fontWeight={900}>
+                    ${(selectedSeller?.balance || 0).toLocaleString()}
+                </Typography>
+                <Chip label="Withdrawable" size="small" sx={{ mt: 1, bgcolor: '#10B981', color: '#fff', fontWeight: 700, fontSize: '10px' }} />
+            </Paper>
 
-              <Stack direction="row" spacing={2} mb={4}>
-                <Paper sx={{ p: 2, flex: 1, textAlign: 'center', bgcolor: '#F1F5F9', borderRadius: 2 }}>
-                  <Typography variant="h5" fontWeight={800}>{stats.total}</Typography>
-                  <Typography variant="caption" fontWeight={700}>Total Ads</Typography>
-                </Paper>
-                <Paper sx={{ p: 2, flex: 1, textAlign: 'center', bgcolor: '#DCFCE7', borderRadius: 2 }}>
-                  <Typography variant="h5" fontWeight={800} color="#166534">{stats.approved}</Typography>
-                  <Typography variant="caption" fontWeight={700} color="#166534">Approved</Typography>
-                </Paper>
-                <Paper sx={{ p: 2, flex: 1, textAlign: 'center', bgcolor: '#E0E7FF', borderRadius: 2 }}>
-                  <Typography variant="h5" fontWeight={800} color="#3730A3">{sellerReviews.length}</Typography>
-                  <Typography variant="caption" fontWeight={700} color="#3730A3">Reviews</Typography>
-                </Paper>
-              </Stack>
-            </>
-          )}
+            <Paper sx={{ p: 2, flex: 1, textAlign: 'center', bgcolor: '#F1F5F9', borderRadius: 3 }}>
+                <Typography variant="h5" fontWeight={800}>{stats.total}</Typography>
+                <Typography variant="caption" fontWeight={700}>Total Ads</Typography>
+            </Paper>
+            <Paper sx={{ p: 2, flex: 1, textAlign: 'center', bgcolor: '#F1F5F9', borderRadius: 3 }}>
+                <Typography variant="h5" fontWeight={800}>{stats.approved}</Typography>
+                <Typography variant="caption" fontWeight={700}>Approved</Typography>
+            </Paper>
+          </Stack>
+
+          <Box sx={{ p: 3, bgcolor: '#EEF2FF', borderRadius: 3 }}>
+            <Stack direction="row" justifyContent="space-between" mb={1}>
+                <Typography variant="subtitle2" fontWeight={800} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Speed color="primary" /> Store Success Rate
+                </Typography>
+                <Typography variant="h6" fontWeight={800} color="primary">{stats.successRate.toFixed(1)}%</Typography>
+            </Stack>
+            <LinearProgress variant="determinate" value={stats.successRate} sx={{ height: 10, borderRadius: 5 }} />
+          </Box>
         </Box>
       </Modal>
 

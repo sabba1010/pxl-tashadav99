@@ -37,7 +37,9 @@ const RefDetails = () => {
         "http://localhost:3200/api/user/getall"
       );
 
-      const users = res.data;
+      // .reverse() add kora hoyeche jate notun data top-e thake
+      const users = [...res.data].reverse(); 
+      
       setAllUsers(users);
       setReferralUsers(users.filter(u => u.referredBy));
     } catch {
@@ -88,7 +90,7 @@ const RefDetails = () => {
         { userId, status }
       );
       toast.success(`Referral ${status}`);
-      fetchData();
+      fetchData(); // Refresh data to show updated status
     } catch (err: any) {
       toast.error(
         err?.response?.data?.message || "Status update failed"
@@ -107,34 +109,36 @@ const RefDetails = () => {
 
   /* ================= UI ================= */
   return (
-    <div className="p-6 bg-[#f8fafc] min-h-screen">
+    <div className="p-6 bg-[#f8fafc] min-h-screen font-sans">
       {/* HEADER */}
-      <div className="bg-white p-6 rounded-xl shadow-sm mb-6 flex justify-between items-center">
+      <div className="bg-white p-6 rounded-xl shadow-sm mb-6 flex flex-wrap justify-between items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold">
+          <h1 className="text-2xl font-bold text-gray-800">
             Admin Referral Control ({filtered.length})
           </h1>
-          <p className="text-xs text-gray-500">
-            Only pending referrals can be approved or rejected
+          <p className="text-xs text-gray-500 mt-1">
+            Newest referrals are shown at the top.
           </p>
         </div>
 
         <div className="flex gap-3 items-center">
           <button
             onClick={fetchData}
-            className="p-2 bg-green-500 text-white rounded-lg"
+            disabled={loading}
+            className="p-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors disabled:opacity-50"
+            title="Refresh Data"
           >
-            <RotateCcw size={18} />
+            <RotateCcw size={18} className={loading ? "animate-spin" : ""} />
           </button>
 
           <div className="relative">
             <Search
               size={16}
-              className="absolute left-3 top-2.5 text-gray-400"
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
             />
             <input
               placeholder="Search email or code"
-              className="pl-9 pr-3 py-2 border rounded-lg"
+              className="pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition-all shadow-sm"
               onChange={e => setSearch(e.target.value)}
             />
           </div>
@@ -142,88 +146,93 @@ const RefDetails = () => {
       </div>
 
       {/* TABLE */}
-      <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-        <table className="w-full">
-          <thead className="bg-gray-50 text-xs uppercase text-gray-400">
-            <tr>
-              <th className="px-6 py-4">Status</th>
-              <th className="px-6 py-4">Referrer</th>
-              <th className="px-6 py-4">New User</th>
-              <th className="px-6 py-4">Bonus</th>
-              <th className="px-6 py-4 text-center">Admin Action</th>
-            </tr>
-          </thead>
-
-          <tbody className="divide-y">
-            {loading ? (
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left">
+            <thead className="bg-gray-50 border-b border-gray-100 text-xs uppercase text-gray-500 font-semibold tracking-wider">
               <tr>
-                <td colSpan={5} className="py-20 text-center text-gray-400">
-                  Loading...
-                </td>
+                <th className="px-6 py-4">Status</th>
+                <th className="px-6 py-4">Referrer (Who Invited)</th>
+                <th className="px-6 py-4">New User (Invited Person)</th>
+                <th className="px-6 py-4">Bonus</th>
+                <th className="px-6 py-4 text-center">Admin Action</th>
               </tr>
-            ) : filtered.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="py-20 text-center text-gray-400">
-                  No referral found
-                </td>
-              </tr>
-            ) : (
-              filtered.map(user => (
-                <tr key={user._id} className="hover:bg-gray-50">
-                  {/* STATUS */}
-                  <td className="px-6 py-4">
-                    {statusBadge(user.referralStatus)}
-                  </td>
+            </thead>
 
-                  {/* REFERRER */}
-                  <td className="px-6 py-4">
-                    <p className="font-bold text-sm">
-                      {getReferrerEmail(user.referredBy)}
-                    </p>
-                    <p className="text-xs text-gray-400">
-                      CODE: {user.referredBy}
-                    </p>
-                  </td>
-
-                  {/* NEW USER */}
-                  <td className="px-6 py-4 font-bold text-sm">
-                    {user.email}
-                  </td>
-
-                  {/* BONUS */}
-                  <td className="px-6 py-4 font-bold">$5</td>
-
-                  {/* ACTION */}
-                  <td className="px-6 py-4 text-center">
-                    <select
-                      disabled={
-                        updatingId === user._id ||
-                        user.referralStatus !== "pending" // 🔒 lock if not pending
-                      }
-                      value={user.referralStatus || "pending"}
-                      onChange={e => {
-                        const newStatus = e.target.value as ReferralStatus;
-                        if (newStatus === user.referralStatus) return;
-                        updateStatus(user._id, newStatus);
-                      }}
-                      className="border px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <option value="pending">🟡 Pending</option>
-                      <option value="approved">🟢 Approved</option>
-                      <option value="rejected">🔴 Rejected</option>
-                    </select>
-
-                    {user.referralStatus !== "pending" && (
-                      <p className="text-[10px] text-gray-400 mt-1">
-                       
-                      </p>
-                    )}
+            <tbody className="divide-y divide-gray-100">
+              {loading && referralUsers.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="py-20 text-center text-gray-400">
+                    <div className="flex flex-col items-center gap-2">
+                      <RotateCcw size={24} className="animate-spin text-green-500" />
+                      <span>Loading data...</span>
+                    </div>
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="py-20 text-center text-gray-400">
+                    No referral records found.
+                  </td>
+                </tr>
+              ) : (
+                filtered.map(user => (
+                  <tr key={user._id} className="hover:bg-blue-50/30 transition-colors">
+                    {/* STATUS */}
+                    <td className="px-6 py-4">
+                      {statusBadge(user.referralStatus)}
+                    </td>
+
+                    {/* REFERRER */}
+                    <td className="px-6 py-4">
+                      <p className="font-semibold text-sm text-gray-700">
+                        {getReferrerEmail(user.referredBy)}
+                      </p>
+                      <p className="text-[10px] bg-gray-100 inline-block px-1.5 py-0.5 rounded mt-1 text-gray-500 font-mono">
+                        ID: {user.referredBy}
+                      </p>
+                    </td>
+
+                    {/* NEW USER */}
+                    <td className="px-6 py-4">
+                      <span className="font-medium text-sm text-blue-600">
+                         {user.email}
+                      </span>
+                    </td>
+
+                    {/* BONUS */}
+                    <td className="px-6 py-4 font-bold text-gray-700">$5</td>
+
+                    {/* ACTION */}
+                    <td className="px-6 py-4 text-center">
+                      <select
+                        disabled={
+                          updatingId === user._id ||
+                          user.referralStatus !== "pending"
+                        }
+                        value={user.referralStatus || "pending"}
+                        onChange={e => {
+                          const newStatus = e.target.value as ReferralStatus;
+                          if (newStatus === user.referralStatus) return;
+                          updateStatus(user._id, newStatus);
+                        }}
+                        className="border border-gray-200 px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer bg-white hover:border-gray-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <option value="pending">🟡 Pending</option>
+                        <option value="approved">🟢 Approved</option>
+                        <option value="rejected">🔴 Rejected</option>
+                      </select>
+                      
+                      {user.referralStatus !== "pending" && (
+                         <p className="text-[9px] text-gray-400 mt-1 italic">Action Locked</p>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
