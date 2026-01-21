@@ -177,38 +177,23 @@ const DashboardSeller: React.FC = () => {
         setBestSellingProducts(topProducts);
 
         // Calculate daily earnings
-// Calculate daily earnings (LAST 30 CALENDAR DAYS - FIXED)
-const today = new Date();
-const last30Days: { date: string; amount: number }[] = [];
+        const dailyData: any = {};
+        sales
+          .filter(p => p.status === 'completed' || p.status === 'confirmed' || p.status === 'sold')
+          .forEach((sale: any) => {
+            const date = new Date(sale.createdAt).toLocaleDateString();
+            if (!dailyData[date]) {
+              dailyData[date] = 0;
+            }
+            dailyData[date] += Number(sale.price) || 0;
+          });
 
-// prepare last 30 days with 0 earnings
-for (let i = 29; i >= 0; i--) {
-  const d = new Date();
-  d.setDate(today.getDate() - i);
-  last30Days.push({
-    date: d.toLocaleDateString(),
-    amount: 0
-  });
-}
+        const sortedDaily = Object.entries(dailyData)
+          .sort((a: any, b: any) => new Date(a[0]).getTime() - new Date(b[0]).getTime())
+          .slice(-30)
+          .map(([date, amount]: any) => ({ date, amount }));
 
-// add earnings to matching dates
-sales
-  .filter(
-    p =>
-      p.status === 'completed' ||
-      p.status === 'confirmed' ||
-      p.status === 'sold'
-  )
-  .forEach((sale: any) => {
-    const saleDate = new Date(sale.createdAt).toLocaleDateString();
-    const day = last30Days.find(d => d.date === saleDate);
-    if (day) {
-      day.amount += Number(sale.price) || 0;
-    }
-  });
-
-setDailyEarnings(last30Days);
-
+        setDailyEarnings(sortedDaily);
 
         const activities = [
           ...sales.map(s => ({ Icon: Zap, color: 'text-blue-500', title: 'Payment Received', desc: `Sold ${s.productName || 'Account'} - $${s.price}`, time: s.createdAt })),
@@ -590,13 +575,15 @@ setDailyEarnings(last30Days);
                   </div>
 
                   {/* Earnings Trend Chart (Simple Bar Representation) */}
-                  <div>
+                 {/* 
+                 
+ <div>
                     <h4 className="font-bold text-lg text-gray-900 mb-4">Earnings Trend (Last 30 Days)</h4>
                     <div className="bg-gray-50 p-6 rounded-lg border border-gray-200 min-h-64">
                       {dailyEarnings.length > 0 ? (
                         <div className="space-y-4">
                           {/* Chart Container */}
-                          <div className="flex items-end justify-center gap-1 h-48 bg-white rounded-lg p-4 relative">
+                          {/* <div className="flex items-end justify-center gap-1 h-48 bg-white rounded-lg p-4 relative">
                             {dailyEarnings.map((item, idx) => {
                               const maxAmount = Math.max(...dailyEarnings.map((d: any) => d.amount), 1);
                               const heightPercent = (item.amount / maxAmount) * 100;
@@ -612,9 +599,9 @@ setDailyEarnings(last30Days);
                                 </div>
                               );
                             })}
-                          </div>
+                          </div> */}
                           {/* Stats */}
-                          <div className="grid grid-cols-3 gap-4 text-center text-xs">
+                          {/* <div className="grid grid-cols-3 gap-4 text-center text-xs">
                             <div>
                               <p className="text-gray-500">Highest Day</p>
                               <p className="font-bold text-gray-900">${Math.max(...dailyEarnings.map((d: any) => d.amount)).toFixed(2)}</p>
@@ -636,6 +623,10 @@ setDailyEarnings(last30Days);
                       )}
                     </div>
                   </div>
+ */}
+
+         
+
                 </div>
               )}
             </div>
