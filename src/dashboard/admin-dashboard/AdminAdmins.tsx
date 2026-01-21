@@ -8,7 +8,7 @@ import {
   ListAlt,
   Logout,
   People,
-  Person,
+  //Person,
   Star,
   Diversity3,
   ManageAccounts,
@@ -171,7 +171,7 @@ const AdminAdmins: React.FC = () => {
 
         {/* Bottom Section */}
         <div className="border-t border-gray-700 p-4 space-y-2 bg-[#00122e]">
-          <Link
+          {/* <Link
             to="/admin-dashboard/profile"
             className={`flex items-center gap-4 p-3 text-sm font-medium rounded-lg transition-all duration-150 group relative ${
               location.pathname === "/admin-dashboard/profile"
@@ -187,7 +187,7 @@ const AdminAdmins: React.FC = () => {
             >
               My Profile
             </span>
-          </Link>
+          </Link> */}
 
           <button
             onClick={handelLogout}
