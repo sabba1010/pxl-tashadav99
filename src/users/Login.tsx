@@ -54,7 +54,7 @@ const Login = () => {
         // ---------------------------------------------------------
         // CHANGE: Redirect to /marketplace instead of /
         // ---------------------------------------------------------
-        navigate("/");
+        navigate("/marketplace");
         window.location.reload();
       } else {
         toast.error("Invalid credentials");
