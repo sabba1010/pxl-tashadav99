@@ -33,10 +33,11 @@ const AccountSettings = () => {
                   className={`
                     flex items-center gap-2 px-5 py-2.5 text-sm font-medium rounded-full transition-all
                     ${isActive
-                      ? 'bg-orange-600 text-white shadow-sm'
-                      : 'text-gray-700 bg-white border border-gray-300 hover:border-orange-400 hover:text-orange-700'
+                      ? 'text-white shadow-sm'
+                      : 'text-gray-700 bg-white border border-gray-300 hover:text-gray-900'
                     }
                   `}
+                  style={isActive ? { backgroundColor: '#d4a643' } : {}}
                 >
                   <Icon size={16} />
                   {tab.label}
@@ -181,7 +182,7 @@ const ProfileSection = () => (
         </div>
 
         <div className="flex justify-end pt-4">
-          <button className="bg-orange-500 text-white px-8 py-3 rounded-lg font-semibold hover:bg-orange-600 transition shadow-sm">
+          <button className="text-white px-8 py-3 rounded-lg font-semibold transition shadow-sm" style={{ backgroundColor: '#d4a643' }} onMouseEnter={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#c4952f'} onMouseLeave={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#d4a643'}>
             Save & Proceed
           </button>
         </div>
@@ -235,10 +236,10 @@ const SecuritySection = () => (
         </div>
 
         <div className="flex justify-end gap-4 pt-4">
-          <button className="px-8 py-2.5 border border-orange-500 text-orange-500 rounded-lg hover:bg-orange-50 transition font-medium">
+          <button className="px-8 py-2.5 border rounded-lg transition font-medium" style={{ borderColor: '#d4a643', color: '#d4a643' }} onMouseEnter={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#f5f0e8'} onMouseLeave={(e) => (e.target as HTMLButtonElement).style.backgroundColor = 'transparent'}>
             Cancel
           </button>
-          <button className="px-8 py-2.5 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition font-medium">
+          <button className="px-8 py-2.5 text-white rounded-lg transition font-medium" style={{ backgroundColor: '#d4a643' }} onMouseEnter={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#c4952f'} onMouseLeave={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#d4a643'}>
             Update password
           </button>
         </div>
@@ -356,8 +357,9 @@ const NotificationsSection = () => {
           className={`px-4 py-2 rounded-lg font-semibold transition flex items-center gap-2 ${
             refreshing
               ? 'bg-gray-200 text-gray-600 cursor-not-allowed'
-              : 'bg-orange-500 hover:bg-orange-600 text-white'
+              : 'text-white hover:opacity-90'
           }`}
+          style={!refreshing ? { backgroundColor: '#d4a643' } : {}}
         >
           <svg
             className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`}
