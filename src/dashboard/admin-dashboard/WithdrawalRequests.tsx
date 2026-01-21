@@ -497,7 +497,7 @@ import {
   TextField,
   IconButton,
 } from "@mui/material";
-import { Search, Close, Refresh } from "@mui/icons-material";
+import { Search, Close, Refresh, Visibility } from "@mui/icons-material";
 import { Tooltip } from "@mui/material";
 
 /* ================= TYPES ================= */
@@ -515,6 +515,7 @@ interface WithdrawalRequest {
   status: string;
   createdAt: string;
   adminNote?: string;
+  bankName?: string;
   sellerReportsCount: number;
   unfinishedOrdersCount: number;
   hasBlockingIssues: boolean;
@@ -693,6 +694,161 @@ const WithdrawalModal: React.FC<WithdrawalModalProps> = ({
   );
 };
 
+/* ================= DETAILS MODAL ================= */
+interface DetailsModalProps {
+  request: WithdrawalRequest | null;
+  onClose: () => void;
+}
+
+const DetailsModal: React.FC<DetailsModalProps> = ({ request, onClose }) => {
+  if (!request) return null;
+
+  return (
+    <Dialog
+      open={!!request}
+      onClose={onClose}
+      fullWidth
+      maxWidth="sm"
+      PaperProps={{ sx: { borderRadius: 3 } }}
+    >
+      <DialogTitle
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          bgcolor: "#F8FAFC",
+          fontWeight: 800,
+          fontSize: 18,
+        }}
+      >
+        Withdrawal Details
+        <IconButton size="small" onClick={onClose}>
+          <Close />
+        </IconButton>
+      </DialogTitle>
+
+      <DialogContent dividers sx={{ py: 3 }}>
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}>
+          {/* Seller */}
+          <Box>
+            <Typography sx={{ fontSize: 12, fontWeight: 700, color: "#64748B", mb: 0.5 }}>
+              SELLER
+            </Typography>
+            <Typography sx={{ fontSize: 14, color: "#1F2937", fontWeight: 600 }}>
+              {request.fullName}
+            </Typography>
+            <Typography sx={{ fontSize: 13, color: "#64748B" }}>
+              {request.email}
+            </Typography>
+          </Box>
+
+          {/* Method */}
+          <Box>
+            <Typography sx={{ fontSize: 12, fontWeight: 700, color: "#64748B", mb: 0.5 }}>
+              PAYMENT METHOD
+            </Typography>
+            <Typography sx={{ fontSize: 14, color: "#1F2937", fontWeight: 600, textTransform: "capitalize" }}>
+              {request.paymentMethod}
+            </Typography>
+          </Box>
+
+          {/* Amount */}
+          <Box>
+            <Typography sx={{ fontSize: 12, fontWeight: 700, color: "#64748B", mb: 0.5 }}>
+              AMOUNT
+            </Typography>
+            <Typography sx={{ fontSize: 18, color: "#4F46E5", fontWeight: 800 }}>
+              {request.amount} {request.currency}
+            </Typography>
+          </Box>
+
+          {/* Bank Account Details */}
+          <Box sx={{ bgcolor: "#F8FAFC", p: 2, borderRadius: 2 }}>
+            <Typography sx={{ fontSize: 12, fontWeight: 700, color: "#64748B", mb: 1.5 }}>
+              BANK ACCOUNT DETAILS
+            </Typography>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+              <Box>
+                <Typography sx={{ fontSize: 11, color: "#64748B" }}>Account Holder Name</Typography>
+                <Typography sx={{ fontSize: 13, color: "#1F2937", fontWeight: 600 }}>
+                  {request.fullName}
+                </Typography>
+              </Box>
+              <Box>
+                <Typography sx={{ fontSize: 11, color: "#64748B" }}>Account Number</Typography>
+                <Typography sx={{ fontSize: 13, color: "#1F2937", fontWeight: 600 }}>
+                  {request.accountNumber}
+                </Typography>
+              </Box>
+              <Box>
+                <Typography sx={{ fontSize: 11, color: "#64748B" }}>Bank Code</Typography>
+                <Typography sx={{ fontSize: 13, color: "#1F2937", fontWeight: 600 }}>
+                  {request.bankCode}
+                </Typography>
+              </Box>
+              {request.bankName && (
+                <Box>
+                  <Typography sx={{ fontSize: 11, color: "#64748B" }}>Bank Name</Typography>
+                  <Typography sx={{ fontSize: 13, color: "#1F2937", fontWeight: 600 }}>
+                    {request.bankName}
+                  </Typography>
+                </Box>
+              )}
+            </Box>
+          </Box>
+
+          {/* Email & Phone */}
+          <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2 }}>
+            <Box>
+              <Typography sx={{ fontSize: 12, fontWeight: 700, color: "#64748B", mb: 0.5 }}>
+                EMAIL
+              </Typography>
+              <Typography sx={{ fontSize: 13, color: "#1F2937", fontWeight: 500, wordBreak: "break-all" }}>
+                {request.email}
+              </Typography>
+            </Box>
+            <Box>
+              <Typography sx={{ fontSize: 12, fontWeight: 700, color: "#64748B", mb: 0.5 }}>
+                PHONE
+              </Typography>
+              <Typography sx={{ fontSize: 13, color: "#1F2937", fontWeight: 500 }}>
+                {request.phoneNumber || "N/A"}
+              </Typography>
+            </Box>
+          </Box>
+
+          {/* Note */}
+          {request.note && (
+            <Box>
+              <Typography sx={{ fontSize: 12, fontWeight: 700, color: "#64748B", mb: 0.5 }}>
+                NOTE
+              </Typography>
+              <Typography sx={{ fontSize: 13, color: "#1F2937", fontWeight: 500 }}>
+                {request.note}
+              </Typography>
+            </Box>
+          )}
+        </Box>
+      </DialogContent>
+
+      <DialogActions sx={{ p: 3 }}>
+        <Button
+          variant="contained"
+          onClick={onClose}
+          sx={{
+            bgcolor: "#0F172A",
+            "&:hover": { bgcolor: "#020617" },
+            fontWeight: 600,
+            px: 3,
+          }}
+        >
+          Close
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+};
+
 /* ================= MAIN ================= */
 const WithdrawalRequests: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -702,6 +858,7 @@ const WithdrawalRequests: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedRequest, setSelectedRequest] =
     useState<WithdrawalRequest | null>(null);
+  const [detailsRequest, setDetailsRequest] = useState<WithdrawalRequest | null>(null);
 
   const fetchDetailsForEmail = useCallback(async (email: string) => {
     try {
@@ -929,27 +1086,42 @@ const WithdrawalRequests: React.FC = () => {
                   <TableCell>{req.sellerReportsCount}</TableCell>
                   <TableCell>{req.unfinishedOrdersCount}</TableCell>
                   <TableCell align="right">
-                    <Button
-                      variant="contained"
-                      size="small"
-                      disabled={actionLoading}
-                      onClick={async () => {
-                        setActionLoading(true);
-                        const details = await fetchDetailsForEmail(req.email);
-                        setSelectedRequest({ ...req, sellerReports: details.sellerReports, unfinishedOrders: details.unfinished });
-                        setActionLoading(false);
-                      }}
-                      sx={{
-                        bgcolor: "#0F172A",
-                        "&:hover": { bgcolor: "#020617" },
-                        textTransform: "none",
-                        fontWeight: 600,
-                        borderRadius: 2,
-                        px: 2.5,
-                      }}
-                    >
-                      Review
-                    </Button>
+                    <Box sx={{ display: "flex", gap: 1, justifyContent: "flex-end" }}>
+                      <Tooltip title="View Details">
+                        <IconButton
+                          size="small"
+                          onClick={() => setDetailsRequest(req)}
+                          sx={{
+                            color: "#4F46E5",
+                            "&:hover": { bgcolor: "#E0E7FF" },
+                            borderRadius: "8px",
+                          }}
+                        >
+                          <Visibility fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <Button
+                        variant="contained"
+                        size="small"
+                        disabled={actionLoading}
+                        onClick={async () => {
+                          setActionLoading(true);
+                          const details = await fetchDetailsForEmail(req.email);
+                          setSelectedRequest({ ...req, sellerReports: details.sellerReports, unfinishedOrders: details.unfinished });
+                          setActionLoading(false);
+                        }}
+                        sx={{
+                          bgcolor: "#0F172A",
+                          "&:hover": { bgcolor: "#020617" },
+                          textTransform: "none",
+                          fontWeight: 600,
+                          borderRadius: 2,
+                          px: 2.5,
+                        }}
+                      >
+                        Review
+                      </Button>
+                    </Box>
                   </TableCell>
                 </TableRow>
               ))}
@@ -998,6 +1170,13 @@ const WithdrawalRequests: React.FC = () => {
             }
           }}
           updating={actionLoading}
+        />
+      )}
+
+      {detailsRequest && (
+        <DetailsModal
+          request={detailsRequest}
+          onClose={() => setDetailsRequest(null)}
         />
       )}
     </Box>
