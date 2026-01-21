@@ -1263,12 +1263,35 @@ const SellForm: React.FC = () => {
   // Validation Step 0
   const validateStep0 = () => {
     const newErrors: Record<string, string> = {};
+    
     if (!formData.category) newErrors.category = "Platform is required";
-    if (!formData.name.trim()) newErrors.name = "Account name is required";
-    if (!formData.description.trim())
+    
+    // Account Title validation - must include account age/years
+    if (!formData.name.trim()) {
+      newErrors.name = "Account title is required";
+    } else if (formData.name.trim().length < 15) {
+      newErrors.name = "Title too short - include account age/years (min 15 characters)";
+    } else if (!/(\d+\s*(year|yr|y|month|m|day|d)|age)/i.test(formData.name)) {
+      newErrors.name = "Title must include account age (e.g., '2 years', '5 year old', etc.)";
+    }
+    
+    // Description validation - must be detailed with login instructions
+    if (!formData.description.trim()) {
       newErrors.description = "Description is required";
-    if (!formData.price || Number(formData.price) <= 0)
+    } else if (formData.description.trim().length < 50) {
+      newErrors.description = "Description too short - must be detailed (min 50 characters)";
+    } else if (!/login|password|access|how to|instruction/i.test(formData.description)) {
+      newErrors.description = "Description must include login instructions or access information";
+    }
+    
+    // Price validation - must be appropriate
+    if (!formData.price || Number(formData.price) <= 0) {
       newErrors.price = "Valid price is required";
+    } else if (Number(formData.price) < 5) {
+      newErrors.price = "Price too low - minimum $5. Set a competitive price based on account value";
+    } else if (Number(formData.price) > 1000) {
+      newErrors.price = "Price too high - keep it realistic (max $1,000)";
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -1567,7 +1590,7 @@ const SellForm: React.FC = () => {
                 required
                 error={!!errors.name}
                 helperText={
-                  errors.name || "e.g., Gaming Instagram with 50K Followers"
+                  errors.name || "Brief title with account age. e.g., 'Instagram Account - 2 years, 50K Followers' or 'Gaming Steam Account - 5 years old'"
                 }
               />
 
@@ -1583,7 +1606,7 @@ const SellForm: React.FC = () => {
                 error={!!errors.description}
                 helperText={
                   errors.description ||
-                  "Include followers, niche, engagement rate, revenue, etc."
+                  "Provide detailed information: followers/subscribers count, niche/category, engagement rate, monetization status, how to login, any restrictions, 2FA status, etc. Be honest and attractive to buyers."
                 }
               />
 
@@ -1596,7 +1619,7 @@ const SellForm: React.FC = () => {
                 type="number"
                 required
                 error={!!errors.price}
-                helperText={errors.price}
+                helperText={errors.price || "Set a competitive price based on account quality, followers, engagement, and market value. Price should reflect the account's worth."}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">$</InputAdornment>
