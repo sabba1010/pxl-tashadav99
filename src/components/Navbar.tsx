@@ -96,18 +96,18 @@ export default function Navbar() {
 
       const myNotifs = Array.isArray(res)
         ? res.filter((n: NItem) => {
-            // ১. সরাসরি ইউজারের ইমেইলে পাঠানো নোটিফিকেশন
-            const isDirect = n.userEmail === currentUserEmail;
-            
-            // ২. সবার জন্য পাঠানো (Target: all)
-            const isAll = n.target === "all";
-            
-            // ৩. রোল ভিত্তিক (Target: buyers অথবা sellers)
-            // আপনার ডাটাবেসে "buyers" বা "sellers" থাকলে ইউজারের "buyer" বা "seller" রোলের সাথে ম্যাচ করবে
-            const isRoleMatch = userRole && n.target === `${userRole}s`;
+          // ১. সরাসরি ইউজারের ইমেইলে পাঠানো নোটিফিকেশন
+          const isDirect = n.userEmail === currentUserEmail;
 
-            return isDirect || isAll || isRoleMatch;
-          })
+          // ২. সবার জন্য পাঠানো (Target: all)
+          const isAll = n.target === "all";
+
+          // ৩. রোল ভিত্তিক (Target: buyers অথবা sellers)
+          // আপনার ডাটাবেসে "buyers" বা "sellers" থাকলে ইউজারের "buyer" বা "seller" রোলের সাথে ম্যাচ করবে
+          const isRoleMatch = userRole && n.target === `${userRole}s`;
+
+          return isDirect || isAll || isRoleMatch;
+        })
         : [];
 
       const sortedNotifs = myNotifs.sort(
@@ -125,13 +125,13 @@ export default function Navbar() {
   }, [currentUserEmail, loginUserData.data?.role, notifications.length, notifOpen]);
 
   // --- CLICK HANDLER (MARK READ) ---
-const handleShowNotifications = async () => {
+  const handleShowNotifications = async () => {
     const isOpening = !notifOpen;
     setNotifOpen(isOpening);
 
     // যখন প্যানেল ওপেন হবে এবং যদি কোনো আনরিড নোটিফিকেশন থাকে
     if (isOpening && unreadCount > 0) {
-      
+
       // ১. সাথে সাথে ফ্রন্টএন্ডে সবগুলোকে 'read: true' করে দিন (যাতে লাল নম্বর সাথে সাথে উধাও হয়)
       setNotifications(prev => prev.map(n => ({ ...n, read: true })));
 
@@ -248,34 +248,34 @@ const handleShowNotifications = async () => {
                         </div>
                       )}
                       {notifications.map((n) => (
-  <div key={n._id || `${n.title}-${n.createdAt}`} className={`p-3 hover:bg-gray-50 transition-colors ${n.read ? "bg-white" : "bg-blue-50 border-l-4 border-blue-600"}`}>
-    <div className="flex items-start justify-between gap-3">
-      <div className="flex-1">
-        <div className="text-sm font-bold text-black">{n.title}</div>
-        <div className="text-xs text-gray-800 font-medium mt-1 line-clamp-2 leading-relaxed">
-          {n.message || n.description || "No description"}
-        </div>
+                        <div key={n._id || `${n.title}-${n.createdAt}`} className={`p-3 hover:bg-gray-50 transition-colors ${n.read ? "bg-white" : "bg-blue-50 border-l-4 border-blue-600"}`}>
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex-1">
+                              <div className="text-sm font-bold text-black">{n.title}</div>
+                              <div className="text-xs text-gray-800 font-medium mt-1 line-clamp-2 leading-relaxed">
+                                {n.message || n.description || "No description"}
+                              </div>
 
-        {/* লিঙ্ক থাকলে এখানে দেখাবে */}
-        {n.link && (
-          <a 
-            href={n.link} 
-            target="_blank" 
-            rel="noopener noreferrer" 
-            className="text-[10px] text-blue-600 font-bold mt-2 inline-flex items-center gap-1 hover:underline bg-blue-50 px-2 py-1 rounded"
-          >
-            Action Link: {n.link.length > 30 ? n.link.substring(0, 30) + "..." : n.link}
-          </a>
-        )}
+                              {/* লিঙ্ক থাকলে এখানে দেখাবে */}
+                              {n.link && (
+                                <a
+                                  href={n.link}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-[10px] text-blue-600 font-bold mt-2 inline-flex items-center gap-1 hover:underline bg-blue-50 px-2 py-1 rounded"
+                                >
+                                  Action Link: {n.link.length > 30 ? n.link.substring(0, 30) + "..." : n.link}
+                                </a>
+                              )}
 
-        <div className="text-[10px] text-gray-600 font-semibold mt-1">
-          {n.createdAt ? new Date(n.createdAt).toLocaleString() : ""}
-        </div>
-      </div>
-      {!n.read && <div className="ml-2 w-2.5 h-2.5 rounded-full bg-blue-600 mt-1 shadow-sm" />}
-    </div>
-  </div>
-))}
+                              <div className="text-[10px] text-gray-600 font-semibold mt-1">
+                                {n.createdAt ? new Date(n.createdAt).toLocaleString() : ""}
+                              </div>
+                            </div>
+                            {!n.read && <div className="ml-2 w-2.5 h-2.5 rounded-full bg-blue-600 mt-1 shadow-sm" />}
+                          </div>
+                        </div>
+                      ))}
                     </div>
 
                     <div className="px-4 py-3 border-t bg-gray-50 flex justify-between items-center">
