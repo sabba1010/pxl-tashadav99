@@ -329,7 +329,7 @@ export default function Navbar() {
         <div className="flex items-end justify-between h-20 px-4">
           <NavLink to="/marketplace" className="flex flex-col items-center justify-center flex-1 pb-5" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}><ShoppingBag /><span className="text-xs">Marketplace</span></NavLink>
           <NavLink to="/purchases" className="flex flex-col items-center justify-center flex-1 pb-5" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}><ShoppingCart /><span className="text-xs">Purchases</span></NavLink>
-          <NavLink to="/selling-form" className="flex flex-col items-center justify-center flex-1 pb-5" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}><FaBreadSliceIcon className="w-5 h-5 mb-1" /><span className="text-xs">Sell</span></NavLink>
+          <NavLink to="/myproducts" className="flex flex-col items-center justify-center flex-1 pb-5" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}><FaBreadSliceIcon className="w-5 h-5 mb-1" /><span className="text-xs">Sell</span></NavLink>
           {(loginUser?.role === "seller" || loginUser?.role === "admin") && (
             <NavLink to="/orders" className="flex flex-col items-center justify-center flex-1 pb-5" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}><ListCheck /><span className="text-xs">Orders</span></NavLink>
           )}
