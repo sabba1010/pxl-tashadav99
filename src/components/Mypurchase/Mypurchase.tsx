@@ -45,6 +45,12 @@ interface Purchase {
   status: PurchaseStatus;
   purchaseNumber?: string;
   buyerEmail: string;
+  // Account access details from product
+  accountUsername?: string;
+  accountPassword?: string;
+  recoveryEmail?: string;
+  recoveryEmailPassword?: string;
+  previewLink?: string;
 }
 
 interface RawPurchaseItem {
@@ -56,6 +62,12 @@ interface RawPurchaseItem {
   price: number;
   purchaseDate: string;
   status: string;
+  // Product account details (populated from product lookup)
+  username?: string;
+  accountPass?: string;
+  email?: string;
+  password?: string;
+  previewLink?: string;
 }
 
 interface ChatMessage {
@@ -160,6 +172,9 @@ const MyPurchase: React.FC = () => {
   const itemsPerPage = 10;
   const [currentPage, setCurrentPage] = useState(1);
 
+  // State for showing/hiding sensitive account details
+  const [showAccountDetails, setShowAccountDetails] = useState(false);
+
   const BASE_URL = "http://localhost:3200";
   const PURCHASE_API = `${BASE_URL}/purchase`;
   const CHAT_API = `${BASE_URL}/chat`;
@@ -235,7 +250,32 @@ const MyPurchase: React.FC = () => {
     try {
       setIsLoading(true);
       const res = await axios.get<RawPurchaseItem[]>(`${PURCHASE_API}/getall?email=${buyerId}&role=buyer`);
-      const mapped: Purchase[] = res.data.map((item) => ({
+      
+      // Fetch product details for each purchase to get account credentials
+      const enrichedData = await Promise.all(res.data.map(async (item) => {
+        if (item.productId) {
+          try {
+            // Try to fetch product details from product endpoint
+            const productRes = await axios.get<any>(`${BASE_URL}/product/${item.productId}`);
+            if (productRes?.data) {
+              return {
+                ...item,
+                username: productRes.data.username,
+                accountPass: productRes.data.accountPass,
+                email: productRes.data.email,
+                password: productRes.data.password,
+                previewLink: productRes.data.previewLink,
+              };
+            }
+          } catch (err) {
+            // If fetching product details fails, continue without them
+            console.error(`Failed to fetch product ${item.productId}:`, err);
+          }
+        }
+        return item;
+      }));
+
+      const mapped: Purchase[] = enrichedData.map((item) => ({
         id: item._id,
         platform: inferPlatform(item.productName),
         title: item.productName || "Untitled",
@@ -247,6 +287,11 @@ const MyPurchase: React.FC = () => {
         rawDate: item.purchaseDate,
         status: (item.status?.charAt(0).toUpperCase() + item.status?.slice(1)) as PurchaseStatus || "Pending",
         purchaseNumber: `ORD-${item._id.slice(-6).toUpperCase()}`,
+        accountUsername: item.username,
+        accountPassword: item.accountPass,
+        recoveryEmail: item.email,
+        recoveryEmailPassword: item.password,
+        previewLink: item.previewLink,
       }));
       setPurchases(mapped);
     } catch (err) {
@@ -504,7 +549,7 @@ const MyPurchase: React.FC = () => {
       {/* Details Modal */}
       {selected && (
         <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-white w-full max-w-lg rounded-t-3xl sm:rounded-2xl p-6 relative">
+          <div className="bg-white w-full max-w-lg rounded-t-3xl sm:rounded-2xl p-6 relative max-h-[90vh] overflow-y-auto">
             <button onClick={() => setSelected(null)} className="absolute right-6 top-6 text-gray-400 hover:text-red-500">
               <FaTimesIcon size={20} />
             </button>
@@ -531,6 +576,70 @@ const MyPurchase: React.FC = () => {
                  </div>
                </div>
             </div>
+
+            {/* Account Access Details Section */}
+            {selected.status === "Completed" && (selected.accountUsername || selected.accountPassword || selected.recoveryEmail || selected.recoveryEmailPassword || selected.previewLink) && (
+              <div className="bg-blue-50 rounded-2xl p-4 space-y-3 border border-blue-100 mb-6 text-sm">
+                <div className="flex justify-between items-center border-b pb-3">
+                  <span className="text-blue-900 font-bold flex items-center gap-2">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                    Account Access Details
+                  </span>
+                  <button
+                    onClick={() => setShowAccountDetails(!showAccountDetails)}
+                    className="p-1.5 hover:bg-blue-200 rounded-lg transition"
+                    title={showAccountDetails ? "Hide details" : "Show details"}
+                  >
+                    <FaEyeIcon size={16} className={showAccountDetails ? "text-blue-600" : "text-gray-400"} />
+                  </button>
+                </div>
+
+                {showAccountDetails ? (
+                  <div className="space-y-3 pt-2">
+                    {selected.accountUsername && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Username</span>
+                        <span className="font-mono bg-white p-2 rounded border text-xs break-all max-w-[150px]">{selected.accountUsername}</span>
+                      </div>
+                    )}
+                    {selected.accountPassword && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Password</span>
+                        <span className="font-mono bg-white p-2 rounded border text-xs break-all max-w-[150px]">{selected.accountPassword}</span>
+                      </div>
+                    )}
+                    {selected.recoveryEmail && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Recovery Email</span>
+                        <span className="font-mono bg-white p-2 rounded border text-xs break-all max-w-[150px]">{selected.recoveryEmail}</span>
+                      </div>
+                    )}
+                    {selected.recoveryEmailPassword && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Recovery Email Password</span>
+                        <span className="font-mono bg-white p-2 rounded border text-xs break-all max-w-[150px]">{selected.recoveryEmailPassword}</span>
+                      </div>
+                    )}
+                    {selected.previewLink && (
+                      <div className="flex justify-between items-start gap-2">
+                        <span className="text-gray-600">Profile Preview Link</span>
+                        <a href={selected.previewLink} target="_blank" rel="noopener noreferrer" className="font-mono bg-white p-2 rounded border text-xs text-blue-600 hover:text-blue-800 break-all max-w-[150px] underline">
+                          View Profile
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="text-gray-500 text-xs italic pt-2">
+                    Click the eye icon to reveal account access details
+                  </div>
+                )}
+              </div>
+            )}
+
             {selected.status === "Pending" && (
               <button 
                 onClick={() => handleUpdateStatus("completed", selected.sellerEmail)} 
