@@ -1,4 +1,4 @@
-import React, { useState, ChangeEvent, FormEvent } from "react";
+import React, { useState, ChangeEvent, FormEvent, useEffect } from "react";
 import {
   FaCreditCard,
   FaMoneyBillWave,
@@ -29,7 +29,7 @@ interface WithdrawFormData {
 
 const WithdrawForm: React.FC = () => {
   const { user, setUser } = useAuth();
-  const { refetch, data } = useAuthHook();
+  const { data } = useAuthHook();
 
   const [paymentMethod, setPaymentMethod] = useState<"kora" | "flutterwave" | "localbank">(
     "kora"
@@ -49,6 +49,41 @@ const WithdrawForm: React.FC = () => {
     text: string;
     type: "success" | "error";
   }>({ text: "", type: "success" });
+  const [savedBankAccount, setSavedBankAccount] = useState<any>(null);
+
+  // Load saved bank account details on component mount
+  useEffect(() => {
+    const fetchSavedBankAccount = async () => {
+      if (!data?._id) return;
+      
+      try {
+        const response = await fetch(`http://localhost:3200/api/user/get-bank-account/${data._id}`);
+        const result = await response.json();
+        
+        if (result.success && result.bankDetails) {
+          setSavedBankAccount(result.bankDetails);
+        }
+      } catch (error) {
+        console.error("Error fetching saved bank account:", error);
+      }
+    };
+
+    fetchSavedBankAccount();
+  }, [data?._id]);
+
+  // Pre-fill form when paymentMethod changes to "localbank" and savedBankAccount exists
+  useEffect(() => {
+    if (paymentMethod === "localbank" && savedBankAccount) {
+      setFormData(prev => ({
+        ...prev,
+        accountNumber: savedBankAccount.accountNumber || "",
+        bankCode: savedBankAccount.bankCode || "",
+        fullName: savedBankAccount.fullName || "",
+        bankName: savedBankAccount.bankName || "",
+        phoneNumber: savedBankAccount.phoneNumber || "",
+      }));
+    }
+  }, [paymentMethod, savedBankAccount]);
 
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
@@ -58,6 +93,45 @@ const WithdrawForm: React.FC = () => {
 
   const handleMethodChange = (e: ChangeEvent<HTMLSelectElement>) => {
     setPaymentMethod(e.target.value as "kora" | "flutterwave" | "localbank");
+  };
+
+  // Save bank account details to user profile
+  const handleSaveBankAccount = async () => {
+    if (!data?._id) {
+      toast.error("Please login first");
+      return;
+    }
+
+    if (!formData.accountNumber || !formData.bankCode || !formData.fullName || !formData.bankName) {
+      toast.error("Please fill all bank details");
+      return;
+    }
+
+    try {
+      const response = await fetch("http://localhost:3200/api/user/save-bank-account", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: data._id,
+          accountNumber: formData.accountNumber,
+          bankCode: formData.bankCode,
+          fullName: formData.fullName,
+          bankName: formData.bankName,
+          phoneNumber: formData.phoneNumber,
+        }),
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        setSavedBankAccount(result.bankDetails);
+        toast.success("Bank account saved successfully!");
+      } else {
+        toast.error(result.message || "Failed to save bank account");
+      }
+    } catch (error) {
+      console.error("Error saving bank account:", error);
+      toast.error("Error saving bank account");
+    }
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -139,6 +213,26 @@ const WithdrawForm: React.FC = () => {
 
         if (setUser) {
           setUser({ ...user, balance: newBalance } as any);
+        }
+
+        // Save bank account for local bank method
+        if (paymentMethod === "localbank" && formData.bankName) {
+          try {
+            await fetch("http://localhost:3200/api/user/save-bank-account", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                userId: data._id,
+                accountNumber: formData.accountNumber,
+                bankCode: formData.bankCode,
+                fullName: formData.fullName,
+                bankName: formData.bankName,
+                phoneNumber: formData.phoneNumber,
+              }),
+            });
+          } catch (error) {
+            console.error("Error saving bank account after withdrawal:", error);
+          }
         }
 
         toast.success(`Request submitted! $${amountNum} deducted.`);
@@ -248,6 +342,32 @@ const WithdrawForm: React.FC = () => {
           <h3 className="text-2xl font-bold text-[#0A1D37] mb-6 flex items-center gap-3">
             <UniversityIcon size={30} /> Bank Account Details
           </h3>
+
+          {/* Display saved bank account if local bank is selected */}
+          {paymentMethod === "localbank" && savedBankAccount && (
+            <div className="mb-6 p-4 bg-blue-50 border-2 border-blue-200 rounded-lg">
+              <p className="text-sm text-blue-700 font-semibold mb-3">✓ Using your saved bank account</p>
+              <div className="grid md:grid-cols-2 gap-3">
+                <div>
+                  <p className="text-xs text-gray-600">Account Holder</p>
+                  <p className="font-semibold text-gray-800">{savedBankAccount.fullName}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-600">Bank Name</p>
+                  <p className="font-semibold text-gray-800">{savedBankAccount.bankName}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-600">Account Number</p>
+                  <p className="font-semibold text-gray-800 truncate">{savedBankAccount.accountNumber}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-600">Bank Code</p>
+                  <p className="font-semibold text-gray-800">{savedBankAccount.bankCode}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="grid md:grid-cols-2 gap-6">
             <div>
               <label className="block font-medium mb-2">Account Number *</label>
@@ -301,6 +421,18 @@ const WithdrawForm: React.FC = () => {
                 className="w-full px-6 py-4 border-2 border-gray-300 rounded-xl focus:border-[#D4A017] transition"
                 required={paymentMethod === "localbank"}
               />
+              
+              {/* Save Bank Account Button */}
+              <button
+                type="button"
+                onClick={handleSaveBankAccount}
+                className="mt-4 w-full px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white font-bold rounded-xl hover:from-green-600 hover:to-green-700 transition-all transform hover:scale-[1.02] active:scale-98"
+              >
+                💾 Save Bank Account for Future
+              </button>
+              <p className="text-xs text-gray-500 mt-2 text-center">
+                Save your bank details to auto-fill on next withdrawal
+              </p>
             </div>
           )}
         </div>
