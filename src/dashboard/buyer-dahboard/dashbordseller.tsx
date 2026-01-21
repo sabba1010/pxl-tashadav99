@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useAuthHook } from '../../hook/useAuthHook';
+import Swal from 'sweetalert2';
 import {
   ArrowRight,
   LucideIcon,
@@ -791,7 +792,20 @@ const DashboardSeller: React.FC = () => {
                     <button 
                       onClick={() => {
                         navigator.clipboard.writeText(referralData.referralLink);
-                        alert('Referral link copied to clipboard!');
+                        Swal.fire({
+                          icon: 'success',
+                          title: 'Copied!',
+                          text: 'Referral link copied to clipboard',
+                          toast: true,
+                          position: 'top-end',
+                          showConfirmButton: false,
+                          timer: 3000,
+                          timerProgressBar: true,
+                          didOpen: (toast) => {
+                            toast.addEventListener('mouseenter', Swal.stopTimer)
+                            toast.addEventListener('mouseleave', Swal.resumeTimer)
+                          }
+                        });
                       }}
                       className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-bold uppercase transition-all flex items-center gap-2"
                     >
