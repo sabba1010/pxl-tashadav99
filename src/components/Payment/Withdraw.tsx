@@ -24,13 +24,14 @@ interface WithdrawFormData {
   phoneNumber: string;
   email: string;
   note: string;
+  bankName: string;
 }
 
 const WithdrawForm: React.FC = () => {
   const { user, setUser } = useAuth();
   const { refetch, data } = useAuthHook();
 
-  const [paymentMethod, setPaymentMethod] = useState<"kora" | "flutterwave">(
+  const [paymentMethod, setPaymentMethod] = useState<"kora" | "flutterwave" | "localbank">(
     "kora"
   );
   const [formData, setFormData] = useState<WithdrawFormData>({
@@ -41,8 +42,7 @@ const WithdrawForm: React.FC = () => {
     fullName: "",
     phoneNumber: "",
     email: data?.email || "",
-    note: "",
-  });
+    note: "",    bankName: "",  });
 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{
@@ -57,7 +57,7 @@ const WithdrawForm: React.FC = () => {
   };
 
   const handleMethodChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    setPaymentMethod(e.target.value as "kora" | "flutterwave");
+    setPaymentMethod(e.target.value as "kora" | "flutterwave" | "localbank");
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -119,6 +119,7 @@ const WithdrawForm: React.FC = () => {
         phoneNumber: formData.phoneNumber || null,
         email: formData.email || null,
         note: formData.note || null,
+        bankName: formData.bankName || null,
       };
 
       const withdrawResponse = await fetch(
@@ -156,6 +157,7 @@ const WithdrawForm: React.FC = () => {
           phoneNumber: "",
           email: data?.email || "",
           note: "",
+          bankName: "",
         });
       } else {
         const errorMsg = withdrawData.message || "Request failed";
@@ -197,11 +199,12 @@ const WithdrawForm: React.FC = () => {
           <select
             value={paymentMethod}
             onChange={handleMethodChange}
-            className="w-full px-6 py-5 rounded-xl bg-white/10 border border-white/20 text-white text-lg focus:ring-4 focus:ring-[#D4A017] outline-none"
+            className="w-full px-6 py-5 rounded-xl bg-white/10 border border-white/20 text-[#d4a643] text-lg focus:ring-4 focus:ring-[#D4A017] outline-none"
             required
           >
             <option value="kora">Kora (Korapay) - Recommended</option>
             <option value="flutterwave">Flutterwave</option>
+            <option value="localbank">Local Bank Account</option>
           </select>
         </div>
 
@@ -285,6 +288,21 @@ const WithdrawForm: React.FC = () => {
               required
             />
           </div>
+
+          {paymentMethod === "localbank" && (
+            <div className="mt-6">
+              <label className="block font-medium mb-2">Bank Name *</label>
+              <input
+                type="text"
+                name="bankName"
+                value={formData.bankName}
+                onChange={handleChange}
+                placeholder="e.g. First Bank of Nigeria"
+                className="w-full px-6 py-4 border-2 border-gray-300 rounded-xl focus:border-[#D4A017] transition"
+                required={paymentMethod === "localbank"}
+              />
+            </div>
+          )}
         </div>
 
         {/* Contact */}
