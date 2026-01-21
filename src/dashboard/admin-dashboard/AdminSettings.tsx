@@ -175,8 +175,9 @@ const AdminSettings: React.FC = () => {
                 )}
               </div>
             </form>
+{/* 
 
-            <div className="grid grid-cols-1 gap-4">
+    <div className="grid grid-cols-1 gap-4">
               <form onSubmit={handleSaveBuyer} className="rounded-lg border border-gray-200 bg-gray-50 p-4">
                 <div>
                   <div>
@@ -185,7 +186,7 @@ const AdminSettings: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="mt-3">
+                {/* <div className="mt-3">
                   <label htmlFor="buyerRate" className="sr-only">Buyer Deposit Rate (%)</label>
                   <div className="relative">
                     <input
@@ -201,9 +202,9 @@ const AdminSettings: React.FC = () => {
                       disabled={buyerLoading}
                     />
                   </div>
-                </div>
+                </div> */}
 
-                <div className="mt-4 flex items-center gap-4">
+                {/* <div className="mt-4 flex items-center gap-4">
                   <button
                     type="submit"
                     disabled={buyerLoading}
@@ -224,9 +225,9 @@ const AdminSettings: React.FC = () => {
                     </p>
                   )}
                 </div>
-              </form>
+              </form> */}
 
-              <form onSubmit={handleSaveSeller} className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+              {/* <form onSubmit={handleSaveSeller} className="rounded-lg border border-gray-200 bg-gray-50 p-4">
                 <div>
                   <div>
                     <h4 className="text-lg font-semibold text-gray-900">Seller Withdrawal Rate</h4>
@@ -274,7 +275,14 @@ const AdminSettings: React.FC = () => {
                   )}
                 </div>
               </form>
-            </div>
+            </div> */}
+
+
+
+
+
+
+        
           </div>
         </div>
       </div>
