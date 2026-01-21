@@ -68,6 +68,7 @@ interface RawPurchaseItem {
   email?: string;
   password?: string;
   previewLink?: string;
+  additionalInfo?: string;
 }
 
 interface ChatMessage {
@@ -279,7 +280,7 @@ const MyPurchase: React.FC = () => {
         id: item._id,
         platform: inferPlatform(item.productName),
         title: item.productName || "Untitled",
-        desc: `Product ID: ${item.productId}`,
+        desc: item.additionalInfo || "No additional details provided.",
         sellerEmail: item.sellerEmail,
         buyerEmail: item.buyerEmail,
         price: item.price || 0,
@@ -578,7 +579,7 @@ const MyPurchase: React.FC = () => {
             </div>
 
             {/* Account Access Details Section */}
-            {selected.status === "Completed" && (selected.accountUsername || selected.accountPassword || selected.recoveryEmail || selected.recoveryEmailPassword || selected.previewLink) && (
+            {(selected.accountUsername || selected.accountPassword || selected.recoveryEmail || selected.recoveryEmailPassword || selected.previewLink) && (
               <div className="bg-blue-50 rounded-2xl p-4 space-y-3 border border-blue-100 mb-6 text-sm">
                 <div className="flex justify-between items-center border-b pb-3">
                   <span className="text-blue-900 font-bold flex items-center gap-2">
@@ -611,24 +612,10 @@ const MyPurchase: React.FC = () => {
                         <span className="font-mono bg-white p-2 rounded border text-xs break-all max-w-[150px]">{selected.accountPassword}</span>
                       </div>
                     )}
-                    {selected.recoveryEmail && (
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Recovery Email</span>
-                        <span className="font-mono bg-white p-2 rounded border text-xs break-all max-w-[150px]">{selected.recoveryEmail}</span>
-                      </div>
-                    )}
-                    {selected.recoveryEmailPassword && (
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Recovery Email Password</span>
-                        <span className="font-mono bg-white p-2 rounded border text-xs break-all max-w-[150px]">{selected.recoveryEmailPassword}</span>
-                      </div>
-                    )}
-                    {selected.previewLink && (
+                    {selected.desc && (
                       <div className="flex justify-between items-start gap-2">
-                        <span className="text-gray-600">Profile Preview Link</span>
-                        <a href={selected.previewLink} target="_blank" rel="noopener noreferrer" className="font-mono bg-white p-2 rounded border text-xs text-blue-600 hover:text-blue-800 break-all max-w-[150px] underline">
-                          View Profile
-                        </a>
+                        <span className="text-gray-600">Additional Info</span>
+                        <span className="font-mono bg-white p-2 rounded border text-xs break-all max-w-[150px]">{selected.desc}</span>
                       </div>
                     )}
                   </div>
