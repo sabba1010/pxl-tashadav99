@@ -8,8 +8,6 @@ import {
 import { useAuth } from "../../context/AuthContext";
 import { toast } from "sonner";
 import { useAuthHook } from "../../hook/useAuthHook";
-// refetch বাদ দিচ্ছি কারণ সার্ভার আপডেট না হলে refetch করলে আগের ব্যালেন্স চলে আসবে
-// import { useAuthHook } from "../../hook/useAuthHook";
 
 // react-icons v5+ TypeScript fix
 const CreditCardIcon = FaCreditCard as React.ElementType;
@@ -37,7 +35,7 @@ const WithdrawForm: React.FC = () => {
   );
   const [formData, setFormData] = useState<WithdrawFormData>({
     amount: "",
-    currency: "NGN",
+    currency: "USD", // 👈 Default USD করে দেওয়া হয়েছে
     accountNumber: "",
     bankCode: "",
     fullName: "",
@@ -66,10 +64,21 @@ const WithdrawForm: React.FC = () => {
     e.preventDefault();
 
     const amountNum = Number(formData.amount);
+    const MAX_WITHDRAW_LIMIT = 100; // 🛑 $100 Limit
 
-    // Validation
+    // Validation: Empty or Zero
     if (!amountNum || amountNum <= 0) {
       setMessage({ text: "Amount must be greater than 0", type: "error" });
+      return;
+    }
+
+    // 🛑 Validation: $100 Limit Check
+    if (amountNum > MAX_WITHDRAW_LIMIT) {
+      toast.error(`Maximum withdrawal limit is $${MAX_WITHDRAW_LIMIT}`);
+      setMessage({
+        text: `Error: You cannot withdraw more than $${MAX_WITHDRAW_LIMIT} USD`,
+        type: "error",
+      });
       return;
     }
 
@@ -83,9 +92,8 @@ const WithdrawForm: React.FC = () => {
       return;
     }
 
-    // 🛑 STEP 1: Frontend Balance Check
+    // Balance Check
     const currentBalance = (data as any).balance || 0;
-    console.log(data);
 
     if (currentBalance < amountNum) {
       toast.error("Insufficient Balance!");
@@ -100,7 +108,6 @@ const WithdrawForm: React.FC = () => {
     setMessage({ text: "", type: "success" });
 
     try {
-      // 🚀 STEP 2: Submit Withdraw Request (এটা ঠিক আছে)
       const requestBody = {
         userId: data._id,
         paymentMethod,
@@ -114,7 +121,6 @@ const WithdrawForm: React.FC = () => {
         note: formData.note || null,
       };
 
-      // আপনার withdraw রাউট যদি কাজ করে তবে এটা থাকবে
       const withdrawResponse = await fetch(
         "http://localhost:3200/withdraw/post",
         {
@@ -127,26 +133,23 @@ const WithdrawForm: React.FC = () => {
       const withdrawData = await withdrawResponse.json();
 
       if (withdrawResponse.ok) {
-        // 🚀 STEP 3: ONLY Visual Update (No Backend Call)
-        // আমরা ব্যাকএন্ডে আপডেট রিকোয়েস্ট পাঠাব না, কারণ রাউট নেই।
-
+        // Visual Balance Update
         const newBalance = currentBalance - amountNum;
 
-        // শুধুমাত্র লোকাল স্টেট আপডেট করছি যাতে ইউজার সাথে সাথে ব্যালেন্স কমা দেখে
         if (setUser) {
           setUser({ ...user, balance: newBalance } as any);
         }
 
-        toast.success(`Request submitted & $${amountNum} deducted (Visually)!`);
+        toast.success(`Request submitted! $${amountNum} deducted.`);
         setMessage({
           text: `Success! $${amountNum} deducted. New Balance: $${newBalance}`,
           type: "success",
         });
 
-        // Form Reset
+        // Reset Form
         setFormData({
           amount: "",
-          currency: "NGN",
+          currency: "USD",
           accountNumber: "",
           bankCode: "",
           fullName: "",
@@ -154,11 +157,7 @@ const WithdrawForm: React.FC = () => {
           email: data?.email || "",
           note: "",
         });
-        refetch();
-        // NOTE: refetch() কল করছি না। কারণ সার্ভার আপডেট হয়নি,
-        // তাই refetch করলে ব্যালেন্স আবার আগের মতো হয়ে যাবে।
       } else {
-        // Withdraw request failed
         const errorMsg = withdrawData.message || "Request failed";
         toast.error(errorMsg);
         setMessage({ text: errorMsg, type: "error" });
@@ -166,10 +165,6 @@ const WithdrawForm: React.FC = () => {
     } catch (error) {
       console.error("Withdraw error:", error);
       toast.error("Network error. Try again later.");
-      setMessage({
-        text: "Connection failed. Please try again.",
-        type: "error",
-      });
     } finally {
       setLoading(false);
     }
@@ -181,7 +176,6 @@ const WithdrawForm: React.FC = () => {
         Withdraw <span className="text-[#D4A017]">Funds</span>
       </h2>
 
-      {/* Alert Message */}
       {message.text && (
         <div
           className={`mb-8 p-6 rounded-2xl text-center font-bold text-lg shadow-md ${
@@ -195,8 +189,6 @@ const WithdrawForm: React.FC = () => {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-8">
-        {/* ... বাকি ফর্ম ডিজাইন আগের মতোই থাকবে ... */}
-
         {/* Payment Gateway */}
         <div className="bg-[#0A1D37] p-8 rounded-2xl text-white">
           <label className="block text-xl font-bold mb-4 flex items-center gap-3">
@@ -217,7 +209,7 @@ const WithdrawForm: React.FC = () => {
         <div className="grid md:grid-cols-2 gap-8">
           <div>
             <label className="block text-xl font-bold text-[#0A1D37] mb-3 flex items-center gap-3">
-              <MoneyBillIcon size={28} /> Amount
+              <MoneyBillIcon size={28} /> Amount (Limit: $100)
             </label>
             <input
               type="number"
@@ -225,6 +217,7 @@ const WithdrawForm: React.FC = () => {
               value={formData.amount}
               onChange={handleChange}
               placeholder="0.00"
+              max="100"
               className="w-full px-6 py-5 border-2 border-gray-200 rounded-xl focus:border-[#D4A017] focus:ring-4 focus:ring-[#D4A017]/20 text-2xl font-bold transition"
               required
               min="1"
@@ -241,11 +234,8 @@ const WithdrawForm: React.FC = () => {
               onChange={handleChange}
               className="w-full px-6 py-5 border-2 border-gray-200 rounded-xl focus:border-[#D4A017] focus:ring-4 focus:ring-[#D4A017]/20 text-lg transition"
             >
-              <option value="NGN">NGN – Nigerian Naira</option>
-              {/* <option value="GHS">GHS – Ghanaian Cedi</option>
-              <option value="KES">KES – Kenyan Shilling</option>
-              <option value="USD">USD – US Dollar</option> */}
-          
+              <option value="USD">USD – US Dollar</option>
+              {/* <option value="NGN">NGN – Nigerian Naira</option> */}
             </select>
           </div>
         </div>
@@ -300,9 +290,7 @@ const WithdrawForm: React.FC = () => {
         {/* Contact */}
         <div className="grid md:grid-cols-2 gap-6">
           <div>
-            <label className="block font-medium mb-2">
-              Phone Number (Optional)
-            </label>
+            <label className="block font-medium mb-2">Phone Number</label>
             <input
               type="text"
               name="phoneNumber"
@@ -313,7 +301,7 @@ const WithdrawForm: React.FC = () => {
             />
           </div>
           <div>
-            <label className="block font-medium mb-2">Email (Optional)</label>
+            <label className="block font-medium mb-2">Email</label>
             <input
               type="email"
               name="email"
@@ -354,8 +342,7 @@ const WithdrawForm: React.FC = () => {
         </button>
 
         <p className="text-center text-sm text-gray-500 mt-8 uppercase tracking-wider font-medium">
-          Funds will be held securely until admin approval • Instant payout
-          after approval
+          Approval required • Limit: $100 per request
         </p>
       </form>
     </div>
