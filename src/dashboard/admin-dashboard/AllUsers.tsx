@@ -6,7 +6,7 @@ import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   CircularProgress, Avatar, Modal, Tabs, Tab, Select, MenuItem, FormControl, Chip
 } from "@mui/material";
-import { Refresh, Visibility, Close, FiberManualRecord, CheckCircle, Cancel, ShoppingBag } from "@mui/icons-material";
+import { Refresh, Visibility, Close, FiberManualRecord, CheckCircle, Cancel, ShoppingBag, CalendarMonth } from "@mui/icons-material";
 
 /* ====================== TYPES ====================== */
 interface User {
@@ -16,6 +16,7 @@ interface User {
   role: string;
   balance: number;
   status?: string;
+  accountCreationDate?: string; // ডাটাবেজ থেকে আসা তারিখের জন্য
 }
 
 const ITEMS_PER_PAGE = 10;
@@ -40,12 +41,12 @@ const AllUsers: React.FC = () => {
     },
   });
 
-  // 2. Fetch All Purchases (To show count in main table) - FIXED TS ERROR
+  // 2. Fetch All Purchases
   const { data: allPurchases = [] } = useQuery<any[]>({
     queryKey: ["all-purchases"],
     queryFn: async () => {
       const res = await axios.get(`${BASE_URL}/purchase/getall`);
-      return res.data as any[]; // Added explicit type casting
+      return res.data as any[];
     },
   });
 
@@ -64,7 +65,6 @@ const AllUsers: React.FC = () => {
     if (window.confirm(`Are you sure you want to mark this as ${action}?`)) {
       try {
         await axios.patch(`${BASE_URL}/purchase/update-status/${purchaseId}`, { status: action });
-        // Invalidate to refresh both the main table count and the modal data
         queryClient.invalidateQueries({ queryKey: ["all-purchases"] });
         if (selectedUser) handleOpenHistory(selectedUser);
       } catch (err) {
@@ -124,20 +124,19 @@ const AllUsers: React.FC = () => {
           <TableHead sx={{ bgcolor: "#F8FAFC" }}>
             <TableRow>
               <TableCell sx={{ fontWeight: 600 }}>BUYER</TableCell>
+              <TableCell sx={{ fontWeight: 600 }}>JOINED AT</TableCell>
               <TableCell sx={{ fontWeight: 600 }}>BALANCE</TableCell>
-              <TableCell sx={{ fontWeight: 600 }}>Purchases</TableCell>
+              <TableCell sx={{ fontWeight: 600 }}>PURCHASES</TableCell>
               <TableCell sx={{ fontWeight: 600 }}>ACCOUNT STATUS</TableCell>
               <TableCell sx={{ fontWeight: 600 }}>HISTORY</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {isUsersLoading ? (
-              <TableRow><TableCell colSpan={5} align="center"><CircularProgress sx={{ my: 4 }} /></TableCell></TableRow>
+              <TableRow><TableCell colSpan={6} align="center"><CircularProgress sx={{ my: 4 }} /></TableCell></TableRow>
             ) : (
               paginated.map((u: User) => {
                 const displayStatus = u.status?.toLowerCase() === "blocked" ? "BLOCKED" : "ACTIVE";
-                
-                // FIXED: Calculate total purchases for this specific user with safe filtering
                 const userPurchaseCount = (allPurchases as any[]).filter(
                   (p: any) => p.buyerId === u._id || p.buyerEmail === u.email
                 ).length;
@@ -153,6 +152,23 @@ const AllUsers: React.FC = () => {
                         </Box>
                       </Box>
                     </TableCell>
+
+                    {/* JOINING DATE COLUMN */}
+                    <TableCell>
+                      <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                        <Typography variant="body2" sx={{ color: "#475569", fontWeight: 600 }}>
+                          {u.accountCreationDate 
+                            ? new Date(u.accountCreationDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+                            : "N/A"}
+                        </Typography>
+                        <Typography variant="caption" color="textSecondary">
+                          {u.accountCreationDate 
+                            ? new Date(u.accountCreationDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                            : ""}
+                        </Typography>
+                      </Box>
+                    </TableCell>
+
                     <TableCell sx={{ fontWeight: 700 }}>${u.balance.toFixed(2)}</TableCell>
                     
                     <TableCell>
@@ -200,7 +216,12 @@ const AllUsers: React.FC = () => {
       <Modal open={open} onClose={() => setOpen(false)}>
         <Box sx={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", width: 850, bgcolor: "white", p: 4, borderRadius: 3, boxShadow: 24, outline: 'none' }}>
           <Box display="flex" justifyContent="space-between" mb={2}>
-            <Typography variant="h6" fontWeight={700}>Activity: {selectedUser?.name}</Typography>
+            <Box>
+                <Typography variant="h6" fontWeight={700}>Activity: {selectedUser?.name}</Typography>
+                <Typography variant="caption" sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'text.secondary' }}>
+                   <CalendarMonth sx={{ fontSize: 14 }} /> Joined: {selectedUser?.accountCreationDate ? new Date(selectedUser.accountCreationDate).toLocaleDateString() : 'N/A'}
+                </Typography>
+            </Box>
             <IconButton onClick={() => setOpen(false)}><Close /></IconButton>
           </Box>
           <Tabs value={tabValue} onChange={(_, v) => setTabValue(v)} sx={{ mb: 2, borderBottom: 1, borderColor: "#E2E8F0" }}>
