@@ -177,23 +177,38 @@ const DashboardSeller: React.FC = () => {
         setBestSellingProducts(topProducts);
 
         // Calculate daily earnings
-        const dailyData: any = {};
-        sales
-          .filter(p => p.status === 'completed' || p.status === 'confirmed' || p.status === 'sold')
-          .forEach((sale: any) => {
-            const date = new Date(sale.createdAt).toLocaleDateString();
-            if (!dailyData[date]) {
-              dailyData[date] = 0;
-            }
-            dailyData[date] += Number(sale.price) || 0;
-          });
+// Calculate daily earnings (LAST 30 CALENDAR DAYS - FIXED)
+const today = new Date();
+const last30Days: { date: string; amount: number }[] = [];
 
-        const sortedDaily = Object.entries(dailyData)
-          .sort((a: any, b: any) => new Date(a[0]).getTime() - new Date(b[0]).getTime())
-          .slice(-30)
-          .map(([date, amount]: any) => ({ date, amount }));
+// prepare last 30 days with 0 earnings
+for (let i = 29; i >= 0; i--) {
+  const d = new Date();
+  d.setDate(today.getDate() - i);
+  last30Days.push({
+    date: d.toLocaleDateString(),
+    amount: 0
+  });
+}
 
-        setDailyEarnings(sortedDaily);
+// add earnings to matching dates
+sales
+  .filter(
+    p =>
+      p.status === 'completed' ||
+      p.status === 'confirmed' ||
+      p.status === 'sold'
+  )
+  .forEach((sale: any) => {
+    const saleDate = new Date(sale.createdAt).toLocaleDateString();
+    const day = last30Days.find(d => d.date === saleDate);
+    if (day) {
+      day.amount += Number(sale.price) || 0;
+    }
+  });
+
+setDailyEarnings(last30Days);
+
 
         const activities = [
           ...sales.map(s => ({ Icon: Zap, color: 'text-blue-500', title: 'Payment Received', desc: `Sold ${s.productName || 'Account'} - $${s.price}`, time: s.createdAt })),
