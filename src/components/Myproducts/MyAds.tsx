@@ -40,6 +40,7 @@ interface Ad {
   userRole: string;
   status: Status | string;
   rejectReason?: string;
+  isVisible?: boolean;
 }
 
 const TABS: string[] = ["All", "Active", "Pending", "Denied", "Restore"];
@@ -72,7 +73,8 @@ const MyAds: React.FC = () => {
         );
 
         const userAds = res.data.filter(
-          (ad: { userEmail: string }) => ad.userEmail === user.user?.email
+          (ad: { userEmail: string; isVisible?: boolean }) => 
+            ad.userEmail === user.user?.email && ad.isVisible !== false
         );
 
         setItems(userAds);

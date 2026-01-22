@@ -1,16 +1,21 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Eye, Calendar, User, Lock, Bell } from 'lucide-react';
+import { Eye, Calendar, User, Lock, Bell, Package } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useAuthHook } from '../hook/useAuthHook';
 import { getAllNotifications } from './Notification/Notification';
+import ListingsManagement from './Listings/ListingsManagement';
 
 const AccountSettings = () => {
   const [activeTab, setActiveTab] = useState('profile');
+  const { data: userData } = useAuthHook();
 
   const tabs = [
     { id: 'profile', label: 'Profile', icon: User },
     { id: 'security', label: 'Security', icon: Lock },
     { id: 'notifications', label: 'Notifications', icon: Bell },
+    ...(userData?.role === 'seller' || userData?.role === 'admin'
+      ? [{ id: 'listings', label: 'Listings', icon: Package }]
+      : []),
   ];
 
   return (
@@ -51,6 +56,7 @@ const AccountSettings = () => {
           {activeTab === 'profile' && <ProfileSection />}
           {activeTab === 'security' && <SecuritySection />}
           {activeTab === 'notifications' && <NotificationsSection />}
+          {activeTab === 'listings' && <ListingsManagement />}
         </div>
       </div>
     </div>
