@@ -1676,7 +1676,7 @@ const ProfileSection = () => (
 );
 
 const SecuritySection = () => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -1748,6 +1748,11 @@ const SecuritySection = () => {
         setCurrentPassword('');
         setNewPassword('');
         setConfirmPassword('');
+        // Auto logout after 2 seconds and redirect to login
+        setTimeout(() => {
+          logout();
+          window.location.href = "/login";
+        }, 2000);
       } else {
         toast.error((response.data as any).message || "❌ Failed to update password!");
       }
