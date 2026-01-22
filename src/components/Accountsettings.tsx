@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Eye, Calendar, User, Lock, Bell, Package } from 'lucide-react';
+import { Eye, EyeOff, Calendar, User, Lock, Bell, Package } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useAuthHook } from '../hook/useAuthHook';
 import { getAllNotifications } from './Notification/Notification';
 import ListingsManagement from './Listings/ListingsManagement';
+import axios from 'axios';
+import { toast } from 'sonner';
 
 const AccountSettings = () => {
   const [activeTab, setActiveTab] = useState('profile');
@@ -197,87 +199,203 @@ const ProfileSection = () => (
   </div>
 );
 
-const SecuritySection = () => (
-  <div className="space-y-14">
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 md:p-8">
-      <h2 className="text-xl font-semibold text-gray-900 mb-1">Password</h2>
-      <p className="text-sm text-gray-500 mb-6">
-        Please enter your current password to change your password.
-      </p>
+const SecuritySection = () => {
+  const { user } = useAuth();
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
-      <div className="space-y-5 max-w-xl">
-        <div className="relative">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
-          <input
-            type="password"
-            placeholder="Current Password"
-            className="w-full rounded-lg border border-gray-300 px-4 py-3 pr-10 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none"
-          />
-          <Eye className="absolute right-3 top-[42px] w-5 h-5 text-gray-400 cursor-pointer" />
-        </div>
+  // Password validation function
+  const validatePassword = (password: string) => {
+    if (password.length < 3 || password.length > 30) {
+      toast.error("❌ Password must be between 3 and 30 characters.");
+      return false;
+    }
 
-        <div className="relative">
-          <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
-          <input
-            type="password"
-            placeholder="New Password"
-            className="w-full rounded-lg border border-gray-300 px-4 py-3 pr-10 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none"
-          />
-          <Eye className="absolute right-3 top-[42px] w-5 h-5 text-gray-400 cursor-pointer" />
-        </div>
+    const passwordRegex = /^[a-z0-9!@#$%^&*()_+\-={};"':,.<>|?\\[\]]*$/;
+    if (!passwordRegex.test(password)) {
+      toast.error("❌ Password can only contain lowercase letters, numbers, and symbols.");
+      return false;
+    }
 
-        <ul className="text-xs text-gray-500 list-disc pl-5 space-y-1">
-          <li>Minimum length of 3-30 characters</li>
-          <li>Only lowercase, numeric and symbols allowed</li>
-        </ul>
+    const hasLowercase = /[a-z]/.test(password);
+    const hasNumber = /[0-9]/.test(password);
+    const hasSymbol = /[!@#$%^&*()_+\-={};"':,.<>|?\\[\]]/.test(password);
 
-        <div className="relative">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Confirm password</label>
-          <input
-            type="password"
-            placeholder="Confirm password"
-            className="w-full rounded-lg border border-gray-300 px-4 py-3 pr-10 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none"
-          />
-          <Eye className="absolute right-3 top-[42px] w-5 h-5 text-gray-400 cursor-pointer" />
-        </div>
+    if (!hasLowercase || !hasNumber || !hasSymbol) {
+      toast.error("❌ Password must contain lowercase letters, numbers, and symbols together!");
+      return false;
+    }
 
-        <div className="flex justify-end gap-4 pt-4">
-          <button className="px-8 py-2.5 border rounded-lg transition font-medium" style={{ borderColor: '#d4a643', color: '#d4a643' }} onMouseEnter={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#f5f0e8'} onMouseLeave={(e) => (e.target as HTMLButtonElement).style.backgroundColor = 'transparent'}>
-            Cancel
-          </button>
-          <button className="px-8 py-2.5 text-white rounded-lg transition font-medium" style={{ backgroundColor: '#d4a643' }} onMouseEnter={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#c4952f'} onMouseLeave={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#d4a643'}>
-            Update password
-          </button>
+    return true;
+  };
+
+  const handleUpdatePassword = async () => {
+    // Validation
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      toast.error("❌ All fields are required!");
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      toast.error("❌ New passwords do not match!");
+      return;
+    }
+
+    if (currentPassword === newPassword) {
+      toast.error("❌ New password must be different from current password!");
+      return;
+    }
+
+    if (!validatePassword(newPassword)) {
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const response = await axios.put(
+        `http://localhost:3200/api/user/update-password`,
+        {
+          email: user?.email,
+          currentPassword,
+          newPassword,
+        }
+      );
+
+      if ((response.data as any).success || response.status === 200) {
+        toast.success("✅ Password updated successfully!");
+        setCurrentPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+      } else {
+        toast.error((response.data as any).message || "❌ Failed to update password!");
+      }
+    } catch (err: any) {
+      console.error("Update password error:", err);
+      if (err.response?.data?.message) {
+        toast.error(err.response.data.message);
+      } else if (err.response?.status === 401) {
+        toast.error("❌ Current password is incorrect!");
+      } else {
+        toast.error("❌ Failed to update password. Please try again.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCancel = () => {
+    setCurrentPassword('');
+    setNewPassword('');
+    setConfirmPassword('');
+  };
+
+  return (
+    <div className="space-y-14">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 md:p-8">
+        <h2 className="text-xl font-semibold text-gray-900 mb-1">Password</h2>
+        <p className="text-sm text-gray-500 mb-6">
+          Please enter your current password to change your password.
+        </p>
+
+        <div className="space-y-5 max-w-xl">
+          <div className="relative">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
+            <div className="relative">
+              <input
+                type={showCurrentPassword ? "text" : "password"}
+                placeholder="Current Password"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                className="w-full rounded-lg border border-gray-300 px-4 py-3 pr-10 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none"
+              />
+              <button
+                type="button"
+                onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                {showCurrentPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
+            </div>
+          </div>
+
+          <div className="relative">
+            <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+            <div className="relative">
+              <input
+                type={showNewPassword ? "text" : "password"}
+                placeholder="New Password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="w-full rounded-lg border border-gray-300 px-4 py-3 pr-10 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none"
+              />
+              <button
+                type="button"
+                onClick={() => setShowNewPassword(!showNewPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                {showNewPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
+            </div>
+          </div>
+
+          <ul className="text-xs text-gray-500 list-disc pl-5 space-y-1">
+            <li>Minimum length of 3-30 characters</li>
+            <li>Must contain lowercase, numbers, and symbols together</li>
+          </ul>
+
+          <div className="relative">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Confirm password</label>
+            <div className="relative">
+              <input
+                type={showConfirmPassword ? "text" : "password"}
+                placeholder="Confirm password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="w-full rounded-lg border border-gray-300 px-4 py-3 pr-10 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none"
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-4 pt-4">
+            <button
+              type="button"
+              onClick={handleCancel}
+              disabled={loading}
+              className="px-8 py-2.5 border rounded-lg transition font-medium hover:bg-gray-50 disabled:opacity-50"
+              style={{ borderColor: '#d4a643', color: '#d4a643' }}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleUpdatePassword}
+              disabled={loading}
+              className="px-8 py-2.5 text-white rounded-lg transition font-medium disabled:opacity-50"
+              style={{ backgroundColor: '#d4a643' }}
+              onMouseEnter={(e) => !loading && ((e.target as HTMLButtonElement).style.backgroundColor = '#c4952f')}
+              onMouseLeave={(e) => !loading && ((e.target as HTMLButtonElement).style.backgroundColor = '#d4a643')}
+            >
+              {loading ? 'Updating...' : 'Update password'}
+            </button>
+          </div>
         </div>
       </div>
     </div>
-
-    {/* <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 md:p-8">
-      <h2 className="text-xl font-semibold text-gray-900 mb-1">Withdrawal PIN</h2>
-      <p className="text-sm text-gray-500 mb-2">Set your withdrawal pin</p>
-
-      <p className="text-sm text-gray-500 mb-5">Create Withdrawal pin</p>
-
-      <div className="flex gap-4 mb-6">
-        {[1, 2, 3, 4].map((i) => (
-          <input
-            key={i}
-            type="text"
-            maxLength={1}
-            defaultValue="-"
-            className="w-14 h-14 text-center text-2xl font-medium border border-gray-300 rounded-lg focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none bg-white"
-          />
-        ))}
-      </div>
-
-      <div className="flex justify-end">
-        <button className="bg-orange-500 text-white px-8 py-3 rounded-lg font-semibold hover:bg-orange-600 transition shadow-sm">
-          Create Pin
-        </button>
-      </div>
-    </div> */}
-  </div>
-);
+  );
+};
 
 const NotificationsSection = () => {
   const { user } = useAuth();
