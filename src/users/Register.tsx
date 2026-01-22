@@ -528,11 +528,45 @@ const Register = () => {
 
     const form = e.currentTarget;
 
+    const name = (form.elements.namedItem("name") as HTMLInputElement).value.trim();
+    const email = (form.elements.namedItem("email") as HTMLInputElement).value.trim();
+    const phone = (form.elements.namedItem("phone") as HTMLInputElement).value.trim();
+    const password = (form.elements.namedItem("password") as HTMLInputElement).value;
+
+    // ===== FIELD VALIDATION =====
+    if (!name || !email || !phone || !password) {
+      toast.error("❌ All fields are required!");
+      return;
+    }
+
+    // ===== PASSWORD VALIDATION =====
+    if (password.length < 3 || password.length > 30) {
+      toast.error("❌ Password must be between 3 and 30 characters.");
+      return;
+    }
+
+    // Only lowercase, numeric and symbols allowed (no uppercase, no spaces)
+    const passwordRegex = /^[a-z0-9!@#$%^&*()_+\-={};"':,.<>|?\\[\]]*$/;
+    if (!passwordRegex.test(password)) {
+      toast.error("❌ Password can only contain lowercase letters, numbers, and symbols (no uppercase or spaces allowed).");
+      return;
+    }
+
+    // Check if password contains at least one lowercase, one number, and one symbol
+    const hasLowercase = /[a-z]/.test(password);
+    const hasNumber = /[0-9]/.test(password);
+    const hasSymbol = /[!@#$%^&*()_+\-={};"':,.<>|?\\[\]]/.test(password);
+
+    if (!hasLowercase || !hasNumber || !hasSymbol) {
+      toast.error("❌ Password must contain lowercase letters, numbers, and symbols together!");
+      return;
+    }
+
     const formData = {
-      name: (form.elements.namedItem("name") as HTMLInputElement).value.trim(),
-      email: (form.elements.namedItem("email") as HTMLInputElement).value.trim(),
-      phone: (form.elements.namedItem("phone") as HTMLInputElement).value.trim(),
-      password: (form.elements.namedItem("password") as HTMLInputElement).value,
+      name,
+      email,
+      phone,
+      password,
       countryCode: selectedCountry.code,
       role: "buyer",
       accountCreationDate: new Date(),
@@ -668,6 +702,10 @@ const Register = () => {
                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
                 </div>
+                <p className="text-xs text-gray-500 mt-2">
+                  Minimum length of 3-30 characters<br />
+                  Must contain lowercase, numbers, and symbols together
+                </p>
               </div>
 
               <button type="submit" className="w-full bg-orange-500 text-white font-bold text-lg py-5 rounded-2xl shadow-xl hover:bg-orange-600 transition-all mt-4">
