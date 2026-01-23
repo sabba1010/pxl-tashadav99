@@ -480,6 +480,7 @@ const Register = () => {
                     </div>
                   )}
                 </div>
+                <p className="mt-2 text-xs md:hidden text-orange-400 font-medium">Please provide your WhatsApp number</p>
               </div>
 
               <div>
@@ -491,7 +492,7 @@ const Register = () => {
                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
                 </div>
-                <p className="text-xs text-gray-500 mt-2">
+                <p className="text-xs text-orange-400 mt-2">
                   Minimum length of 3-30 characters<br />
                   Must contain lowercase, numbers, and symbols together
                 </p>
