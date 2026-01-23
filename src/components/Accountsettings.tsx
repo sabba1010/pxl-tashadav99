@@ -1475,13 +1475,15 @@
 
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Eye, EyeOff, Calendar, User, Lock, Bell, Package } from 'lucide-react';
+import { Eye, EyeOff, User, Lock, Bell, Package } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useAuthHook } from '../hook/useAuthHook';
 import { getAllNotifications } from './Notification/Notification';
 import ListingsManagement from './Listings/ListingsManagement';
 import axios from 'axios';
 import { toast } from 'sonner';
+import countryCodes from '../assets/Country/CountryCodes.json';
+import countryFlags from '../assets/Country/country-flag.json';
 
 const AccountSettings = () => {
   const [activeTab, setActiveTab] = useState('profile');
@@ -1543,111 +1545,321 @@ const AccountSettings = () => {
   );
 };
 
-const ProfileSection = () => (
-  <div className="space-y-6 sm:space-y-8 md:space-y-14">
-    {/* Personal Information */}
-    <div className="bg-white rounded-lg sm:rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 md:p-8">
-      <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-1">Personal Information</h2>
-      <p className="text-xs sm:text-sm text-gray-500 mb-4 sm:mb-6">
-        Make adjustments to your personal information and save them.
-      </p>
+const ProfileSection = () => {
+  const { user } = useAuth();
+  const [profileData, setProfileData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [formData, setFormData] = useState<any>({});
+  const [selectedCountry, setSelectedCountry] = useState<any>(null);
+  const [showCountryDropdown, setShowCountryDropdown] = useState(false);
 
-      <div className="space-y-4 sm:space-y-6 w-full max-w-2xl">
-        <div>
-          <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Name</label>
-          <input
-            type="text"
-            defaultValue="Legityankeelogshub"
-            className="w-full rounded-lg border border-gray-300 px-3 sm:px-4 py-2.5 sm:py-3 text-sm focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none"
-          />
-          <p className="mt-1 sm:mt-1.5 text-xs text-gray-500">
-            You can update your name after 7 days
-          </p>
-        </div>
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (!user?.email) {
+        setLoading(false);
+        return;
+      }
 
-        <div>
-          <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Email</label>
-          <input
-            type="email"
-            defaultValue="tajudeentoyeeb095@gmail.com"
-            className="w-full rounded-lg border border-gray-300 px-3 sm:px-4 py-2.5 sm:py-3 text-sm focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none"
-          />
-        </div>
+      try {
+        setLoading(true);
+        // Fetch all users and find the current user by email
+        const response = await axios.get<any>(`http://localhost:3200/api/user/getall`);
+        const allUsers = (response.data as any);
+        
+        // Find user by email
+        const currentUser = Array.isArray(allUsers) 
+          ? allUsers.find((u: any) => u.email === user.email)
+          : null;
 
-        <div>
-          <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Phone number</label>
-          <div className="flex rounded-lg border border-gray-300 focus-within:border-orange-500 focus-within:ring-1 focus-within:ring-orange-500 overflow-hidden">
-            <span className="inline-flex items-center bg-gray-100 px-2 sm:px-4 text-sm sm:text-lg flex-shrink-0">
-              🇳🇬
-            </span>
-            <input
-              type="tel"
-              defaultValue="+234 903 433 538 9"
-              className="flex-1 px-3 sm:px-4 py-2.5 sm:py-3 bg-white outline-none text-sm"
-            />
-          </div>
+        if (currentUser) {
+          setProfileData(currentUser);
+          const countryData = countryCodes.find(
+            (c: any) => c.name.toLowerCase() === (currentUser?.country || 'Nigeria').toLowerCase()
+          );
+          setSelectedCountry(countryData || countryCodes[0]);
+          setFormData({
+            name: currentUser?.name || '',
+            email: currentUser?.email || '',
+            phone: currentUser?.phone || '',
+            country: currentUser?.country || 'Nigeria',
+            state: currentUser?.state || '',
+            city: currentUser?.city || '',
+            address: currentUser?.address || '',
+            dob: currentUser?.dob || '',
+          });
+        } else {
+          toast.error('User profile not found');
+        }
+      } catch (error) {
+        console.error('Failed to fetch user profile:', error);
+        console.log('Error details:', (error as any).response?.data);
+        console.log('Error status:', (error as any).response?.status);
+        toast.error('Failed to load user information');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserProfile();
+  }, [user?.email]);
+
+  const handleSave = async () => {
+    if (!user?.email) {
+      toast.error('User email not found');
+      return;
+    }
+
+    try {
+      setSaving(true);
+      
+      // Track changes for each field
+      const fieldsToTrack = ['phone', 'country', 'state', 'city', 'address', 'dob'];
+      const changes = [];
+
+      for (const field of fieldsToTrack) {
+        // Use empty string as default for comparison if profileData is null
+        const oldValue = profileData?.[field] ?? '';
+        const newValue = formData[field] ?? '';
+        
+        if (oldValue !== newValue) {
+          changes.push({
+            userEmail: user.email,
+            fieldName: field,
+            oldValue: oldValue || null,
+            newValue: newValue || null,
+            changeType: 'update'
+          });
+        }
+      }
+
+      // Update user profile in the userCollection
+      const response = await axios.put<any>(`http://localhost:3200/api/user/update-profile`, {
+        email: user.email,
+        name: formData.name,
+        phone: formData.phone,
+        country: formData.country,
+        state: formData.state,
+        city: formData.city,
+        address: formData.address,
+        dob: formData.dob,
+      });
+
+      if ((response.data as any)?.success || response.status === 200) {
+        // Log all changes to admin dashboard
+        if (changes.length > 0) {
+          try {
+            for (const change of changes) {
+              await axios.post(
+                `http://localhost:3200/api/user/log-change`,
+                change
+              );
+              console.log('Logged change:', change);
+            }
+          } catch (logError) {
+            console.error('Failed to log changes:', logError);
+            // Don't fail the update if logging fails
+          }
+        }
+
+        setProfileData(formData);
+        toast.success('Profile updated successfully');
+      } else {
+        toast.error('Failed to update profile');
+      }
+    } catch (error: any) {
+      console.error('Failed to update profile:', error);
+      toast.error(error.response?.data?.message || 'Failed to update profile');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="bg-white rounded-lg sm:rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 md:p-8">
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-orange-500"></div>
         </div>
       </div>
-    </div>
+    );
+  }
 
-    {/* Additional Information */}
-    <div className="bg-white rounded-lg sm:rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 md:p-8">
-      <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-1">Additional Information</h2>
-      <p className="text-xs sm:text-sm text-gray-500 mb-4 sm:mb-6">Verify your identity</p>
+  return (
+    <div className="space-y-6 sm:space-y-8 md:space-y-14">
+      {/* Personal Information */}
+      <div className="bg-white rounded-lg sm:rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 md:p-8">
+        <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-1">Personal Information</h2>
+        <p className="text-xs sm:text-sm text-gray-500 mb-4 sm:mb-6">
+          View your personal information from our database.
+        </p>
 
-      <div className="space-y-4 sm:space-y-6 w-full max-w-2xl">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+        <div className="space-y-4 sm:space-y-6 w-full max-w-2xl">
           <div>
-            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Country</label>
-            <select className="w-full rounded-lg border border-gray-300 px-3 sm:px-4 py-2.5 sm:py-3 text-sm focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none bg-white">
-              <option>Nigeria</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">State</label>
-            <select className="w-full rounded-lg border border-gray-300 px-3 sm:px-4 py-2.5 sm:py-3 text-sm focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none bg-white">
-              <option>OS</option>
-            </select>
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">City</label>
-          <select className="w-full rounded-lg border border-gray-300 px-3 sm:px-4 py-2.5 sm:py-3 text-sm focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none bg-white">
-            <option>Osogbo</option>
-          </select>
-        </div>
-
-        <div>
-          <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">User address</label>
-          <input
-            type="text"
-            defaultValue="Second gate uniosun sogbo area"
-            className="w-full rounded-lg border border-gray-300 px-3 sm:px-4 py-2.5 sm:py-3 text-sm focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none"
-          />
-        </div>
-
-        <div className="relative">
-          <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
-          <div className="relative">
+            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Name</label>
             <input
               type="text"
-              defaultValue="07-07-2000"
-              className="w-full rounded-lg border border-gray-300 px-3 sm:px-4 py-2.5 sm:py-3 pr-10 text-sm focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none"
+              value={formData.name || ''}
+              disabled
+              className="w-full rounded-lg border border-gray-300 px-3 sm:px-4 py-2.5 sm:py-3 text-sm bg-gray-100 text-gray-600 cursor-not-allowed outline-none"
             />
-            <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400 pointer-events-none" />
+            <p className="mt-1 sm:mt-1.5 text-xs text-gray-500">Name cannot be changed</p>
+          </div>
+
+          <div>
+            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Email</label>
+            <input
+              type="email"
+              value={formData.email || ''}
+              disabled
+              className="w-full rounded-lg border border-gray-300 px-3 sm:px-4 py-2.5 sm:py-3 text-sm bg-gray-100 text-gray-600 cursor-not-allowed outline-none"
+            />
+            <p className="mt-1 sm:mt-1.5 text-xs text-gray-500">Email cannot be changed</p>
+          </div>
+
+          <div>
+            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Phone number</label>
+            <div className="flex gap-2">
+              <div className="relative w-32 sm:w-40">
+                <button
+                  onClick={() => setShowCountryDropdown(!showCountryDropdown)}
+                  className="w-full rounded-lg border border-gray-300 px-3 sm:px-4 py-2.5 sm:py-3 text-sm flex items-center justify-between bg-white hover:bg-gray-50 focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
+                >
+                  <div className="flex items-center gap-2">
+                    {selectedCountry && (
+                      <img
+                        src={countryFlags.find((f: any) => f.code === selectedCountry.code.toLowerCase())?.flag}
+                        alt={selectedCountry.name}
+                        className="w-5 h-3 sm:w-6 sm:h-4 object-cover rounded"
+                      />
+                    )}
+                    <span className="text-xs sm:text-sm font-medium text-gray-700">
+                      {selectedCountry?.dial_code || '+1'}
+                    </span>
+                  </div>
+                  <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                  </svg>
+                </button>
+                {showCountryDropdown && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto">
+                    {countryCodes.map((country: any) => {
+                      const flagData = countryFlags.find((f: any) => f.code === country.code.toLowerCase());
+                      return (
+                        <button
+                          key={country.code}
+                          onClick={() => {
+                            setSelectedCountry(country);
+                            setShowCountryDropdown(false);
+                          }}
+                          className="w-full px-3 sm:px-4 py-2 sm:py-2.5 text-left text-xs sm:text-sm flex items-center gap-2 hover:bg-orange-50 border-b border-gray-100 last:border-b-0"
+                        >
+                          <img
+                            src={flagData?.flag}
+                            alt={country.name}
+                            className="w-5 h-3 sm:w-6 sm:h-4 object-cover rounded"
+                          />
+                          <span className="flex-1">{country.name}</span>
+                          <span className="text-gray-600 font-medium text-xs">{country.dial_code}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+              <input
+                type="tel"
+                value={formData.phone || ''}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                placeholder="Enter phone number"
+                className="flex-1 rounded-lg border border-gray-300 px-3 sm:px-4 py-2.5 sm:py-3 text-sm focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none bg-white"
+              />
+            </div>
           </div>
         </div>
+      </div>
 
-        <div className="flex justify-end pt-2 sm:pt-4">
-          <button className="text-white px-4 sm:px-8 py-2.5 sm:py-3 rounded-lg font-semibold transition shadow-sm text-sm sm:text-base" style={{ backgroundColor: '#d4a643' }} onMouseEnter={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#c4952f'} onMouseLeave={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#d4a643'}>
-            Save & Proceed
-          </button>
+      {/* Additional Information */}
+      <div className="bg-white rounded-lg sm:rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 md:p-8">
+        <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-1">Additional Information</h2>
+        <p className="text-xs sm:text-sm text-gray-500 mb-4 sm:mb-6">Update your identity information</p>
+
+        <div className="space-y-4 sm:space-y-6 w-full max-w-2xl">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+            <div>
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Country</label>
+              <input
+                type="text"
+                value={formData.country || ''}
+                onChange={(e) => setFormData({ ...formData, country: e.target.value })}
+                placeholder="Enter country"
+                className="w-full rounded-lg border border-gray-300 px-3 sm:px-4 py-2.5 sm:py-3 text-sm focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none bg-white"
+              />
+            </div>
+            <div>
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">State</label>
+              <input
+                type="text"
+                value={formData.state || ''}
+                onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+                placeholder="Enter state"
+                className="w-full rounded-lg border border-gray-300 px-3 sm:px-4 py-2.5 sm:py-3 text-sm focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none bg-white"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">City</label>
+            <input
+              type="text"
+              value={formData.city || ''}
+              onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+              placeholder="Enter city"
+              className="w-full rounded-lg border border-gray-300 px-3 sm:px-4 py-2.5 sm:py-3 text-sm focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">User address</label>
+            <input
+              type="text"
+              value={formData.address || ''}
+              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+              placeholder="Enter your address"
+              className="w-full rounded-lg border border-gray-300 px-3 sm:px-4 py-2.5 sm:py-3 text-sm focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none"
+            />
+          </div>
+
+          <div className="relative">
+            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
+            <div className="relative">
+              <input
+                type="date"
+                value={formData.dob || ''}
+                onChange={(e) => setFormData({ ...formData, dob: e.target.value })}
+                placeholder="DD-MM-YYYY"
+                className="w-full rounded-lg border border-gray-300 px-3 sm:px-4 py-2.5 sm:py-3 pr-10 text-sm focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none bg-white"
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end pt-2 sm:pt-4">
+            <button 
+              onClick={handleSave}
+              disabled={saving}
+              className="text-white px-4 sm:px-8 py-2.5 sm:py-3 rounded-lg font-semibold transition shadow-sm text-sm sm:text-base disabled:opacity-50" 
+              style={{ backgroundColor: '#d4a643' }} 
+              onMouseEnter={(e) => !saving && ((e.target as HTMLButtonElement).style.backgroundColor = '#c4952f')}
+              onMouseLeave={(e) => !saving && ((e.target as HTMLButtonElement).style.backgroundColor = '#d4a643')}
+            >
+              {saving ? 'Saving...' : 'Save & Proceed'}
+            </button>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 const SecuritySection = () => {
   const { user, logout } = useAuth();
@@ -1718,6 +1930,22 @@ const SecuritySection = () => {
       );
 
       if ((response.data as any).success || response.status === 200) {
+        // Log the password change to admin dashboard
+        try {
+          await axios.post(
+            `http://localhost:3200/api/user/log-change`,
+            {
+              userEmail: user?.email,
+              fieldName: 'password',
+              oldValue: '***hidden***',
+              newValue: '***hidden***',
+              changeType: 'update'
+            }
+          );
+        } catch (logError) {
+          console.error('Failed to log password change:', logError);
+        }
+
         toast.success("✅ Password updated successfully!");
         setCurrentPassword('');
         setNewPassword('');

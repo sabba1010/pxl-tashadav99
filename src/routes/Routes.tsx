@@ -7,13 +7,13 @@ import Login from "../users/Login";
 import Register from "../users/Register";
 
 import AdminAdmins from "../dashboard/admin-dashboard/AdminAdmins";
-import AllTransactions from "../dashboard/admin-dashboard/AllTransactions";
 import AllUsers from "../dashboard/admin-dashboard/AllUsers";
 import DashboardOverview from "../dashboard/admin-dashboard/DashboardOverview";
 import DepositRequests from "../dashboard/admin-dashboard/DepositRequests";
 import Profile from "../dashboard/admin-dashboard/Profile";
 import TotalListings from "../dashboard/admin-dashboard/TotalListings";
 import WithdrawalRequests from "../dashboard/admin-dashboard/WithdrawalRequests";
+import UserAccountChanges from "../dashboard/admin-dashboard/UserAccountChanges";
 
 import BuyerAddProduct from "../dashboard/buyer-dahboard/BuyerAddProduct";
 
@@ -56,11 +56,9 @@ import AdminRoute from "./AdminRoute";
 import PrivateRoute from "./PrivateRoute";
 import SellerPrivateRoute from "./SellerPrivateRoute";
 import BuyerPrivateRoute from "./BuyerPrivateRoute";
-import SubscriptionPayment from "../components/Payment/SubscriptionPayment";
 import Test from "../components/Test";
 import ReportAdmin from "../dashboard/admin-dashboard/ReportAdmin";
 import RefDetails from "../dashboard/admin-dashboard/RefDetails";
-import SellerManagement from "../dashboard/admin-dashboard/SellerManagement";
 import MyReport from "../components/Seller/MyReport";
 import DashboardSeller from "../dashboard/buyer-dahboard/dashbordseller";
 import AccountSettings from "../components/Accountsettings";
@@ -304,8 +302,10 @@ const Routes = createBrowserRouter([
         path: "Sent-Notifications",
         element: <SentNotification />,
       },
-      {
-        path: "settings",
+      {        path: "account-changes",
+        element: <UserAccountChanges />,
+      },
+      {        path: "settings",
         element: <AdminSettings />,
       },
       // {
