@@ -1487,13 +1487,14 @@ const AccountSettings = () => {
   const [activeTab, setActiveTab] = useState('profile');
   const { data: userData } = useAuthHook();
 
+  // Check if user is seller or admin
+  const isSellerOrAdmin = userData?.role === 'seller' || userData?.role === 'admin';
+
   const tabs = [
     { id: 'profile', label: 'Profile', icon: User },
     { id: 'security', label: 'Security', icon: Lock },
     { id: 'notifications', label: 'Notifications', icon: Bell },
-    ...(userData?.role === 'seller' || userData?.role === 'admin'
-      ? [{ id: 'listings', label: 'Listings', icon: Package }]
-      : []),
+    ...(isSellerOrAdmin ? [{ id: 'listings', label: 'My Listings', icon: Package }] : []),
   ];
 
   return (
