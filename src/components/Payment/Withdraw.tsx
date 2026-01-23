@@ -138,7 +138,7 @@ const WithdrawForm: React.FC = () => {
     e.preventDefault();
 
     const amountNum = Number(formData.amount);
-    const MAX_WITHDRAW_LIMIT = 100; // 🛑 $100 Limit
+    const MAX_WITHDRAW_LIMIT = 1000; // 🛑 $100 Limit
 
     // Validation: Empty or Zero
     if (!amountNum || amountNum <= 0) {
@@ -314,7 +314,7 @@ const WithdrawForm: React.FC = () => {
               value={formData.amount}
               onChange={handleChange}
               placeholder="0.00"
-              max="100"
+              max="1000"
               className="w-full px-6 py-5 border-2 border-gray-200 rounded-xl focus:border-[#D4A017] focus:ring-4 focus:ring-[#D4A017]/20 text-2xl font-bold transition"
               required
               min="1"
@@ -491,9 +491,9 @@ const WithdrawForm: React.FC = () => {
           {loading ? "Processing..." : "SUBMIT WITHDRAWAL REQUEST"}
         </button>
 
-        <p className="text-center text-sm text-gray-500 mt-8 uppercase tracking-wider font-medium">
+        {/* <p className="text-center text-sm text-gray-500 mt-8 uppercase tracking-wider font-medium">
           Approval required • Limit: $100 per request
-        </p>
+        </p> */}
       </form>
     </div>
   );
