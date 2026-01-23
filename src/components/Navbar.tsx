@@ -88,7 +88,7 @@ export default function Navbar() {
     if (!loginUser) {
       navigate("/login");
     } else {
-      navigate("/selling-form");
+      navigate("/myproducts");
     }
   };
 
