@@ -12,7 +12,7 @@ import { useAuthHook } from "../../hook/useAuthHook";
 
 const ReferralProgram: React.FC = () => {
   const { data } = useAuthHook();
-  const referralLink = `http://localhost:3000/register?ref=${data?.referralCode}`;
+  const referralLink = `https://dashing-zuccutto-cb094a.netlify.app/register?ref=${data?.referralCode}`;
 
   const [copied, setCopied] = React.useState(false);
 

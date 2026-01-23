@@ -193,9 +193,9 @@ const DashboardOverview: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <MetricCard title="Deposit Requests" value={metrics.pendingDepositRequests} variant="info" icon={<Payments sx={{ color: "#2563EB" }} />} linkTo="/admin/deposits" isLoading={loading} />
-        <MetricCard title="Pending Listings" value={metrics.pendingListings} variant="warning" icon={<ListAlt sx={{ color: "#EA580C" }} />} linkTo="/admin/listings" isLoading={loading} />
-        <MetricCard title="Withdrawal Claims" value={metrics.pendingWithdrawalRequests} variant="warning" icon={<AccountBalanceWallet sx={{ color: "#EA580C" }} />} linkTo="/admin/withdrawals" isLoading={loading} />
+        <MetricCard title="Deposit Requests" value={metrics.pendingDepositRequests} variant="info" icon={<Payments sx={{ color: "#2563EB" }} />} linkTo="/admin-dashboard/deposits" isLoading={loading} />
+        <MetricCard title="Pending Listings" value={metrics.pendingListings} variant="warning" icon={<ListAlt sx={{ color: "#EA580C" }} />} linkTo="/admin-dashboard/listings" isLoading={loading} />
+        <MetricCard title="Withdrawal Claims" value={metrics.pendingWithdrawalRequests} variant="warning" icon={<AccountBalanceWallet sx={{ color: "#EA580C" }} />} linkTo="/admin-dashboard/withdrawals" isLoading={loading} />
         <MetricCard title="Live Products" value={metrics.activeListings} variant="success" icon={<ShoppingBag sx={{ color: "#059669" }} />} isLoading={loading} />
       </div>
     </div>
