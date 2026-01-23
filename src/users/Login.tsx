@@ -30,7 +30,7 @@ const Login = () => {
 
     try {
       const res = await axios.post<{ success: any; user: any }>(
-        "http://localhost:3200/api/user/login",
+        "https://vps-backend-server-beta.vercel.app/api/user/login",
         {
           email,
           password,

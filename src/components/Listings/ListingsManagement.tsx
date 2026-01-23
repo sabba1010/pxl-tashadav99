@@ -51,7 +51,7 @@ const ListingsManagement: React.FC = () => {
     try {
       setLoading(true);
       const res = await axios.get<ProductResponse>(
-        `http://localhost:3200/product/user-products/${user.email}`
+        `https://vps-backend-server-beta.vercel.app/product/user-products/${user.email}`
       );
 
       if (res.data?.success && Array.isArray(res.data.products)) {
@@ -84,7 +84,7 @@ const ListingsManagement: React.FC = () => {
       const newVisibility = !currentVisibility;
 
       const res = await axios.patch<ToggleResponse>(
-        `http://localhost:3200/product/toggle-visibility/${productId}`,
+        `https://vps-backend-server-beta.vercel.app/product/toggle-visibility/${productId}`,
         { isVisible: newVisibility }
       );
 
@@ -130,7 +130,7 @@ const ListingsManagement: React.FC = () => {
         setToggling('all');
 
         const res = await axios.patch<ToggleResponse>(
-          'http://localhost:3200/product/toggle-all-visibility',
+          'https://vps-backend-server-beta.vercel.app/product/toggle-all-visibility',
           { userEmail: user?.email, isVisible: newVisibility }
         );
 

@@ -351,7 +351,7 @@ const Register = () => {
     try {
       // <RegisterResponse> দিয়ে TypeScript এরর ফিক্স করা হয়েছে
       const res = await axios.post<RegisterResponse>(
-        "http://localhost:3200/api/user/register",
+        "https://vps-backend-server-beta.vercel.app/api/user/register",
         formData
       );
 

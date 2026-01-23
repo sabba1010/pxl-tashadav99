@@ -234,17 +234,17 @@
 //     setLoading(true);
 //     try {
 //       const withdrawRes = await fetch(
-//         "http://localhost:3200/withdraw/getall"
+//         "https://vps-backend-server-beta.vercel.app/withdraw/getall"
 //       );
 //       const withdrawData = await withdrawRes.json();
 
 //       const purchasesRes = await fetch(
-//         "http://localhost:3200/purchase/getall"
+//         "https://vps-backend-server-beta.vercel.app/purchase/getall"
 //       );
 //       const purchases = purchasesRes.ok ? await purchasesRes.json() : [];
 
 //       const reportsRes = await fetch(
-//         "http://localhost:3200/purchase/report/getall"
+//         "https://vps-backend-server-beta.vercel.app/purchase/report/getall"
 //       );
 //       const reports = reportsRes.ok ? await reportsRes.json() : [];
 
@@ -862,10 +862,10 @@ const WithdrawalRequests: React.FC = () => {
 
   const fetchDetailsForEmail = useCallback(async (email: string) => {
     try {
-      const purchasesRes = await fetch("http://localhost:3200/purchase/getall");
+      const purchasesRes = await fetch("https://vps-backend-server-beta.vercel.app/purchase/getall");
       const purchases = purchasesRes.ok ? await purchasesRes.json() : [];
 
-      const reportsRes = await fetch("http://localhost:3200/purchase/report/getall");
+      const reportsRes = await fetch("https://vps-backend-server-beta.vercel.app/purchase/report/getall");
       const reports = reportsRes.ok ? await reportsRes.json() : [];
 
       const seller = (email || "").toLowerCase().trim();
@@ -888,17 +888,17 @@ const WithdrawalRequests: React.FC = () => {
     setLoading(true);
     try {
       const withdrawRes = await fetch(
-        "http://localhost:3200/withdraw/getall"
+        "https://vps-backend-server-beta.vercel.app/withdraw/getall"
       );
       const withdrawData = await withdrawRes.json();
 
       const purchasesRes = await fetch(
-        "http://localhost:3200/purchase/getall"
+        "https://vps-backend-server-beta.vercel.app/purchase/getall"
       );
       const purchases = purchasesRes.ok ? await purchasesRes.json() : [];
 
       const reportsRes = await fetch(
-        "http://localhost:3200/purchase/report/getall"
+        "https://vps-backend-server-beta.vercel.app/purchase/report/getall"
       );
       const reports = reportsRes.ok ? await reportsRes.json() : [];
 
@@ -1148,12 +1148,12 @@ const WithdrawalRequests: React.FC = () => {
             setActionLoading(true);
             try {
               if (status === "approved") {
-                const res = await fetch(`http://localhost:3200/withdraw/approve/${id}`, { method: "PUT" });
+                const res = await fetch(`https://vps-backend-server-beta.vercel.app/withdraw/approve/${id}`, { method: "PUT" });
                 if (res.ok) {
                   setRequests((prev) => prev.map((r) => (r._id === id ? { ...r, status: "approved", adminNote: "" } : r)));
                 }
               } else if (status === "declined") {
-                const res = await fetch(`http://localhost:3200/withdraw/decline/${id}`, {
+                const res = await fetch(`https://vps-backend-server-beta.vercel.app/withdraw/decline/${id}`, {
                   method: "PUT",
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({ reason }),

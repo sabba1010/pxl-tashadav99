@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-const API_URL = "http://localhost:3200";
+const API_URL = "https://vps-backend-server-beta.vercel.app";
 
 type Msg = { text: string; type?: "success" | "error" | "info" } | null;
 
