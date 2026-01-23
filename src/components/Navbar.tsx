@@ -327,9 +327,21 @@ export default function Navbar() {
                       )}
                       <NavLink to="/referral" onClick={() => setOpen(false)} className="flex items-center gap-4 px-6 py-3 hover:bg-gray-50 transition"><span className="text-sm font-medium">Referral</span></NavLink>
                       <NavLink to="/plans" onClick={() => setOpen(false)} className="flex items-center gap-4 px-6 py-3 hover:bg-gray-50 transition"><span className="text-sm font-medium">Plans</span></NavLink>
+                      {(loginUser?.role === "seller" || loginUser?.role === "admin") && (
+                        <NavLink to="/seller-guide" onClick={() => setOpen(false)} className="flex items-center gap-4 px-6 py-3 hover:bg-gray-50 transition"><span className="text-sm font-medium">Seller Guide</span></NavLink>
+                      )}
+                      {(loginUser?.role === "buyer" || loginUser?.role === "admin") && (
+                        <NavLink to="/buyer-guide" onClick={() => setOpen(false)} className="flex items-center gap-4 px-6 py-3 hover:bg-gray-50 transition"><span className="text-sm font-medium">Buyer Guide</span></NavLink>
+                      )}
                       <NavLink to="/purchases" onClick={() => setOpen(false)} className="flex items-center gap-4 px-6 py-3 hover:bg-gray-50 transition"><span className="text-sm font-medium">My Purchases</span></NavLink>
                       <NavLink to="/account-settings" onClick={() => setOpen(false)} className="flex items-center gap-4 px-6 py-3 hover:bg-gray-50 transition"><span className="text-sm font-medium">Account Settings</span></NavLink>
                       <NavLink to="/reports" onClick={() => setOpen(false)} className="flex items-center gap-4 px-6 py-3 hover:bg-gray-50 transition"><span className="text-sm font-medium">Reports</span></NavLink>
+                      {/* {(loginUser?.role === "seller" || loginUser?.role === "admin") && (
+                        <NavLink to="/seller-guide" onClick={() => setOpen(false)} className="flex items-center gap-4 px-6 py-3 hover:bg-gray-50 transition"><span className="text-sm font-medium">Seller Guide</span></NavLink>
+                      )}
+                      {(loginUser?.role === "buyer" || loginUser?.role === "admin") && (
+                        <NavLink to="/buyer-guide" onClick={() => setOpen(false)} className="flex items-center gap-4 px-6 py-3 hover:bg-gray-50 transition"><span className="text-sm font-medium">Buyer Guide</span></NavLink>
+                      )} */}
 
                       <button onClick={handelLougt} className="w-full flex items-center gap-4 px-6 py-3 hover:bg-yellow-50 transition text-left" style={{ color: "#B45309" }}><span className="text-sm font-medium">Log out</span></button>
                     </div>
