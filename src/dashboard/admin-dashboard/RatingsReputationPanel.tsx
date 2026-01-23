@@ -55,6 +55,8 @@ const RatingsReputationPanel: React.FC = () => {
   const [filter, setFilter] = useState<"all" | "disputed" | "top">("all");
   const [page, setPage] = useState(1);
   const [selectedSeller, setSelectedSeller] = useState<Seller | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [autoRefresh, setAutoRefresh] = useState(true);
 
   const fetchAdminData = async () => {
     setLoading(true);
@@ -109,6 +111,7 @@ const RatingsReputationPanel: React.FC = () => {
       });
 
       setSellers(finalSellers as Seller[]);
+      setLastUpdated(new Date());
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
@@ -118,7 +121,19 @@ const RatingsReputationPanel: React.FC = () => {
 
   useEffect(() => {
     fetchAdminData();
-  }, []);
+    
+    // Set up auto-refresh polling if enabled (every 30 seconds)
+    let interval: NodeJS.Timeout | null = null;
+    if (autoRefresh) {
+      interval = setInterval(() => {
+        fetchAdminData();
+      }, 30000); // Poll every 30 seconds
+    }
+    
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [autoRefresh]);
 
   // রিভিউ ডিলিট করার ফাংশন (Admin Action)
   const handleDeleteReview = async (ratingId: string) => {
@@ -169,8 +184,27 @@ const RatingsReputationPanel: React.FC = () => {
         <Box>
           <Typography variant="h5" fontWeight={800} color="#1E293B">System Ratings Monitoring</Typography>
           <Typography variant="body2" color="#64748B">Admin: Reviewing all marketplace feedback</Typography>
+          {lastUpdated && (
+            <Typography variant="caption" color="#94A3B8">Last updated: {lastUpdated.toLocaleTimeString()}</Typography>
+          )}
         </Box>
-        <Box sx={{ display: 'flex', gap: 2 }}>
+        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Typography variant="caption" color="#64748B">Auto-refresh:</Typography>
+            <Button 
+              variant={autoRefresh ? "contained" : "outlined"} 
+              size="small"
+              onClick={() => setAutoRefresh(!autoRefresh)}
+              sx={{ 
+                borderRadius: 2, 
+                textTransform: 'none',
+                bgcolor: autoRefresh ? '#33ac6f' : 'transparent',
+                borderColor: autoRefresh ? '#33ac6f' : '#E2E8F0'
+              }}
+            >
+              {autoRefresh ? 'ON' : 'OFF'}
+            </Button>
+          </Box>
           <IconButton onClick={fetchAdminData} sx={{ bgcolor: '#F1F5F9' }}><RefreshIcon /></IconButton>
           <Box sx={{ position: 'relative' }}>
             <SearchIcon sx={{ position: 'absolute', left: 12, top: 10, color: '#94A3B8' }} />

@@ -1,42 +1,34 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
-import { TrendingUp, ShoppingBag } from "@mui/icons-material";
-import { DollarSignIcon, Users2 } from "lucide-react";
+import { 
+  TrendingUp, 
+  ShoppingBag, 
+  PeopleAlt, 
+  Storefront, 
+  Refresh, 
+  Payments, 
+  AccountBalanceWallet,
+  PersonOutline,
+  ListAlt,
+  MonetizationOn
+} from "@mui/icons-material";
+import axios from "axios";
+import { CircularProgress, Typography, Box } from "@mui/material";
+
+const BASE_URL = "https://tasha-vps-backend-2.onrender.com";
 
 interface AdminMetrics {
   totalUsers: number;
+  totalBuyers: number;
+  totalSellers: number;
+  totalUserBalance: number; 
   activeListings: number;
   pendingListings: number;
-  escrowBalanceUSD: number;
+  totalSystemBalance: number;
   platformProfitUSD: number;
   pendingDepositRequests: number;
   pendingWithdrawalRequests: number;
-  totalTransactions: number;
 }
-
-interface ExchangeRates {
-  buyerDepositRate: number;
-  sellerWithdrawalRate: number;
-  exchangeProfitMargin: number;
-}
-
-// Mock Data
-const fetchMetrics = (): AdminMetrics => ({
-  totalUsers: 2500,
-  activeListings: 850,
-  pendingListings: 15,
-  escrowBalanceUSD: 45200.5,
-  platformProfitUSD: 18450.75,
-  pendingDepositRequests: 12,
-  pendingWithdrawalRequests: 8,
-  totalTransactions: 3120,
-});
-
-const fetchRates = (): ExchangeRates => ({
-  buyerDepositRate: 1600,
-  sellerWithdrawalRate: 1450,
-  exchangeProfitMargin: 150,
-});
 
 const MetricCard: React.FC<{
   title: string;
@@ -44,201 +36,168 @@ const MetricCard: React.FC<{
   subtitle?: string;
   icon?: React.ReactNode;
   linkTo?: string;
-  variant?: "default" | "profit" | "warning" | "success";
-}> = ({ title, value, subtitle, icon, linkTo, variant = "default" }) => {
-  const variants = {
-    default: "from-gray-800/5 to-white/10 border-white/20",
-    profit: "from-[#D1A148]/20 via-amber-500/10 to-transparent border-[#D1A148]/30",
-    success: "from-[#33ac6f]/20 via-emerald-500/10 to-transparent border-[#33ac6f]/30",
-    warning: "from-orange-500/20 to-transparent border-orange-400/40",
-  };
-
-  const textColor = {
-    default: "text-gray-700",
-    profit: "text-[#D1A148]",
-    success: "text-[#33ac6f]",
-    warning: "text-orange-600",
+  variant?: "default" | "profit" | "warning" | "success" | "info" | "user" | "balance";
+  isLoading?: boolean;
+}> = ({ title, value, subtitle, icon, linkTo, variant = "default", isLoading = false }) => {
+  
+  const variantStyles = {
+    default: "border-gray-300 bg-white shadow-sm",
+    profit: "border-amber-500/40 bg-gradient-to-br from-amber-50 to-white",
+    success: "border-emerald-500/40 bg-gradient-to-br from-emerald-50 to-white",
+    warning: "border-orange-500/40 bg-gradient-to-br from-orange-50 to-white",
+    info: "border-blue-500/40 bg-gradient-to-br from-blue-50 to-white",
+    user: "border-violet-500/40 bg-gradient-to-br from-violet-50 to-white",
+    balance: "border-emerald-600/40 bg-gradient-to-br from-emerald-100/50 to-white",
   };
 
   return (
-    <div
-      className={`group relative overflow-hidden rounded-3xl bg-white/70 backdrop-blur-xl border ${variants[variant]} p-7 shadow-xl transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl hover:shadow-[#33ac6f]/10`}
-    >
-      {/* Gradient Glow */}
-      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700">
-        <div className={`absolute inset-0 bg-gradient-to-br ${variant === "profit" ? "from-[#D1A148]/10" : "from-[#33ac6f]/10"}`} />
-      </div>
-
-      <div className="relative z-10">
-        <div className="flex items-center justify-between mb-4">
-          <p className="text-sm font-semibold text-gray-500 uppercase tracking-wider">
-            {title}
-          </p>
-          {icon && (
-            <div className={`p-3 rounded-2xl ${variant === "profit" ? "bg-[#D1A148]/15" : "bg-[#33ac6f]/15"}`}>
-              {icon}
-            </div>
+    <div className={`group relative overflow-hidden rounded-[2rem] border-2 ${variantStyles[variant]} p-7 transition-all duration-300 hover:shadow-xl hover:-translate-y-1`}>
+      <div className="flex items-start justify-between">
+        <div className="z-10">
+          <p className="text-[11px] font-black text-gray-500 uppercase tracking-[0.15em] mb-2">{title}</p>
+          {isLoading ? (
+            <CircularProgress size={28} sx={{ mt: 1, color: "#1A202C" }} />
+          ) : (
+            <p className="text-3xl font-[1000] text-slate-900 tracking-tight leading-none">{value}</p>
           )}
+          {subtitle && <p className="text-xs text-slate-600 mt-3 font-bold opacity-80">{subtitle}</p>}
         </div>
-        <p className={`text-3xl font-black ${textColor[variant]} mb-2`}>
-          {value}
-        </p>
-
-        {subtitle && (
-          <p className="text-sm text-gray-500 leading-relaxed">
-            {subtitle}
-          </p>
-        )}
-
-        {linkTo && (
-          <Link
-            to={linkTo}
-            className="mt-6 inline-flex items-center text-sm font-bold text-[#33ac6f] hover:text-[#2d8f5a] transition-colors"
-          >
-            View Details
-            <span className="ml-1 transition-transform group-hover:translate-x-2">→</span>
-          </Link>
-        )}
+        <div className="p-4 rounded-2xl bg-white shadow-inner border border-gray-100 group-hover:scale-110 transition-transform duration-300">
+          {icon}
+        </div>
       </div>
+      
+      {linkTo && (
+        <Link to={linkTo} className="mt-6 flex items-center gap-1 text-xs font-[900] uppercase text-indigo-600 tracking-wider hover:gap-3 transition-all">
+          Manage Section <span className="text-lg">→</span>
+        </Link>
+      )}
 
-      {/* Active Glow Ring */}
-      <div className={`absolute -inset-1 bg-gradient-to-r ${variant === "profit" ? "from-[#D1A148]/40" : "from-[#33ac6f]/40"} to-transparent rounded-3xl blur-xl opacity-0 group-hover:opacity-70 transition duration-1000 -z-10`} />
+      {/* Background Decorative Shape */}
+      <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-current opacity-[0.03] rounded-full" />
     </div>
   );
 };
 
 const DashboardOverview: React.FC = () => {
-  const [metrics] = useState<AdminMetrics>(fetchMetrics());
-  const [rates] = useState<ExchangeRates>(fetchRates());
+  const [metrics, setMetrics] = useState<AdminMetrics>({
+    totalUsers: 0, totalBuyers: 0, totalSellers: 0, totalUserBalance: 0,
+    activeListings: 0, pendingListings: 0, totalSystemBalance: 0,
+    platformProfitUSD: 0, pendingDepositRequests: 0, pendingWithdrawalRequests: 0,
+  });
+  const [loading, setLoading] = useState(true);
 
-  const formatCurrency = (amount: number) =>
-    new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-      minimumFractionDigits: 2,
-    }).format(amount);
+  const fetchAllData = useCallback(async () => {
+    try {
+      setLoading(true);
+      const [uRes, prRes, puRes, payRes, wRes] = await Promise.all([
+        axios.get(`${BASE_URL}/api/user/getall`).catch(() => ({ data: [] })),
+        axios.get(`${BASE_URL}/product/all-sells`).catch(() => ({ data: [] })),
+        axios.get(`${BASE_URL}/purchase/getall`).catch(() => ({ data: [] })),
+        axios.get(`${BASE_URL}/api/payments`).catch(() => ({ data: [] })),
+        axios.get(`${BASE_URL}/withdraw/getall`).catch(() => ({ data: [] })),
+      ]);
+
+      const users = Array.isArray(uRes.data) ? uRes.data : [];
+      const products = Array.isArray(prRes.data) ? prRes.data : [];
+      const purchases = Array.isArray(puRes.data) ? puRes.data : [];
+      const payments = Array.isArray(payRes.data) ? payRes.data : [];
+      const withdraws = Array.isArray(wRes.data) ? wRes.data : [];
+
+      setMetrics({
+        totalUsers: users.length,
+        totalBuyers: users.filter((u: any) => u.role === "buyer").length,
+        totalSellers: users.filter((u: any) => u.role === "seller").length,
+        totalUserBalance: users.reduce((sum: number, u: any) => sum + (Number(u.balance) || 0), 0),
+        activeListings: products.filter((p: any) => p.status === "active").length,
+        pendingListings: products.filter((p: any) => p.status === "pending").length,
+        totalSystemBalance: purchases.reduce((s: number, p: any) => s + (Number(p.totalAmount || p.price) || 0), 0),
+        platformProfitUSD: purchases.filter((p: any) => ["completed", "success"].includes(p.status)).reduce((s: number, p: any) => s + (Number(p.adminFee) || 0), 0),
+        pendingDepositRequests: payments.filter((p: any) => p.status.toLowerCase() !== "successful" && !p.credited).length,
+        pendingWithdrawalRequests: withdraws.filter((w: any) => w.status === "pending").length,
+      });
+    } catch (err) {
+      console.error("Fetch Error:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { fetchAllData(); }, [fetchAllData]);
 
   return (
-    <div className="space-y-12 py-4 px-6">
+    <div className="p-10 bg-[#F4F7FE] min-h-screen space-y-10">
       {/* Header */}
-      <div>
-        <p className="text-gray-600 mt-3 text-lg">
-          Real-time insights into platform health, revenue, and operations
-        </p>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <Box>
+          <Typography variant="h3" sx={{ fontWeight: 1000, color: "#1B2559", letterSpacing: "-1px" }}>
+            Admin Overview
+          </Typography>
+          <Typography variant="body1" sx={{ fontWeight: 600, color: "#A3AED0", mt: 0.5 }}>
+            Comprehensive analytics and platform control center
+          </Typography>
+        </Box>
+        <button 
+          onClick={fetchAllData} 
+          className="flex items-center gap-3 px-7 py-3.5 bg-[#1B2559] text-white rounded-[1.2rem] shadow-xl shadow-indigo-200 hover:bg-indigo-800 transition-all active:scale-95"
+        >
+          <Refresh className={loading ? "animate-spin" : ""} fontSize="small" />
+          <span className="text-sm font-black uppercase tracking-widest">Refresh Data</span>
+        </button>
       </div>
 
-      {/* Financial Snapshot */}
-      <section>
-        <h2 className="text-3xl font-bold text-gray-800 mb-6 flex items-center gap-3">
-          <DollarSignIcon className="text-[#33ac6f]" />
-          Financial Overview
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <MetricCard
-            title="Escrow Balance"
-            value={formatCurrency(metrics.escrowBalanceUSD)}
-            subtitle="Funds held in escrow for active deals"
-            icon={<ShoppingBag fontSize="small" className="text-[#33ac6f] text-2xl" />}
-            variant="success"
-          />
+      {/* Main Financial Hub */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <MetricCard
+          title="Total Wallet Balance"
+          value={`$${metrics.totalUserBalance.toLocaleString()}`}
+          variant="balance"
+          subtitle="Total funds held by users"
+          icon={<MonetizationOn sx={{ color: "#059669", fontSize: 38 }} />}
+          isLoading={loading}
+        />
+        <MetricCard
+          title="Net Platform Profit"
+          value={`$${metrics.platformProfitUSD.toLocaleString()}`}
+          variant="profit"
+          subtitle="Verified admin commissions"
+          icon={<TrendingUp sx={{ color: "#B45309", fontSize: 38 }} />}
+          isLoading={loading}
+        />
+        <MetricCard
+          title="System Turnover"
+          value={`$${metrics.totalSystemBalance.toLocaleString()}`}
+          variant="info"
+          subtitle="Total transaction volume"
+          icon={<AccountBalanceWallet sx={{ color: "#2563EB", fontSize: 38 }} />}
+          isLoading={loading}
+        />
+      </div>
 
-          <MetricCard
-            title="Platform Profit (Lifetime)"
-            value={formatCurrency(metrics.platformProfitUSD)}
-            subtitle="Total earnings from spreads & fees"
-            icon={<TrendingUp fontSize="small" className="text-[#D1A148]" />}
-            variant="profit"
-          />
+      {/* Section Divider */}
+      <div className="flex items-center gap-4">
+        <h2 className="text-xl font-[1000] text-slate-800 uppercase tracking-tighter">User Statistics</h2>
+        <div className="h-[2px] flex-1 bg-slate-200 rounded-full" />
+      </div>
 
-          <MetricCard
-            title="Total Transactions"
-            value={metrics.totalTransactions.toLocaleString()}
-            subtitle="Completed deals since launch"
-            linkTo="transactions"
-            variant="default"
-          />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <MetricCard title="Total Registered" value={metrics.totalUsers} variant="user" icon={<PeopleAlt sx={{ color: "#7C3AED", fontSize: 32 }} />} isLoading={loading} />
+        <MetricCard title="Active Sellers" value={metrics.totalSellers} variant="user" icon={<Storefront sx={{ color: "#8B5CF6", fontSize: 32 }} />} isLoading={loading} />
+        <MetricCard title="Active Buyers" value={metrics.totalBuyers} variant="user" icon={<PersonOutline sx={{ color: "#6366F1", fontSize: 32 }} />} isLoading={loading} />
+      </div>
 
-          <MetricCard
-            title="Admin Revenue Share"
-            value="20%"
-            subtitle="Automatic cut from every sale"
-            variant="profit"
-          />
-        </div>
-      </section>
+      {/* Section Divider */}
+      <div className="flex items-center gap-4">
+        <h2 className="text-xl font-[1000] text-slate-800 uppercase tracking-tighter">Pending Actions</h2>
+        <div className="h-[2px] flex-1 bg-slate-200 rounded-full" />
+      </div>
 
-      {/* Exchange Rates & Profit Engine */}
-      <section>
-        <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
-          <span className="text-2xl">Exchange Rate Engine</span>
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <MetricCard
-            title="Buyer Deposit Rate"
-            value={`₦${rates.buyerDepositRate}`}
-            subtitle="1 USD → NGN (when users fund wallet)"
-            variant="default"
-          />
-
-          <MetricCard
-            title="Seller Withdrawal Rate"
-            value={`₦${rates.sellerWithdrawalRate}`}
-            subtitle="1 USD → NGN (when sellers cash out)"
-            variant="default"
-          />
-
-          <MetricCard
-            title="Profit Per $1 Traded"
-            value={`₦${rates.exchangeProfitMargin}`}
-            subtitle="Your spread profit on every dollar exchanged"
-            icon={<TrendingUp fontSize="small" className="text-[#D1A148]" />}
-            variant="profit"
-          />
-        </div>
-      </section>
-
-      {/* Operational Queue */}
-      <section>
-        <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
-          <Users2 className="text-[#33ac6f]" />
-          Operations & Approvals
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <MetricCard
-            title="Pending Listings"
-            value={metrics.pendingListings}
-            subtitle="Awaiting your approval"
-            linkTo="listings"
-            variant="warning"
-          />
-
-          <MetricCard
-            title="Deposit Requests"
-            value={metrics.pendingDepositRequests}
-            subtitle="NGN funding pending confirmation"
-            linkTo="deposits"
-            variant="warning"
-          />
-
-          <MetricCard
-            title="Withdrawal Requests"
-            value={metrics.pendingWithdrawalRequests}
-            subtitle="Sellers waiting for payout"
-            linkTo="withdrawals"
-            variant="warning"
-          />
-
-          <MetricCard
-            title="Total Registered Users"
-            value={metrics.totalUsers.toLocaleString()}
-            subtitle="Buyers + Sellers"
-            linkTo="users"
-            icon={<Users2 fontSize="small" className="text-[#33ac6f]" />}
-            variant="success"
-          />
-          
-        </div>
-      </section>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <MetricCard title="Deposit Requests" value={metrics.pendingDepositRequests} variant="info" icon={<Payments sx={{ color: "#2563EB" }} />} linkTo="/admin/deposits" isLoading={loading} />
+        <MetricCard title="Pending Listings" value={metrics.pendingListings} variant="warning" icon={<ListAlt sx={{ color: "#EA580C" }} />} linkTo="/admin/listings" isLoading={loading} />
+        <MetricCard title="Withdrawal Claims" value={metrics.pendingWithdrawalRequests} variant="warning" icon={<AccountBalanceWallet sx={{ color: "#EA580C" }} />} linkTo="/admin/withdrawals" isLoading={loading} />
+        <MetricCard title="Live Products" value={metrics.activeListings} variant="success" icon={<ShoppingBag sx={{ color: "#059669" }} />} isLoading={loading} />
+      </div>
     </div>
   );
 };
