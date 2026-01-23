@@ -6,17 +6,18 @@ import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   CircularProgress, Avatar, Modal, Tabs, Tab, Select, MenuItem, FormControl, Chip
 } from "@mui/material";
-import { Refresh, Visibility, Close, FiberManualRecord, CheckCircle, Cancel, ShoppingBag, CalendarMonth } from "@mui/icons-material";
+import { Refresh, Visibility, Close, FiberManualRecord, CheckCircle, Cancel, ShoppingBag, CalendarMonth, Phone } from "@mui/icons-material";
 
 /* ====================== TYPES ====================== */
 interface User {
   _id: string;
   name: string;
   email: string;
+  phone?: string; // ফোন নম্বর ফিল্ড যুক্ত করা হয়েছে
   role: string;
   balance: number;
   status?: string;
-  accountCreationDate?: string; // ডাটাবেজ থেকে আসা তারিখের জন্য
+  accountCreationDate?: string;
 }
 
 const ITEMS_PER_PAGE = 10;
@@ -77,7 +78,9 @@ const AllUsers: React.FC = () => {
   const filteredBuyers = useMemo(() => {
     return users.filter((u: User) =>
       u.role === "buyer" &&
-      (u.name?.toLowerCase().includes(searchTerm.toLowerCase()) || u.email?.toLowerCase().includes(searchTerm.toLowerCase()))
+      (u.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+       u.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+       u.phone?.includes(searchTerm)) // ফোন দিয়েও সার্চ করা যাবে
     );
   }, [users, searchTerm]);
 
@@ -110,7 +113,7 @@ const AllUsers: React.FC = () => {
             queryClient.invalidateQueries({ queryKey: ["all-purchases"] });
           }} sx={{ bgcolor: "#F1F5F9" }}><Refresh /></IconButton>
           <InputBase
-            placeholder="Search buyers..."
+            placeholder="Search name, email or phone..."
             value={searchTerm}
             onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
             sx={{ border: "1px solid #CBD5E1", borderRadius: "8px", px: 2, width: 300, bgcolor: "white" }}
@@ -124,6 +127,7 @@ const AllUsers: React.FC = () => {
           <TableHead sx={{ bgcolor: "#F8FAFC" }}>
             <TableRow>
               <TableCell sx={{ fontWeight: 600 }}>BUYER</TableCell>
+              <TableCell sx={{ fontWeight: 600 }}>WHATSAPP</TableCell>
               <TableCell sx={{ fontWeight: 600 }}>JOINED AT</TableCell>
               <TableCell sx={{ fontWeight: 600 }}>BALANCE</TableCell>
               <TableCell sx={{ fontWeight: 600 }}>PURCHASES</TableCell>
@@ -133,7 +137,7 @@ const AllUsers: React.FC = () => {
           </TableHead>
           <TableBody>
             {isUsersLoading ? (
-              <TableRow><TableCell colSpan={6} align="center"><CircularProgress sx={{ my: 4 }} /></TableCell></TableRow>
+              <TableRow><TableCell colSpan={7} align="center"><CircularProgress sx={{ my: 4 }} /></TableCell></TableRow>
             ) : (
               paginated.map((u: User) => {
                 const displayStatus = u.status?.toLowerCase() === "blocked" ? "BLOCKED" : "ACTIVE";
@@ -153,7 +157,13 @@ const AllUsers: React.FC = () => {
                       </Box>
                     </TableCell>
 
-                    {/* JOINING DATE COLUMN */}
+                    {/* PHONE NUMBER COLUMN */}
+                    <TableCell>
+                      <Typography variant="body2" sx={{ color: "#475569", display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <Phone sx={{ fontSize: 14, color: "#64748b" }} /> {u.phone || "N/A"}
+                      </Typography>
+                    </TableCell>
+
                     <TableCell>
                       <Box sx={{ display: 'flex', flexDirection: 'column' }}>
                         <Typography variant="body2" sx={{ color: "#475569", fontWeight: 600 }}>
