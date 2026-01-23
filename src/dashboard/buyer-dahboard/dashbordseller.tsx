@@ -1096,8 +1096,6 @@ const DashboardSeller: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [ratingsPage, setRatingsPage] = useState(1);
   const [showReports, setShowReports] = useState(false);
-  const [reportFilter, setReportFilter] = useState<'daily' | 'weekly' | 'monthly'>('monthly');
-  const [dateRange, setDateRange] = useState({ start: '', end: '' });
   const [bestSellingProducts, setBestSellingProducts] = useState<any[]>([]);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [referralData, setReferralData] = useState({
@@ -1484,9 +1482,11 @@ const DashboardSeller: React.FC = () => {
                       {(['daily', 'weekly', 'monthly'] as const).map((filter) => (
                         <button
                           key={filter}
-                          onClick={() => setReportFilter(filter)}
+                          onClick={() => {
+                            // Filter toggle - update if needed
+                          }}
                           className={`px-4 py-2 rounded-lg text-xs font-bold uppercase transition-all ${
-                            reportFilter === filter ? 'bg-[#d4a643] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                            filter === 'monthly' ? 'bg-[#d4a643] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                           }`}
                         >
                           {filter}
@@ -1498,13 +1498,11 @@ const DashboardSeller: React.FC = () => {
                       <input
                         type="date"
                         className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                        onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
                       />
                       <span className="text-gray-400">to</span>
                       <input
                         type="date"
                         className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                        onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
                       />
                     </div>
                   </div>
