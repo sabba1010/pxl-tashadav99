@@ -20,7 +20,7 @@ interface User {
 }
 
 const ITEMS_PER_PAGE = 10;
-const BASE_URL = "http://localhost:3200";
+const BASE_URL = "https://tasha-vps-backend-2.onrender.com";
 
 const AllUsers: React.FC = () => {
   const queryClient = useQueryClient();

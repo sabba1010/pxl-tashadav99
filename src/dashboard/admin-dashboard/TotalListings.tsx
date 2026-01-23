@@ -69,8 +69,8 @@
 
 //   useEffect(() => {
 //     Promise.all([
-//       fetch("http://localhost:3200/product/all-sells").then((r) => r.json()),
-//       fetch("http://localhost:3200/api/user/getall").then((r) => r.json()),
+//       fetch("https://tasha-vps-backend-2.onrender.com/product/all-sells").then((r) => r.json()),
+//       fetch("https://tasha-vps-backend-2.onrender.com/api/user/getall").then((r) => r.json()),
 //     ])
 //       .then(([listingsData, usersData]) => {
 //         setListings(listingsData || []);
@@ -153,7 +153,7 @@
 //     // }
 
 //     try {
-//       const res = await fetch(`http://localhost:3200/product/update-status/${selected._id}`, {
+//       const res = await fetch(`https://tasha-vps-backend-2.onrender.com/product/update-status/${selected._id}`, {
 //         method: "PATCH",
 //         headers: { "Content-Type": "application/json" },
 //         body: JSON.stringify({
@@ -655,8 +655,8 @@ const TotalListings: React.FC = () => {
     try {
       setLoading(true);
       const [listingsRes, usersRes] = await Promise.all([
-        fetch("http://localhost:3200/product/all-sells"),
-        fetch("http://localhost:3200/api/user/getall"),
+        fetch("https://tasha-vps-backend-2.onrender.com/product/all-sells"),
+        fetch("https://tasha-vps-backend-2.onrender.com/api/user/getall"),
       ]);
 
       const listingsData = await listingsRes.json();
@@ -751,7 +751,7 @@ const TotalListings: React.FC = () => {
     }
 
     try {
-      const res = await fetch(`http://localhost:3200/product/update-status/${selected._id}`, {
+      const res = await fetch(`https://tasha-vps-backend-2.onrender.com/product/update-status/${selected._id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

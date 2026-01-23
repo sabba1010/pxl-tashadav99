@@ -20,7 +20,7 @@ const FaBreadSliceIcon = FaBreadSlice as unknown as React.ComponentType<any>;
 const FaTrashIcon = FaTrash as unknown as React.ComponentType<any>;
 
 // API URL
-const API_URL = "http://localhost:3200/api/notification";
+const API_URL = "https://tasha-vps-backend-2.onrender.com/api/notification";
 
 type NItem = {
   _id?: string;
@@ -401,7 +401,7 @@ export default function Navbar() {
 // const FaTrashIcon = FaTrash as unknown as React.ComponentType<any>;
 
 // // API URL
-// const API_URL = "http://localhost:3200/api/notification";
+// const API_URL = "https://tasha-vps-backend-2.onrender.com/api/notification";
 
 // type NItem = {
 //   _id?: string;
@@ -1128,7 +1128,7 @@ export default function Navbar() {
 // const FaTrashIcon = FaTrash as unknown as React.ComponentType<any>;
 
 // // API URL
-// const API_URL = "http://localhost:3200/api/notification";
+// const API_URL = "https://tasha-vps-backend-2.onrender.com/api/notification";
 
 // type NItem = {
 //   _id?: string;

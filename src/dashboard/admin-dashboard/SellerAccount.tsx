@@ -57,7 +57,7 @@ const SellerAccount: React.FC = () => {
   const [openPerformanceModal, setOpenPerformanceModal] = useState(false);
   const [openDetailsModal, setOpenDetailsModal] = useState(false);
 
-  const API_BASE_URL = "http://localhost:3200";
+  const API_BASE_URL = "https://tasha-vps-backend-2.onrender.com";
   const ITEMS_PER_PAGE = 8;
 
   const fetchSellers = async () => {
