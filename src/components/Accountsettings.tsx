@@ -126,7 +126,7 @@
 //         }
 
 //         const response = await axios.get(
-//           `https://vps-backend-server-beta.vercel.app/api/user/profile`,
+//           `http://localhost:3200/api/user/profile`,
 //           {
 //             headers: {
 //               Authorization: `Bearer ${token}`,
@@ -240,7 +240,7 @@
 //     setSavingPhone(true);
 //     try {
 //       const response = await axios.put(
-//         `https://vps-backend-server-beta.vercel.app/api/user/update-phone`,
+//         `http://localhost:3200/api/user/update-phone`,
 //         {
 //           email: user?.email,
 //           phone: tempPhoneNumber.trim(),
@@ -590,7 +590,7 @@
 
 //     try {
 //       const response = await axios.put(
-//         `https://vps-backend-server-beta.vercel.app/api/user/update-password`,
+//         `http://localhost:3200/api/user/update-password`,
 //         {
 //           email: user?.email,
 //           currentPassword,
@@ -1161,7 +1161,7 @@
 
 //     try {
 //       const response = await axios.put(
-//         `https://vps-backend-server-beta.vercel.app/api/user/update-password`,
+//         `http://localhost:3200/api/user/update-password`,
 //         {
 //           email: user?.email,
 //           currentPassword,
@@ -1709,7 +1709,7 @@ const SecuritySection = () => {
 
     try {
       const response = await axios.put(
-        `https://vps-backend-server-beta.vercel.app/api/user/update-password`,
+        `http://localhost:3200/api/user/update-password`,
         {
           email: user?.email,
           currentPassword,
