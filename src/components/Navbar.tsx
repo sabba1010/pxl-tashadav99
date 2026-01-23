@@ -84,6 +84,14 @@ export default function Navbar() {
     navigate("/login");
   };
 
+  const handleSellProduct = () => {
+    if (!loginUser) {
+      navigate("/login");
+    } else {
+      navigate("/selling-form");
+    }
+  };
+
   // --- FETCH NOTIFICATIONS (Updated Filter Logic) ---
   const fetchNotifications = useCallback(async () => {
     if (!currentUserEmail) return;
@@ -215,7 +223,7 @@ export default function Navbar() {
               {(loginUser?.role === "buyer" || loginUser?.role === "admin") && (
                 <NavLink to="/buyer-guide" className="font-medium" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}>Buyer Guide</NavLink>
               )}
-              <NavLink to="/selling-form" className="px-6 py-2.5 rounded-lg font-medium text-white shadow-sm" style={{ backgroundColor: ROYAL_GOLD }}>Sell Product</NavLink>
+              <button onClick={handleSellProduct} className="px-6 py-2.5 rounded-lg font-medium text-white shadow-sm" style={{ backgroundColor: ROYAL_GOLD }}>Sell Product</button>
             </div>
 
             <div className="flex items-center gap-1">
@@ -358,7 +366,7 @@ export default function Navbar() {
         <div className="flex items-end justify-between h-20 px-4">
           <NavLink to="/marketplace" className="flex flex-col items-center justify-center flex-1 pb-5" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}><ShoppingBag /><span className="text-xs">Marketplace</span></NavLink>
           <NavLink to="/purchases" className="flex flex-col items-center justify-center flex-1 pb-5" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}><ShoppingCart /><span className="text-xs">Purchases</span></NavLink>
-          <NavLink to="/myproducts" className="flex flex-col items-center justify-center flex-1 pb-5" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}><FaBreadSliceIcon className="w-5 h-5 mb-1" /><span className="text-xs">Sell</span></NavLink>
+          <button onClick={handleSellProduct} className="flex flex-col items-center justify-center flex-1 pb-5 bg-transparent border-0" style={{ color: CHARCOAL, cursor: "pointer" }}><FaBreadSliceIcon className="w-5 h-5 mb-1" /><span className="text-xs">Sell</span></button>
           {(loginUser?.role === "seller" || loginUser?.role === "admin") && (
             <NavLink to="/orders" className="flex flex-col items-center justify-center flex-1 pb-5" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}><ListCheck /><span className="text-xs">Orders</span></NavLink>
           )}

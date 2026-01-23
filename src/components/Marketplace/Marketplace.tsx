@@ -47,7 +47,6 @@ import {
   MdVpnLock,
   MdLocalOffer,
 } from "react-icons/md";
-import { BiSolidPurchaseTag } from "react-icons/bi";
 
 import { sendNotification } from "../Notification/Notification";
 import { useAuth } from "../../context/AuthContext";
@@ -60,7 +59,6 @@ const EyeIcon = FaEye as React.ElementType;
 const TimesIcon = FaTimes as React.ElementType;
 const SearchIcon = FaSearch as React.ElementType;
 const PlusIcon = FaPlus as React.ElementType;
-const PurchaseIcon = BiSolidPurchaseTag as React.ElementType;
 const CheckIcon = FaCheck as React.ElementType;
 const ExternalLinkIcon = FaExternalLinkAlt as React.ElementType;
 

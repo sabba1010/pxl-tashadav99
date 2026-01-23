@@ -80,6 +80,11 @@ const mainNavItems: NavItem[] = [
     icon: <NotificationsActive />,
   },
   {
+    name: "User Account Changes",
+    path: "/admin-dashboard/account-changes",
+    icon: <Assessment />,
+  },
+  {
     name: "Account Rate",
     path: "/admin-dashboard/settings",
     icon: <ManageAccounts />,

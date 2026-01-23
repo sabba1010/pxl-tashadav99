@@ -9,7 +9,7 @@ import {
   X,
 } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import Swal from "sweetalert2";
 import { useAuth } from "../../context/AuthContext";
 import Loading from "../Loading";
@@ -46,7 +46,6 @@ interface Ad {
 const TABS: string[] = ["All", "Active", "Pending", "Denied", "Restore"];
 
 const MyAds: React.FC = () => {
-  const navigate = useNavigate();
   const user = useAuth();
   const [activeTab, setActiveTab] = useState<string>("All");
   const [items, setItems] = useState<Ad[]>([]);
