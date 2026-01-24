@@ -36,13 +36,15 @@ const WithdrawForm: React.FC = () => {
   );
   const [formData, setFormData] = useState<WithdrawFormData>({
     amount: "",
-    currency: "USD", // 👈 Default USD করে দেওয়া হয়েছে
+    currency: "USD", // 👈 Default USD
     accountNumber: "",
     bankCode: "",
     fullName: "",
     phoneNumber: "",
     email: data?.email || "",
-    note: "",    bankName: "",  });
+    note: "",
+    bankName: "",
+  });
 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{
@@ -57,7 +59,7 @@ const WithdrawForm: React.FC = () => {
       if (!data?._id) return;
       
       try {
-        const response = await fetch(`https://tasha-vps-backend-2.onrender.com/api/user/get-bank-account/${data._id}`);
+        const response = await fetch(`http://localhost:3200/api/user/get-bank-account/${data._id}`);
         const result = await response.json();
         
         if (result.success && result.bankDetails) {
@@ -108,7 +110,7 @@ const WithdrawForm: React.FC = () => {
     }
 
     try {
-      const response = await fetch("https://tasha-vps-backend-2.onrender.com/api/user/save-bank-account", {
+      const response = await fetch("http://localhost:3200/api/user/save-bank-account", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -138,17 +140,21 @@ const WithdrawForm: React.FC = () => {
     e.preventDefault();
 
     const amountNum = Number(formData.amount);
-    const MAX_WITHDRAW_LIMIT = 1000; // 🛑 $100 Limit
+    const MIN_WITHDRAW_LIMIT = 5; // 🟢 Set minimum to $5
+    const MAX_WITHDRAW_LIMIT = 1000; // 🛑 Set maximum to $100
 
-    // Validation: Empty or Zero
-    if (!amountNum || amountNum <= 0) {
-      setMessage({ text: "Amount must be greater than 0", type: "error" });
+    // 🟢 Validation: Minimum $5 Check
+    if (!amountNum || amountNum < MIN_WITHDRAW_LIMIT) {
+      const minErrMsg = `Minimum withdrawal amount is $${MIN_WITHDRAW_LIMIT}`;
+      toast.error(minErrMsg);
+      setMessage({ text: minErrMsg, type: "error" });
       return;
     }
 
-    // 🛑 Validation: $100 Limit Check
+    // 🛑 Validation: Max Limit Check
     if (amountNum > MAX_WITHDRAW_LIMIT) {
-      toast.error(`Maximum withdrawal limit is $${MAX_WITHDRAW_LIMIT}`);
+      const maxErrMsg = `Maximum withdrawal limit is $${MAX_WITHDRAW_LIMIT}`;
+      toast.error(maxErrMsg);
       setMessage({
         text: `Error: You cannot withdraw more than $${MAX_WITHDRAW_LIMIT} USD`,
         type: "error",
@@ -197,7 +203,7 @@ const WithdrawForm: React.FC = () => {
       };
 
       const withdrawResponse = await fetch(
-        "https://tasha-vps-backend-2.onrender.com/withdraw/post",
+        "http://localhost:3200/withdraw/post",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -218,7 +224,7 @@ const WithdrawForm: React.FC = () => {
         // Save bank account for local bank method
         if (paymentMethod === "localbank" && formData.bankName) {
           try {
-            await fetch("https://tasha-vps-backend-2.onrender.com/api/user/save-bank-account", {
+            await fetch("http://localhost:3200/api/user/save-bank-account", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
@@ -306,7 +312,7 @@ const WithdrawForm: React.FC = () => {
         <div className="grid md:grid-cols-2 gap-8">
           <div>
             <label className="block text-xl font-bold text-[#0A1D37] mb-3 flex items-center gap-3">
-              <MoneyBillIcon size={28} /> Amount (Limit: $100)
+              <MoneyBillIcon size={28} /> Amount (Min: $5)
             </label>
             <input
               type="number"
@@ -314,10 +320,9 @@ const WithdrawForm: React.FC = () => {
               value={formData.amount}
               onChange={handleChange}
               placeholder="0.00"
-              max="1000"
               className="w-full px-6 py-5 border-2 border-gray-200 rounded-xl focus:border-[#D4A017] focus:ring-4 focus:ring-[#D4A017]/20 text-2xl font-bold transition"
               required
-              min="1"
+              min="5"
               step="0.01"
             />
           </div>
@@ -332,7 +337,6 @@ const WithdrawForm: React.FC = () => {
               className="w-full px-6 py-5 border-2 border-gray-200 rounded-xl focus:border-[#D4A017] focus:ring-4 focus:ring-[#D4A017]/20 text-lg transition"
             >
               <option value="USD">USD – US Dollar</option>
-              {/* <option value="NGN">NGN – Nigerian Naira</option> */}
             </select>
           </div>
         </div>
@@ -422,7 +426,6 @@ const WithdrawForm: React.FC = () => {
                 required={paymentMethod === "localbank"}
               />
               
-              {/* Save Bank Account Button */}
               <button
                 type="button"
                 onClick={handleSaveBankAccount}
@@ -430,9 +433,6 @@ const WithdrawForm: React.FC = () => {
               >
                 💾 Save Bank Account for Future
               </button>
-              <p className="text-xs text-gray-500 mt-2 text-center">
-                Save your bank details to auto-fill on next withdrawal
-              </p>
             </div>
           )}
         </div>
@@ -490,10 +490,6 @@ const WithdrawForm: React.FC = () => {
         >
           {loading ? "Processing..." : "SUBMIT WITHDRAWAL REQUEST"}
         </button>
-
-        {/* <p className="text-center text-sm text-gray-500 mt-8 uppercase tracking-wider font-medium">
-          Approval required • Limit: $100 per request
-        </p> */}
       </form>
     </div>
   );

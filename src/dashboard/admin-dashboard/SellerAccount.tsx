@@ -1,310 +1,251 @@
-import React, { useEffect, useMemo, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
+import React, { useMemo, useState } from "react";
 import {
-  Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-  Paper, Typography, CircularProgress, InputBase, Pagination, IconButton,
-  Modal, Chip, Stack, Divider, List, ListItem, ListItemText, Avatar, LinearProgress, Rating
+  Box, Paper, InputBase, IconButton, Typography,
+  Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
+  CircularProgress, Avatar, Modal, Select, MenuItem, FormControl, Chip, Stack, LinearProgress, Divider
 } from "@mui/material";
 import { 
-  Refresh, Close, TrendingUp, Info, Phone, Email, 
-  AccountBalanceWallet, Speed, CalendarMonth
+  Refresh, Close, FiberManualRecord, WhatsApp, TrendingUp, 
+  AccountBalanceWallet, Stars
 } from "@mui/icons-material";
 import { toast } from "sonner";
 
-/* ====================== TYPES ====================== */
+/* ====================== INTERFACES ====================== */
+interface Product {
+  userEmail?: string;
+  sellerEmail?: string; // Onek somoy backend e sellerEmail thake
+  status: string;
+  title: string;
+  price: number;
+}
+
 interface Seller {
   _id: string;
   name: string;
   email: string;
-  phone: string;
+  phone?: string;
   role: string;
+  balance: number;
   status?: string;
-  balance?: number;
-  countryCode?: string;
-  accountCreationDate?: string;
-  subscribedPlan?: string; 
+  subscribedPlan?: string;
 }
 
-interface ProductRecord {
-  _id: string;
-  name: string;
-  price: string | number;
-  status: string; 
-  createdAt: string;
-  userEmail: string;
-}
-
-interface ReviewRecord {
-  _id: string;
-  userEmail: string; 
-  comment: string;
-  rating: number;
-  createdAt: string;
-}
-
-const ITEMS_PER_PAGE = 10;
-const API_BASE_URL = "https://tasha-vps-backend-2.onrender.com";
+const BASE_URL = "http://localhost:3200";
 
 const SellerAccount: React.FC = () => {
-  const [sellers, setSellers] = useState<Seller[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [search, setSearch] = useState("");
-  const [page, setPage] = useState(1);
-  
+  const queryClient = useQueryClient();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [open, setOpen] = useState(false);
   const [selectedSeller, setSelectedSeller] = useState<Seller | null>(null);
-  const [sellerProducts, setSellerProducts] = useState<ProductRecord[]>([]);
-  const [sellerReviews, setSellerReviews] = useState<ReviewRecord[]>([]);
-  const [historyLoading, setHistoryLoading] = useState(false);
-  
-  const [openPerformanceModal, setOpenPerformanceModal] = useState(false);
-  const [openDetailsModal, setOpenDetailsModal] = useState(false);
 
-  const fetchSellers = async () => {
+  /* ====================== DATA FETCHING ====================== */
+  const { data: sellers = [], isLoading: isSellersLoading } = useQuery<Seller[]>({
+    queryKey: ["all-sellers"],
+    queryFn: async () => {
+      const res = await axios.get(`${BASE_URL}/api/user/getall`);
+      const data = res.data as any;
+      const allData: Seller[] = Array.isArray(data) ? data : (data.users || []);
+      return allData.filter((u) => u.role?.toLowerCase() === "seller");
+    },
+  });
+
+  const { data: allProducts = [], isLoading: isProductsLoading } = useQuery<Product[]>({
+    queryKey: ["all-products-global"],
+    queryFn: async () => {
+      const res = await axios.get(`${BASE_URL}/product/getall`);
+      return res.data as Product[];
+    },
+  });
+
+  /* ====================== ACTIONS ====================== */
+  const handleStatusChange = async (userId: string, newStatus: string) => {
     try {
-      setLoading(true);
-      const res = await axios.get(`${API_BASE_URL}/api/user/getall`);
-      const data = res.data as any; 
-      const allUsers = Array.isArray(data) ? data : (data.users || []);
-      const onlySellers = allUsers.filter((u: any) => u.role?.toLowerCase() === "seller");
-      setSellers(onlySellers);
-    } catch (error) {
-      toast.error("Failed to load sellers");
-    } finally {
-      setLoading(false);
+      await axios.patch(`${BASE_URL}/api/user/update-status/${userId}`, { status: newStatus.toLowerCase() });
+      toast.success("Status updated!");
+      queryClient.invalidateQueries({ queryKey: ["all-sellers"] });
+    } catch (err) { toast.error("Update failed"); }
+  };
+
+  /* ====================== STATS LOGIC ====================== */
+  const getSellerStats = (email: string | undefined) => {
+    if (!email || !allProducts.length) {
+      return { total: 0, approved: 0, successRate: 0, ads: [] };
     }
-  };
 
-  const handleOpenDetails = async (seller: Seller) => {
-    setSelectedSeller(seller);
-    setOpenDetailsModal(true);
-    setHistoryLoading(true);
-    try {
-      const res = await axios.get(`${API_BASE_URL}/rating/seller/${seller.email}`);
-      setSellerReviews(Array.isArray(res.data) ? res.data : []);
-    } catch (err) { console.error(err); }
-    finally { setHistoryLoading(false); }
-  };
-
-  const handleViewPerformance = async (seller: Seller) => {
-    setSelectedSeller(seller);
-    setOpenPerformanceModal(true);
-    setHistoryLoading(true);
-    try {
-      const res = await axios.get<ProductRecord[]>(`${API_BASE_URL}/product/all-sells`);
-      const filteredAds = res.data.filter((ad) => ad.userEmail === seller.email);
-      setSellerProducts(filteredAds);
-    } catch (err) { toast.error("Failed to load products"); }
-    finally { setHistoryLoading(false); }
-  };
-
-  useEffect(() => { fetchSellers(); }, []);
-
-  const stats = useMemo(() => {
-    const approvedList = sellerProducts.filter(p => p.status === 'approved' || p.status === 'active');
-    const total = sellerProducts.length;
-    const avgRating = sellerReviews.length > 0 
-      ? sellerReviews.reduce((acc, curr) => acc + curr.rating, 0) / sellerReviews.length 
-      : 0;
-
-    return {
-      total,
-      approved: approvedList.length,
-      successRate: total > 0 ? (approvedList.length / total) * 100 : 0,
-      avgRating
-    };
-  }, [sellerProducts, sellerReviews]);
-
-  const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    return sellers.filter(s => 
-      s.name?.toLowerCase().includes(q) || 
-      s.email?.toLowerCase().includes(q) ||
-      s.phone?.includes(q)
+    // Checking both userEmail and sellerEmail for safety
+    const sellerAds = allProducts.filter(
+      (p) => (p.userEmail?.toLowerCase() === email.toLowerCase()) || 
+             (p.sellerEmail?.toLowerCase() === email.toLowerCase())
     );
-  }, [sellers, search]);
 
-  const paginated = filtered.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
+    const approved = sellerAds.filter(
+      (p) => p.status?.toLowerCase() === 'active' || p.status?.toLowerCase() === 'approved'
+    ).length;
+
+    const successRate = sellerAds.length > 0 ? (approved / sellerAds.length) * 100 : 0;
+
+    return { total: sellerAds.length, approved, successRate, ads: sellerAds };
+  };
+
+  const filteredSellers = useMemo(() => {
+    return sellers.filter((s) =>
+      s.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      s.phone?.includes(searchTerm)
+    );
+  }, [sellers, searchTerm]);
 
   return (
     <Box sx={{ p: 4, bgcolor: "#F8FAFC", minHeight: "100vh" }}>
       {/* Header */}
-      <Paper elevation={0} sx={{ p: 3, mb: 4, borderRadius: 2, display: "flex", justifyContent: "space-between", alignItems: "center", border: "1px solid #E2E8F0" }}>
-        <Typography variant="h5" fontWeight={700}>Sellers Management</Typography>
+      <Paper elevation={0} sx={{ p: 3, mb: 4, borderRadius: 3, display: "flex", justifyContent: "space-between", alignItems: "center", border: "1px solid #E2E8F0" }}>
+        <Typography variant="h5" fontWeight={800} color="#1E293B">Sellers Management</Typography>
         <Box sx={{ display: "flex", gap: 2 }}>
-          <IconButton onClick={fetchSellers} sx={{ bgcolor: "#F1F5F9" }}><Refresh /></IconButton>
           <InputBase
-            placeholder="Search name, email or phone..."
-            value={search}
-            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-            sx={{ border: "1px solid #CBD5E1", borderRadius: "8px", px: 2, width: 320, bgcolor: "white" }}
+            placeholder="Search seller name or phone..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            sx={{ border: "1px solid #CBD5E1", borderRadius: "10px", px: 2, width: 300, bgcolor: "white", height: 40 }}
           />
+          <IconButton onClick={() => queryClient.invalidateQueries({ queryKey: ["all-sellers"] })} sx={{ bgcolor: "#F1F5F9" }}><Refresh /></IconButton>
         </Box>
       </Paper>
 
       {/* Main Table */}
-      <TableContainer component={Paper} elevation={0} sx={{ borderRadius: 2, border: "1px solid #E2E8F0" }}>
+      <TableContainer component={Paper} elevation={0} sx={{ borderRadius: 3, border: "1px solid #E2E8F0" }}>
         <Table>
           <TableHead sx={{ bgcolor: "#F8FAFC" }}>
             <TableRow>
-              <TableCell sx={{ fontWeight: 600 }}>SELLER INFO</TableCell>
-              <TableCell sx={{ fontWeight: 600 }}>WHATSAPP</TableCell>
-              <TableCell sx={{ fontWeight: 600 }}>ACTIVE PLAN</TableCell>
-              <TableCell sx={{ fontWeight: 600 }}>BALANCE</TableCell>
-              <TableCell sx={{ fontWeight: 600 }}>PERFORMANCE</TableCell>
-              <TableCell sx={{ fontWeight: 600 }}>DETAILS</TableCell>
+              <TableCell sx={{ fontWeight: 800, color: "#64748B", fontSize: "12px" }}>SELLER</TableCell>
+              <TableCell sx={{ fontWeight: 800, color: "#64748B", fontSize: "12px" }}>WHATSAPP</TableCell>
+              <TableCell sx={{ fontWeight: 800, color: "#64748B", fontSize: "12px" }}>PLAN</TableCell>
+              <TableCell sx={{ fontWeight: 800, color: "#64748B", fontSize: "12px" }}>BALANCE</TableCell>
+              <TableCell sx={{ fontWeight: 800, color: "#64748B", fontSize: "12px" }}>STATUS</TableCell>
+              <TableCell sx={{ fontWeight: 800, color: "#64748B", fontSize: "12px" }} align="center">PERFORMANCE</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {loading ? (
-              <TableRow><TableCell colSpan={6} align="center"><CircularProgress sx={{ my: 4 }} /></TableCell></TableRow>
-            ) : (
-              paginated.map((seller) => (
-                <TableRow key={seller._id} hover>
-                  <TableCell>
-                    <Stack direction="row" spacing={2} alignItems="center">
-                      <Avatar sx={{ width: 32, height: 32, fontSize: "14px", bgcolor: "#6366F1" }}>{seller.name[0]}</Avatar>
-                      <Box>
-                        <Typography variant="body2" fontWeight={600}>{seller.name}</Typography>
-                        <Typography variant="caption" color="textSecondary">{seller.email}</Typography>
-                      </Box>
-                    </Stack>
-                  </TableCell>
-                  
-                  <TableCell>
-                    <Typography variant="body2" sx={{ color: "#475569", display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                      <Phone sx={{ fontSize: 14, color: "#94A3B8" }} /> {seller.phone || "N/A"}
-                    </Typography>
-                  </TableCell>
-
-                  <TableCell>
-                    <Chip 
-                      label={seller.subscribedPlan?.toUpperCase() || "BASIC"} 
-                      size="small" 
-                      sx={{ fontWeight: 700, bgcolor: '#F1F5F9', color: '#475569', borderRadius: '6px' }} 
-                    />
-                  </TableCell>
-
-                  <TableCell sx={{ fontWeight: 700, color: "#10B981" }}>
-                    ${(seller.balance || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                  </TableCell>
-
-                  <TableCell>
-                    <IconButton onClick={() => handleViewPerformance(seller)} color="primary">
-                      <TrendingUp sx={{ fontSize: 20 }} />
-                    </IconButton>
-                  </TableCell>
-
-                  <TableCell>
-                    <IconButton onClick={() => handleOpenDetails(seller)} sx={{ bgcolor: "#F1F5F9" }}>
-                      <Info sx={{ fontSize: 20, color: "#64748B" }} />
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
+            {(isSellersLoading || isProductsLoading) ? (
+              <TableRow><TableCell colSpan={6} align="center"><CircularProgress sx={{ m: 3 }} /></TableCell></TableRow>
+            ) : filteredSellers.map((s) => (
+              <TableRow key={s._id} hover>
+                <TableCell>
+                  <Stack direction="row" spacing={2} alignItems="center">
+                    <Avatar sx={{ width: 36, height: 36, bgcolor: "#6366F1", fontWeight: 700 }}>{s.name[0]}</Avatar>
+                    <Box>
+                        <Typography variant="body2" fontWeight={700} color="#1E293B">{s.name}</Typography>
+                        <Typography variant="caption" color="textSecondary">{s.email}</Typography>
+                    </Box>
+                  </Stack>
+                </TableCell>
+                <TableCell>
+                   <Stack direction="row" spacing={1} alignItems="center">
+                    <WhatsApp sx={{ color: "#25D366", fontSize: 16 }} />
+                    <Typography variant="body2" fontWeight={600}>{s.phone || "N/A"}</Typography>
+                  </Stack>
+                </TableCell>
+                <TableCell>
+                  <Chip label={s.subscribedPlan || "FREE"} size="small" sx={{ fontWeight: 800, fontSize: "10px", bgcolor: "#F1F5F9" }} />
+                </TableCell>
+                <TableCell>
+                  <Typography variant="body2" fontWeight={800} color="#10B981">${s.balance?.toFixed(2)}</Typography>
+                </TableCell>
+                <TableCell>
+                   <FormControl size="small">
+                    <Select
+                      value={s.status?.toUpperCase() || "ACTIVE"}
+                      onChange={(e) => handleStatusChange(s._id, e.target.value)}
+                      sx={{ borderRadius: "8px", fontWeight: 800, fontSize: "10px", height: 28, minWidth: 100, bgcolor: s.status === 'blocked' ? '#FEF2F2' : '#ECFDF5', color: s.status === 'blocked' ? '#EF4444' : '#10B981', "& fieldset": { border: 'none' } }}
+                    >
+                      <MenuItem value="ACTIVE">ACTIVE</MenuItem>
+                      <MenuItem value="BLOCKED">BLOCKED</MenuItem>
+                    </Select>
+                  </FormControl>
+                </TableCell>
+                <TableCell align="center">
+                  <IconButton onClick={() => { setSelectedSeller(s); setOpen(true); }} sx={{ color: "#3B82F6", bgcolor: "#EFF6FF", "&:hover": { bgcolor: "#DBEAFE" } }}>
+                    <TrendingUp sx={{ fontSize: 20 }} />
+                  </IconButton>
+                </TableCell>
+              </TableRow>
+            ))}
           </TableBody>
         </Table>
-        
-        <Box sx={{ p: 2, display: "flex", justifyContent: "center" }}>
-          <Pagination 
-            count={Math.ceil(filtered.length / ITEMS_PER_PAGE)} 
-            page={page} 
-            onChange={(_, v) => setPage(v)} 
-            color="primary" 
-          />
-        </Box>
       </TableContainer>
 
-      {/* Profile Details Modal */}
-      <Modal open={openDetailsModal} onClose={() => setOpenDetailsModal(false)}>
-        <Box sx={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", width: 480, bgcolor: "white", p: 4, borderRadius: 3, boxShadow: 24, outline: 'none' }}>
-          <Box display="flex" justifyContent="space-between" mb={3}>
-            <Typography variant="h6" fontWeight={700}>Seller Profile</Typography>
-            <IconButton onClick={() => setOpenDetailsModal(false)}><Close /></IconButton>
+      {/* Analytics Modal */}
+      <Modal open={open} onClose={() => setOpen(false)} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Box sx={{ bgcolor: "white", width: 550, borderRadius: 4, boxShadow: 24, outline: 'none', overflow: 'hidden' }}>
+          <Box sx={{ p: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9' }}>
+            <Typography variant="h6" fontWeight={800}>Performance Analytics</Typography>
+            <IconButton onClick={() => setOpen(false)}><Close /></IconButton>
           </Box>
           
-          <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3, p: 2, bgcolor: '#F8FAFC', borderRadius: 2, border: '1px solid #E2E8F0' }}>
-            <Avatar sx={{ width: 56, height: 56, bgcolor: '#6366F1', fontSize: 24 }}>{selectedSeller?.name?.[0]}</Avatar>
-            <Box>
-                <Typography variant="subtitle1" fontWeight={700}>{selectedSeller?.name}</Typography>
-                <Stack direction="row" spacing={1} alignItems="center">
-                    <Rating value={stats.avgRating} precision={0.5} readOnly size="small" />
-                    <Typography variant="caption" fontWeight={700} color="textSecondary">({stats.avgRating.toFixed(1)})</Typography>
-                </Stack>
-            </Box>
-          </Stack>
+          <Box sx={{ p: 4 }}>
+            {selectedSeller && (() => {
+              const stats = getSellerStats(selectedSeller.email);
+              return (
+                <>
+                  <Stack direction="row" spacing={3} mb={4}>
+                    {/* Dark Wallet Card */}
+                    <Box sx={{ 
+                      bgcolor: "#1E293B", color: "white", p: 3, borderRadius: 4, flex: 1.2,
+                      backgroundImage: 'linear-gradient(135deg, #1E293B 0%, #334155 100%)',
+                      position: 'relative', overflow: 'hidden'
+                    }}>
+                      <Typography variant="caption" sx={{ opacity: 0.8, fontWeight: 700 }}>STORE WALLET</Typography>
+                      <Typography variant="h3" fontWeight={900} sx={{ my: 1 }}>${selectedSeller.balance?.toFixed(1) || "0.0"}</Typography>
+                      <Chip label="Withdrawable" size="small" sx={{ bgcolor: "#10B981", color: "white", fontWeight: 800, fontSize: "10px", height: 20 }} />
+                      <AccountBalanceWallet sx={{ position: 'absolute', right: -10, bottom: -10, fontSize: 80, opacity: 0.1 }} />
+                    </Box>
 
-          <Paper variant="outlined" sx={{ p: 2, mb: 3, display: 'flex', alignItems: 'center', justifyContent: 'space-between', bgcolor: '#F0FDF4', borderColor: '#BBF7D0', borderRadius: 2 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                <AccountBalanceWallet sx={{ color: '#16A34A' }} />
-                <Typography variant="body2" fontWeight={700} color="#166534">Available Balance</Typography>
-            </Box>
-            <Typography variant="h6" fontWeight={800} color="#15803D">
-                ${(selectedSeller?.balance || 0).toFixed(2)}
-            </Typography>
-          </Paper>
+                    {/* Stats Boxes */}
+                    <Stack spacing={2} sx={{ flex: 1 }}>
+                      <Paper variant="outlined" sx={{ p: 2, textAlign: 'center', borderRadius: 3, border: '1px solid #E2E8F0' }}>
+                        <Typography variant="h5" fontWeight={900} color="#3B82F6">{stats.total}</Typography>
+                        <Typography variant="caption" fontWeight={800} color="#64748B">TOTAL ADS</Typography>
+                      </Paper>
+                      <Paper variant="outlined" sx={{ p: 2, textAlign: 'center', borderRadius: 3, border: '1px solid #E2E8F0' }}>
+                        <Typography variant="h5" fontWeight={900} color="#10B981">{stats.approved}</Typography>
+                        <Typography variant="caption" fontWeight={800} color="#64748B">APPROVED</Typography>
+                      </Paper>
+                    </Stack>
+                  </Stack>
 
-          <Typography variant="caption" fontWeight={700} color="textSecondary" sx={{ mb: 1, display: 'block', textTransform: 'uppercase' }}>Contact Details</Typography>
-          <Divider sx={{ mb: 2 }} />
-          
-          <List dense disablePadding>
-            <ListItem sx={{ px: 0 }}>
-                <Email sx={{ fontSize: 18, mr: 2, color: '#94A3B8' }} />
-                <ListItemText primary={<Typography variant="body2" fontWeight={600}>{selectedSeller?.email}</Typography>} />
-            </ListItem>
-            <ListItem sx={{ px: 0 }}>
-                <Phone sx={{ fontSize: 18, mr: 2, color: '#94A3B8' }} />
-                <ListItemText primary={<Typography variant="body2" fontWeight={600}>{selectedSeller?.phone || "N/A"}</Typography>} />
-            </ListItem>
-            <ListItem sx={{ px: 0 }}>
-                <CalendarMonth sx={{ fontSize: 18, mr: 2, color: '#94A3B8' }} />
-                <ListItemText 
-                    primary={<Typography variant="body2" fontWeight={600}>Joined: {selectedSeller?.accountCreationDate ? new Date(selectedSeller.accountCreationDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : 'N/A'}</Typography>} 
-                />
-            </ListItem>
-          </List>
-        </Box>
-      </Modal>
+                  {/* Success Rate Bar */}
+                  <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 4, mb: 4, bgcolor: "#FBFDFF", border: '1px solid #F1F5F9' }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1, alignItems: 'center' }}>
+                      <Stack direction="row" spacing={1} alignItems="center">
+                         <Stars sx={{ fontSize: 18, color: "#3B82F6" }} />
+                         <Typography variant="body2" fontWeight={800}>Store Success Rate</Typography>
+                      </Stack>
+                      <Typography variant="body2" fontWeight={900} color="#3B82F6">{stats.successRate.toFixed(1)}%</Typography>
+                    </Box>
+                    <LinearProgress 
+                      variant="determinate" 
+                      value={stats.successRate} 
+                      sx={{ height: 8, borderRadius: 5, bgcolor: "#E2E8F0", "& .MuiLinearProgress-bar": { borderRadius: 5 } }} 
+                    />
+                  </Paper>
 
-      {/* Performance Modal */}
-      <Modal open={openPerformanceModal} onClose={() => setOpenPerformanceModal(false)}>
-        <Box sx={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", width: 700, bgcolor: "white", p: 4, borderRadius: 3, boxShadow: 24, outline: 'none' }}>
-          <Box display="flex" justifyContent="space-between" mb={3}>
-            <Typography variant="h6" fontWeight={700}>Performance Analytics</Typography>
-            <IconButton onClick={() => setOpenPerformanceModal(false)}><Close /></IconButton>
-          </Box>
+                  <Divider sx={{ mb: 2 }} />
 
-          <Stack direction="row" spacing={2} mb={4}>
-            <Paper elevation={0} sx={{ p: 2, flex: 1.5, bgcolor: '#1E293B', color: '#fff', borderRadius: 2 }}>
-                <Typography variant="caption" sx={{ opacity: 0.7, fontWeight: 600 }}>STORE WALLET</Typography>
-                <Typography variant="h4" fontWeight={800} sx={{ my: 0.5 }}>
-                    ${(selectedSeller?.balance || 0).toLocaleString()}
-                </Typography>
-                <Chip label="Withdrawable" size="small" sx={{ bgcolor: '#10B981', color: '#fff', fontWeight: 700, height: 20, fontSize: '10px' }} />
-            </Paper>
-
-            <Paper variant="outlined" sx={{ p: 2, flex: 1, textAlign: 'center', borderRadius: 2, border: '1px solid #E2E8F0' }}>
-                <Typography variant="h5" fontWeight={800} color="primary">{stats.total}</Typography>
-                <Typography variant="caption" fontWeight={700} color="textSecondary">TOTAL ADS</Typography>
-            </Paper>
-            <Paper variant="outlined" sx={{ p: 2, flex: 1, textAlign: 'center', borderRadius: 2, border: '1px solid #E2E8F0' }}>
-                <Typography variant="h5" fontWeight={800} color="#10B981">{stats.approved}</Typography>
-                <Typography variant="caption" fontWeight={700} color="textSecondary">APPROVED</Typography>
-            </Paper>
-          </Stack>
-
-          <Box sx={{ p: 3, bgcolor: '#F8FAFC', borderRadius: 2, border: '1px solid #E2E8F0' }}>
-            <Stack direction="row" justifyContent="space-between" mb={1.5}>
-                <Typography variant="body2" fontWeight={700} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Speed sx={{ color: '#6366F1' }} /> Store Success Rate
-                </Typography>
-                <Typography variant="subtitle1" fontWeight={800} color="primary">{stats.successRate.toFixed(1)}%</Typography>
-            </Stack>
-            <LinearProgress 
-                variant="determinate" 
-                value={stats.successRate} 
-                sx={{ height: 8, borderRadius: 4, bgcolor: '#E2E8F0', '& .MuiLinearProgress-bar': { borderRadius: 4 } }} 
-            />
+                  {/* List of Products Preview */}
+                  <Typography variant="caption" fontWeight={800} color="#64748B" sx={{ mb: 1, display: 'block' }}>RECENT LISTINGS</Typography>
+                  <Box sx={{ maxHeight: 150, overflow: 'auto' }}>
+                    {stats.ads.length > 0 ? stats.ads.slice(0, 5).map((ad, i) => (
+                      <Box key={i} sx={{ display: 'flex', justifyContent: 'space-between', p: 1, borderBottom: '1px solid #F8FAFC' }}>
+                        <Typography variant="body2" fontWeight={600} fontSize="13px">{ad.title}</Typography>
+                        <Typography variant="body2" fontWeight={800} color="#10B981" fontSize="13px">${ad.price}</Typography>
+                      </Box>
+                    )) : (
+                      <Typography variant="body2" color="textSecondary" align="center" sx={{ py: 2 }}>No products found</Typography>
+                    )}
+                  </Box>
+                </>
+              );
+            })()}
           </Box>
         </Box>
       </Modal>
