@@ -1683,21 +1683,21 @@ const DashboardSeller: React.FC = () => {
             </div>
 
             {/* Referral Dashboard */}
-            <div className="bg-gradient-to-br from-purple-50 to-blue-50 p-6 sm:p-8 rounded-2xl sm:rounded-3xl border border-purple-200 shadow-sm">
-              <h3 className="font-black text-lg sm:text-xl text-gray-900 mb-6 uppercase tracking-tight flex items-center gap-2">
-                <Share2 size={20} className="text-purple-600" /> Referral Dashboard
+            <div className="bg-gradient-to-br from-purple-50 to-blue-50 p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl border border-purple-200 shadow-sm">
+              <h3 className="font-black text-base sm:text-lg md:text-xl text-gray-900 mb-4 sm:mb-6 uppercase tracking-tight flex items-center gap-2">
+                <Share2 size={18} className="sm:w-5 sm:h-5 text-purple-600" /> Referral Dashboard
               </h3>
-              <div className="space-y-6">
-                <div className="bg-white p-5 rounded-xl border border-purple-100">
-                  <p className="text-xs font-bold text-purple-600 uppercase tracking-widest mb-2 flex items-center gap-2">
+              <div className="space-y-4 sm:space-y-6">
+                <div className="bg-white p-4 sm:p-5 rounded-xl border border-purple-100">
+                  <p className="text-xs font-bold text-purple-600 uppercase tracking-widest mb-3 flex items-center gap-2">
                     <Gift size={16} /> Your Referral Link
                   </p>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                     <input
                       type="text"
                       value={referralData.referralLink}
                       readOnly
-                      className="flex-1 px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg text-sm text-gray-600 font-mono"
+                      className="flex-1 px-3 sm:px-4 py-2 sm:py-2.5 bg-gray-50 border border-gray-300 rounded-lg text-xs sm:text-sm text-gray-600 font-mono truncate"
                     />
                     <button
                       onClick={() => {
@@ -1712,34 +1712,34 @@ const DashboardSeller: React.FC = () => {
                           timerProgressBar: true
                         });
                       }}
-                      className="px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-bold uppercase transition-all flex items-center gap-2"
+                      className="px-3 sm:px-4 py-2 sm:py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs sm:text-sm font-bold uppercase transition-all flex items-center justify-center sm:justify-start gap-2 whitespace-nowrap flex-shrink-0"
                     >
-                      <Copy size={16} /> Copy
+                      <Copy size={14} className="sm:w-4 sm:h-4" /> Copy
                     </button>
                   </div>
                   <p className="text-xs text-gray-500 mt-2">Share to earn commissions</p>
                 </div>
 
-                <div className="grid grid-cols-3 gap-3">
-                  <div className="bg-white p-4 rounded-xl border border-purple-100 text-center">
-                    <p className="text-2xl font-black text-purple-600">{referralData.referredBuyers}</p>
+                <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                  <div className="bg-white p-3 sm:p-4 rounded-lg sm:rounded-xl border border-purple-100 text-center">
+                    <p className="text-lg sm:text-2xl font-black text-purple-600">{referralData.referredBuyers}</p>
                     <p className="text-xs text-gray-600 font-bold uppercase mt-1">Buyers</p>
                   </div>
-                  <div className="bg-white p-4 rounded-xl border border-blue-100 text-center">
-                    <p className="text-2xl font-black text-blue-600">{referralData.referredSellers}</p>
+                  <div className="bg-white p-3 sm:p-4 rounded-lg sm:rounded-xl border border-blue-100 text-center">
+                    <p className="text-lg sm:text-2xl font-black text-blue-600">{referralData.referredSellers}</p>
                     <p className="text-xs text-gray-600 font-bold uppercase mt-1">Sellers</p>
                   </div>
-                  <div className="bg-white p-4 rounded-xl border border-green-100 text-center">
-                    <p className="text-2xl font-black text-green-600">${referralData.referralEarnings.toFixed(2)}</p>
+                  <div className="bg-white p-3 sm:p-4 rounded-lg sm:rounded-xl border border-green-100 text-center">
+                    <p className="text-lg sm:text-2xl font-black text-green-600">${referralData.referralEarnings.toFixed(2)}</p>
                     <p className="text-xs text-gray-600 font-bold uppercase mt-1">Earnings</p>
                   </div>
                 </div>
 
                 <button
                   onClick={() => navigate('/referral')}
-                  className="w-full py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white rounded-xl text-sm font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2"
+                  className="w-full py-2.5 sm:py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white rounded-lg sm:rounded-xl text-xs sm:text-sm font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2"
                 >
-                  <Share2 size={18} /> Full Referral Dashboard
+                  <Share2 size={16} className="sm:w-5 sm:h-5" /> Full Referral Dashboard
                 </button>
               </div>
             </div>
