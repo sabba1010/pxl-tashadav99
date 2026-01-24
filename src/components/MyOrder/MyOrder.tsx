@@ -60,6 +60,7 @@ interface Order {
   date: string;
   status: OrderStatus;
   orderNumber?: string;
+  icon?: string;
 }
 
 interface ApiOrder {
@@ -71,6 +72,7 @@ interface ApiOrder {
   productId: string;
   purchaseDate: string;
   status: string;
+  categoryIcon?: string;
 }
 
 interface IMessage {
@@ -98,6 +100,27 @@ interface PresenceResponse {
 const truncateTitle = (title: string, maxLength: number = 30): string => {
   if (title.length <= maxLength) return title;
   return title.slice(0, maxLength) + "...";
+};
+
+const RenderIcon = ({ icon, size = 40 }: { icon?: string; size?: number }) => {
+  if (icon && icon.startsWith("http")) {
+    return (
+      <div
+        style={{ width: size, height: size }}
+        className="rounded-full overflow-hidden shadow-md flex-shrink-0"
+      >
+        <img src={icon} alt="" className="w-full h-full object-cover" />
+      </div>
+    );
+  }
+  return (
+    <div
+      style={{ width: size, height: size, background: "#daab4c" }}
+      className="rounded-full flex items-center justify-center shadow-md text-white font-bold text-lg flex-shrink-0"
+    >
+      📦
+    </div>
+  );
 };
 
 const inferPlatform = (name: string): PlatformType => {
@@ -247,7 +270,26 @@ const MyOrder: React.FC = () => {
         const res = await axios.get<ApiOrder[]>(`${PURCHASE_API}/getall`);
         const allData = res.data;
         const mySales = allData.filter((item) => item.sellerEmail === sellerId);
-        const mapped: Order[] = mySales.map((item) => ({
+        
+        // Fetch product details to get categoryIcon
+        const enrichedData = await Promise.all(mySales.map(async (item) => {
+          if (item.productId) {
+            try {
+              const productRes = await axios.get<any>(`${PURCHASE_API.replace('/purchase', '')}/product/${item.productId}`);
+              if (productRes?.data) {
+                return {
+                  ...item,
+                  categoryIcon: productRes.data.categoryIcon,
+                };
+              }
+            } catch (err) {
+              console.error(`Failed to fetch product ${item.productId}:`, err);
+            }
+          }
+          return item;
+        }));
+        
+        const mapped: Order[] = enrichedData.map((item) => ({
           id: item._id,
           platform: inferPlatform(item.productName),
           title: item.productName,
@@ -257,6 +299,7 @@ const MyOrder: React.FC = () => {
           date: formatDate(item.purchaseDate),
           status: (item.status.charAt(0).toUpperCase() + item.status.slice(1)) as OrderStatus,
           orderNumber: `ORD-${item._id.slice(-6).toUpperCase()}`,
+          icon: item.categoryIcon,
         }));
         setOrders(mapped);
       } catch (err) {
@@ -506,52 +549,63 @@ const MyOrder: React.FC = () => {
                   >
                     <div className="flex items-start sm:items-center gap-2 sm:gap-4 flex-1 min-w-0">
                       <div className="flex-shrink-0">
-                        {renderBadge(order.platform, 28)}
+                        <RenderIcon icon={order.icon} size={40} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-bold text-[#0A1A3A] text-xs sm:text-base truncate" title={order.title}>{truncateTitle(order.title, 30)}</h3>
-                        <p className="text-xs sm:text-sm text-gray-500 flex items-center gap-1 flex-wrap">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <h3 className="font-bold text-[#0A1A3A] text-xs sm:text-base truncate" title={order.title}>{truncateTitle(order.title, 30)}</h3>
+                          <span
+                            className={`flex-shrink-0 px-1.5 sm:px-3 py-0 sm:py-1 rounded-full text-xs font-bold ${
+                              order.status === "Pending"
+                                ? "bg-amber-100 text-amber-700"
+                                : order.status === "Completed"
+                                ? "bg-green-100 text-green-700"
+                                : "bg-red-100 text-red-700"
+                            }`}
+                          >
+                            {order.status}
+                          </span>
+                        </div>
+                        <p className="text-xs sm:text-sm text-gray-500 flex items-center gap-1 flex-wrap mt-1">
                           <span className="truncate">Buyer: {getBuyerDisplayName(order.buyerEmail)}</span>
                           <span className={`inline-block w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full flex-shrink-0 ${presenceMap[order.buyerEmail]?.online ? 'bg-green-500' : 'bg-gray-300'}`} />
                         </p>
-                        <span
-                          className={`mt-0.5 inline-block px-1.5 sm:px-3 py-0 sm:py-1 rounded-full text-xs font-bold ${
-                            order.status === "Pending"
-                              ? "bg-amber-100 text-amber-700"
-                              : order.status === "Completed"
-                              ? "bg-green-100 text-green-700"
-                              : "bg-red-100 text-red-700"
-                          }`}
-                        >
-                          {order.status}
-                        </span>
                       </div>
                     </div>
-                    <div className="text-right flex-shrink-0">
-                      <p className="text-xs sm:text-lg font-bold">${order.price.toFixed(2)}</p>
-                      <p className="text-xs text-gray-500">{order.date}</p>
+                    {/* Right Side: Price, Date & Actions - FIXED ALIGNMENT */}
+                    <div className="w-full sm:w-auto flex flex-col sm:items-end gap-3 mt-2 sm:mt-0 border-t sm:border-t-0 pt-3 sm:pt-0">
+                      <div className="flex flex-row sm:flex-col justify-between items-center sm:items-end w-full sm:w-auto">
+                        <p className="text-lg font-bold text-[#0A1A3A]">${order.price.toFixed(2)}</p>
+                        <p className="text-[10px] text-gray-400 font-medium">{order.date}</p>
+                      </div>
+                      
                       {!["Cancelled", "Refunded"].includes(order.status) && (
-                        <div className="flex gap-0.5 sm:gap-2 mt-1 sm:mt-3 justify-end" onClick={(e) => e.stopPropagation()}>
-                          <button onClick={() => setSelected(order)} className="p-1 sm:p-2 border rounded hover:bg-gray-100">
-                            <FaEyeIcon size={10} className="sm:hidden" />
-                            <FaEyeIcon size={14} className="hidden sm:block" />
-                          </button>
-                          <button onClick={() => handleOpenChat(order)} className="p-1 sm:p-2 border rounded hover:bg-blue-100 text-blue-600 relative">
-                            <FaCommentsIcon size={10} className="sm:hidden" />
-                            <FaCommentsIcon size={14} className="hidden sm:block" />
-                            {unreadState[order.id] && (
-                              <span className="absolute -top-0.5 sm:-top-1 -right-0.5 sm:-right-1 w-1.5 sm:w-3 h-1.5 sm:h-3 bg-red-500 rounded-full animate-ping"></span>
-                            )}
-                          </button>
-                          <button
+                        <div className="flex gap-2 w-full justify-end sm:justify-start" onClick={(e) => e.stopPropagation()}>
+                          <button 
                             onClick={() => {
                               setReportTargetOrder(order);
                               setIsReportModalOpen(true);
-                            }}
-                            className="p-1 sm:p-2 border border-red-200 rounded hover:bg-red-50 text-red-600"
+                            }} 
+                            className="flex-1 sm:flex-none flex justify-center p-3 text-red-500 border border-red-100 rounded-lg bg-white hover:bg-red-50 transition" 
                           >
-                            <FaFlagIcon size={10} className="sm:hidden" />
-                            <FaFlagIcon size={14} className="hidden sm:block" />
+                            <FaFlagIcon size={18} />
+                          </button>
+                          
+                          <button 
+                            onClick={() => setSelected(order)} 
+                            className="flex-1 sm:flex-none flex justify-center p-3 text-gray-600 border rounded-lg bg-white hover:bg-gray-50 transition" 
+                          >
+                            <FaEyeIcon size={18} />
+                          </button>
+                          
+                          <button 
+                            onClick={() => handleOpenChat(order)} 
+                            className="flex-1 sm:flex-none flex justify-center p-3 text-blue-600 border border-blue-100 rounded-lg bg-white hover:bg-blue-50 transition relative" 
+                          >
+                            <FaCommentsIcon size={18} />
+                            {unreadState[order.id] && (
+                              <span className="absolute -top-0.5 sm:-top-1 -right-0.5 sm:-right-1 w-1.5 sm:w-3 h-1.5 sm:h-3 bg-red-500 rounded-full animate-ping"></span>
+                            )}
                           </button>
                         </div>
                       )}
@@ -578,8 +632,8 @@ const MyOrder: React.FC = () => {
                 <FaTimesIcon size={20} />
               </button>
             </div>
-            <div className="p-6 text-center">
-              {renderBadge(selected.platform, 80)}
+            <div className="p-6 text-center flex flex-col items-center justify-center">
+              <RenderIcon icon={selected.icon} size={80} />
               <p className="text-3xl font-bold mt-4">${selected.price.toFixed(2)}</p>
               <div className="mt-6 text-left space-y-3">
                 <p><span className="text-gray-500">Status:</span> <strong>{selected.status}</strong></p>
@@ -588,38 +642,38 @@ const MyOrder: React.FC = () => {
                 <p><span className="text-gray-500">Description:</span> {selected.desc}</p>
               </div>
               {selected.status !== "Cancelled" && (
-                <div className="mt-8 grid grid-cols-2 gap-4">
+                <div className="mt-8 grid grid-cols-2 gap-3">
                   <button
                     disabled={isUpdating}
                     onClick={() => updateOrderStatus(selected.id)}
-                    className="py-3 border border-red-200 text-red-600 rounded-lg hover:bg-red-50 flex items-center justify-center gap-2"
+                    className="py-3.5 px-4 border border-red-200 text-red-600 rounded-lg hover:bg-red-50 flex items-center justify-center gap-2 font-semibold text-base transition"
                   >
-                    <FaBanIcon /> Cancel Order
+                    <FaBanIcon size={20} /> Cancel
                   </button>
                   <button
                     onClick={() => {
                       setReportTargetOrder(selected);
                       setIsReportModalOpen(true);
                     }}
-                    className="py-3 bg-red-50 text-red-600 border border-red-200 rounded-lg hover:bg-red-100 flex items-center justify-center gap-2"
+                    className="py-3.5 px-4 bg-red-50 text-red-600 border border-red-200 rounded-lg hover:bg-red-100 flex items-center justify-center gap-2 font-semibold text-base transition"
                   >
-                    <FaFlagIcon /> Report Buyer
+                    <FaFlagIcon size={20} /> Report
                   </button>
                 </div>
               )}
-              <div className="mt-6 flex gap-3">
+              <div className="mt-4 grid grid-cols-2 gap-3">
                 {selected.status !== "Cancelled" && (
                   <button
                     onClick={() => {
                       setSelected(null);
                       handleOpenChat(selected);
                     }}
-                    className="flex-1 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2"
+                    className="py-3.5 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2 font-semibold text-base transition"
                   >
-                    <FaCommentsIcon /> Chat with Buyer
+                    <FaCommentsIcon size={20} /> Chat
                   </button>
                 )}
-                <button onClick={() => setSelected(null)} className="flex-1 py-3 border rounded-lg">
+                <button onClick={() => setSelected(null)} className="py-3.5 px-4 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 font-semibold text-base transition">
                   Close
                 </button>
               </div>

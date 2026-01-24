@@ -965,20 +965,58 @@ const Marketplace: React.FC = () => {
         </div>
 
         {mobileSearchOpen && (
-          <div className="fixed inset-0 z-50 bg-white p-4">
-            <div className="flex items-center gap-2 border-b pb-2">
+          <div className="fixed inset-0 z-50 bg-white p-4 flex flex-col">
+            <div className="flex items-center gap-2 border-b pb-2 mb-4">
               <SearchIcon className="text-gray-400" />
               <input
                 type="text"
                 autoFocus
                 className="flex-1 outline-none text-lg"
-                placeholder="Search..."
+                placeholder="Search products..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
               <button onClick={() => setMobileSearchOpen(false)}>
                 <TimesIcon size={20} />
               </button>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto">
+              {searchQuery.trim() ? (
+                filteredItems.length > 0 ? (
+                  <div className="space-y-3">
+                    {filteredItems.map((item) => {
+                      const IconComponent = typeof item.icon !== "string" ? (item.icon as React.ComponentType<any>) : null;
+                      return (
+                        <div key={item.id} className="bg-[#F8FAFB] p-3 rounded-lg border cursor-pointer hover:shadow-md transition" onClick={() => setMobileSearchOpen(false)}>
+                          <div className="flex gap-3">
+                            <div className="flex-shrink-0 w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center">
+                              {typeof item.icon === "string" ? (
+                                <img src={item.icon} alt="" className="w-8 h-8 object-cover" />
+                              ) : IconComponent ? (
+                                <IconComponent size={24} />
+                              ) : null}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-bold text-sm truncate">{item.title}</h4>
+                              <p className="text-xs text-gray-500 line-clamp-1">{item.desc}</p>
+                              <p className="text-sm font-bold text-[#33ac6f] mt-1">${item.price.toFixed(2)}</p>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center h-64 text-gray-500 text-center">
+                    <p>No products found matching "{searchQuery}"</p>
+                  </div>
+                )
+              ) : (
+                <div className="flex items-center justify-center h-64 text-gray-500 text-center">
+                  <p>Start typing to search...</p>
+                </div>
+              )}
             </div>
           </div>
         )}

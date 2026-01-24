@@ -50,6 +50,7 @@ interface Purchase {
   recoveryEmail?: string;
   recoveryEmailPassword?: string;
   previewLink?: string;
+  icon?: string;
 }
 
 interface RawPurchaseItem {
@@ -67,6 +68,7 @@ interface RawPurchaseItem {
   password?: string;
   previewLink?: string;
   additionalInfo?: string;
+  categoryIcon?: string;
 }
 
 interface ChatMessage {
@@ -130,6 +132,27 @@ const formatDate = (d: string) => {
 const maskEmail = (email: string) => {
   if (!email) return "User";
   return email.split('@')[0];
+};
+
+const RenderIcon = ({ icon, size = 40 }: { icon?: string; size?: number }) => {
+  if (icon && icon.startsWith("http")) {
+    return (
+      <div
+        style={{ width: size, height: size }}
+        className="rounded-full overflow-hidden shadow-md flex-shrink-0"
+      >
+        <img src={icon} alt="" className="w-full h-full object-cover" />
+      </div>
+    );
+  }
+  return (
+    <div
+      style={{ width: size, height: size, background: "#daab4c" }}
+      className="rounded-full flex items-center justify-center shadow-md text-white font-bold text-lg flex-shrink-0"
+    >
+      📦
+    </div>
+  );
 };
 
 const TABS = ["All", "Pending", "Completed", "Cancelled"] as const;
@@ -265,6 +288,7 @@ const MyPurchase: React.FC = () => {
                 email: productRes.data.email,
                 password: productRes.data.password,
                 previewLink: productRes.data.previewLink,
+                categoryIcon: productRes.data.categoryIcon,
               };
             }
           } catch (err) {
@@ -290,6 +314,7 @@ const MyPurchase: React.FC = () => {
         accountPassword: item.accountPass,
         recoveryEmail: item.email,
         recoveryEmailPassword: item.password,
+        icon: item.categoryIcon,
         previewLink: item.previewLink,
       }));
       setPurchases(mapped);
@@ -485,27 +510,27 @@ const MyPurchase: React.FC = () => {
                 >
                   {/* Left Side: Icon & Product Info */}
                   <div className="flex gap-4 items-start">
-                    {renderBadge(p.platform)}
-                    <div>
-                      <h3 className="font-bold text-[#0A1A3A] text-sm sm:text-base leading-tight truncate" title={p.title}>{truncateTitle(p.title, 30)}</h3>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="text-xs text-gray-400 font-medium">Seller: {maskEmail(p.sellerEmail)}</span>
-                        <span className={`w-2 h-2 rounded-full ${onlineSellersMap[p.sellerEmail] ? 'bg-green-500' : 'bg-gray-300'}`} />
-                      </div>
-                      <div className="flex flex-wrap items-center gap-2 mt-2">
-                        <span className={`text-[10px] px-2 py-0.5 rounded-full border font-bold ${
+                    <RenderIcon icon={p.icon} size={40} />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <h3 className="font-bold text-[#0A1A3A] text-sm sm:text-base leading-tight truncate" title={p.title}>{truncateTitle(p.title, 20)}</h3>
+                        <span className={`flex-shrink-0 text-[10px] px-2 py-0.5 rounded-full border font-bold ${
                           p.status === 'Completed' ? 'bg-green-50 text-green-600 border-green-100' : 
                           (p.status === 'Cancelled' || p.status === 'Refunded') ? 'bg-red-50 text-red-600 border-red-100' : 
                           'bg-amber-50 text-amber-600 border-amber-100'
                         }`}>
                           {p.status}
                         </span>
-                        {p.status === "Pending" && (
-                          <span className="text-[10px] text-blue-600 font-bold flex items-center gap-1">
-                            <FaClockIcon size={10} /> {getRemainingTime(p.rawDate)}
-                          </span>
-                        )}
                       </div>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-xs text-gray-400 font-medium">Seller: {maskEmail(p.sellerEmail)}</span>
+                        <span className={`w-2 h-2 rounded-full ${onlineSellersMap[p.sellerEmail] ? 'bg-green-500' : 'bg-gray-300'}`} />
+                      </div>
+                      {p.status === "Pending" && (
+                        <span className="text-[10px] text-blue-600 font-bold flex items-center gap-1 mt-2">
+                          <FaClockIcon size={10} /> {getRemainingTime(p.rawDate)}
+                        </span>
+                      )}
                     </div>
                   </div>
 
@@ -555,8 +580,8 @@ const MyPurchase: React.FC = () => {
             <button onClick={() => setSelected(null)} className="absolute right-6 top-6 text-gray-400 hover:text-red-500">
               <FaTimesIcon size={20} />
             </button>
-            <div className="text-center mb-6 pt-4">
-              {renderBadge(selected.platform, 70)}
+            <div className="text-center mb-6 pt-4 flex flex-col items-center justify-center">
+              <RenderIcon icon={selected.icon} size={70} />
               <h2 className="text-xl font-bold mt-4 text-[#0A1A3A]">{selected.title}</h2>
               <p className="text-3xl font-black text-[#33ac6f] mt-2">${selected.price.toFixed(2)}</p>
             </div>
