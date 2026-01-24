@@ -43,7 +43,7 @@ interface ReviewRecord {
 }
 
 const ITEMS_PER_PAGE = 10;
-const API_BASE_URL = "https://tasha-vps-backend-2.onrender.com";
+const API_BASE_URL = "http://localhost:3200";
 
 const SellerAccount: React.FC = () => {
   const [sellers, setSellers] = useState<Seller[]>([]);

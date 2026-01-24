@@ -20,7 +20,7 @@ const Reports: React.FC = () => {
     const fetchReports = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch('https://tasha-vps-backend-2.onrender.com/purchase/report/getall');
+        const response = await fetch('http://localhost:3200/purchase/report/getall');
         if (!response.ok) throw new Error('Failed to fetch reports');
         
         const data = await response.json();

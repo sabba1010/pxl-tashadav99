@@ -234,17 +234,17 @@
 //     setLoading(true);
 //     try {
 //       const withdrawRes = await fetch(
-//         "https://tasha-vps-backend-2.onrender.com/withdraw/getall"
+//         "http://localhost:3200/withdraw/getall"
 //       );
 //       const withdrawData = await withdrawRes.json();
 
 //       const purchasesRes = await fetch(
-//         "https://tasha-vps-backend-2.onrender.com/purchase/getall"
+//         "http://localhost:3200/purchase/getall"
 //       );
 //       const purchases = purchasesRes.ok ? await purchasesRes.json() : [];
 
 //       const reportsRes = await fetch(
-//         "https://tasha-vps-backend-2.onrender.com/purchase/report/getall"
+//         "http://localhost:3200/purchase/report/getall"
 //       );
 //       const reports = reportsRes.ok ? await reportsRes.json() : [];
 
@@ -862,10 +862,10 @@ const WithdrawalRequests: React.FC = () => {
 
   const fetchDetailsForEmail = useCallback(async (email: string) => {
     try {
-      const purchasesRes = await fetch("https://tasha-vps-backend-2.onrender.com/purchase/getall");
+      const purchasesRes = await fetch("http://localhost:3200/purchase/getall");
       const purchases = purchasesRes.ok ? await purchasesRes.json() : [];
 
-      const reportsRes = await fetch("https://tasha-vps-backend-2.onrender.com/purchase/report/getall");
+      const reportsRes = await fetch("http://localhost:3200/purchase/report/getall");
       const reports = reportsRes.ok ? await reportsRes.json() : [];
 
       const seller = (email || "").toLowerCase().trim();
@@ -888,17 +888,17 @@ const WithdrawalRequests: React.FC = () => {
     setLoading(true);
     try {
       const withdrawRes = await fetch(
-        "https://tasha-vps-backend-2.onrender.com/withdraw/getall"
+        "http://localhost:3200/withdraw/getall"
       );
       const withdrawData = await withdrawRes.json();
 
       const purchasesRes = await fetch(
-        "https://tasha-vps-backend-2.onrender.com/purchase/getall"
+        "http://localhost:3200/purchase/getall"
       );
       const purchases = purchasesRes.ok ? await purchasesRes.json() : [];
 
       const reportsRes = await fetch(
-        "https://tasha-vps-backend-2.onrender.com/purchase/report/getall"
+        "http://localhost:3200/purchase/report/getall"
       );
       const reports = reportsRes.ok ? await reportsRes.json() : [];
 
@@ -1148,12 +1148,12 @@ const WithdrawalRequests: React.FC = () => {
             setActionLoading(true);
             try {
               if (status === "approved") {
-                const res = await fetch(`https://tasha-vps-backend-2.onrender.com/withdraw/approve/${id}`, { method: "PUT" });
+                const res = await fetch(`http://localhost:3200/withdraw/approve/${id}`, { method: "PUT" });
                 if (res.ok) {
                   setRequests((prev) => prev.map((r) => (r._id === id ? { ...r, status: "approved", adminNote: "" } : r)));
                 }
               } else if (status === "declined") {
-                const res = await fetch(`https://tasha-vps-backend-2.onrender.com/withdraw/decline/${id}`, {
+                const res = await fetch(`http://localhost:3200/withdraw/decline/${id}`, {
                   method: "PUT",
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({ reason }),

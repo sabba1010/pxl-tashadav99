@@ -176,7 +176,7 @@ const MyPurchase: React.FC = () => {
   // State for showing/hiding sensitive account details
   const [showAccountDetails, setShowAccountDetails] = useState(false);
 
-  const BASE_URL = "https://tasha-vps-backend-2.onrender.com";
+  const BASE_URL = "http://localhost:3200";
   const PURCHASE_API = `${BASE_URL}/purchase`;
   const CHAT_API = `${BASE_URL}/chat`;
 
@@ -409,7 +409,7 @@ const MyPurchase: React.FC = () => {
     if (!reviewMessage.trim() || !reviewTargetOrder) return;
     setIsSubmittingReview(true);
     try {
-      await axios.post(`https://tasha-vps-backend-2.onrender.com/rating/create`, {
+      await axios.post(`http://localhost:3200/rating/create`, {
         orderId: reviewTargetOrder.id,
         productId: reviewTargetOrder.id,
         buyerEmail: buyerId,

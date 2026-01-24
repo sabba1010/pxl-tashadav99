@@ -11,7 +11,7 @@
 // import Swal from "sweetalert2";
 
 // // API URL
-// const API_BASE = "https://tasha-vps-backend-2.onrender.com/purchase";
+// const API_BASE = "http://localhost:3200/purchase";
 
 // // TypeScript Interfaces
 // interface IReport {
@@ -273,7 +273,7 @@ import {
 import Swal from "sweetalert2";
 
 // API URL
-const API_BASE = "https://tasha-vps-backend-2.onrender.com/purchase";
+const API_BASE = "http://localhost:3200/purchase";
 
 // TypeScript Interfaces
 interface IReport {
