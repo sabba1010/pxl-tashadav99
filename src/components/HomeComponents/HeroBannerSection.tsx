@@ -7,7 +7,7 @@ const HeroBannerSection = () => {
   const { isLoggedIn } = useAuth();
 
   return (
-    <section className="relative text-white pt-6 pb-10 lg:py-20 px-6 md:px-12 lg:px-20 overflow-hidden bg-gradient-to-br from-[#00183b] via-[#002a5c] to-[#003d80]">
+    <section className="relative text-white pt-8 md:pt-16 pb-12 md:pb-20 px-6 md:px-12 lg:px-20 overflow-hidden bg-gradient-to-br from-[#00183b] via-[#002a5c] to-[#003d80]">
       {/* Subtle dark overlay for depth */}
       <div className="absolute inset-0 bg-black opacity-40"></div>
 

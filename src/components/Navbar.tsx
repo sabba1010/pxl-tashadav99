@@ -305,9 +305,9 @@ export default function Navbar() {
                     </div>
                   </button>
                 ) : (
-                  <div className="hidden md:flex gap-2">
-                    <Link to="/login"><Button variant="contained" sx={{ px: 4, borderRadius: "10px", textTransform: "none", fontWeight: 600, backgroundColor: ROYAL_GOLD }}>Login</Button></Link>
-                    <Link to="/register"><Button variant="outlined" sx={{ px: 4, borderRadius: "10px", textTransform: "none", fontWeight: 600, borderWidth: "2px" }}>Register</Button></Link>
+                  <div className="flex gap-1.5 md:gap-4 md:ml-6">
+                    <Link to="/login"><Button variant="contained" sx={{ px: { xs: 1.5, md: 4 }, py: { xs: 0.3, md: "auto" }, borderRadius: "6px", textTransform: "none", fontWeight: 600, backgroundColor: ROYAL_GOLD, fontSize: { xs: "0.65rem", md: "1rem" }, height: { xs: "28px", md: "auto" } }}>Login</Button></Link>
+                    <Link to="/register"><Button variant="outlined" sx={{ px: { xs: 1.5, md: 4 }, py: { xs: 0.3, md: "auto" }, borderRadius: "6px", textTransform: "none", fontWeight: 600, borderWidth: "2px", fontSize: { xs: "0.65rem", md: "1rem" }, height: { xs: "28px", md: "auto" } }}>Register</Button></Link>
                   </div>
                 )}
 

@@ -130,7 +130,7 @@ const FAQSection: React.FC = () => {
     ));
 
   return (
-    <section className="pb-16 md:pb-24 bg-gradient-to-b from-[#002a5c] to-[#00183b] text-white overflow-hidden">
+    <section className="pt-8 md:pt-16 pb-12 md:pb-20 bg-gradient-to-b from-[#002a5c] to-[#00183b] text-white overflow-hidden">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         {/* Optional modern title - you can remove if not wanted */}
         <div className="text-center mb-12 md:mb-16">

@@ -5,7 +5,7 @@ const ReferralProgram = () => {
 
 
   return (
-    <section className="py-16 md:py-24 bg-gradient-to-b from-[#00183b] to-[#002a5c] text-white overflow-hidden">
+    <section className="pt-8 md:pt-16 pb-12 md:pb-20 bg-gradient-to-b from-[#00183b] to-[#002a5c] text-white overflow-hidden">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* Hero Header */}

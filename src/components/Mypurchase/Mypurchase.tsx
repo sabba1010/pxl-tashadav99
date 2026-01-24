@@ -45,7 +45,6 @@ interface Purchase {
   status: PurchaseStatus;
   purchaseNumber?: string;
   buyerEmail: string;
-  // Account access details from product
   accountUsername?: string;
   accountPassword?: string;
   recoveryEmail?: string;
@@ -62,7 +61,6 @@ interface RawPurchaseItem {
   price: number;
   purchaseDate: string;
   status: string;
-  // Product account details (populated from product lookup)
   username?: string;
   accountPass?: string;
   email?: string;
@@ -172,8 +170,6 @@ const MyPurchase: React.FC = () => {
 
   const itemsPerPage = 10;
   const [currentPage, setCurrentPage] = useState(1);
-
-  // State for showing/hiding sensitive account details
   const [showAccountDetails, setShowAccountDetails] = useState(false);
 
   const BASE_URL = "https://tasha-vps-backend-2.onrender.com";
@@ -252,11 +248,9 @@ const MyPurchase: React.FC = () => {
       setIsLoading(true);
       const res = await axios.get<RawPurchaseItem[]>(`${PURCHASE_API}/getall?email=${buyerId}&role=buyer`);
       
-      // Fetch product details for each purchase to get account credentials
       const enrichedData = await Promise.all(res.data.map(async (item) => {
         if (item.productId) {
           try {
-            // Try to fetch product details from product endpoint
             const productRes = await axios.get<any>(`${BASE_URL}/product/${item.productId}`);
             if (productRes?.data) {
               return {
@@ -269,7 +263,6 @@ const MyPurchase: React.FC = () => {
               };
             }
           } catch (err) {
-            // If fetching product details fails, continue without them
             console.error(`Failed to fetch product ${item.productId}:`, err);
           }
         }
@@ -485,19 +478,20 @@ const MyPurchase: React.FC = () => {
                   key={p.id} 
                   className="bg-[#F8FAFB] border rounded-xl p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:shadow-md transition"
                 >
-                  <div className="flex gap-4">
+                  {/* Left Side: Icon & Product Info */}
+                  <div className="flex gap-4 items-start">
                     {renderBadge(p.platform)}
                     <div>
-                      <h3 className="font-bold text-[#0A1A3A] text-sm sm:text-base">{p.title}</h3>
-                      <div className="flex items-center gap-2 mt-0.5">
+                      <h3 className="font-bold text-[#0A1A3A] text-sm sm:text-base leading-tight">{p.title}</h3>
+                      <div className="flex items-center gap-2 mt-1">
                         <span className="text-xs text-gray-400 font-medium">Seller: {maskEmail(p.sellerEmail)}</span>
                         <span className={`w-2 h-2 rounded-full ${onlineSellersMap[p.sellerEmail] ? 'bg-green-500' : 'bg-gray-300'}`} />
                       </div>
-                      <div className="flex items-center gap-2 mt-1.5">
+                      <div className="flex flex-wrap items-center gap-2 mt-2">
                         <span className={`text-[10px] px-2 py-0.5 rounded-full border font-bold ${
-                          p.status === 'Completed' ? 'bg-green-50 text-green-600' : 
-                          (p.status === 'Cancelled' || p.status === 'Refunded') ? 'bg-red-50 text-red-600' : 
-                          'bg-amber-50 text-amber-600'
+                          p.status === 'Completed' ? 'bg-green-50 text-green-600 border-green-100' : 
+                          (p.status === 'Cancelled' || p.status === 'Refunded') ? 'bg-red-50 text-red-600 border-red-100' : 
+                          'bg-amber-50 text-amber-600 border-amber-100'
                         }`}>
                           {p.status}
                         </span>
@@ -509,31 +503,33 @@ const MyPurchase: React.FC = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="w-full sm:w-auto flex flex-row sm:flex-col items-center sm:items-end justify-between gap-2">
-                    <div className="text-right">
+
+                  {/* Right Side: Price, Date & Actions - FIXED ALIGNMENT */}
+                  <div className="w-full sm:w-auto flex flex-col sm:items-end gap-3 mt-2 sm:mt-0 border-t sm:border-t-0 pt-3 sm:pt-0">
+                    <div className="flex flex-row sm:flex-col justify-between items-center sm:items-end w-full sm:w-auto">
                       <p className="text-lg font-bold text-[#0A1A3A]">${p.price.toFixed(2)}</p>
-                      <p className="text-[10px] text-gray-400">{p.date}</p>
+                      <p className="text-[10px] text-gray-400 font-medium">{p.date}</p>
                     </div>
                     
                     {p.status !== "Cancelled" && p.status !== "Refunded" && (
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 w-full justify-end sm:justify-start">
                         <button 
                           onClick={() => { setReportTargetOrder(p); setIsReportModalOpen(true); }} 
-                          className="p-2 text-red-500 border border-red-100 rounded bg-white hover:bg-red-50 transition" 
+                          className="flex-1 sm:flex-none flex justify-center p-2 text-red-500 border border-red-100 rounded-lg bg-white hover:bg-red-50 transition" 
                         >
                           <FaFlagIcon size={14} />
                         </button>
                         
                         <button 
                           onClick={() => setSelected(p)} 
-                          className="p-2 text-gray-600 border rounded bg-white hover:bg-gray-50 transition" 
+                          className="flex-1 sm:flex-none flex justify-center p-2 text-gray-600 border rounded-lg bg-white hover:bg-gray-50 transition" 
                         >
                           <FaEyeIcon size={14} />
                         </button>
                         
                         <button 
                           onClick={() => handleOpenChat(p)} 
-                          className="p-2 text-blue-600 border border-blue-100 rounded bg-white hover:bg-blue-50 transition" 
+                          className="flex-1 sm:flex-none flex justify-center p-2 text-blue-600 border border-blue-100 rounded-lg bg-white hover:bg-blue-50 transition" 
                         >
                           <FaCommentsIcon size={14} />
                         </button>
@@ -578,7 +574,6 @@ const MyPurchase: React.FC = () => {
                </div>
             </div>
 
-            {/* Account Access Details Section */}
             {(selected.accountUsername || selected.accountPassword || selected.recoveryEmail || selected.recoveryEmailPassword || selected.previewLink) && (
               <div className="bg-blue-50 rounded-2xl p-4 space-y-3 border border-blue-100 mb-6 text-sm">
                 <div className="flex justify-between items-center border-b pb-3">
@@ -592,7 +587,6 @@ const MyPurchase: React.FC = () => {
                   <button
                     onClick={() => setShowAccountDetails(!showAccountDetails)}
                     className="p-1.5 hover:bg-blue-200 rounded-lg transition"
-                    title={showAccountDetails ? "Hide details" : "Show details"}
                   >
                     <FaEyeIcon size={16} className={showAccountDetails ? "text-blue-600" : "text-gray-400"} />
                   </button>
@@ -690,12 +684,10 @@ const MyPurchase: React.FC = () => {
         </div>
       )}
 
-      {/* Chat Modal - UPDATED DESIGN */}
+      {/* Chat Modal */}
       {isChatOpen && (
         <div className="fixed inset-0 z-[120] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4">
           <div className="bg-[#F8FAFB] w-full max-w-md h-full sm:h-[620px] sm:rounded-2xl flex flex-col overflow-hidden shadow-2xl border">
-            
-            {/* Header */}
             <div className="bg-white p-4 flex justify-between items-center border-b shadow-sm">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center border text-[#0A1A3A] font-bold text-sm">
@@ -717,7 +709,6 @@ const MyPurchase: React.FC = () => {
               </button>
             </div>
 
-            {/* Messages Area */}
             <div 
               ref={messagesContainerRef}
               className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#F3EFEE]/30 scroll-smooth"
@@ -753,7 +744,6 @@ const MyPurchase: React.FC = () => {
                   </div>
                 </div>
               ))}
-
               {imagePreview && (
                 <div className="flex justify-end">
                   <div className="max-w-[70%] p-1 bg-[#33ac6f] rounded-2xl rounded-tr-none shadow-md">
@@ -769,27 +759,15 @@ const MyPurchase: React.FC = () => {
               )}
             </div>
 
-            {/* Input Bar */}
             <div className="p-4 bg-white border-t">
               <form 
                 onSubmit={sendChat} 
                 className="flex items-center gap-2 bg-[#F8FAFB] border rounded-2xl p-1.5 focus-within:border-[#33ac6f] transition-all"
               >
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="p-2.5 text-gray-500 hover:text-[#33ac6f]"
-                >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
-                  </svg>
-                </button>
-
                 <input
                   type="file"
-                  accept="image/*"
+                  hidden
                   ref={fileInputRef}
-                  className="hidden"
                   onChange={(e) => {
                     const file = e.target.files?.[0];
                     if (file) {
@@ -798,73 +776,28 @@ const MyPurchase: React.FC = () => {
                     }
                   }}
                 />
-
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="p-2 text-gray-500 hover:text-[#33ac6f]"
+                >
+                  <FaPaperPlaneIcon size={18} className="rotate-45" />
+                </button>
                 <input
+                  type="text"
                   value={typedMessage}
                   onChange={(e) => setTypedMessage(e.target.value)}
-                  className="flex-1 bg-transparent px-2 py-2 text-sm outline-none text-[#0A1A3A]"
-                  placeholder="Your message..."
+                  placeholder="Type message..."
+                  className="flex-1 bg-transparent border-none outline-none text-sm px-2 py-1"
                 />
-
                 <button
                   type="submit"
-                  disabled={!typedMessage.trim() && !selectedImage}
-                  className="bg-[#33ac6f] text-white p-2.5 rounded-xl hover:shadow-lg transition disabled:opacity-30"
+                  className="bg-[#33ac6f] text-white p-2 rounded-xl hover:opacity-90 transition active:scale-95"
                 >
-                  <FaPaperPlaneIcon size={14} />
+                  <FaPaperPlaneIcon size={16} />
                 </button>
               </form>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* Review Modal */}
-      {isReviewModalOpen && reviewTargetOrder && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md">
-          <div className="bg-white w-full max-w-md rounded-2xl overflow-hidden shadow-2xl">
-            <div className="bg-amber-500 p-4 text-white font-bold flex justify-between items-center">
-              <span className="flex items-center gap-2"><FaStarIcon /> Leave a Review</span>
-              <button onClick={() => setIsReviewModalOpen(false)}>
-                <FaTimesIcon />
-              </button>
-            </div>
-            <form onSubmit={handleReviewSubmit} className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Rating</label>
-                <div className="flex gap-2 text-3xl">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <button
-                      key={star}
-                      type="button"
-                      onClick={() => setReviewRating(star)}
-                      className={`cursor-pointer transition-transform hover:scale-110 ${
-                        star <= reviewRating ? 'text-amber-400' : 'text-gray-300'
-                      }`}
-                    >
-                      <FaStarIcon />
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Review Message</label>
-                <textarea 
-                  value={reviewMessage} 
-                  onChange={(e) => setReviewMessage(e.target.value)} 
-                  placeholder="Share your experience with this purchase..." 
-                  className="w-full border border-gray-300 p-3 rounded-xl text-sm h-32 outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-200" 
-                  required 
-                />
-              </div>
-              <button 
-                type="submit" 
-                disabled={isSubmittingReview} 
-                className="w-full bg-amber-500 text-white py-3 rounded-xl font-bold hover:bg-amber-600 disabled:opacity-50 transition"
-              >
-                {isSubmittingReview ? "Submitting..." : "Submit Review"}
-              </button>
-            </form>
           </div>
         </div>
       )}

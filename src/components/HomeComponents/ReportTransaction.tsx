@@ -23,7 +23,7 @@ const ReportTransaction: React.FC = () => {
   const { isLoggedIn } = useAuth();
 
   return (
-    <div className="min-h-screen bg-white text-gray-900 pt-10 pb-12 px-6">
+    <div className="bg-white text-gray-900 pt-8 md:pt-16 pb-12 md:pb-20 px-6">
       <div className="max-w-4xl mx-auto">
 
         {/* Header */}

@@ -2,7 +2,7 @@ import React from "react";
 import image1 from "../../assets/Homeimages2.png";
 const HowItWorks = () => {
   return (
-    <section className="pt-[10px] pb-16 px-6 md:px-12 lg:px-20 bg-gradient-to-b from-[#00183b] to-[#002a5c]">
+    <section className="pt-8 md:pt-16 pb-12 md:pb-20 px-6 md:px-12 lg:px-20 bg-gradient-to-b from-[#00183b] to-[#002a5c]">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-5xl lg:text-5xl font-bold text-[#e6c06c]">

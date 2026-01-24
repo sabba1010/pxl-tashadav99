@@ -2,7 +2,7 @@ import React from 'react';
 
 const RefundPolicy = () => {
     return (
-        <section className="pt-12 pb-10 px-6 md:px-12 lg:px-20 bg-gradient-to-b from-[#002a5c] to-[#00183b] text-white min-h-screen">
+        <section className="pt-8 md:pt-16 pb-12 md:pb-20 px-6 md:px-12 lg:px-20 bg-gradient-to-b from-[#002a5c] to-[#00183b] text-white">
             <div className="max-w-7xl mx-auto">
                 {/* Page Title */}
                 <h1 className="text-4xl md:text-6xl font-bold text-center mb-12">

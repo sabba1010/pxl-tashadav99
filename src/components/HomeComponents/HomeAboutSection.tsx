@@ -7,7 +7,7 @@ export default function HomeAboutSection() {
     const { isLoggedIn, user } = useAuth();
     const sellTarget = !isLoggedIn ? "/login" : (user?.role === "seller" || user?.role === "admin") ? "/selling-form" : "/seller-pay";
     return (
-        <section className="relative  pb-10 lg:pt-6 pb-28 bg-gradient-to-br from-[#00183b] via-[#002a5c] to-[#003d80] overflow-hidden">
+        <section className="relative pt-8 md:pt-16 pb-12 md:pb-20 bg-gradient-to-br from-[#00183b] via-[#002a5c] to-[#003d80] overflow-hidden">
             {/* Subtle gradient blobs matching hero */}
             <div className="absolute top-0 right-0 w-96 h-96 bg-[#daab4c]/10 rounded-full blur-3xl"></div>
             <div className="absolute bottom-0 left-0 w-80 h-80 bg-[#33ac6f]/10 rounded-full blur-3xl"></div>
