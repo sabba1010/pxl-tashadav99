@@ -487,6 +487,7 @@ const MyOrder: React.FC = () => {
         buyerEmail: reportTargetOrder.buyerEmail,
         reason: reportReason,
         message: reportMessage,
+        role: "seller"
       });
       toast.success("Report submitted successfully");
       setIsReportModalOpen(false);
