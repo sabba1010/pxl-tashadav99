@@ -205,13 +205,16 @@ const MyOrder: React.FC = () => {
   const [presenceMap, setPresenceMap] = useState<Record<string, { online: boolean; lastSeen?: string | null }>>({});
 
   const scrollRef = useRef<HTMLDivElement>(null);
+  const shouldAutoScrollRef = useRef(true);
   const chatLengthRef = useRef(0);
 
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
   useEffect(() => {
-    scrollRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (shouldAutoScrollRef.current) {
+      scrollRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
   }, [chatMessages]);
 
   const fetchPresence = async (email: string) => {
@@ -508,6 +511,9 @@ const MyOrder: React.FC = () => {
                         <p className="text-xs sm:text-sm text-gray-500 flex items-center gap-1 flex-wrap">
                           <span className="truncate">Buyer: {getBuyerDisplayName(order.buyerEmail)}</span>
                           <span className={`inline-block w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full flex-shrink-0 ${presenceMap[order.buyerEmail]?.online ? 'bg-green-500' : 'bg-gray-300'}`} />
+                          <span className="text-[10px] text-gray-500 font-medium">
+                            {presenceMap[order.buyerEmail]?.online ? "Online" : (presenceMap[order.buyerEmail]?.lastSeen ? `Last seen ${timeAgo((presenceMap[order.buyerEmail]?.lastSeen ?? undefined))}` : "Offline")}
+                          </span>
                         </p>
                         <span
                           className={`mt-0.5 inline-block px-1.5 sm:px-3 py-0 sm:py-1 rounded-full text-xs font-bold ${
@@ -625,78 +631,122 @@ const MyOrder: React.FC = () => {
 
       {/* Chat Modal */}
       {isChatOpen && activeChatBuyerEmail && (
-        <>
-          <div className="fixed inset-0 bg-black/70 z-50" onClick={() => setIsChatOpen(false)} />
-          <div className="fixed inset-x-0 bottom-0 sm:inset-auto sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 max-w-md w-full bg-[#ECE5DD] rounded-t-3xl sm:rounded-2xl z-50 shadow-2xl flex flex-col h-[90vh] sm:h-[600px]">
-            <div className="bg-white p-4 flex justify-between items-center border-b">
+        <div className="fixed inset-0 z-[120] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4">
+          <div className="bg-[#F8FAFB] w-full max-w-md h-full sm:h-[620px] sm:rounded-2xl flex flex-col overflow-hidden shadow-2xl border">
+            <div className="bg-white p-4 flex justify-between items-center border-b shadow-sm">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold">
-                  {getBuyerDisplayName(activeChatBuyerEmail)[0]}
+                <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center border text-[#0A1A3A] font-bold text-sm">
+                  {getBuyerDisplayName(activeChatBuyerEmail)[0].toUpperCase()}
                 </div>
                 <div>
-                  <h3 className="font-bold">{getBuyerDisplayName(activeChatBuyerEmail)}</h3>
-                  <p className="text-xs text-gray-500">{activeChatProductTitle}</p>
+                  <h4 className="font-bold text-sm text-[#0A1A3A]">{getBuyerDisplayName(activeChatBuyerEmail)}</h4>
+                  <div className="flex items-center gap-1.5 text-[10px]">
+                    <span className={`w-2 h-2 rounded-full ${presenceMap[activeChatBuyerEmail!]?.online ? "bg-green-500" : "bg-gray-300"}`} />
+                    <span className="text-gray-500 font-medium">
+                      {presenceMap[activeChatBuyerEmail!]?.online ? "Online" : (presenceMap[activeChatBuyerEmail!]?.lastSeen ? `Last seen ${timeAgo((presenceMap[activeChatBuyerEmail!]?.lastSeen ?? undefined))}` : "Offline")}
+                    </span>
+                  </div>
                 </div>
               </div>
-              <button onClick={() => setIsChatOpen(false)}>
+              <button 
+                onClick={() => { setIsChatOpen(false); }} 
+                className="p-2 text-gray-400 hover:text-red-500 transition rounded-full hover:bg-gray-100"
+              >
                 <FaTimesIcon size={20} />
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              {chatMessages.map((msg, i) => {
-                const isMe = msg.senderId.toLowerCase() === sellerId?.toLowerCase();
-                return (
-                  <div key={i} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
-                    <div className={`max-w-[75%] px-4 py-2 rounded-2xl text-sm shadow ${isMe ? "bg-[#33ac6f] text-white" : "bg-white"}`}>
-                      {/* Image display fix: URL must point to backend */}
+            <div 
+              ref={scrollRef}
+              className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#F3EFEE]/30 scroll-smooth"
+              onScroll={(e) => {
+                const container = e.currentTarget;
+                const isAtBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
+                shouldAutoScrollRef.current = isAtBottom;
+              }}
+            >
+              {chatMessages.map((msg, index) => (
+                <div
+                  key={`${msg.createdAt}-${index}`}
+                  className={`flex ${msg.senderId.toLowerCase() === sellerId?.toLowerCase() ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div className={`max-w-[85%] ${msg.senderId.toLowerCase() === sellerId?.toLowerCase() ? 'items-end' : 'items-start'} flex flex-col`}>
+                    <div 
+                      className={`rounded-2xl px-4 py-2.5 shadow-sm text-sm ${
+                        msg.senderId.toLowerCase() === sellerId?.toLowerCase()
+                          ? 'bg-[#33ac6f] text-white rounded-tr-none' 
+                          : 'bg-white text-[#0A1A3A] border rounded-tl-none font-medium'
+                      }`}
+                    >
                       {msg.imageUrl && (
-                        <img 
-                          src={`${BASE_URL}${msg.imageUrl}`} 
-                          alt="Sent content" 
-                          className="rounded-lg mb-2 max-w-full h-auto cursor-pointer border shadow-sm"
-                          onClick={() => window.open(`${BASE_URL}${msg.imageUrl}`, '_blank')}
-                          onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                        />
+                        <div className="mb-2 -mx-1 -mt-1">
+                          <img
+                            src={msg.imageUrl.startsWith('http') ? msg.imageUrl : `${BASE_URL}${msg.imageUrl}`}
+                            alt="attachment"
+                            className="rounded-xl max-w-xs h-auto max-h-64 object-cover border border-black/5"
+                            onError={(e) => (e.currentTarget.style.display = 'none')}
+                          />
+                        </div>
                       )}
-                      <p>{msg.message}</p>
-                      <div className="text-[10px] opacity-70 mt-1 text-right">{timeAgo(msg.createdAt)}</div>
+                      <p className="leading-relaxed break-words">{msg.message}</p>
                     </div>
+                    <span className="text-[9px] text-gray-400 mt-1 px-1 font-bold">
+                      {msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Just now'}
+                    </span>
                   </div>
-                );
-              })}
-              <div ref={scrollRef} />
+                </div>
+              ))}
             </div>
 
             {imagePreview && (
-              <div className="px-4 py-2 bg-white border-t flex items-center gap-3">
-                <div className="relative">
-                  <img src={imagePreview} alt="Preview" className="w-16 h-16 object-cover rounded-lg border-2 border-green-500" />
-                  <button onClick={removeImage} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-md">
-                    <FaTimesIcon size={10} />
-                  </button>
+              <div className="flex justify-end px-4 py-2">
+                <div className="max-w-[70%] p-1 bg-[#33ac6f] rounded-2xl rounded-tr-none shadow-md">
+                  <div className="relative">
+                    <img src={imagePreview} alt="preview" className="rounded-xl max-w-xs h-auto max-h-64 object-cover" />
+                    <button
+                      onClick={() => { setSelectedImage(null); setImagePreview(null); }}
+                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center shadow-lg border-2 border-white"
+                    > × </button>
+                  </div>
                 </div>
-                <div className="text-xs text-gray-500">Image selected</div>
               </div>
             )}
 
-            <form onSubmit={sendChat} className="p-4 bg-white border-t flex items-center gap-2">
-              <input type="file" accept="image/*" hidden ref={fileInputRef} onChange={handleImageChange} />
-              <button type="button" onClick={() => fileInputRef.current?.click()} className="text-gray-500 hover:text-green-600 p-2">
-                <FaImageIcon size={22} />
-              </button>
-              <input
-                value={typedMessage}
-                onChange={(e) => setTypedMessage(e.target.value)}
-                placeholder="Type a message..."
-                className="flex-1 px-4 py-2 bg-gray-100 rounded-full text-sm outline-none"
-              />
-              <button type="submit" className="bg-[#33ac6f] text-white p-3 rounded-full hover:bg-green-700">
-                <FaPaperPlaneIcon size={16} />
-              </button>
-            </form>
+            <div className="p-4 bg-white border-t">
+              <form 
+                onSubmit={sendChat} 
+                className="flex items-center gap-2 bg-[#F8FAFB] border rounded-2xl p-1.5 focus-within:border-[#33ac6f] transition-all"
+              >
+                <input
+                  type="file"
+                  hidden
+                  ref={fileInputRef}
+                  onChange={handleImageChange}
+                />
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="p-2 text-gray-500 hover:text-[#33ac6f]"
+                >
+                  <FaImageIcon size={18} />
+                </button>
+                <input
+                  type="text"
+                  value={typedMessage}
+                  onChange={(e) => setTypedMessage(e.target.value)}
+                  placeholder="Type message..."
+                  className="flex-1 bg-transparent border-none outline-none text-sm px-2 py-1"
+                />
+                <button
+                  type="submit"
+                  className="bg-[#33ac6f] text-white p-2 rounded-xl hover:opacity-90 transition active:scale-95"
+                >
+                  <FaPaperPlaneIcon size={16} />
+                </button>
+              </form>
+            </div>
           </div>
-        </>
+        </div>
       )}
 
       {/* Report Modal */}

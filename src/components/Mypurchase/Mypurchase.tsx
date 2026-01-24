@@ -19,6 +19,7 @@ import {
   FaFlag,
   FaCheckCircle,
   FaStar,
+  FaImage,
 } from "react-icons/fa";
 
 const FaTimesIcon = FaTimes as any;
@@ -29,6 +30,7 @@ const FaClockIcon = FaClock as any;
 const FaFlagIcon = FaFlag as any;
 const FaCheckCircleIcon = FaCheckCircle as any;
 const FaStarIcon = FaStar as any;
+const FaImageIcon = FaImage as any;
 
 type PurchaseStatus = "Pending" | "Completed" | "Cancelled" | "Refunded";
 type PlatformType = "instagram" | "facebook" | "twitter" | "whatsapp" | "telegram" | "other";
@@ -122,6 +124,21 @@ const formatDate = (d: string) => {
   });
 };
 
+const timeAgo = (dateString?: string) => {
+  if (!dateString) return "Just now";
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+  if (diffInSeconds < 60) return "Just now";
+  const diffInMinutes = Math.floor(diffInSeconds / 60);
+  if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  if (diffInHours < 24) return `${diffInHours}h ago`;
+  const diffInDays = Math.floor(diffInHours / 24);
+  if (diffInDays < 7) return `${diffInDays}d ago`;
+  return date.toLocaleDateString();
+};
+
 const maskEmail = (email: string) => {
   if (!email) return "User";
   return email.split('@')[0];
@@ -165,8 +182,10 @@ const MyPurchase: React.FC = () => {
   const [activeChatSellerEmail, setActiveChatSellerEmail] = useState<string | null>(null);
   const [activeChatOrderId, setActiveChatOrderId] = useState<string | null>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const shouldAutoScrollRef = useRef(true);
 
   const [onlineSellersMap, setOnlineSellersMap] = useState<Record<string, boolean>>({});
+  const [sellerLastSeenMap, setSellerLastSeenMap] = useState<Record<string, string | null>>({});
 
   const itemsPerPage = 10;
   const [currentPage, setCurrentPage] = useState(1);
@@ -198,15 +217,19 @@ const MyPurchase: React.FC = () => {
   const fetchAllSellersStatus = async () => {
     const sellers = Array.from(new Set(purchases.map(p => p.sellerEmail)));
     const statusMap: Record<string, boolean> = {};
+    const lastSeenMap: Record<string, string | null> = {};
     for (const email of sellers) {
       try {
         const res = await axios.get<PresenceResponse>(`${CHAT_API}/status/${email}`);
         statusMap[email] = Boolean(res.data?.online);
+        lastSeenMap[email] = res.data.lastSeen || null;
       } catch (err) {
         statusMap[email] = false;
+        lastSeenMap[email] = null;
       }
     }
     setOnlineSellersMap(statusMap);
+    setSellerLastSeenMap(lastSeenMap);
   };
 
   useEffect(() => {
@@ -350,7 +373,11 @@ const MyPurchase: React.FC = () => {
   useEffect(() => {
     const container = messagesContainerRef.current;
     if (!container) return;
-    container.scrollTo({ top: container.scrollHeight, behavior: "smooth" });
+    
+    // Only auto-scroll if user hasn't scrolled up
+    if (shouldAutoScrollRef.current) {
+      container.scrollTo({ top: container.scrollHeight, behavior: "smooth" });
+    }
   }, [chatMessages, imagePreview]);
 
   const sendChat = async (e: React.FormEvent) => {
@@ -486,6 +513,9 @@ const MyPurchase: React.FC = () => {
                       <div className="flex items-center gap-2 mt-1">
                         <span className="text-xs text-gray-400 font-medium">Seller: {maskEmail(p.sellerEmail)}</span>
                         <span className={`w-2 h-2 rounded-full ${onlineSellersMap[p.sellerEmail] ? 'bg-green-500' : 'bg-gray-300'}`} />
+                        <span className="text-[10px] text-gray-500 font-medium">
+                          {onlineSellersMap[p.sellerEmail] ? "Online" : "Offline"}
+                        </span>
                       </div>
                       <div className="flex flex-wrap items-center gap-2 mt-2">
                         <span className={`text-[10px] px-2 py-0.5 rounded-full border font-bold ${
@@ -697,7 +727,9 @@ const MyPurchase: React.FC = () => {
                   <h4 className="font-bold text-sm text-[#0A1A3A]">{maskEmail(activeChatSellerEmail || "")}</h4>
                   <div className="flex items-center gap-1.5 text-[10px]">
                     <span className={`w-2 h-2 rounded-full ${sellerOnline ? "bg-green-500" : "bg-gray-300"}`} />
-                    <span className="text-gray-500 font-medium">{sellerOnline ? "Online" : "Offline"}</span>
+                    <span className="text-gray-500 font-medium">
+                      {sellerOnline ? "Online" : (sellerLastSeen ? `Last seen ${timeAgo(sellerLastSeen)}` : "Offline")}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -712,6 +744,11 @@ const MyPurchase: React.FC = () => {
             <div 
               ref={messagesContainerRef}
               className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#F3EFEE]/30 scroll-smooth"
+              onScroll={(e) => {
+                const container = e.currentTarget;
+                const isAtBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
+                shouldAutoScrollRef.current = isAtBottom;
+              }}
             >
               {chatMessages.map((m, index) => (
                 <div
@@ -731,7 +768,7 @@ const MyPurchase: React.FC = () => {
                           <img
                             src={m.imageUrl.startsWith('http') ? m.imageUrl : `${BASE_URL}${m.imageUrl}`}
                             alt="attachment"
-                            className="rounded-xl max-w-full h-auto border border-black/5"
+                            className="rounded-xl max-w-xs h-auto max-h-64 object-cover border border-black/5"
                             onError={(e) => (e.currentTarget.style.display = 'none')}
                           />
                         </div>
@@ -748,7 +785,7 @@ const MyPurchase: React.FC = () => {
                 <div className="flex justify-end">
                   <div className="max-w-[70%] p-1 bg-[#33ac6f] rounded-2xl rounded-tr-none shadow-md">
                     <div className="relative">
-                      <img src={imagePreview} alt="preview" className="rounded-xl w-full" />
+                      <img src={imagePreview} alt="preview" className="rounded-xl max-w-xs h-auto max-h-64 object-cover" />
                       <button
                         onClick={() => { setSelectedImage(null); setImagePreview(null); }}
                         className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center shadow-lg border-2 border-white"
@@ -781,7 +818,7 @@ const MyPurchase: React.FC = () => {
                   onClick={() => fileInputRef.current?.click()}
                   className="p-2 text-gray-500 hover:text-[#33ac6f]"
                 >
-                  <FaPaperPlaneIcon size={18} className="rotate-45" />
+                  <FaImageIcon size={18} />
                 </button>
                 <input
                   type="text"
