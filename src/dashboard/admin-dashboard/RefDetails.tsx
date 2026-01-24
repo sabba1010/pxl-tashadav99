@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { Search, RotateCcw, CheckCircle, Clock, XCircle, Info } from "lucide-react";
+import { Search, RotateCcw, CheckCircle, Clock, XCircle, Info, MessageCircle, Mail } from "lucide-react";
 import axios from "axios";
 import { toast } from "sonner";
-import Swal from "sweetalert2"; // SweetAlert ইম্পোর্ট করা হলো
+import Swal from "sweetalert2";
 
 /* ================= TYPES ================= */
 type ReferralStatus = "pending" | "approved" | "rejected";
@@ -10,6 +10,7 @@ type ReferralStatus = "pending" | "approved" | "rejected";
 type UserType = {
   _id: string;
   email: string;
+  phone?: string; // Database theke phone number field
   referralCode?: string;
   referredBy?: string;
   referralStatus?: ReferralStatus;
@@ -27,7 +28,7 @@ const RefDetails = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const res = await axios.get<UserType[]>("http://localhost:3200/api/user/getall");
+      const res = await axios.get<UserType[]>("https://tasha-vps-backend-2.onrender.com/api/user/getall");
       const users = [...res.data].reverse();
       setAllUsers(users);
       setReferralUsers(users.filter((u) => u.referredBy));
@@ -42,23 +43,25 @@ const RefDetails = () => {
     fetchData();
   }, []);
 
-  const getReferrerEmail = (code?: string) => {
+  // Referrer (Je invite koreche) er details khuje ber korar function
+  const getReferrerInfo = (code?: string) => {
     const ref = allUsers.find((u) => u.referralCode === code);
-    return ref?.email || "N/A";
+    return {
+      email: ref?.email || "N/A",
+      phone: ref?.phone || "N/A"
+    };
   };
 
-  /* ================= UPDATE STATUS WITH SWEET ALERT ================= */
+  /* ================= UPDATE STATUS ================= */
   const updateStatus = async (userId: string, status: ReferralStatus) => {
     let reason = "";
 
     if (status === "rejected") {
-      // SweetAlert2 Input Modal
       const { value: text, isDismissed } = await Swal.fire({
         title: "Rejection Reason",
         input: "textarea",
         inputLabel: "Why are you rejecting this referral?",
         inputPlaceholder: "Type your reason here...",
-        inputAttributes: { "aria-label": "Type your reason here" },
         showCancelButton: true,
         confirmButtonColor: "#ef4444",
         confirmButtonText: "Confirm Reject",
@@ -70,7 +73,6 @@ const RefDetails = () => {
       if (isDismissed) return;
       reason = text;
     } else if (status === "approved") {
-      // Approval Confirmation
       const result = await Swal.fire({
         title: "Are you sure?",
         text: "This will add $5 to the referrer's balance.",
@@ -84,7 +86,7 @@ const RefDetails = () => {
 
     setUpdatingId(userId);
     try {
-      await axios.patch("http://localhost:3200/api/user/admin/update-referral-status", {
+      await axios.patch("https://tasha-vps-backend-2.onrender.com/api/user/admin/update-referral-status", {
         userId,
         status,
         rejectionReason: reason,
@@ -177,41 +179,66 @@ const RefDetails = () => {
             <thead className="bg-gray-50 border-b border-gray-100 text-[11px] uppercase text-gray-500 font-bold tracking-widest">
               <tr>
                 <th className="px-6 py-4">Status</th>
-                <th className="px-6 py-4">Invited By</th>
-                <th className="px-6 py-4">New User</th>
+                <th className="px-6 py-4">Invited By (Referrer)</th>
+                <th className="px-6 py-4">New User (Referred)</th>
                 <th className="px-6 py-4">Value</th>
                 <th className="px-6 py-4 text-center">Action</th>
               </tr>
             </thead>
 
             <tbody className="divide-y divide-gray-100">
-              {filtered.map((user) => (
-                <tr key={user._id} className="hover:bg-gray-50/50 transition-colors">
-                  <td className="px-6 py-4">{statusBadge(user)}</td>
-                  <td className="px-6 py-4">
-                    <p className="font-bold text-sm text-gray-700">{getReferrerEmail(user.referredBy)}</p>
-                    <span className="text-[10px] text-blue-500 font-mono">CODE: {user.referredBy}</span>
-                  </td>
-                  <td className="px-6 py-4 text-sm font-medium">{user.email}</td>
-                  <td className="px-6 py-4">
-                    <span className={`font-bold text-sm ${user.referralStatus === "rejected" ? "text-gray-400 line-through" : "text-green-600"}`}>
-                      $5.00
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-center">
-                    <select
-                      disabled={updatingId === user._id || user.referralStatus !== "pending"}
-                      value={user.referralStatus || "pending"}
-                      onChange={(e) => updateStatus(user._id, e.target.value as ReferralStatus)}
-                      className="border border-gray-200 px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer bg-white hover:border-blue-400 outline-none disabled:bg-gray-50 disabled:cursor-not-allowed shadow-sm"
-                    >
-                      <option value="pending">🟡 Pending</option>
-                      <option value="approved">🟢 Approve</option>
-                      <option value="rejected">🔴 Reject</option>
-                    </select>
-                  </td>
-                </tr>
-              ))}
+              {filtered.map((user) => {
+                const inviter = getReferrerInfo(user.referredBy);
+                return (
+                  <tr key={user._id} className="hover:bg-gray-50/50 transition-colors">
+                    <td className="px-6 py-4">{statusBadge(user)}</td>
+                    
+                    {/* Referrer Details */}
+                    <td className="px-6 py-4">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-1.5 text-sm font-bold text-gray-700">
+                           <Mail size={12} className="text-gray-400" /> {inviter.email}
+                        </div>
+                        <div className="flex items-center gap-1.5 text-xs text-green-600">
+                           <MessageCircle size={12} /> {inviter.phone}
+                        </div>
+                        <span className="text-[10px] text-blue-500 font-mono font-bold bg-blue-50 px-1 rounded">CODE: {user.referredBy}</span>
+                      </div>
+                    </td>
+
+                    {/* New User Details */}
+                    <td className="px-6 py-4">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-1.5 text-sm font-medium text-gray-700">
+                           <Mail size={12} className="text-gray-400" /> {user.email}
+                        </div>
+                        <div className="flex items-center gap-1.5 text-xs text-green-600">
+                           <MessageCircle size={12} /> {user.phone || "N/A"}
+                        </div>
+                      </div>
+                    </td>
+
+                    <td className="px-6 py-4">
+                      <span className={`font-bold text-sm ${user.referralStatus === "rejected" ? "text-gray-400 line-through" : "text-green-600"}`}>
+                        $5.00
+                      </span>
+                    </td>
+
+                    <td className="px-6 py-4 text-center">
+                      <select
+                        disabled={updatingId === user._id || user.referralStatus !== "pending"}
+                        value={user.referralStatus || "pending"}
+                        onChange={(e) => updateStatus(user._id, e.target.value as ReferralStatus)}
+                        className="border border-gray-200 px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer bg-white hover:border-blue-400 outline-none disabled:bg-gray-50 disabled:cursor-not-allowed shadow-sm"
+                      >
+                        <option value="pending">🟡 Pending</option>
+                        <option value="approved">🟢 Approve</option>
+                        <option value="rejected">🔴 Reject</option>
+                      </select>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
