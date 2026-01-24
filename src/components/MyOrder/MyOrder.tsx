@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
@@ -233,13 +231,16 @@ const MyOrder: React.FC = () => {
   const [presenceMap, setPresenceMap] = useState<Record<string, { online: boolean; lastSeen?: string | null }>>({});
 
   const scrollRef = useRef<HTMLDivElement>(null);
+  const shouldAutoScrollRef = useRef(true);
   const chatLengthRef = useRef(0);
 
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
   useEffect(() => {
-    scrollRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (shouldAutoScrollRef.current) {
+      scrollRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
   }, [chatMessages]);
 
   const fetchPresence = async (email: string) => {
@@ -544,32 +545,30 @@ const MyOrder: React.FC = () => {
                 paginatedOrders.map((order) => (
                   <div
                     key={order.id}
+                    className="bg-[#F8FAFB] border rounded-xl p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:shadow-md transition cursor-pointer"
                     onClick={() => setSelected(order)}
-                    className="bg-[#F8FAFB] rounded-xl p-2 sm:p-4 flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-4 border hover:shadow-md cursor-pointer transition"
                   >
-                    <div className="flex items-start sm:items-center gap-2 sm:gap-4 flex-1 min-w-0">
-                      <div className="flex-shrink-0">
-                        <RenderIcon icon={order.icon} size={40} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <h3 className="font-bold text-[#0A1A3A] text-xs sm:text-base truncate" title={order.title}>{truncateTitle(order.title, 15)}</h3>
-                          <span
-                            className={`flex-shrink-0 px-1.5 sm:px-3 py-0 sm:py-1 rounded-full text-xs font-bold ${
-                              order.status === "Pending"
-                                ? "bg-amber-100 text-amber-700"
-                                : order.status === "Completed"
-                                ? "bg-green-100 text-green-700"
-                                : "bg-red-100 text-red-700"
-                            }`}
-                          >
+                    {/* Left Side: Icon & Product Info */}
+                    <div className="flex gap-4 items-start">
+                      <RenderIcon icon={order.icon} size={40} />
+                      <div>
+                        <h3 className="font-bold text-[#0A1A3A] text-sm sm:text-base leading-tight">{order.title}</h3>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-xs text-gray-400 font-medium">Buyer: {getBuyerDisplayName(order.buyerEmail)}</span>
+                          <span className={`w-2 h-2 rounded-full ${presenceMap[order.buyerEmail]?.online ? 'bg-green-500' : 'bg-gray-300'}`} />
+                          <span className="text-[10px] text-gray-500 font-medium">
+                            {presenceMap[order.buyerEmail]?.online ? "Online" : (presenceMap[order.buyerEmail]?.lastSeen ? `Last seen ${timeAgo((presenceMap[order.buyerEmail]?.lastSeen ?? undefined))}` : "Offline")}
+                          </span>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-2 mt-2">
+                          <span className={`text-[10px] px-2 py-0.5 rounded-full border font-bold ${
+                            order.status === 'Completed' ? 'bg-green-50 text-green-600 border-green-100' : 
+                            (order.status === 'Cancelled') ? 'bg-red-50 text-red-600 border-red-100' : 
+                            'bg-amber-50 text-amber-600 border-amber-100'
+                          }`}>
                             {order.status}
                           </span>
                         </div>
-                        <p className="text-xs sm:text-sm text-gray-500 flex items-center gap-1 flex-wrap mt-1">
-                          <span className="truncate">Buyer: {getBuyerDisplayName(order.buyerEmail)}</span>
-                          <span className={`inline-block w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full flex-shrink-0 ${presenceMap[order.buyerEmail]?.online ? 'bg-green-500' : 'bg-gray-300'}`} />
-                        </p>
                       </div>
                     </div>
                     {/* Right Side: Price, Date & Actions - FIXED ALIGNMENT */}
@@ -582,30 +581,24 @@ const MyOrder: React.FC = () => {
                       {!["Cancelled", "Refunded"].includes(order.status) && (
                         <div className="flex gap-2 w-full justify-end sm:justify-start" onClick={(e) => e.stopPropagation()}>
                           <button 
-                            onClick={() => {
-                              setReportTargetOrder(order);
-                              setIsReportModalOpen(true);
-                            }} 
-                            className="flex-1 sm:flex-none flex justify-center p-3 text-red-500 border border-red-100 rounded-lg bg-white hover:bg-red-50 transition" 
+                            onClick={() => { setReportTargetOrder(order); setIsReportModalOpen(true); }} 
+                            className="flex-1 sm:flex-none flex justify-center p-2 text-red-500 border border-red-100 rounded-lg bg-white hover:bg-red-50 transition" 
                           >
-                            <FaFlagIcon size={18} />
+                            <FaFlagIcon size={14} />
                           </button>
                           
                           <button 
                             onClick={() => setSelected(order)} 
-                            className="flex-1 sm:flex-none flex justify-center p-3 text-gray-600 border rounded-lg bg-white hover:bg-gray-50 transition" 
+                            className="flex-1 sm:flex-none flex justify-center p-2 text-gray-600 border rounded-lg bg-white hover:bg-gray-50 transition" 
                           >
-                            <FaEyeIcon size={18} />
+                            <FaEyeIcon size={14} />
                           </button>
                           
                           <button 
                             onClick={() => handleOpenChat(order)} 
-                            className="flex-1 sm:flex-none flex justify-center p-3 text-blue-600 border border-blue-100 rounded-lg bg-white hover:bg-blue-50 transition relative" 
+                            className="flex-1 sm:flex-none flex justify-center p-2 text-blue-600 border border-blue-100 rounded-lg bg-white hover:bg-blue-50 transition" 
                           >
-                            <FaCommentsIcon size={18} />
-                            {unreadState[order.id] && (
-                              <span className="absolute -top-0.5 sm:-top-1 -right-0.5 sm:-right-1 w-1.5 sm:w-3 h-1.5 sm:h-3 bg-red-500 rounded-full animate-ping"></span>
-                            )}
+                            <FaCommentsIcon size={14} />
                           </button>
                         </div>
                       )}
@@ -621,25 +614,33 @@ const MyOrder: React.FC = () => {
       {/* Details Modal */}
       {selected && (
         <>
-          <div className="fixed inset-0 bg-black/60 z-40" onClick={() => setSelected(null)} />
-          <div className="fixed inset-x-0 bottom-0 sm:inset-auto sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 max-w-lg w-full bg-white rounded-t-3xl sm:rounded-3xl z-50 shadow-2xl">
-            <div className="p-6 border-b flex justify-between items-center">
-              <div>
-                <h2 className="text-xl font-bold">{selected.title}</h2>
-                <p className="text-sm text-gray-500">{selected.date}</p>
-              </div>
-              <button onClick={() => setSelected(null)}>
+          <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <div className="bg-white w-full max-w-lg rounded-t-3xl sm:rounded-2xl p-6 relative max-h-[90vh] overflow-y-auto">
+              <button onClick={() => setSelected(null)} className="absolute right-6 top-6 text-gray-400 hover:text-red-500">
                 <FaTimesIcon size={20} />
               </button>
-            </div>
-            <div className="p-6 text-center flex flex-col items-center justify-center">
-              <RenderIcon icon={selected.icon} size={80} />
-              <p className="text-3xl font-bold mt-4">${selected.price.toFixed(2)}</p>
-              <div className="mt-6 text-left space-y-3">
-                <p><span className="text-gray-500">Status:</span> <strong>{selected.status}</strong></p>
-                <p><span className="text-gray-500">Order No:</span> {selected.orderNumber}</p>
-                <p><span className="text-gray-500">Buyer:</span> {getBuyerDisplayName(selected.buyerEmail)}</p>
-                <p><span className="text-gray-500">Description:</span> {selected.desc}</p>
+              <div className="text-center mb-6 pt-4 flex flex-col items-center justify-center">
+                <RenderIcon icon={selected.icon} size={70} />
+                <h2 className="text-xl font-bold mt-4 text-[#0A1A3A]">{selected.title}</h2>
+                <p className="text-3xl font-black text-[#33ac6f] mt-2">${selected.price.toFixed(2)}</p>
+              </div>
+              <div className="bg-gray-50 rounded-2xl p-4 space-y-3 border border-gray-100 mb-6 text-sm">
+                 <div className="flex justify-between border-b pb-2">
+                   <span className="text-gray-500">Order Number</span>
+                   <span className="font-bold">{selected.orderNumber}</span>
+                 </div>
+                 <div className="flex justify-between border-b pb-2">
+                   <span className="text-gray-500">Status</span>
+                   <span className={`font-bold ${selected.status === 'Completed' ? 'text-green-600' : 'text-amber-600'}`}>
+                     {selected.status}
+                   </span>
+                 </div>
+                 <div className="pt-2">
+                   <p className="text-gray-500 mb-1">Product Details</p>
+                   <div className="bg-white p-3 rounded-lg border font-mono text-xs break-all">
+                      {selected.desc || "No additional details provided."}
+                   </div>
+                 </div>
               </div>
               {selected.status !== "Cancelled" && (
                 <div className="mt-8 grid grid-cols-2 gap-3">
@@ -684,78 +685,122 @@ const MyOrder: React.FC = () => {
 
       {/* Chat Modal */}
       {isChatOpen && activeChatBuyerEmail && (
-        <>
-          <div className="fixed inset-0 bg-black/70 z-50" onClick={() => setIsChatOpen(false)} />
-          <div className="fixed inset-x-0 bottom-0 sm:inset-auto sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 max-w-md w-full bg-[#ECE5DD] rounded-t-3xl sm:rounded-2xl z-50 shadow-2xl flex flex-col h-[90vh] sm:h-[600px]">
-            <div className="bg-white p-4 flex justify-between items-center border-b">
+        <div className="fixed inset-0 z-[120] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4">
+          <div className="bg-[#F8FAFB] w-full max-w-md h-full sm:h-[620px] sm:rounded-2xl flex flex-col overflow-hidden shadow-2xl border">
+            <div className="bg-white p-4 flex justify-between items-center border-b shadow-sm">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold">
-                  {getBuyerDisplayName(activeChatBuyerEmail)[0]}
+                <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center border text-[#0A1A3A] font-bold text-sm">
+                  {getBuyerDisplayName(activeChatBuyerEmail)[0].toUpperCase()}
                 </div>
                 <div>
-                  <h3 className="font-bold">{getBuyerDisplayName(activeChatBuyerEmail)}</h3>
-                  <p className="text-xs text-gray-500">{activeChatProductTitle}</p>
+                  <h4 className="font-bold text-sm text-[#0A1A3A]">{getBuyerDisplayName(activeChatBuyerEmail)}</h4>
+                  <div className="flex items-center gap-1.5 text-[10px]">
+                    <span className={`w-2 h-2 rounded-full ${presenceMap[activeChatBuyerEmail!]?.online ? "bg-green-500" : "bg-gray-300"}`} />
+                    <span className="text-gray-500 font-medium">
+                      {presenceMap[activeChatBuyerEmail!]?.online ? "Online" : (presenceMap[activeChatBuyerEmail!]?.lastSeen ? `Last seen ${timeAgo((presenceMap[activeChatBuyerEmail!]?.lastSeen ?? undefined))}` : "Offline")}
+                    </span>
+                  </div>
                 </div>
               </div>
-              <button onClick={() => setIsChatOpen(false)}>
+              <button 
+                onClick={() => { setIsChatOpen(false); }} 
+                className="p-2 text-gray-400 hover:text-red-500 transition rounded-full hover:bg-gray-100"
+              >
                 <FaTimesIcon size={20} />
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              {chatMessages.map((msg, i) => {
-                const isMe = msg.senderId.toLowerCase() === sellerId?.toLowerCase();
-                return (
-                  <div key={i} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
-                    <div className={`max-w-[75%] px-4 py-2 rounded-2xl text-sm shadow ${isMe ? "bg-[#33ac6f] text-white" : "bg-white"}`}>
-                      {/* Image display fix: URL must point to backend */}
+            <div 
+              ref={scrollRef}
+              className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#F3EFEE]/30 scroll-smooth"
+              onScroll={(e) => {
+                const container = e.currentTarget;
+                const isAtBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
+                shouldAutoScrollRef.current = isAtBottom;
+              }}
+            >
+              {chatMessages.map((msg, index) => (
+                <div
+                  key={`${msg.createdAt}-${index}`}
+                  className={`flex ${msg.senderId.toLowerCase() === sellerId?.toLowerCase() ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div className={`max-w-[85%] ${msg.senderId.toLowerCase() === sellerId?.toLowerCase() ? 'items-end' : 'items-start'} flex flex-col`}>
+                    <div 
+                      className={`rounded-2xl px-4 py-2.5 shadow-sm text-sm ${
+                        msg.senderId.toLowerCase() === sellerId?.toLowerCase()
+                          ? 'bg-[#33ac6f] text-white rounded-tr-none' 
+                          : 'bg-white text-[#0A1A3A] border rounded-tl-none font-medium'
+                      }`}
+                    >
                       {msg.imageUrl && (
-                        <img 
-                          src={`${BASE_URL}${msg.imageUrl}`} 
-                          alt="Sent content" 
-                          className="rounded-lg mb-2 max-w-full h-auto cursor-pointer border shadow-sm"
-                          onClick={() => window.open(`${BASE_URL}${msg.imageUrl}`, '_blank')}
-                          onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                        />
+                        <div className="mb-2 -mx-1 -mt-1">
+                          <img
+                            src={msg.imageUrl.startsWith('http') ? msg.imageUrl : `${BASE_URL}${msg.imageUrl}`}
+                            alt="attachment"
+                            className="rounded-xl max-w-xs h-auto max-h-64 object-cover border border-black/5"
+                            onError={(e) => (e.currentTarget.style.display = 'none')}
+                          />
+                        </div>
                       )}
-                      <p>{msg.message}</p>
-                      <div className="text-[10px] opacity-70 mt-1 text-right">{timeAgo(msg.createdAt)}</div>
+                      <p className="leading-relaxed break-words">{msg.message}</p>
                     </div>
+                    <span className="text-[9px] text-gray-400 mt-1 px-1 font-bold">
+                      {msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Just now'}
+                    </span>
                   </div>
-                );
-              })}
-              <div ref={scrollRef} />
+                </div>
+              ))}
             </div>
 
             {imagePreview && (
-              <div className="px-4 py-2 bg-white border-t flex items-center gap-3">
-                <div className="relative">
-                  <img src={imagePreview} alt="Preview" className="w-16 h-16 object-cover rounded-lg border-2 border-green-500" />
-                  <button onClick={removeImage} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-md">
-                    <FaTimesIcon size={10} />
-                  </button>
+              <div className="flex justify-end px-4 py-2">
+                <div className="max-w-[70%] p-1 bg-[#33ac6f] rounded-2xl rounded-tr-none shadow-md">
+                  <div className="relative">
+                    <img src={imagePreview} alt="preview" className="rounded-xl max-w-xs h-auto max-h-64 object-cover" />
+                    <button
+                      onClick={() => { setSelectedImage(null); setImagePreview(null); }}
+                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center shadow-lg border-2 border-white"
+                    > × </button>
+                  </div>
                 </div>
-                <div className="text-xs text-gray-500">Image selected</div>
               </div>
             )}
 
-            <form onSubmit={sendChat} className="p-4 bg-white border-t flex items-center gap-2">
-              <input type="file" accept="image/*" hidden ref={fileInputRef} onChange={handleImageChange} />
-              <button type="button" onClick={() => fileInputRef.current?.click()} className="text-gray-500 hover:text-green-600 p-2">
-                <FaImageIcon size={22} />
-              </button>
-              <input
-                value={typedMessage}
-                onChange={(e) => setTypedMessage(e.target.value)}
-                placeholder="Type a message..."
-                className="flex-1 px-4 py-2 bg-gray-100 rounded-full text-sm outline-none"
-              />
-              <button type="submit" className="bg-[#33ac6f] text-white p-3 rounded-full hover:bg-green-700">
-                <FaPaperPlaneIcon size={16} />
-              </button>
-            </form>
+            <div className="p-4 bg-white border-t">
+              <form 
+                onSubmit={sendChat} 
+                className="flex items-center gap-2 bg-[#F8FAFB] border rounded-2xl p-1.5 focus-within:border-[#33ac6f] transition-all"
+              >
+                <input
+                  type="file"
+                  hidden
+                  ref={fileInputRef}
+                  onChange={handleImageChange}
+                />
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="p-2 text-gray-500 hover:text-[#33ac6f]"
+                >
+                  <FaImageIcon size={18} />
+                </button>
+                <input
+                  type="text"
+                  value={typedMessage}
+                  onChange={(e) => setTypedMessage(e.target.value)}
+                  placeholder="Type message..."
+                  className="flex-1 bg-transparent border-none outline-none text-sm px-2 py-1"
+                />
+                <button
+                  type="submit"
+                  className="bg-[#33ac6f] text-white p-2 rounded-xl hover:opacity-90 transition active:scale-95"
+                >
+                  <FaPaperPlaneIcon size={16} />
+                </button>
+              </form>
+            </div>
           </div>
-        </>
+        </div>
       )}
 
       {/* Report Modal */}

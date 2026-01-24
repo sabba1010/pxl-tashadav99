@@ -5,20 +5,14 @@ import { useAuthHook } from "../../hook/useAuthHook";
 import { toast } from "sonner";
 
 import {
-  FaInstagram,
-  FaFacebookF,
-  FaTwitter,
-  FaWhatsapp,
-  FaTelegram,
   FaTimes,
   FaEye,
   FaComments,
-  FaGlobe,
   FaPaperPlane,
   FaClock,
   FaFlag,
   FaCheckCircle,
-  FaStar,
+  FaImage,
 } from "react-icons/fa";
 
 const FaTimesIcon = FaTimes as any;
@@ -28,7 +22,7 @@ const FaPaperPlaneIcon = FaPaperPlane as any;
 const FaClockIcon = FaClock as any;
 const FaFlagIcon = FaFlag as any;
 const FaCheckCircleIcon = FaCheckCircle as any;
-const FaStarIcon = FaStar as any;
+const FaImageIcon = FaImage as any;
 
 type PurchaseStatus = "Pending" | "Completed" | "Cancelled" | "Refunded";
 type PlatformType = "instagram" | "facebook" | "twitter" | "whatsapp" | "telegram" | "other";
@@ -86,20 +80,7 @@ interface PresenceResponse {
   online?: boolean;
 }
 
-const ICON_COLOR_MAP = new Map<any, string>([
-  [FaInstagram, "#E1306C"],
-  [FaFacebookF, "#1877F2"],
-  [FaTwitter, "#1DA1F2"],
-  [FaWhatsapp, "#25D366"],
-  [FaTelegram, "#0088cc"],
-]);
-
 const REPORT_REASONS = ["Scam or Fraud", "Item not received", "Wrong item delivered", "Abusive behavior", "Other"];
-
-const truncateTitle = (title: string, maxLength: number = 30): string => {
-  if (title.length <= maxLength) return title;
-  return title.slice(0, maxLength) + "...";
-};
 
 const inferPlatform = (name: string): PlatformType => {
   const n = name?.toLowerCase() || "";
@@ -111,22 +92,26 @@ const inferPlatform = (name: string): PlatformType => {
   return "other";
 };
 
-const getPlatformIcon = (platform: PlatformType): any => {
-  switch (platform) {
-    case "instagram": return FaInstagram;
-    case "facebook": return FaFacebookF;
-    case "twitter": return FaTwitter;
-    case "whatsapp": return FaWhatsapp;
-    case "telegram": return FaTelegram;
-    default: return FaGlobe;
-  }
-};
-
 const formatDate = (d: string) => {
   if (!d) return "N/A";
   return new Date(d).toLocaleString("en-US", {
     month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit",
   });
+};
+
+const timeAgo = (dateString?: string) => {
+  if (!dateString) return "Just now";
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+  if (diffInSeconds < 60) return "Just now";
+  const diffInMinutes = Math.floor(diffInSeconds / 60);
+  if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  if (diffInHours < 24) return `${diffInHours}h ago`;
+  const diffInDays = Math.floor(diffInHours / 24);
+  if (diffInDays < 7) return `${diffInDays}d ago`;
+  return date.toLocaleDateString();
 };
 
 const maskEmail = (email: string) => {
@@ -184,15 +169,10 @@ const MyPurchase: React.FC = () => {
   const [reportMessage, setReportMessage] = useState("");
   const [isSubmittingReport, setIsSubmittingReport] = useState(false);
 
-  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
-  const [reviewTargetOrder, setReviewTargetOrder] = useState<Purchase | null>(null);
-  const [reviewRating, setReviewRating] = useState(5);
-  const [reviewMessage, setReviewMessage] = useState("");
-  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
-
   const [activeChatSellerEmail, setActiveChatSellerEmail] = useState<string | null>(null);
   const [activeChatOrderId, setActiveChatOrderId] = useState<string | null>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const shouldAutoScrollRef = useRef(true);
 
   const [onlineSellersMap, setOnlineSellersMap] = useState<Record<string, boolean>>({});
 
@@ -247,6 +227,7 @@ const MyPurchase: React.FC = () => {
     fetchAllSellersStatus();
     const interval = setInterval(fetchAllSellersStatus, 10000);
     return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [purchases]);
 
   useEffect(() => {
@@ -259,6 +240,7 @@ const MyPurchase: React.FC = () => {
         handleUpdateStatus('completed', p.sellerEmail, p.id);
       }
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [purchases, now]);
 
   const getRemainingTime = (rawDate: string) => {
@@ -327,6 +309,7 @@ const MyPurchase: React.FC = () => {
 
   useEffect(() => {
     fetchPurchases();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [buyerId]);
 
   const handleUpdateStatus = async (status: string, sellerEmail: string, orderId?: string) => {
@@ -375,12 +358,17 @@ const MyPurchase: React.FC = () => {
       setSellerOnline(false);
     }
     return () => clearInterval(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isChatOpen, activeChatSellerEmail]);
 
   useEffect(() => {
     const container = messagesContainerRef.current;
     if (!container) return;
-    container.scrollTo({ top: container.scrollHeight, behavior: "smooth" });
+    
+    // Only auto-scroll if user hasn't scrolled up
+    if (shouldAutoScrollRef.current) {
+      container.scrollTo({ top: container.scrollHeight, behavior: "smooth" });
+    }
   }, [chatMessages, imagePreview]);
 
   const sendChat = async (e: React.FormEvent) => {
@@ -427,31 +415,6 @@ const MyPurchase: React.FC = () => {
     }
   };
 
-  const handleReviewSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!reviewMessage.trim() || !reviewTargetOrder) return;
-    setIsSubmittingReview(true);
-    try {
-      await axios.post(`http://localhost:3200/rating/create`, {
-        orderId: reviewTargetOrder.id,
-        productId: reviewTargetOrder.id,
-        buyerEmail: buyerId,
-        sellerEmail: reviewTargetOrder.sellerEmail,
-        rating: reviewRating,
-        message: reviewMessage,
-        productName: reviewTargetOrder.title
-      });
-      toast.success("Review submitted successfully!");
-      setIsReviewModalOpen(false);
-      setReviewMessage("");
-      setReviewRating(5);
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || "Error submitting review");
-    } finally {
-      setIsSubmittingReview(false);
-    }
-  };
-
   const filtered = useMemo(() => {
     if (activeTab === "All") return purchases;
     return purchases.filter((p) => p.status === activeTab);
@@ -461,19 +424,6 @@ const MyPurchase: React.FC = () => {
     const start = (currentPage - 1) * itemsPerPage;
     return filtered.slice(start, start + itemsPerPage);
   }, [filtered, currentPage]);
-
-  const renderBadge = (platform: PlatformType, size = 36) => {
-    const IconComponent = getPlatformIcon(platform) as any;
-    return (
-      <div style={{
-        width: size, height: size, borderRadius: 12, display: "inline-flex",
-        alignItems: "center", justifyContent: "center",
-        background: ICON_COLOR_MAP.get(getPlatformIcon(platform)) || "#33ac6f"
-      }}>
-        <IconComponent size={size * 0.6} color="#fff" />
-      </div>
-    );
-  };
 
   return (
     <div className="min-h-screen bg-[#F3EFEE] pt-16 pb-20 px-4 sm:px-6 font-sans">
@@ -511,26 +461,29 @@ const MyPurchase: React.FC = () => {
                   {/* Left Side: Icon & Product Info */}
                   <div className="flex gap-4 items-start">
                     <RenderIcon icon={p.icon} size={40} />
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 min-w-0">
-                        <h3 className="font-bold text-[#0A1A3A] text-sm sm:text-base leading-tight truncate" title={p.title}>{truncateTitle(p.title, 20)}</h3>
-                        <span className={`flex-shrink-0 text-[10px] px-2 py-0.5 rounded-full border font-bold ${
+                    <div>
+                      <h3 className="font-bold text-[#0A1A3A] text-sm sm:text-base leading-tight">{p.title}</h3>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-xs text-gray-400 font-medium">Seller: {maskEmail(p.sellerEmail)}</span>
+                        <span className={`w-2 h-2 rounded-full ${onlineSellersMap[p.sellerEmail] ? 'bg-green-500' : 'bg-gray-300'}`} />
+                        <span className="text-[10px] text-gray-500 font-medium">
+                          {onlineSellersMap[p.sellerEmail] ? "Online" : "Offline"}
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-2 mt-2">
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full border font-bold ${
                           p.status === 'Completed' ? 'bg-green-50 text-green-600 border-green-100' : 
                           (p.status === 'Cancelled' || p.status === 'Refunded') ? 'bg-red-50 text-red-600 border-red-100' : 
                           'bg-amber-50 text-amber-600 border-amber-100'
                         }`}>
                           {p.status}
                         </span>
+                        {p.status === "Pending" && (
+                          <span className="text-[10px] text-blue-600 font-bold flex items-center gap-1">
+                            <FaClockIcon size={10} /> {getRemainingTime(p.rawDate)}
+                          </span>
+                        )}
                       </div>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="text-xs text-gray-400 font-medium">Seller: {maskEmail(p.sellerEmail)}</span>
-                        <span className={`w-2 h-2 rounded-full ${onlineSellersMap[p.sellerEmail] ? 'bg-green-500' : 'bg-gray-300'}`} />
-                      </div>
-                      {p.status === "Pending" && (
-                        <span className="text-[10px] text-blue-600 font-bold flex items-center gap-1 mt-2">
-                          <FaClockIcon size={10} /> {getRemainingTime(p.rawDate)}
-                        </span>
-                      )}
                     </div>
                   </div>
 
@@ -659,18 +612,6 @@ const MyPurchase: React.FC = () => {
                 <FaCheckCircleIcon /> Confirm & Complete Order
               </button>
             )}
-            {selected.status === "Completed" && (
-              <button 
-                onClick={() => {
-                  setReviewTargetOrder(selected);
-                  setIsReviewModalOpen(true);
-                  setSelected(null);
-                }} 
-                className="w-full bg-amber-500 text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition active:scale-95 shadow-lg hover:bg-amber-600"
-              >
-                <FaStarIcon /> Leave a Review
-              </button>
-            )}
           </div>
         </div>
       )}
@@ -727,7 +668,9 @@ const MyPurchase: React.FC = () => {
                   <h4 className="font-bold text-sm text-[#0A1A3A]">{maskEmail(activeChatSellerEmail || "")}</h4>
                   <div className="flex items-center gap-1.5 text-[10px]">
                     <span className={`w-2 h-2 rounded-full ${sellerOnline ? "bg-green-500" : "bg-gray-300"}`} />
-                    <span className="text-gray-500 font-medium">{sellerOnline ? "Online" : "Offline"}</span>
+                    <span className="text-gray-500 font-medium">
+                      {sellerOnline ? "Online" : (sellerLastSeen ? `Last seen ${timeAgo(sellerLastSeen)}` : "Offline")}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -742,6 +685,11 @@ const MyPurchase: React.FC = () => {
             <div 
               ref={messagesContainerRef}
               className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#F3EFEE]/30 scroll-smooth"
+              onScroll={(e) => {
+                const container = e.currentTarget;
+                const isAtBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
+                shouldAutoScrollRef.current = isAtBottom;
+              }}
             >
               {chatMessages.map((m, index) => (
                 <div
@@ -761,7 +709,7 @@ const MyPurchase: React.FC = () => {
                           <img
                             src={m.imageUrl.startsWith('http') ? m.imageUrl : `${BASE_URL}${m.imageUrl}`}
                             alt="attachment"
-                            className="rounded-xl max-w-full h-auto border border-black/5"
+                            className="rounded-xl max-w-xs h-auto max-h-64 object-cover border border-black/5"
                             onError={(e) => (e.currentTarget.style.display = 'none')}
                           />
                         </div>
@@ -778,7 +726,7 @@ const MyPurchase: React.FC = () => {
                 <div className="flex justify-end">
                   <div className="max-w-[70%] p-1 bg-[#33ac6f] rounded-2xl rounded-tr-none shadow-md">
                     <div className="relative">
-                      <img src={imagePreview} alt="preview" className="rounded-xl w-full" />
+                      <img src={imagePreview} alt="preview" className="rounded-xl max-w-xs h-auto max-h-64 object-cover" />
                       <button
                         onClick={() => { setSelectedImage(null); setImagePreview(null); }}
                         className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center shadow-lg border-2 border-white"
@@ -811,7 +759,7 @@ const MyPurchase: React.FC = () => {
                   onClick={() => fileInputRef.current?.click()}
                   className="p-2 text-gray-500 hover:text-[#33ac6f]"
                 >
-                  <FaPaperPlaneIcon size={18} className="rotate-45" />
+                  <FaImageIcon size={18} />
                 </button>
                 <input
                   type="text"
