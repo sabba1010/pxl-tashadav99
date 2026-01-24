@@ -18,7 +18,6 @@ import {
   FaClock,
   FaFlag,
   FaCheckCircle,
-  FaStar,
   FaImage,
 } from "react-icons/fa";
 
@@ -29,7 +28,6 @@ const FaPaperPlaneIcon = FaPaperPlane as any;
 const FaClockIcon = FaClock as any;
 const FaFlagIcon = FaFlag as any;
 const FaCheckCircleIcon = FaCheckCircle as any;
-const FaStarIcon = FaStar as any;
 const FaImageIcon = FaImage as any;
 
 type PurchaseStatus = "Pending" | "Completed" | "Cancelled" | "Refunded";
@@ -52,6 +50,7 @@ interface Purchase {
   recoveryEmail?: string;
   recoveryEmailPassword?: string;
   previewLink?: string;
+  icon?: string;
 }
 
 interface RawPurchaseItem {
@@ -69,6 +68,7 @@ interface RawPurchaseItem {
   password?: string;
   previewLink?: string;
   additionalInfo?: string;
+  categoryIcon?: string;
 }
 
 interface ChatMessage {
@@ -144,6 +144,27 @@ const maskEmail = (email: string) => {
   return email.split('@')[0];
 };
 
+const RenderIcon = ({ icon, size = 40 }: { icon?: string; size?: number }) => {
+  if (icon && icon.startsWith("http")) {
+    return (
+      <div
+        style={{ width: size, height: size }}
+        className="rounded-full overflow-hidden shadow-md flex-shrink-0"
+      >
+        <img src={icon} alt="" className="w-full h-full object-cover" />
+      </div>
+    );
+  }
+  return (
+    <div
+      style={{ width: size, height: size, background: "#daab4c" }}
+      className="rounded-full flex items-center justify-center shadow-md text-white font-bold text-lg flex-shrink-0"
+    >
+      📦
+    </div>
+  );
+};
+
 const TABS = ["All", "Pending", "Completed", "Cancelled"] as const;
 type Tab = (typeof TABS)[number];
 
@@ -173,19 +194,12 @@ const MyPurchase: React.FC = () => {
   const [reportMessage, setReportMessage] = useState("");
   const [isSubmittingReport, setIsSubmittingReport] = useState(false);
 
-  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
-  const [reviewTargetOrder, setReviewTargetOrder] = useState<Purchase | null>(null);
-  const [reviewRating, setReviewRating] = useState(5);
-  const [reviewMessage, setReviewMessage] = useState("");
-  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
-
   const [activeChatSellerEmail, setActiveChatSellerEmail] = useState<string | null>(null);
   const [activeChatOrderId, setActiveChatOrderId] = useState<string | null>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const shouldAutoScrollRef = useRef(true);
 
   const [onlineSellersMap, setOnlineSellersMap] = useState<Record<string, boolean>>({});
-  const [sellerLastSeenMap, setSellerLastSeenMap] = useState<Record<string, string | null>>({});
 
   const itemsPerPage = 10;
   const [currentPage, setCurrentPage] = useState(1);
@@ -217,19 +231,15 @@ const MyPurchase: React.FC = () => {
   const fetchAllSellersStatus = async () => {
     const sellers = Array.from(new Set(purchases.map(p => p.sellerEmail)));
     const statusMap: Record<string, boolean> = {};
-    const lastSeenMap: Record<string, string | null> = {};
     for (const email of sellers) {
       try {
         const res = await axios.get<PresenceResponse>(`${CHAT_API}/status/${email}`);
         statusMap[email] = Boolean(res.data?.online);
-        lastSeenMap[email] = res.data.lastSeen || null;
       } catch (err) {
         statusMap[email] = false;
-        lastSeenMap[email] = null;
       }
     }
     setOnlineSellersMap(statusMap);
-    setSellerLastSeenMap(lastSeenMap);
   };
 
   useEffect(() => {
@@ -242,6 +252,7 @@ const MyPurchase: React.FC = () => {
     fetchAllSellersStatus();
     const interval = setInterval(fetchAllSellersStatus, 10000);
     return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [purchases]);
 
   useEffect(() => {
@@ -254,6 +265,7 @@ const MyPurchase: React.FC = () => {
         handleUpdateStatus('completed', p.sellerEmail, p.id);
       }
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [purchases, now]);
 
   const getRemainingTime = (rawDate: string) => {
@@ -283,6 +295,7 @@ const MyPurchase: React.FC = () => {
                 email: productRes.data.email,
                 password: productRes.data.password,
                 previewLink: productRes.data.previewLink,
+                categoryIcon: productRes.data.categoryIcon,
               };
             }
           } catch (err) {
@@ -308,6 +321,7 @@ const MyPurchase: React.FC = () => {
         accountPassword: item.accountPass,
         recoveryEmail: item.email,
         recoveryEmailPassword: item.password,
+        icon: item.categoryIcon,
         previewLink: item.previewLink,
       }));
       setPurchases(mapped);
@@ -320,6 +334,7 @@ const MyPurchase: React.FC = () => {
 
   useEffect(() => {
     fetchPurchases();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [buyerId]);
 
   const handleUpdateStatus = async (status: string, sellerEmail: string, orderId?: string) => {
@@ -368,6 +383,7 @@ const MyPurchase: React.FC = () => {
       setSellerOnline(false);
     }
     return () => clearInterval(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isChatOpen, activeChatSellerEmail]);
 
   useEffect(() => {
@@ -421,31 +437,6 @@ const MyPurchase: React.FC = () => {
       toast.error("Error submitting report");
     } finally {
       setIsSubmittingReport(false);
-    }
-  };
-
-  const handleReviewSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!reviewMessage.trim() || !reviewTargetOrder) return;
-    setIsSubmittingReview(true);
-    try {
-      await axios.post(`http://localhost:3200/rating/create`, {
-        orderId: reviewTargetOrder.id,
-        productId: reviewTargetOrder.id,
-        buyerEmail: buyerId,
-        sellerEmail: reviewTargetOrder.sellerEmail,
-        rating: reviewRating,
-        message: reviewMessage,
-        productName: reviewTargetOrder.title
-      });
-      toast.success("Review submitted successfully!");
-      setIsReviewModalOpen(false);
-      setReviewMessage("");
-      setReviewRating(5);
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || "Error submitting review");
-    } finally {
-      setIsSubmittingReview(false);
     }
   };
 
@@ -580,8 +571,8 @@ const MyPurchase: React.FC = () => {
             <button onClick={() => setSelected(null)} className="absolute right-6 top-6 text-gray-400 hover:text-red-500">
               <FaTimesIcon size={20} />
             </button>
-            <div className="text-center mb-6 pt-4">
-              {renderBadge(selected.platform, 70)}
+            <div className="text-center mb-6 pt-4 flex flex-col items-center justify-center">
+              <RenderIcon icon={selected.icon} size={70} />
               <h2 className="text-xl font-bold mt-4 text-[#0A1A3A]">{selected.title}</h2>
               <p className="text-3xl font-black text-[#33ac6f] mt-2">${selected.price.toFixed(2)}</p>
             </div>
@@ -657,18 +648,6 @@ const MyPurchase: React.FC = () => {
                 className="w-full bg-[#33ac6f] text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition active:scale-95 shadow-lg"
               >
                 <FaCheckCircleIcon /> Confirm & Complete Order
-              </button>
-            )}
-            {selected.status === "Completed" && (
-              <button 
-                onClick={() => {
-                  setReviewTargetOrder(selected);
-                  setIsReviewModalOpen(true);
-                  setSelected(null);
-                }} 
-                className="w-full bg-amber-500 text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition active:scale-95 shadow-lg hover:bg-amber-600"
-              >
-                <FaStarIcon /> Leave a Review
               </button>
             )}
           </div>

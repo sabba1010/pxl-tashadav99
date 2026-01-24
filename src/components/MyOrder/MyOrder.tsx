@@ -60,6 +60,7 @@ interface Order {
   date: string;
   status: OrderStatus;
   orderNumber?: string;
+  icon?: string;
 }
 
 interface ApiOrder {
@@ -71,6 +72,7 @@ interface ApiOrder {
   productId: string;
   purchaseDate: string;
   status: string;
+  categoryIcon?: string;
 }
 
 interface IMessage {
@@ -94,6 +96,32 @@ interface PresenceResponse {
   lastSeen?: string | null;
   online?: boolean;
 }
+
+const truncateTitle = (title: string, maxLength: number = 30): string => {
+  if (title.length <= maxLength) return title;
+  return title.slice(0, maxLength) + "...";
+};
+
+const RenderIcon = ({ icon, size = 40 }: { icon?: string; size?: number }) => {
+  if (icon && icon.startsWith("http")) {
+    return (
+      <div
+        style={{ width: size, height: size }}
+        className="rounded-full overflow-hidden shadow-md flex-shrink-0"
+      >
+        <img src={icon} alt="" className="w-full h-full object-cover" />
+      </div>
+    );
+  }
+  return (
+    <div
+      style={{ width: size, height: size, background: "#daab4c" }}
+      className="rounded-full flex items-center justify-center shadow-md text-white font-bold text-lg flex-shrink-0"
+    >
+      📦
+    </div>
+  );
+};
 
 const inferPlatform = (name: string): PlatformType => {
   const n = name.toLowerCase();
@@ -245,7 +273,26 @@ const MyOrder: React.FC = () => {
         const res = await axios.get<ApiOrder[]>(`${PURCHASE_API}/getall`);
         const allData = res.data;
         const mySales = allData.filter((item) => item.sellerEmail === sellerId);
-        const mapped: Order[] = mySales.map((item) => ({
+        
+        // Fetch product details to get categoryIcon
+        const enrichedData = await Promise.all(mySales.map(async (item) => {
+          if (item.productId) {
+            try {
+              const productRes = await axios.get<any>(`${PURCHASE_API.replace('/purchase', '')}/product/${item.productId}`);
+              if (productRes?.data) {
+                return {
+                  ...item,
+                  categoryIcon: productRes.data.categoryIcon,
+                };
+              }
+            } catch (err) {
+              console.error(`Failed to fetch product ${item.productId}:`, err);
+            }
+          }
+          return item;
+        }));
+        
+        const mapped: Order[] = enrichedData.map((item) => ({
           id: item._id,
           platform: inferPlatform(item.productName),
           title: item.productName,
@@ -255,6 +302,7 @@ const MyOrder: React.FC = () => {
           date: formatDate(item.purchaseDate),
           status: (item.status.charAt(0).toUpperCase() + item.status.slice(1)) as OrderStatus,
           orderNumber: `ORD-${item._id.slice(-6).toUpperCase()}`,
+          icon: item.categoryIcon,
         }));
         setOrders(mapped);
       } catch (err) {
@@ -499,60 +547,60 @@ const MyOrder: React.FC = () => {
                 paginatedOrders.map((order) => (
                   <div
                     key={order.id}
+                    className="bg-[#F8FAFB] border rounded-xl p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:shadow-md transition cursor-pointer"
                     onClick={() => setSelected(order)}
-                    className="bg-[#F8FAFB] rounded-xl p-2 sm:p-4 flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-4 border hover:shadow-md cursor-pointer transition"
                   >
-                    <div className="flex items-start sm:items-center gap-2 sm:gap-4 flex-1 min-w-0">
-                      <div className="flex-shrink-0">
-                        {renderBadge(order.platform, 28)}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-bold text-[#0A1A3A] text-xs sm:text-base truncate">{order.title}</h3>
-                        <p className="text-xs sm:text-sm text-gray-500 flex items-center gap-1 flex-wrap">
-                          <span className="truncate">Buyer: {getBuyerDisplayName(order.buyerEmail)}</span>
-                          <span className={`inline-block w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full flex-shrink-0 ${presenceMap[order.buyerEmail]?.online ? 'bg-green-500' : 'bg-gray-300'}`} />
+                    {/* Left Side: Icon & Product Info */}
+                    <div className="flex gap-4 items-start">
+                      <RenderIcon icon={order.icon} size={40} />
+                      <div>
+                        <h3 className="font-bold text-[#0A1A3A] text-sm sm:text-base leading-tight">{order.title}</h3>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-xs text-gray-400 font-medium">Buyer: {getBuyerDisplayName(order.buyerEmail)}</span>
+                          <span className={`w-2 h-2 rounded-full ${presenceMap[order.buyerEmail]?.online ? 'bg-green-500' : 'bg-gray-300'}`} />
                           <span className="text-[10px] text-gray-500 font-medium">
                             {presenceMap[order.buyerEmail]?.online ? "Online" : (presenceMap[order.buyerEmail]?.lastSeen ? `Last seen ${timeAgo((presenceMap[order.buyerEmail]?.lastSeen ?? undefined))}` : "Offline")}
                           </span>
-                        </p>
-                        <span
-                          className={`mt-0.5 inline-block px-1.5 sm:px-3 py-0 sm:py-1 rounded-full text-xs font-bold ${
-                            order.status === "Pending"
-                              ? "bg-amber-100 text-amber-700"
-                              : order.status === "Completed"
-                              ? "bg-green-100 text-green-700"
-                              : "bg-red-100 text-red-700"
-                          }`}
-                        >
-                          {order.status}
-                        </span>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-2 mt-2">
+                          <span className={`text-[10px] px-2 py-0.5 rounded-full border font-bold ${
+                            order.status === 'Completed' ? 'bg-green-50 text-green-600 border-green-100' : 
+                            (order.status === 'Cancelled') ? 'bg-red-50 text-red-600 border-red-100' : 
+                            'bg-amber-50 text-amber-600 border-amber-100'
+                          }`}>
+                            {order.status}
+                          </span>
+                        </div>
                       </div>
                     </div>
-                    <div className="text-right flex-shrink-0">
-                      <p className="text-xs sm:text-lg font-bold">${order.price.toFixed(2)}</p>
-                      <p className="text-xs text-gray-500">{order.date}</p>
+                    {/* Right Side: Price, Date & Actions - FIXED ALIGNMENT */}
+                    <div className="w-full sm:w-auto flex flex-col sm:items-end gap-3 mt-2 sm:mt-0 border-t sm:border-t-0 pt-3 sm:pt-0">
+                      <div className="flex flex-row sm:flex-col justify-between items-center sm:items-end w-full sm:w-auto">
+                        <p className="text-lg font-bold text-[#0A1A3A]">${order.price.toFixed(2)}</p>
+                        <p className="text-[10px] text-gray-400 font-medium">{order.date}</p>
+                      </div>
+                      
                       {!["Cancelled", "Refunded"].includes(order.status) && (
-                        <div className="flex gap-0.5 sm:gap-2 mt-1 sm:mt-3 justify-end" onClick={(e) => e.stopPropagation()}>
-                          <button onClick={() => setSelected(order)} className="p-1 sm:p-2 border rounded hover:bg-gray-100">
-                            <FaEyeIcon size={10} className="sm:hidden" />
-                            <FaEyeIcon size={14} className="hidden sm:block" />
-                          </button>
-                          <button onClick={() => handleOpenChat(order)} className="p-1 sm:p-2 border rounded hover:bg-blue-100 text-blue-600 relative">
-                            <FaCommentsIcon size={10} className="sm:hidden" />
-                            <FaCommentsIcon size={14} className="hidden sm:block" />
-                            {unreadState[order.id] && (
-                              <span className="absolute -top-0.5 sm:-top-1 -right-0.5 sm:-right-1 w-1.5 sm:w-3 h-1.5 sm:h-3 bg-red-500 rounded-full animate-ping"></span>
-                            )}
-                          </button>
-                          <button
-                            onClick={() => {
-                              setReportTargetOrder(order);
-                              setIsReportModalOpen(true);
-                            }}
-                            className="p-1 sm:p-2 border border-red-200 rounded hover:bg-red-50 text-red-600"
+                        <div className="flex gap-2 w-full justify-end sm:justify-start" onClick={(e) => e.stopPropagation()}>
+                          <button 
+                            onClick={() => { setReportTargetOrder(order); setIsReportModalOpen(true); }} 
+                            className="flex-1 sm:flex-none flex justify-center p-2 text-red-500 border border-red-100 rounded-lg bg-white hover:bg-red-50 transition" 
                           >
-                            <FaFlagIcon size={10} className="sm:hidden" />
-                            <FaFlagIcon size={14} className="hidden sm:block" />
+                            <FaFlagIcon size={14} />
+                          </button>
+                          
+                          <button 
+                            onClick={() => setSelected(order)} 
+                            className="flex-1 sm:flex-none flex justify-center p-2 text-gray-600 border rounded-lg bg-white hover:bg-gray-50 transition" 
+                          >
+                            <FaEyeIcon size={14} />
+                          </button>
+                          
+                          <button 
+                            onClick={() => handleOpenChat(order)} 
+                            className="flex-1 sm:flex-none flex justify-center p-2 text-blue-600 border border-blue-100 rounded-lg bg-white hover:bg-blue-50 transition" 
+                          >
+                            <FaCommentsIcon size={14} />
                           </button>
                         </div>
                       )}
@@ -568,59 +616,67 @@ const MyOrder: React.FC = () => {
       {/* Details Modal */}
       {selected && (
         <>
-          <div className="fixed inset-0 bg-black/60 z-40" onClick={() => setSelected(null)} />
-          <div className="fixed inset-x-0 bottom-0 sm:inset-auto sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 max-w-lg w-full bg-white rounded-t-3xl sm:rounded-3xl z-50 shadow-2xl">
-            <div className="p-6 border-b flex justify-between items-center">
-              <div>
-                <h2 className="text-xl font-bold">{selected.title}</h2>
-                <p className="text-sm text-gray-500">{selected.date}</p>
-              </div>
-              <button onClick={() => setSelected(null)}>
+          <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <div className="bg-white w-full max-w-lg rounded-t-3xl sm:rounded-2xl p-6 relative max-h-[90vh] overflow-y-auto">
+              <button onClick={() => setSelected(null)} className="absolute right-6 top-6 text-gray-400 hover:text-red-500">
                 <FaTimesIcon size={20} />
               </button>
-            </div>
-            <div className="p-6 text-center">
-              {renderBadge(selected.platform, 80)}
-              <p className="text-3xl font-bold mt-4">${selected.price.toFixed(2)}</p>
-              <div className="mt-6 text-left space-y-3">
-                <p><span className="text-gray-500">Status:</span> <strong>{selected.status}</strong></p>
-                <p><span className="text-gray-500">Order No:</span> {selected.orderNumber}</p>
-                <p><span className="text-gray-500">Buyer:</span> {getBuyerDisplayName(selected.buyerEmail)}</p>
-                <p><span className="text-gray-500">Description:</span> {selected.desc}</p>
+              <div className="text-center mb-6 pt-4 flex flex-col items-center justify-center">
+                <RenderIcon icon={selected.icon} size={70} />
+                <h2 className="text-xl font-bold mt-4 text-[#0A1A3A]">{selected.title}</h2>
+                <p className="text-3xl font-black text-[#33ac6f] mt-2">${selected.price.toFixed(2)}</p>
+              </div>
+              <div className="bg-gray-50 rounded-2xl p-4 space-y-3 border border-gray-100 mb-6 text-sm">
+                 <div className="flex justify-between border-b pb-2">
+                   <span className="text-gray-500">Order Number</span>
+                   <span className="font-bold">{selected.orderNumber}</span>
+                 </div>
+                 <div className="flex justify-between border-b pb-2">
+                   <span className="text-gray-500">Status</span>
+                   <span className={`font-bold ${selected.status === 'Completed' ? 'text-green-600' : 'text-amber-600'}`}>
+                     {selected.status}
+                   </span>
+                 </div>
+                 <div className="pt-2">
+                   <p className="text-gray-500 mb-1">Product Details</p>
+                   <div className="bg-white p-3 rounded-lg border font-mono text-xs break-all">
+                      {selected.desc || "No additional details provided."}
+                   </div>
+                 </div>
               </div>
               {selected.status !== "Cancelled" && (
-                <div className="mt-8 grid grid-cols-2 gap-4">
+                <div className="mt-8 grid grid-cols-2 gap-3">
                   <button
                     disabled={isUpdating}
                     onClick={() => updateOrderStatus(selected.id)}
-                    className="py-3 border border-red-200 text-red-600 rounded-lg hover:bg-red-50 flex items-center justify-center gap-2"
+                    className="py-3.5 px-4 border border-red-200 text-red-600 rounded-lg hover:bg-red-50 flex items-center justify-center gap-2 font-semibold text-base transition"
                   >
-                    <FaBanIcon /> Cancel Order
+                    <FaBanIcon size={20} /> Cancel
                   </button>
                   <button
                     onClick={() => {
                       setReportTargetOrder(selected);
                       setIsReportModalOpen(true);
                     }}
-                    className="py-3 bg-red-50 text-red-600 border border-red-200 rounded-lg hover:bg-red-100 flex items-center justify-center gap-2"
+                    className="py-3.5 px-4 bg-red-50 text-red-600 border border-red-200 rounded-lg hover:bg-red-100 flex items-center justify-center gap-2 font-semibold text-base transition"
                   >
-                    <FaFlagIcon /> Report Buyer
+                    <FaFlagIcon size={20} /> Report
                   </button>
                 </div>
               )}
-              <div className="mt-6 flex gap-3">
+              <div className="mt-4 grid grid-cols-2 gap-3">
                 {selected.status !== "Cancelled" && (
                   <button
                     onClick={() => {
                       setSelected(null);
                       handleOpenChat(selected);
                     }}
-                    className="flex-1 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2"
+                    className="py-3.5 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2 font-semibold text-base transition"
                   >
-                    <FaCommentsIcon /> Chat with Buyer
+                    <FaCommentsIcon size={20} /> Chat
                   </button>
                 )}
-                <button onClick={() => setSelected(null)} className="flex-1 py-3 border rounded-lg">
+                <button onClick={() => setSelected(null)} className="py-3.5 px-4 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 font-semibold text-base transition">
                   Close
                 </button>
               </div>
