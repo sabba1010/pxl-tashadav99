@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, AlertTriangle, Clock, CheckCircle2, Search, Loader2 } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 const Reports: React.FC = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   
   // --- State Management ---
   const [reports, setReports] = useState<any[]>([]); 
@@ -26,6 +28,27 @@ const Reports: React.FC = () => {
         const data = await response.json();
         let reportsData = Array.isArray(data) ? data : (data.reports || []);
 
+        console.log("All reports from backend:", reportsData);
+        console.log("Current user:", user);
+
+        // --- ROLE-BASED FILTERING ---
+        if (user?.role === 'seller') {
+          // Show reports: 1) filed by seller, 2) filed against seller (as sellerEmail)
+          reportsData = reportsData.filter((report: any) => 
+            report.reporterEmail?.toLowerCase() === user.email?.toLowerCase() ||
+            report.sellerEmail?.toLowerCase() === user.email?.toLowerCase()
+          );
+          console.log("Filtered reports for seller:", reportsData);
+        } else if (user?.role === 'buyer') {
+          // Show reports: 1) filed by buyer, 2) filed against buyer (as sellerEmail - when seller reports buyer)
+          reportsData = reportsData.filter((report: any) => 
+            report.reporterEmail?.toLowerCase() === user.email?.toLowerCase() ||
+            report.sellerEmail?.toLowerCase() === user.email?.toLowerCase()
+          );
+          console.log("Filtered reports for buyer:", reportsData);
+        }
+        // Admin can see all reports (no filter applied)
+
         // --- SORTING: Newest First ---
         reportsData.sort((a: any, b: any) => {
           const dateA = new Date(a.date || a.createdAt || 0).getTime();
@@ -41,8 +64,11 @@ const Reports: React.FC = () => {
         setIsLoading(false);
       }
     };
-    fetchReports();
-  }, []);
+    
+    if (user) {
+      fetchReports();
+    }
+  }, [user]);
 
   // --- Filter Logic ---
   const filteredReports = reports.filter(report => {
@@ -52,7 +78,7 @@ const Reports: React.FC = () => {
       (report.reason?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
       (report.orderId?.toString().toLowerCase() || '').includes(searchTerm.toLowerCase());
     
-    // 2. Status Logic (Mapping 'resolved' to 'solved' for UI consistency)
+    // 2. Status Logic (Mapping 'resolved' to 'solved' for UI consistency, case-insensitive)
     const reportStatus = report.status?.toLowerCase();
     const matchesStatus = filterStatus === 'all' || 
       (filterStatus === 'solved' && (reportStatus === 'solved' || reportStatus === 'resolved')) ||
@@ -96,7 +122,7 @@ const Reports: React.FC = () => {
             </button>
             <div>
               <h1 className="text-2xl font-black tracking-tighter uppercase italic">
-                All Buyer<span className="text-[#d4a643]">Reports</span>
+                {user?.role === 'seller' ? 'Seller' : user?.role === 'buyer' ? 'Buyer' : 'All'} <span className="text-[#d4a643]">Reports</span>
               </h1>
               <p className="text-xs text-gray-500 mt-1">
                 {isLoading ? 'Syncing...' : `Showing ${filteredReports.length} newest reports first`}
@@ -172,7 +198,7 @@ const Reports: React.FC = () => {
             <div className="grid grid-cols-1 gap-4">
               {paginatedReports.map((report) => {
                 const badge = getStatusBadge(report.status);
-                const displayStatus = report.status === 'resolved' ? 'solved' : report.status;
+                const displayStatus = report.status?.toLowerCase() === 'resolved' ? 'Solved' : report.status?.charAt(0).toUpperCase() + report.status?.slice(1).toLowerCase();
                 
                 return (
                   <div 
