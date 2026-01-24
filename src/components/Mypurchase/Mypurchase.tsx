@@ -5,15 +5,9 @@ import { useAuthHook } from "../../hook/useAuthHook";
 import { toast } from "sonner";
 
 import {
-  FaInstagram,
-  FaFacebookF,
-  FaTwitter,
-  FaWhatsapp,
-  FaTelegram,
   FaTimes,
   FaEye,
   FaComments,
-  FaGlobe,
   FaPaperPlane,
   FaClock,
   FaFlag,
@@ -86,14 +80,6 @@ interface PresenceResponse {
   online?: boolean;
 }
 
-const ICON_COLOR_MAP = new Map<any, string>([
-  [FaInstagram, "#E1306C"],
-  [FaFacebookF, "#1877F2"],
-  [FaTwitter, "#1DA1F2"],
-  [FaWhatsapp, "#25D366"],
-  [FaTelegram, "#0088cc"],
-]);
-
 const REPORT_REASONS = ["Scam or Fraud", "Item not received", "Wrong item delivered", "Abusive behavior", "Other"];
 
 const inferPlatform = (name: string): PlatformType => {
@@ -104,17 +90,6 @@ const inferPlatform = (name: string): PlatformType => {
   if (n.includes("whatsapp")) return "whatsapp";
   if (n.includes("telegram")) return "telegram";
   return "other";
-};
-
-const getPlatformIcon = (platform: PlatformType): any => {
-  switch (platform) {
-    case "instagram": return FaInstagram;
-    case "facebook": return FaFacebookF;
-    case "twitter": return FaTwitter;
-    case "whatsapp": return FaWhatsapp;
-    case "telegram": return FaTelegram;
-    default: return FaGlobe;
-  }
 };
 
 const formatDate = (d: string) => {
@@ -450,19 +425,6 @@ const MyPurchase: React.FC = () => {
     return filtered.slice(start, start + itemsPerPage);
   }, [filtered, currentPage]);
 
-  const renderBadge = (platform: PlatformType, size = 36) => {
-    const IconComponent = getPlatformIcon(platform) as any;
-    return (
-      <div style={{
-        width: size, height: size, borderRadius: 12, display: "inline-flex",
-        alignItems: "center", justifyContent: "center",
-        background: ICON_COLOR_MAP.get(getPlatformIcon(platform)) || "#33ac6f"
-      }}>
-        <IconComponent size={size * 0.6} color="#fff" />
-      </div>
-    );
-  };
-
   return (
     <div className="min-h-screen bg-[#F3EFEE] pt-16 pb-20 px-4 sm:px-6 font-sans">
       <div className="max-w-screen-xl mx-auto">
@@ -498,7 +460,7 @@ const MyPurchase: React.FC = () => {
                 >
                   {/* Left Side: Icon & Product Info */}
                   <div className="flex gap-4 items-start">
-                    {renderBadge(p.platform)}
+                    <RenderIcon icon={p.icon} size={40} />
                     <div>
                       <h3 className="font-bold text-[#0A1A3A] text-sm sm:text-base leading-tight">{p.title}</h3>
                       <div className="flex items-center gap-2 mt-1">
