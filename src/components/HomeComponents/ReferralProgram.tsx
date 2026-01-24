@@ -25,7 +25,7 @@ const ReferralProgram = () => {
         </motion.div>
 
         {/* Rewards Cards */}
-        <div className="grid md:grid-cols-2 gap-8 mb-16">
+        <div className="grid md:grid-cols-2 gap-8 mb-16 mt-[-40px]">
           {/* Refer Seller */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}

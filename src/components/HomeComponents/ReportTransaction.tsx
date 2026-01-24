@@ -41,7 +41,7 @@ const ReportTransaction: React.FC = () => {
         </div>
 
         {/* Steps Section */}
-        <div className="grid gap-4 md:gap-4 lg:gap-6 max-w-3xl mx-auto lg:grid-cols-2">
+        <div className="grid gap-4 md:gap-4 lg:gap-6 max-w-3xl mx-auto lg:grid-cols-2 mt-[-40px]">
           {steps.map((step, idx) => {
             const Icon = step.icon;
             return (

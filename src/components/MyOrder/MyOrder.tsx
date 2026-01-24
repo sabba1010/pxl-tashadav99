@@ -553,7 +553,7 @@ const MyOrder: React.FC = () => {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 min-w-0">
-                          <h3 className="font-bold text-[#0A1A3A] text-xs sm:text-base truncate" title={order.title}>{truncateTitle(order.title, 30)}</h3>
+                          <h3 className="font-bold text-[#0A1A3A] text-xs sm:text-base truncate" title={order.title}>{truncateTitle(order.title, 15)}</h3>
                           <span
                             className={`flex-shrink-0 px-1.5 sm:px-3 py-0 sm:py-1 rounded-full text-xs font-bold ${
                               order.status === "Pending"
