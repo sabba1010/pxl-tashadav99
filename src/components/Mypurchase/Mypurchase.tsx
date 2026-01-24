@@ -94,6 +94,11 @@ const ICON_COLOR_MAP = new Map<any, string>([
 
 const REPORT_REASONS = ["Scam or Fraud", "Item not received", "Wrong item delivered", "Abusive behavior", "Other"];
 
+const truncateTitle = (title: string, maxLength: number = 30): string => {
+  if (title.length <= maxLength) return title;
+  return title.slice(0, maxLength) + "...";
+};
+
 const inferPlatform = (name: string): PlatformType => {
   const n = name?.toLowerCase() || "";
   if (n.includes("instagram")) return "instagram";
@@ -482,7 +487,7 @@ const MyPurchase: React.FC = () => {
                   <div className="flex gap-4 items-start">
                     {renderBadge(p.platform)}
                     <div>
-                      <h3 className="font-bold text-[#0A1A3A] text-sm sm:text-base leading-tight">{p.title}</h3>
+                      <h3 className="font-bold text-[#0A1A3A] text-sm sm:text-base leading-tight truncate" title={p.title}>{truncateTitle(p.title, 30)}</h3>
                       <div className="flex items-center gap-2 mt-1">
                         <span className="text-xs text-gray-400 font-medium">Seller: {maskEmail(p.sellerEmail)}</span>
                         <span className={`w-2 h-2 rounded-full ${onlineSellersMap[p.sellerEmail] ? 'bg-green-500' : 'bg-gray-300'}`} />

@@ -95,6 +95,11 @@ interface PresenceResponse {
   online?: boolean;
 }
 
+const truncateTitle = (title: string, maxLength: number = 30): string => {
+  if (title.length <= maxLength) return title;
+  return title.slice(0, maxLength) + "...";
+};
+
 const inferPlatform = (name: string): PlatformType => {
   const n = name.toLowerCase();
   if (n.includes("instagram")) return "instagram";
@@ -504,7 +509,7 @@ const MyOrder: React.FC = () => {
                         {renderBadge(order.platform, 28)}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-bold text-[#0A1A3A] text-xs sm:text-base truncate">{order.title}</h3>
+                        <h3 className="font-bold text-[#0A1A3A] text-xs sm:text-base truncate" title={order.title}>{truncateTitle(order.title, 30)}</h3>
                         <p className="text-xs sm:text-sm text-gray-500 flex items-center gap-1 flex-wrap">
                           <span className="truncate">Buyer: {getBuyerDisplayName(order.buyerEmail)}</span>
                           <span className={`inline-block w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full flex-shrink-0 ${presenceMap[order.buyerEmail]?.online ? 'bg-green-500' : 'bg-gray-300'}`} />

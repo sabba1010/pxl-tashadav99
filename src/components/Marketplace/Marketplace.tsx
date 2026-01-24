@@ -300,6 +300,11 @@ const RenderIcon = ({
   );
 };
 
+const truncateTitle = (title: string, maxLength: number = 35): string => {
+  if (title.length <= maxLength) return title;
+  return title.slice(0, maxLength) + "...";
+};
+
 const Stars: React.FC<{ value: number }> = ({ value }) => (
   <div className="flex items-center gap-1">
     {Array.from({ length: 5 }).map((_, i) => (
@@ -461,8 +466,8 @@ const ItemCard: React.FC<{
 
         </div>
         <div className="flex-1 min-w-0">
-          <h3 className="font-bold text-sm text-[#0A1A3A] truncate">
-            {item.title}
+          <h3 className="font-bold text-sm text-[#0A1A3A] truncate" title={item.title}>
+            {truncateTitle(item.title, 35)}
           </h3>
           <p className="text-xs text-gray-600 mt-1 line-clamp-2">
             {item.desc || "Premium account • Instant delivery"}
@@ -537,8 +542,8 @@ const ProductModal: React.FC<{
           <div className="flex justify-center mb-4">
             <RenderIcon icon={item.icon} size={72} realTime={item.realTime} />
           </div>
-          <h2 className="text-2xl font-bold text-center text-[#0A1A3A] mb-1">
-            {item.title}
+          <h2 className="text-2xl font-bold text-center text-[#0A1A3A] mb-1 break-words" title={item.title}>
+            {truncateTitle(item.title, 50)}
           </h2>
           <div className="text-3xl font-extrabold text-center text-green-600 mb-6">
             ${item.price.toFixed(2)}
