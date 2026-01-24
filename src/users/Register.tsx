@@ -230,7 +230,7 @@ import { useAuth } from "../context/AuthContext";
 import countryCodes from "../assets/Country/CountryCodes.json";
 import countryFlags from "../assets/Country/country-flag.json";
 
-// --- TypeScript টাইপ ঠিক করার জন্য ইন্টারফেস ---
+// --- TypeScript টাইপ ---
 interface RegisterResponse {
   insertedId: string;
 }
@@ -250,20 +250,23 @@ interface CountryFlag {
 const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isCountryOpen, setIsCountryOpen] = useState(false);
+  const [manualRefCode, setManualRefCode] = useState(""); // ম্যানুয়াল ইনপুটের জন্য
+
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  // Merge country codes and flags data
+  // URL থেকে রেফার কোড ধরা
+  const urlParams = new URLSearchParams(window.location.search);
+  const refFromUrl = urlParams.get("ref");
+
+  // Merge country codes and flags
   const mergedCountries = useMemo(() => {
-    if (!countryCodes || !Array.isArray(countryCodes)) {
-      return [];
-    }
-    
+    if (!countryCodes || !Array.isArray(countryCodes)) return [];
     return (countryCodes as Country[])
       .filter((country) => country?.code && country?.dial_code && country?.name)
       .map((country) => {
         const flagData = (countryFlags as CountryFlag[]).find(
-          (flag) => flag?.code && flag.code.toLowerCase() === country.code.toLowerCase()
+          (flag) => flag?.code?.toLowerCase() === country.code.toLowerCase()
         );
         return {
           code: country.code,
@@ -284,51 +287,25 @@ const Register = () => {
     }
   );
 
-  // URL থেকে রেফার কোড ধরা
-  const urlParams = new URLSearchParams(window.location.search);
-  const refFromUrl = urlParams.get("ref");
-
-  if (user) {
-    navigate("/marketplace");
-  }
+  if (user) { navigate("/marketplace"); }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     toast.dismiss();
 
     const form = e.currentTarget;
-
     const name = (form.elements.namedItem("name") as HTMLInputElement).value.trim();
     const email = (form.elements.namedItem("email") as HTMLInputElement).value.trim();
     const phone = (form.elements.namedItem("phone") as HTMLInputElement).value.trim();
     const password = (form.elements.namedItem("password") as HTMLInputElement).value;
 
-    // ===== FIELD VALIDATION =====
     if (!name || !email || !phone || !password) {
       toast.error("❌ All fields are required!");
       return;
     }
 
-    // ===== PASSWORD VALIDATION =====
     if (password.length < 3 || password.length > 30) {
       toast.error("❌ Password must be between 3 and 30 characters.");
-      return;
-    }
-
-    // Only lowercase, numeric and symbols allowed (no uppercase, no spaces)
-    const passwordRegex = /^[a-z0-9!@#$%^&*()_+\-={};"':,.<>|?\\[\]]*$/;
-    if (!passwordRegex.test(password)) {
-      toast.error("❌ Password can only contain lowercase letters, numbers, and symbols (no uppercase or spaces allowed).");
-      return;
-    }
-
-    // Check if password contains at least one lowercase, one number, and one symbol
-    const hasLowercase = /[a-z]/.test(password);
-    const hasNumber = /[0-9]/.test(password);
-    const hasSymbol = /[!@#$%^&*()_+\-={};"':,.<>|?\\[\]]/.test(password);
-
-    if (!hasLowercase || !hasNumber || !hasSymbol) {
-      toast.error("❌ Password must contain lowercase letters, numbers, and symbols together!");
       return;
     }
 
@@ -340,16 +317,15 @@ const Register = () => {
       countryCode: selectedCountry.code,
       role: "buyer",
       accountCreationDate: new Date(),
-      // ইউজারের নিজস্ব ইউনিক রেফারাল কোড (প্রতিটি ইউজারের আলাদা হবে)
       referralCode: Math.random().toString(36).substring(2, 10).toUpperCase(),
-      referredBy: refFromUrl || null,
+      // URL এর কোড থাকলে সেটা নেবে, না থাকলে ম্যানুয়াল ইনপুট নেবে
+      referredBy: refFromUrl || manualRefCode || null, 
       balance: 0,
       salesCredit: 10,
       subscribedPlan: "free",
     };
 
     try {
-      // <RegisterResponse> দিয়ে TypeScript এরর ফিক্স করা হয়েছে
       const res = await axios.post<RegisterResponse>(
         "http://localhost:3200/api/user/register",
         formData
@@ -357,57 +333,31 @@ const Register = () => {
 
       if (res.data && res.data.insertedId) {
         toast.success("🎉 Account created successfully!");
-
         const savedUser = {
           _id: res.data.insertedId,
           name: formData.name,
           email: formData.email,
           role: formData.role,
         };
-
         Cookies.set("aAcctEmpire_2XLD", JSON.stringify(savedUser), {
           expires: 7,
           secure: true,
           sameSite: "strict",
         });
-
         form.reset();
         navigate("/marketplace");
         window.location.reload();
       }
     } catch (err: any) {
-      if (err.response?.status === 409) {
-        toast.error("❌ " + (err.response?.data?.message || "Username or email has been taken!"));
-      } else {
-        toast.error("Registration failed. Please try again.");
-      }
+      toast.error(err.response?.data?.message || "Registration failed.");
     }
   };
 
   return (
-    <div className="min-h-screen w-full bg-[#111827] relative overflow-hidden">
-      {/* Background Animation - আগের ডিজাইন অনুযায়ী */}
-      <div className="fixed inset-0 -z-10 opacity-10 pointer-events-none">
-        <svg className="w-full h-full" viewBox="0 0 1200 800">
-          <motion.line
-            x1="100" y1="200" x2="500" y2="600"
-            stroke="#f97316" strokeWidth="1.5"
-            initial={{ pathLength: 0 }}
-            animate={{ pathLength: 1, opacity: [0.3, 0.8, 0.3] }}
-            transition={{ duration: 8, repeat: Infinity }}
-          />
-          <motion.line
-            x1="800" y1="100" x2="300" y2="500"
-            stroke="#ec4899" strokeWidth="1.5"
-            initial={{ pathLength: 0 }}
-            animate={{ pathLength: 1, opacity: [0.3, 0.7, 0.3] }}
-            transition={{ duration: 10, repeat: Infinity, delay: 1 }}
-          />
-        </svg>
-      </div>
-
-      <div className="flex max-w-7xl mx-auto px-6 min-h-screen items-center justify-center">
+    <div className="min-h-screen w-full bg-[#111827] relative overflow-hidden font-sans">
+      <div className="flex max-w-7xl mx-auto px-6 min-h-screen items-center justify-center py-10">
         <div className="grid lg:grid-cols-2 gap-20 items-center w-full">
+          
           {/* Left Side Content */}
           <motion.div initial={{ opacity: 0, x: -80 }} animate={{ opacity: 1, x: 0 }} className="hidden lg:block">
             <div className="relative">
@@ -448,39 +398,29 @@ const Register = () => {
               </div>
 
               <div>
-                <label className="text-sm font-medium text-gray-300">Phone Number</label>
+                <label className="text-sm font-medium text-gray-300">WhatsApp Number</label>
                 <div className="relative mt-2 flex gap-2">
                   <button type="button" onClick={() => setIsCountryOpen(!isCountryOpen)} className="bg-gray-800 px-3 py-2 rounded-xl text-white flex items-center gap-2 text-sm">
-                    <img src={selectedCountry.flag} alt={selectedCountry.label} className="w-5 h-5 rounded-sm" /> 
+                    <img src={selectedCountry.flag} alt="flag" className="w-5 h-5 rounded-sm" /> 
                     <span>{selectedCountry.dial_code}</span>
                     <ChevronDown className="w-4 h-4" />
                   </button>
                   <div className="relative flex-1">
                     <Phone className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-orange-400" />
-                    <input type="tel" name="phone" required className="w-full pl-14 pr-5 py-4 bg-gray-900/60 border border-gray-700 rounded-xl text-white outline-none" />
+                    <input type="tel" name="phone" required className="w-full pl-14 pr-5 py-4 bg-gray-900/60 border border-gray-700 rounded-xl text-white outline-none focus:border-orange-500" />
                   </div>
                   {isCountryOpen && (
-                    <div className="absolute top-full left-0 w-96 mt-2 bg-gray-900 text-white border border-gray-700 rounded-xl z-50 max-h-72 overflow-y-auto shadow-lg">
+                    <div className="absolute top-full left-0 w-full mt-2 bg-gray-900 text-white border border-gray-700 rounded-xl z-50 max-h-60 overflow-y-auto shadow-2xl">
                       {mergedCountries.map((country) => (
-                        <div 
-                          key={country.code} 
-                          onClick={() => { 
-                            setSelectedCountry(country); 
-                            setIsCountryOpen(false); 
-                          }} 
-                          className="flex items-center gap-3 p-3 hover:bg-gray-800 cursor-pointer transition border-b border-gray-700 last:border-b-0"
-                        >
-                          <img src={country.flag} alt={country.label} className="w-6 h-4 rounded-sm" />
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium truncate">{country.label}</p>
-                          </div>
-                          <span className="text-xs text-gray-400">{country.dial_code}</span>
+                        <div key={country.code} onClick={() => { setSelectedCountry(country); setIsCountryOpen(false); }} className="flex items-center gap-3 p-3 hover:bg-gray-800 cursor-pointer border-b border-gray-700 last:border-0 transition">
+                          <img src={country.flag} alt="flag" className="w-6 h-4" />
+                          <span className="text-sm flex-1">{country.label}</span>
+                          <span className="text-xs text-gray-500">{country.dial_code}</span>
                         </div>
                       ))}
                     </div>
                   )}
                 </div>
-                <p className="mt-2 text-xs md:hidden text-orange-400 font-medium">Please provide your WhatsApp number</p>
               </div>
 
               <div>
@@ -492,13 +432,25 @@ const Register = () => {
                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
                 </div>
-                <p className="text-xs text-orange-400 mt-2">
-                  Minimum length of 3-30 characters<br />
-                  Must contain lowercase, numbers, and symbols together
-                </p>
               </div>
 
-              <button type="submit" className="w-full bg-orange-500 text-white font-bold text-lg py-5 rounded-2xl shadow-xl hover:bg-orange-600 transition-all mt-4">
+              {/* Referral Code Field - Lowercase allowed */}
+              <div>
+                <label className="text-sm font-medium text-gray-300">Referral Code (Optional)</label>
+                <div className="relative mt-2">
+                  <Sparkles className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-orange-400" />
+                  <input 
+                    type="text" 
+                    value={refFromUrl || manualRefCode} 
+                    onChange={(e) => setManualRefCode(e.target.value)} // .toUpperCase() সরানো হয়েছে
+                    disabled={!!refFromUrl} 
+                    placeholder="e.g. 5w4p6nr5"
+                    className="w-full pl-14 pr-5 py-4 bg-gray-900/60 border border-gray-700 rounded-xl text-white outline-none focus:border-orange-500 transition disabled:opacity-50 disabled:cursor-not-allowed font-mono" 
+                  />
+                </div>
+              </div>
+
+              <button type="submit" className="w-full bg-orange-500 text-white font-bold text-lg py-5 rounded-2xl shadow-xl hover:bg-orange-600 transition-all mt-4 active:scale-95">
                 Sign Up
               </button>
             </form>
