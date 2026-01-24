@@ -119,6 +119,28 @@ const maskEmail = (email: string) => {
   return email.split('@')[0];
 };
 
+const formatChatTime = (dateString?: string) => {
+  if (!dateString) return "Just now";
+  try {
+    const date = new Date(dateString);
+    // Check if date is valid
+    if (isNaN(date.getTime())) return "Just now";
+    
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+    
+    // Same day - show time only
+    if (diffInSeconds >= 0 && diffInSeconds < 86400) {
+      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+    }
+    
+    // Previous days - show date and time
+    return date.toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true });
+  } catch {
+    return "Just now";
+  }
+};
+
 const RenderIcon = ({ icon, size = 40 }: { icon?: string; size?: number }) => {
   if (icon && icon.startsWith("http")) {
     return (
@@ -709,24 +731,24 @@ const MyPurchase: React.FC = () => {
                           <img
                             src={m.imageUrl.startsWith('http') ? m.imageUrl : `${BASE_URL}${m.imageUrl}`}
                             alt="attachment"
-                            className="rounded-xl max-w-xs h-auto max-h-64 object-cover border border-black/5"
+                            className="rounded-lg w-64 h-64 sm:w-72 sm:h-72 object-cover border border-black/5"
                             onError={(e) => (e.currentTarget.style.display = 'none')}
                           />
                         </div>
                       )}
-                      <p className="leading-relaxed break-words">{m.message}</p>
+                      <p className="leading-relaxed break-words whitespace-pre-wrap">{m.message}</p>
                     </div>
                     <span className="text-[9px] text-gray-400 mt-1 px-1 font-bold">
-                      {new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      {formatChatTime(m.createdAt)}
                     </span>
                   </div>
                 </div>
               ))}
               {imagePreview && (
-                <div className="flex justify-end">
-                  <div className="max-w-[70%] p-1 bg-[#33ac6f] rounded-2xl rounded-tr-none shadow-md">
+                <div className="flex justify-end px-4 py-2">
+                  <div className="p-1 bg-[#33ac6f] rounded-2xl rounded-tr-none shadow-md">
                     <div className="relative">
-                      <img src={imagePreview} alt="preview" className="rounded-xl max-w-xs h-auto max-h-64 object-cover" />
+                      <img src={imagePreview} alt="preview" className="rounded-lg w-64 h-64 sm:w-72 sm:h-72 object-cover" />
                       <button
                         onClick={() => { setSelectedImage(null); setImagePreview(null); }}
                         className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center shadow-lg border-2 border-white"

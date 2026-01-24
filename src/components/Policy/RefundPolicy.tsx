@@ -11,12 +11,12 @@ const RefundPolicy = () => {
                     </span>
                 </h1>
 
-                <p className="text-center text-lg mb-16 max-w-4xl mx-auto opacity-90">
+                <p className="text-center text-lg mb-16 max-w-4xl mx-auto opacity-90 mt-[-20px]">
                     Your safety is our priority. All purchases on this platform are protected with escrow security, fair dispute resolution, and clear refund guidelines.
                 </p>
 
                 {/* Cards Grid - Responsive: 1 col mobile, 2 col md, 3 col lg */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-[-30px]">
                     {/* Buyer Protection Card */}
                     <div className="bg-[#00345f]/70 backdrop-blur-sm rounded-2xl p-8 shadow-2xl border border-[#33ac6f]/40 hover:scale-105 hover:shadow-[#33ac6f]/30 transition-all duration-300">
                         <h2 className="text-2xl md:text-3xl font-semibold mb-6 border-b-4 border-[#33ac6f] pb-3 inline-block">
@@ -115,8 +115,8 @@ const RefundPolicy = () => {
                     </div>
                 </div>
 
-                {/* Final Commitment Section */}
-                <div className="mt-20 text-center bg-gradient-to-r from-[#00345f]/80 to-[#002654]/90 rounded-3xl py-12 px-10 shadow-2xl border border-[#33ac6f]/30">
+                {/* Final Commitment Section */} 
+                <div className="mt-5 text-center bg-gradient-to-r from-[#00345f]/80 to-[#002654]/90 rounded-3xl py-12 px-10 shadow-2xl border border-[#33ac6f]/30 ">
                     <h3 className="text-3xl md:text-4xl font-bold mb-6 text-[#c49322]">
                         Our Commitment
                     </h3>

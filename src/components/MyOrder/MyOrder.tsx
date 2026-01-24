@@ -166,6 +166,28 @@ const timeAgo = (dateString?: string) => {
   return date.toLocaleDateString();
 };
 
+const formatChatTime = (dateString?: string) => {
+  if (!dateString) return "Just now";
+  try {
+    const date = new Date(dateString);
+    // Check if date is valid
+    if (isNaN(date.getTime())) return "Just now";
+    
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+    
+    // Same day - show time only
+    if (diffInSeconds >= 0 && diffInSeconds < 86400) {
+      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+    }
+    
+    // Previous days - show date and time
+    return date.toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true });
+  } catch {
+    return "Just now";
+  }
+};
+
 const renderBadge = (platform: PlatformType, size = 36) => {
   const IconComp = getPlatformIcon(platform);
   const brandHex = ICON_COLOR_MAP.get(IconComp);
@@ -738,15 +760,15 @@ const MyOrder: React.FC = () => {
                           <img
                             src={msg.imageUrl.startsWith('http') ? msg.imageUrl : `${BASE_URL}${msg.imageUrl}`}
                             alt="attachment"
-                            className="rounded-xl max-w-xs h-auto max-h-64 object-cover border border-black/5"
+                            className="rounded-lg w-64 h-64 sm:w-72 sm:h-72 object-cover border border-black/5"
                             onError={(e) => (e.currentTarget.style.display = 'none')}
                           />
                         </div>
                       )}
-                      <p className="leading-relaxed break-words">{msg.message}</p>
+                      <p className="leading-relaxed break-words whitespace-pre-wrap">{msg.message}</p>
                     </div>
                     <span className="text-[9px] text-gray-400 mt-1 px-1 font-bold">
-                      {msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Just now'}
+                      {formatChatTime(msg.createdAt)}
                     </span>
                   </div>
                 </div>
@@ -755,9 +777,9 @@ const MyOrder: React.FC = () => {
 
             {imagePreview && (
               <div className="flex justify-end px-4 py-2">
-                <div className="max-w-[70%] p-1 bg-[#33ac6f] rounded-2xl rounded-tr-none shadow-md">
+                <div className="p-1 bg-[#33ac6f] rounded-2xl rounded-tr-none shadow-md">
                   <div className="relative">
-                    <img src={imagePreview} alt="preview" className="rounded-xl max-w-xs h-auto max-h-64 object-cover" />
+                    <img src={imagePreview} alt="preview" className="rounded-lg w-64 h-64 sm:w-72 sm:h-72 object-cover" />
                     <button
                       onClick={() => { setSelectedImage(null); setImagePreview(null); }}
                       className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center shadow-lg border-2 border-white"
