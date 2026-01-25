@@ -315,8 +315,10 @@ const MyOrder: React.FC = () => {
         const mapped: Order[] = enrichedData.map((item) => ({
           id: item._id,
           platform: inferPlatform(item.productName),
-          title: item.productName,
-          desc: `Product ID: ${item.productId}`,
+          title: item.productName 
+  || "Product Deleted / Old Order",
+
+          desc: item.productId ? `Product ID: ${item.productId}` : "No product ID",
           buyerEmail: item.buyerEmail,
           price: item.price,
           date: formatDate(item.purchaseDate),
@@ -497,32 +499,41 @@ const MyOrder: React.FC = () => {
     return buyerNames[email] || email.split("@")[0];
   };
 
-  const handleReportSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!reportMessage.trim() || !reportTargetOrder || !sellerId) return;
-    setIsSubmittingReport(true);
-    try {
-      await axios.post(`${PURCHASE_API}/report/create`, {
-        orderId: reportTargetOrder.id,
-        productName: reportTargetOrder.title,
-        reporterEmail: sellerId,
-        sellerEmail: sellerId,
-        buyerEmail: reportTargetOrder.buyerEmail,
-        reason: reportReason,
-        message: reportMessage,
-        role: "seller"
-      });
-      toast.success("Report submitted successfully");
-      setIsReportModalOpen(false);
-      setReportMessage("");
-      setReportReason(SELLER_REPORT_REASONS[0]);
-      setReportTargetOrder(null);
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || "Failed to submit report");
-    } finally {
-      setIsSubmittingReport(false);
-    }
-  };
+ const handleReportSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+
+  if (!reportMessage.trim() || !reportTargetOrder || !sellerId) return;
+
+  console.log("Reporting order:", {
+    orderId: reportTargetOrder.id,
+    productName: reportTargetOrder.title || "Unknown Product",
+  });
+
+  setIsSubmittingReport(true);
+  try {
+    await axios.post(`${PURCHASE_API}/report/create`, {
+      orderId: reportTargetOrder.id,
+      productName: reportTargetOrder.title || "Unknown Product",
+      reporterEmail: sellerId,
+      sellerEmail: sellerId,
+      buyerEmail: reportTargetOrder.buyerEmail,
+      reason: reportReason,
+      message: reportMessage,
+      role: "seller",
+    });
+
+    toast.success("Report submitted successfully");
+    setIsReportModalOpen(false);
+    setReportMessage("");
+    setReportReason(SELLER_REPORT_REASONS[0]);
+    setReportTargetOrder(null);
+  } catch (err: any) {
+    toast.error(err.response?.data?.message || "Failed to submit report");
+  } finally {
+    setIsSubmittingReport(false);
+  }
+};
+
 
   const filteredOrders = useMemo(() => {
     if (activeTab === "All") return orders;
