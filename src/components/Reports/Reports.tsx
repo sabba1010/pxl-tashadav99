@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, AlertTriangle, Clock, CheckCircle2, Search, Loader2, ShieldAlert, Send } from 'lucide-react';
+import { ArrowLeft, AlertTriangle, Clock, CheckCircle2, Search, Loader2, ShieldAlert, Send, Package } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 const Reports: React.FC = () => {
@@ -13,7 +13,7 @@ const Reports: React.FC = () => {
   
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'solved' | 'refunded'>('all');
-  const [activeTab, setActiveTab] = useState<'received' | 'submitted'>('received'); // NEW: Tab State
+  const [activeTab, setActiveTab] = useState<'received' | 'submitted'>('received'); 
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
@@ -21,16 +21,17 @@ const Reports: React.FC = () => {
     const fetchReports = async () => {
       try {
         setIsLoading(true);
+        // আপনার ব্যাকএন্ড এন্ডপয়েন্ট অনুযায়ী সব রিপোর্ট আনা হচ্ছে
         const response = await fetch('http://localhost:3200/purchase/report/getall');
         if (!response.ok) throw new Error('Failed to fetch reports');
         
         const data = await response.json();
         let reportsData = Array.isArray(data) ? data : (data.reports || []);
 
-        // SORTING: Newest First
+        // SORTING: একদম নতুনগুলো সবার আগে দেখাবে
         reportsData.sort((a: any, b: any) => {
-          const dateA = new Date(a.date || a.createdAt || 0).getTime();
-          const dateB = new Date(b.date || b.createdAt || 0).getTime();
+          const dateA = new Date(a.createdAt || a.date || 0).getTime();
+          const dateB = new Date(b.createdAt || b.date || 0).getTime();
           return dateB - dateA;
         });
 
@@ -49,23 +50,24 @@ const Reports: React.FC = () => {
   const filteredReports = reports.filter(report => {
     const myEmail = user?.email?.toLowerCase();
     
-    // 1. Logic for Tabs (Ami khaisi vs Ami disi)
+    // ১. ট্যাব লজিক (কার বিরুদ্ধে রিপোর্ট আর কে করেছে)
     const isReceived = report.sellerEmail?.toLowerCase() === myEmail;
     const isSubmitted = report.reporterEmail?.toLowerCase() === myEmail;
 
     if (activeTab === 'received' && !isReceived) return false;
     if (activeTab === 'submitted' && !isSubmitted) return false;
 
-    // 2. Search Logic
+    // ২. সার্চ লজিক (ইমেইল, রিজন বা প্রোডাক্টের নাম দিয়ে খোঁজা)
     const matchesSearch = 
       (report.reporterEmail?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+      (report.productName?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
       (report.reason?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
       (report.orderId?.toString().toLowerCase() || '').includes(searchTerm.toLowerCase());
     
-    // 3. Status Logic
+    // ৩. স্ট্যাটাস ফিল্টার
     const reportStatus = report.status?.toLowerCase();
     const matchesStatus = filterStatus === 'all' || 
-      (filterStatus === 'solved' && (reportStatus === 'solved' || reportStatus === 'resolved')) ||
+      (filterStatus === 'solved' && (reportStatus === 'solved' || reportStatus === 'resolved' || reportStatus === 'sold')) ||
       reportStatus === filterStatus;
     
     return matchesSearch && matchesStatus;
@@ -77,6 +79,7 @@ const Reports: React.FC = () => {
     switch(status?.toLowerCase()) {
       case 'pending': return { bg: 'bg-yellow-50', text: 'text-yellow-700', border: 'border-yellow-200', icon: <Clock size={14} /> };
       case 'solved':
+      case 'sold':
       case 'resolved': return { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200', icon: <CheckCircle2 size={14} /> };
       case 'refunded': return { bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200', icon: <CheckCircle2 size={14} /> };
       default: return { bg: 'bg-gray-50', text: 'text-gray-700', border: 'border-gray-200', icon: <AlertTriangle size={14} /> };
@@ -124,14 +127,14 @@ const Reports: React.FC = () => {
           </button>
         </div>
 
-        {/* Search and Status Filter Bar */}
+        {/* Filter Bar */}
         <div className="bg-white rounded-[2rem] border border-gray-100 shadow-sm p-6 mb-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="relative col-span-1 md:col-span-2">
               <Search size={16} className="absolute left-4 top-3.5 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search..."
+                placeholder="Search by product name, ID or reason..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:border-[#d4a643]"
@@ -151,7 +154,7 @@ const Reports: React.FC = () => {
           </div>
         </div>
 
-        {/* Content Area */}
+        {/* Reports List */}
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-32"><Loader2 className="animate-spin text-[#d4a643] mb-4" size={48} /></div>
         ) : paginatedReports.length > 0 ? (
@@ -162,14 +165,28 @@ const Reports: React.FC = () => {
                 <div key={report._id} className={`p-6 rounded-[2rem] border-l-8 ${activeTab === 'received' ? 'border-red-500' : 'border-blue-500'} bg-white shadow-sm hover:shadow-xl transition-all`}>
                   <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
+                      <div className="flex items-center gap-3 mb-3">
                         <span className="text-[10px] font-black bg-gray-900 text-white px-3 py-1 rounded-full uppercase">Order #{report.orderId}</span>
-                        <span className="text-[10px] text-gray-400 font-bold uppercase">📅 {new Date(report.date || report.createdAt).toLocaleDateString()}</span>
+                        <span className="text-[10px] text-gray-400 font-bold uppercase">📅 {new Date(report.createdAt || report.date).toLocaleDateString()}</span>
                       </div>
-                      <h3 className="text-sm font-black text-gray-800 uppercase italic">{report.reason}</h3>
-                      {/* <p className="text-xs text-[#d4a643] font-bold mb-3">{activeTab === 'received' ? `Reported By: ${report.reporterEmail}` : `Target Seller: ${report.sellerEmail}`}</p> */}
+
+                      {/* ✅ PRODUCT NAME DISPLAY */}
+                      <div className="flex items-center gap-2 mb-1">
+                        <Package size={16} className="text-[#d4a643]" />
+                        <h2 className="text-lg font-black text-gray-900 uppercase tracking-tighter italic">
+                          {report.productName || "Unknown Product"}
+                        </h2>
+                      </div>
+
+                      <h3 className="text-sm font-black text-[#d4a643] uppercase italic mb-2">Reason: {report.reason}</h3>
+                      
+                      <p className="text-[10px] text-gray-400 font-bold uppercase mb-3">
+                        {activeTab === 'received' ? `Reported By: ${report.reporterEmail}` : `Target Seller: ${report.sellerEmail}`}
+                      </p>
+
                       <p className="text-sm text-gray-600 bg-gray-50 p-4 rounded-xl border border-gray-100 italic font-medium">"{report.message}"</p>
                     </div>
+                    
                     <div className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl text-xs font-black uppercase ${badge.text} ${badge.bg} border-2 ${badge.border}`}>
                       {badge.icon} {report.status}
                     </div>
@@ -190,7 +207,6 @@ const Reports: React.FC = () => {
 };
 
 export default Reports;
-
 // import React, { useState, useEffect } from 'react';
 // import { useNavigate } from 'react-router-dom';
 // import { ArrowLeft, AlertTriangle, Clock, CheckCircle2, Search, Loader2 } from 'lucide-react';

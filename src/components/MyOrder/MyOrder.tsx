@@ -504,6 +504,7 @@ const MyOrder: React.FC = () => {
     try {
       await axios.post(`${PURCHASE_API}/report/create`, {
         orderId: reportTargetOrder.id,
+        productName: reportTargetOrder.title,
         reporterEmail: sellerId,
         sellerEmail: sellerId,
         buyerEmail: reportTargetOrder.buyerEmail,
