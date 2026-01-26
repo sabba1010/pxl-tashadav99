@@ -312,47 +312,41 @@ export default function Navbar() {
                 )}
 
                 {open && (
-                  <div className="absolute right-0 mt-2 w-80 rounded-xl shadow-2xl border border-gray-200 overflow-hidden z-50" style={{ backgroundColor: CLEAN_WHITE }}>
-                    <div className="px-6 py-5 border-b" style={{ backgroundColor: "#F9FAFB" }}>
-                      <div className="font-bold text-lg" style={{ color: EMPIRE_BLUE }}>{loginUser?.name}</div>
-                      <div className="text-sm text-gray-500">{loginUser?.email}</div>
+                  <div className="fixed left-4 right-4 top-20 md:absolute md:right-0 md:top-full md:left-auto md:mt-2 md:w-80 rounded-xl shadow-2xl border border-gray-200 overflow-hidden z-50 max-h-[70vh] flex flex-col" style={{ backgroundColor: CLEAN_WHITE }}>
+                    <div className="px-4 md:px-6 py-3 md:py-5 border-b flex-shrink-0" style={{ backgroundColor: "#F9FAFB" }}>
+                      <div className="font-bold text-base md:text-lg" style={{ color: EMPIRE_BLUE }}>{loginUser?.name}</div>
+                      <div className="text-xs md:text-sm text-gray-500 truncate">{loginUser?.email}</div>
                     </div>
-                    <div className="px-6 py-4 border-b">
-                      <div className="rounded-xl p-5 text-white relative overflow-hidden" style={{ background: `linear-gradient(135deg, ${EMPIRE_BLUE} 0%, #1a3a6e 100%)` }}>
+                    <div className="px-4 md:px-6 py-3 md:py-4 border-b flex-shrink-0">
+                      <div className="rounded-xl p-3 md:p-5 text-white relative overflow-hidden" style={{ background: `linear-gradient(135deg, ${EMPIRE_BLUE} 0%, #1a3a6e 100%)` }}>
                         <div className="relative z-10">
-                          <div className="text-sm opacity-90">Your Balance</div>
-                          <div className="text-3xl font-bold mt-2">${loginUserData.data?.balance?.toFixed(2) || "0.00"}</div>
+                          <div className="text-xs md:text-sm opacity-90">Your Balance</div>
+                          <div className="text-2xl md:text-3xl font-bold mt-1 md:mt-2">${loginUserData.data?.balance?.toFixed(2) || "0.00"}</div>
                         </div>
-                        <NavLink to="/wallet" onClick={() => setOpen(false)} className="absolute bottom-4 right-4 text-sm underline opacity-90">View Wallet →</NavLink>
+                        <NavLink to="/wallet" onClick={() => setOpen(false)} className="absolute bottom-2 md:bottom-4 right-2 md:right-4 text-xs md:text-sm underline opacity-90">View Wallet →</NavLink>
                       </div>
                     </div>
-                    <div className="py-2">
+                    <div className="overflow-y-auto flex-1 py-2">
                       {loginUser?.role === "admin" && (
-                        <NavLink to="/admin-dashboard" onClick={() => setOpen(false)} className="flex items-center gap-4 px-6 py-3 hover:bg-gray-50 transition"><span className="text-sm font-medium">My Account Dashboard</span></NavLink>
+                        <NavLink to="/admin-dashboard" onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 md:px-6 py-2.5 md:py-3 hover:bg-gray-50 transition"><span className="text-xs md:text-sm font-medium">My Account Dashboard</span></NavLink>
                       )}
                       {loginUser?.role === "seller" && (
-                        <NavLink to="/seller-dashboard" onClick={() => setOpen(false)} className="flex items-center gap-4 px-6 py-3 hover:bg-gray-50 transition"><span className="text-sm font-medium">My Dashboard</span></NavLink>
+                        <NavLink to="/seller-dashboard" onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 md:px-6 py-2.5 md:py-3 hover:bg-gray-50 transition"><span className="text-xs md:text-sm font-medium">My Dashboard</span></NavLink>
                       )}
-                      <NavLink to="/referral" onClick={() => setOpen(false)} className="flex items-center gap-4 px-6 py-3 hover:bg-gray-50 transition"><span className="text-sm font-medium">Referral</span></NavLink>
-                      <NavLink to="/plans" onClick={() => setOpen(false)} className="flex items-center gap-4 px-6 py-3 hover:bg-gray-50 transition"><span className="text-sm font-medium">Plans</span></NavLink>
+                      <NavLink to="/referral" onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 md:px-6 py-2.5 md:py-3 hover:bg-gray-50 transition"><span className="text-xs md:text-sm font-medium">Referral</span></NavLink>
+                      <NavLink to="/plans" onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 md:px-6 py-2.5 md:py-3 hover:bg-gray-50 transition"><span className="text-xs md:text-sm font-medium">Plans</span></NavLink>
                       {(loginUser?.role === "seller" || loginUser?.role === "admin") && (
-                        <NavLink to="/seller-guide" onClick={() => setOpen(false)} className="flex items-center gap-4 px-6 py-3 hover:bg-gray-50 transition"><span className="text-sm font-medium">Seller Guide</span></NavLink>
+                        <NavLink to="/seller-guide" onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 md:px-6 py-2.5 md:py-3 hover:bg-gray-50 transition"><span className="text-xs md:text-sm font-medium">Seller Guide</span></NavLink>
                       )}
                       {(loginUser?.role === "buyer" || loginUser?.role === "admin") && (
-                        <NavLink to="/buyer-guide" onClick={() => setOpen(false)} className="flex items-center gap-4 px-6 py-3 hover:bg-gray-50 transition"><span className="text-sm font-medium">Buyer Guide</span></NavLink>
+                        <NavLink to="/buyer-guide" onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 md:px-6 py-2.5 md:py-3 hover:bg-gray-50 transition"><span className="text-xs md:text-sm font-medium">Buyer Guide</span></NavLink>
                       )}
-                      <NavLink to="/purchases" onClick={() => setOpen(false)} className="flex items-center gap-4 px-6 py-3 hover:bg-gray-50 transition"><span className="text-sm font-medium">My Purchases</span></NavLink>
-                      <NavLink to="/account-settings" onClick={() => setOpen(false)} className="flex items-center gap-4 px-6 py-3 hover:bg-gray-50 transition"><span className="text-sm font-medium">Account Settings</span></NavLink>
-                      <NavLink to="/reports" onClick={() => setOpen(false)} className="flex items-center gap-4 px-6 py-3 hover:bg-gray-50 transition"><span className="text-sm font-medium">Reports</span></NavLink>
-                      {/* {(loginUser?.role === "seller" || loginUser?.role === "admin") && (
-                        <NavLink to="/seller-guide" onClick={() => setOpen(false)} className="flex items-center gap-4 px-6 py-3 hover:bg-gray-50 transition"><span className="text-sm font-medium">Seller Guide</span></NavLink>
-                      )}
-                      {(loginUser?.role === "buyer" || loginUser?.role === "admin") && (
-                        <NavLink to="/buyer-guide" onClick={() => setOpen(false)} className="flex items-center gap-4 px-6 py-3 hover:bg-gray-50 transition"><span className="text-sm font-medium">Buyer Guide</span></NavLink>
-                      )} */}
-
-                      <button onClick={handelLougt} className="w-full flex items-center gap-4 px-6 py-3 hover:bg-yellow-50 transition text-left" style={{ color: "#B45309" }}><span className="text-sm font-medium">Log out</span></button>
+                      <NavLink to="/purchases" onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 md:px-6 py-2.5 md:py-3 hover:bg-gray-50 transition"><span className="text-xs md:text-sm font-medium">My Purchases</span></NavLink>
+                      <NavLink to="/account-settings" onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 md:px-6 py-2.5 md:py-3 hover:bg-gray-50 transition"><span className="text-xs md:text-sm font-medium">Account Settings</span></NavLink>
+                      <NavLink to="/reports" onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 md:px-6 py-2.5 md:py-3 hover:bg-gray-50 transition"><span className="text-xs md:text-sm font-medium">Reports</span></NavLink>
                     </div>
+
+                    <button onClick={handelLougt} className="w-full flex items-center gap-3 px-4 md:px-6 py-2.5 md:py-3 hover:bg-yellow-50 transition text-left flex-shrink-0 border-t" style={{ color: "#B45309" }}><span className="text-xs md:text-sm font-medium">Log out</span></button>
                   </div>
                 )}
               </div>
