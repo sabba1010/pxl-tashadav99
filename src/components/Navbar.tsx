@@ -344,6 +344,9 @@ export default function Navbar() {
                       <NavLink to="/purchases" onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 md:px-6 py-2.5 md:py-3 hover:bg-gray-50 transition"><span className="text-xs md:text-sm font-medium">My Purchases</span></NavLink>
                       <NavLink to="/account-settings" onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 md:px-6 py-2.5 md:py-3 hover:bg-gray-50 transition"><span className="text-xs md:text-sm font-medium">Account Settings</span></NavLink>
                       <NavLink to="/reports" onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 md:px-6 py-2.5 md:py-3 hover:bg-gray-50 transition"><span className="text-xs md:text-sm font-medium">Reports</span></NavLink>
+                      {(loginUser?.role === "seller") && (
+                        <NavLink to="/seller-chat" onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 md:px-6 py-2.5 md:py-3 hover:bg-gray-50 transition"><span className="text-xs md:text-sm font-medium">Seller Chat</span></NavLink>
+                      )}
                     </div>
 
                     <button onClick={handelLougt} className="w-full flex items-center gap-3 px-4 md:px-6 py-2.5 md:py-3 hover:bg-yellow-50 transition text-left flex-shrink-0 border-t" style={{ color: "#B45309" }}><span className="text-xs md:text-sm font-medium">Log out</span></button>
