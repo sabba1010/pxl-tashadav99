@@ -63,6 +63,7 @@ import MyReport from "../components/Seller/MyReport";
 import DashboardSeller from "../dashboard/buyer-dahboard/dashbordseller";
 import AccountSettings from "../components/Accountsettings";
 import SentNotification from "../dashboard/admin-dashboard/SentNotification";
+import SellerAdminChat from "../components/Seller/SellerAdminChat";
 
 
 const Routes = createBrowserRouter([
@@ -168,6 +169,15 @@ const Routes = createBrowserRouter([
           </SellerPrivateRoute>
         ),
       },
+       {
+        path: "/seller-chat",
+        element: (
+          <SellerPrivateRoute>
+           <SellerAdminChat />
+          </SellerPrivateRoute>
+        ),
+      },
+
       {
         path: "/buyer-guide",
         element: (

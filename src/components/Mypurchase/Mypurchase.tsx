@@ -123,18 +123,15 @@ const formatChatTime = (dateString?: string) => {
   if (!dateString) return "Just now";
   try {
     const date = new Date(dateString);
-    // Check if date is valid
     if (isNaN(date.getTime())) return "Just now";
     
     const now = new Date();
     const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
     
-    // Same day - show time only
     if (diffInSeconds >= 0 && diffInSeconds < 86400) {
       return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
     }
     
-    // Previous days - show date and time
     return date.toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true });
   } catch {
     return "Just now";
@@ -180,10 +177,14 @@ const MyPurchase: React.FC = () => {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [sellerOnline, setSellerOnline] = useState<boolean>(false);
   const [sellerLastSeen, setSellerLastSeen] = useState<string | null>(null);
+  const [partnerStatusText, setPartnerStatusText] = useState<string>("Offline");
   const [typedMessage, setTypedMessage] = useState("");
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null); // ← নতুন ref যোগ করা হয়েছে
 
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [reportTargetOrder, setReportTargetOrder] = useState<Purchase | null>(null);
@@ -198,13 +199,52 @@ const MyPurchase: React.FC = () => {
 
   const [onlineSellersMap, setOnlineSellersMap] = useState<Record<string, boolean>>({});
 
-  const itemsPerPage = 10;
+  const itemsPerPage = 10000000;
   const [currentPage, setCurrentPage] = useState(1);
   const [showAccountDetails, setShowAccountDetails] = useState(false);
 
   const BASE_URL = "http://localhost:3200";
   const PURCHASE_API = `${BASE_URL}/purchase`;
   const CHAT_API = `${BASE_URL}/chat`;
+
+  // Auto-resize textarea
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const resize = () => {
+      textarea.style.height = "auto";
+      textarea.style.height = `${textarea.scrollHeight}px`;
+    };
+
+    resize();
+    textarea.addEventListener("input", resize);
+    return () => textarea.removeEventListener("input", resize);
+  }, [typedMessage]);
+
+  // Auto focus textarea when chat opens
+  useEffect(() => {
+    if (isChatOpen && textareaRef.current) {
+      textareaRef.current.focus();
+    }
+  }, [isChatOpen]);
+
+  const getStatusDisplay = (online: boolean, lastSeen?: string | null): string => {
+    if (online) return "Online";
+    if (!lastSeen) return "Offline";
+
+    const date = new Date(lastSeen);
+    if (isNaN(date.getTime())) return "Offline";
+
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMin = Math.floor(diffMs / 60000);
+
+    if (diffMin < 1) return "Just now";
+    if (diffMin < 60) return `${diffMin}m ago`;
+    if (diffMin < 1440) return `${Math.floor(diffMin / 60)}h ago`;
+    return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  };
 
   const setPresence = async (status: 'online' | 'offline') => {
     if (!buyerId) return;
@@ -217,11 +257,16 @@ const MyPurchase: React.FC = () => {
     if (!activeChatSellerEmail) return;
     try {
       const res = await axios.get<PresenceResponse>(`${CHAT_API}/status/${activeChatSellerEmail}`);
-      setSellerOnline(Boolean(res.data?.online));
-      setSellerLastSeen(res.data.lastSeen || null);
+      const online = Boolean(res.data?.online);
+      const lastSeen = res.data.lastSeen;
+
+      setSellerOnline(online);
+      setSellerLastSeen(lastSeen || null);
+      setPartnerStatusText(getStatusDisplay(online, lastSeen));
     } catch (err) {
       setSellerOnline(false);
       setSellerLastSeen(null);
+      setPartnerStatusText("Offline");
     }
   };
 
@@ -366,11 +411,13 @@ const MyPurchase: React.FC = () => {
   };
 
   useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (isChatOpen) {
+    let timer: NodeJS.Timeout | null = null;
+
+    if (isChatOpen && activeChatSellerEmail) {
       setPresence('online');
       fetchChat();
       fetchSellerStatus();
+
       timer = setInterval(() => {
         fetchChat();
         fetchSellerStatus();
@@ -378,16 +425,19 @@ const MyPurchase: React.FC = () => {
     } else {
       setPresence('offline');
       setSellerOnline(false);
+      setPartnerStatusText("Offline");
     }
-    return () => clearInterval(timer);
+
+    return () => {
+      if (timer) clearInterval(timer);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isChatOpen, activeChatSellerEmail]);
+  }, [isChatOpen, activeChatSellerEmail, buyerId]);
 
   useEffect(() => {
     const container = messagesContainerRef.current;
     if (!container) return;
     
-    // Only auto-scroll if user hasn't scrolled up
     if (shouldAutoScrollRef.current) {
       container.scrollTo({ top: container.scrollHeight, behavior: "smooth" });
     }
@@ -408,6 +458,9 @@ const MyPurchase: React.FC = () => {
       setTypedMessage("");
       setSelectedImage(null);
       setImagePreview(null);
+      if (textareaRef.current) {
+        textareaRef.current.style.height = "auto"; // reset height after send
+      }
       fetchChat();
     } catch (err: any) {
       toast.error(err.response?.data?.error || "Failed to send message");
@@ -481,7 +534,6 @@ const MyPurchase: React.FC = () => {
                   key={p.id} 
                   className="bg-[#F8FAFB] border rounded-xl p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:shadow-md transition"
                 >
-                  {/* Left Side: Icon & Product Info */}
                   <div className="flex gap-4 items-start">
                     <RenderIcon icon={p.icon} size={40} />
                     <div>
@@ -510,7 +562,6 @@ const MyPurchase: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Right Side: Price, Date & Actions - FIXED ALIGNMENT */}
                   <div className="w-full sm:w-auto flex flex-col sm:items-end gap-3 mt-2 sm:mt-0 border-t sm:border-t-0 pt-3 sm:pt-0">
                     <div className="flex flex-row sm:flex-col justify-between items-center sm:items-end w-full sm:w-auto">
                       <p className="text-lg font-bold text-[#0A1A3A]">${p.price.toFixed(2)}</p>
@@ -688,11 +739,15 @@ const MyPurchase: React.FC = () => {
                   {maskEmail(activeChatSellerEmail || "").charAt(0).toUpperCase()}
                 </div>
                 <div>
-                  <h4 className="font-bold text-sm text-[#0A1A3A]">{maskEmail(activeChatSellerEmail || "")}</h4>
+                  <h4 className="font-bold text-sm text-[#0A1A3A]">
+                    {maskEmail(activeChatSellerEmail || "")}
+                  </h4>
                   <div className="flex items-center gap-1.5 text-[10px]">
                     <span className={`w-2 h-2 rounded-full ${sellerOnline ? "bg-green-500" : "bg-gray-300"}`} />
-                    <span className="text-gray-500 font-medium">
-                      {sellerOnline ? "Online" : (sellerLastSeen ? `Last seen ${timeAgo(sellerLastSeen)}` : "Offline")}
+                    <span 
+                      className={`font-medium ${sellerOnline ? "text-green-600" : "text-gray-500"}`}
+                    >
+                      {partnerStatusText}
                     </span>
                   </div>
                 </div>
@@ -728,11 +783,14 @@ const MyPurchase: React.FC = () => {
                       }`}
                     >
                       {m.imageUrl && (
-                        <div className="mb-2 -mx-1 -mt-1">
+                        <div 
+                          className="mb-2 cursor-pointer hover:opacity-90 transition"
+                          onClick={() => setPreviewImage(m.imageUrl!.startsWith('http') ? m.imageUrl! : `${BASE_URL}${m.imageUrl!}`)}
+                        >
                           <img
                             src={m.imageUrl.startsWith('http') ? m.imageUrl : `${BASE_URL}${m.imageUrl}`}
                             alt="attachment"
-                            className="rounded-lg w-64 h-64 sm:w-72 sm:h-72 object-cover border border-black/5"
+                            className="rounded-lg max-w-full max-h-[220px] object-contain border border-black/5 mx-auto"
                             onError={(e) => (e.currentTarget.style.display = 'none')}
                           />
                         </div>
@@ -749,7 +807,11 @@ const MyPurchase: React.FC = () => {
                 <div className="flex justify-end px-4 py-2">
                   <div className="p-1 bg-[#33ac6f] rounded-2xl rounded-tr-none shadow-md">
                     <div className="relative">
-                      <img src={imagePreview} alt="preview" className="rounded-lg w-64 h-64 sm:w-72 sm:h-72 object-cover" />
+                      <img 
+                        src={imagePreview} 
+                        alt="preview" 
+                        className="rounded-lg max-w-full max-h-[420px] object-contain"
+                      />
                       <button
                         onClick={() => { setSelectedImage(null); setImagePreview(null); }}
                         className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center shadow-lg border-2 border-white"
@@ -767,6 +829,7 @@ const MyPurchase: React.FC = () => {
               >
                 <input
                   type="file"
+                  accept="image/*"
                   hidden
                   ref={fileInputRef}
                   onChange={(e) => {
@@ -784,13 +847,24 @@ const MyPurchase: React.FC = () => {
                 >
                   <FaImageIcon size={18} />
                 </button>
-                <input
-                  type="text"
+
+                {/* চ্যাট ইনপুট - Shift + Enter = line break, Enter = send */}
+                <textarea
+                  ref={textareaRef}
                   value={typedMessage}
                   onChange={(e) => setTypedMessage(e.target.value)}
-                  placeholder="Type message..."
-                  className="flex-1 bg-transparent border-none outline-none text-sm px-2 py-1"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault(); // Enter চাপলে submit হবে
+                      sendChat(e as any);
+                    }
+                    // Shift + Enter চাপলে স্বাভাবিক লাইন ব্রেক হবে
+                  }}
+                  placeholder=""
+                  rows={1}
+                  className="flex-1 bg-transparent border-none outline-none text-sm px-2 py-1 resize-none max-h-32 overflow-y-auto"
                 />
+
                 <button
                   type="submit"
                   className="bg-[#33ac6f] text-white p-2 rounded-xl hover:opacity-90 transition active:scale-95"
@@ -800,6 +874,41 @@ const MyPurchase: React.FC = () => {
               </form>
             </div>
           </div>
+
+          {/* Full-screen Image Preview */}
+          {previewImage && (
+            <div 
+              className="fixed inset-0 z-[200] bg-black/90 flex items-center justify-center p-4"
+              onClick={() => setPreviewImage(null)}
+            >
+              <div className="relative max-w-4xl max-h-[90vh] w-full h-full flex flex-col items-center justify-center">
+                <img 
+                  src={previewImage} 
+                  alt="Full size preview" 
+                  className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
+                />
+                
+                <a
+                  href={previewImage}
+                  download={`chat-image-${Date.now()}.jpg`}
+                  className="absolute bottom-6 right-6 bg-white/90 hover:bg-white text-black px-5 py-3 rounded-xl shadow-xl flex items-center gap-2 text-sm font-medium transition"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4 4m0 0l-4-4m4 4V4" />
+                  </svg>
+                  Download
+                </a>
+
+                <button 
+                  className="absolute top-6 right-6 text-white bg-black/60 hover:bg-black/80 rounded-full p-3"
+                  onClick={() => setPreviewImage(null)}
+                >
+                  <FaTimesIcon size={24} />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
