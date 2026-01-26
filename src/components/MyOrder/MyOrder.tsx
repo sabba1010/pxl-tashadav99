@@ -238,7 +238,7 @@ const MyOrder: React.FC = () => {
   const [isSubmittingReport, setIsSubmittingReport] = useState(false);
 
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const itemsPerPage = 10000;
 
   // Auto-resize textarea
   useEffect(() => {
