@@ -15,7 +15,7 @@ import {
 import axios from "axios";
 import { CircularProgress, Typography, Box } from "@mui/material";
 
-const BASE_URL = "http://localhost:3200";
+const BASE_URL = "https://tasha-vps-backend-2.onrender.com";
 
 interface AdminMetrics {
   totalUsers: number;

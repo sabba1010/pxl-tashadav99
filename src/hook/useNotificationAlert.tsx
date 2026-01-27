@@ -54,7 +54,7 @@ export const useNotificationAlert = (options: NotificationAlertOptions = {}) => 
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const API_BASE =
-    (typeof process !== "undefined" && process.env.REACT_APP_API_URL?.replace(/\/$/, "")) ?? "http://localhost:3200";
+    (typeof process !== "undefined" && process.env.REACT_APP_API_URL?.replace(/\/$/, "")) ?? "https://tasha-vps-backend-2.onrender.com";
 
   const fetchNotifications = useCallback(async () => {
     try {

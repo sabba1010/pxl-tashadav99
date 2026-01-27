@@ -62,7 +62,7 @@ const RatingsReputationPanel: React.FC = () => {
     setLoading(true);
     try {
       // TypeScript error সমাধান করতে generic type <{ ratings: BackendRating[] }> যোগ করা হয়েছে
-      const response = await axios.get<{ ratings: BackendRating[] }>("http://localhost:3200/rating/all/all");
+      const response = await axios.get<{ ratings: BackendRating[] }>("https://tasha-vps-backend-2.onrender.com/rating/all/all");
       const allRatings = response.data.ratings || [];
 
       const groupedSellers: { [key: string]: Seller } = {};
@@ -139,7 +139,7 @@ const RatingsReputationPanel: React.FC = () => {
   const handleDeleteReview = async (ratingId: string) => {
     if (window.confirm("Are you sure you want to delete this review?")) {
       try {
-        await axios.delete(`http://localhost:3200/rating/delete/${ratingId}`);
+        await axios.delete(`https://tasha-vps-backend-2.onrender.com/rating/delete/${ratingId}`);
         fetchAdminData(); // লিস্ট রিফ্রেশ করা
         setSelectedSeller(null);
       } catch (err) {
