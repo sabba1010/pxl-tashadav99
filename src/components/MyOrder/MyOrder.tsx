@@ -169,6 +169,21 @@ const formatChatTime = (dateString?: string) => {
   }
 };
 
+const timeAgo = (dateString?: string) => {
+  if (!dateString) return "Just now";
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+  if (diffInSeconds < 60) return "Just now";
+  const diffInMinutes = Math.floor(diffInSeconds / 60);
+  if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  if (diffInHours < 24) return `${diffInHours}h ago`;
+  const diffInDays = Math.floor(diffInHours / 24);
+  if (diffInDays < 7) return `${diffInDays}d ago`;
+  return date.toLocaleDateString();
+};
+
 const renderBadge = (platform: PlatformType, size = 36) => {
   const IconComp = getPlatformIcon(platform);
   const brandHex = ICON_COLOR_MAP.get(IconComp);
@@ -273,6 +288,8 @@ const MyOrder: React.FC = () => {
   const itemsPerPage = 10000;
 
   const [onlineBuyersMap, setOnlineBuyersMap] = useState<Record<string, boolean>>({});
+  const [unreadOrders, setUnreadOrders] = useState<Record<string, boolean>>({});
+  const [lastMessageTimes, setLastMessageTimes] = useState<Record<string, string>>({});
 
   // Auto-resize textarea
   useEffect(() => {
@@ -373,6 +390,35 @@ const MyOrder: React.FC = () => {
     setOnlineBuyersMap(statusMap);
   };
 
+  const checkNotifications = async () => {
+    if (orders.length === 0 || !sellerId) return;
+    try {
+      const newUnreadStatus: Record<string, boolean> = { ...unreadOrders };
+      const newLastTimes: Record<string, string> = { ...lastMessageTimes };
+      for (const order of orders) {
+        const res = await axios.get<IMessage[]>(`${CHAT_API}/history/${sellerId}/${order.buyerEmail}`, {
+          params: { orderId: order.id }
+        });
+        const history = res.data;
+        const lastMsg = history[history.length - 1];
+        if (lastMsg) {
+          newUnreadStatus[order.id] = lastMsg.senderId !== sellerId;
+          newLastTimes[order.id] = lastMsg.createdAt!;
+        } else {
+          newUnreadStatus[order.id] = false;
+          delete newLastTimes[order.id];
+        }
+      }
+      setUnreadOrders(newUnreadStatus);
+      setLastMessageTimes(newLastTimes);
+    } catch (err) { console.error(err); }
+  };
+
+  useEffect(() => {
+    const interval = setInterval(checkNotifications, 10000);
+    return () => clearInterval(interval);
+  }, [orders, sellerId]);
+
   const fetchOrders = async () => {
     if (!sellerId) {
       setIsLoading(false);
@@ -434,6 +480,7 @@ const MyOrder: React.FC = () => {
         params: { orderId: activeChatOrderId },
       });
       setChatMessages(res.data);
+      setUnreadOrders(prev => ({ ...prev, [activeChatOrderId]: false }));
     } catch (err) {
       console.error("Chat fetch error:", err);
     }
@@ -598,6 +645,9 @@ const MyOrder: React.FC = () => {
                             {onlineBuyersMap[order.buyerEmail] ? "Online" : "Offline"}
                           </span>
                         </div>
+                        {lastMessageTimes[order.id] && (
+                          <p className="text-[10px] text-gray-500 mt-0.5">{timeAgo(lastMessageTimes[order.id])}</p>
+                        )}
                         <div className="flex flex-wrap items-center gap-2 mt-2">
                           <span className={`text-[10px] px-2 py-0.5 rounded-full border font-bold ${
                             order.status === 'Completed' ? 'bg-green-50 text-green-600 border-green-100' : 
@@ -641,7 +691,10 @@ const MyOrder: React.FC = () => {
                             onClick={() => handleOpenChat(order)} 
                             className="flex-1 sm:flex-none flex justify-center p-2 text-blue-600 border border-blue-100 rounded-lg bg-white hover:bg-blue-50 transition"
                           >
-                            <FaCommentsIcon size={14} />
+                            <div className="relative">
+                              <FaCommentsIcon size={14} />
+                              {unreadOrders[order.id] && <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border border-white" />}
+                            </div>
                           </button>
                         </div>
                       )}

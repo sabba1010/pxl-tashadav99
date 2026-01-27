@@ -198,6 +198,8 @@ const MyPurchase: React.FC = () => {
   const shouldAutoScrollRef = useRef(true);
 
   const [onlineSellersMap, setOnlineSellersMap] = useState<Record<string, boolean>>({});
+  const [unreadPurchases, setUnreadPurchases] = useState<Record<string, boolean>>({});
+  const [lastMessageTimes, setLastMessageTimes] = useState<Record<string, string>>({});
 
   const itemsPerPage = 10000000;
   const [currentPage, setCurrentPage] = useState(1);
@@ -283,6 +285,35 @@ const MyPurchase: React.FC = () => {
     }
     setOnlineSellersMap(statusMap);
   };
+
+  const checkNotifications = async () => {
+    if (purchases.length === 0 || !buyerId) return;
+    try {
+      const newUnreadStatus: Record<string, boolean> = { ...unreadPurchases };
+      const newLastTimes: Record<string, string> = { ...lastMessageTimes };
+      for (const p of purchases) {
+        const res = await axios.get<ChatMessage[]>(`${CHAT_API}/history/${buyerId}/${p.sellerEmail}`, {
+          params: { orderId: p.id }
+        });
+        const history = res.data;
+        const lastMsg = history[history.length - 1];
+        if (lastMsg) {
+          newUnreadStatus[p.id] = lastMsg.senderId !== buyerId;
+          newLastTimes[p.id] = lastMsg.createdAt;
+        } else {
+          newUnreadStatus[p.id] = false;
+          delete newLastTimes[p.id];
+        }
+      }
+      setUnreadPurchases(newUnreadStatus);
+      setLastMessageTimes(newLastTimes);
+    } catch (err) { console.error(err); }
+  };
+
+  useEffect(() => {
+    const interval = setInterval(checkNotifications, 10000);
+    return () => clearInterval(interval);
+  }, [purchases, buyerId]);
 
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 1000);
@@ -405,6 +436,7 @@ const MyPurchase: React.FC = () => {
         params: { orderId: activeChatOrderId }
       });
       setChatMessages(res.data);
+      setUnreadPurchases(prev => ({ ...prev, [activeChatOrderId!]: false }));
     } catch (err) {
       console.error("Fetch chat error:", err);
     }
@@ -545,6 +577,9 @@ const MyPurchase: React.FC = () => {
                           {onlineSellersMap[p.sellerEmail] ? "Online" : "Offline"}
                         </span>
                       </div>
+                      {lastMessageTimes[p.id] && (
+                        <p className="text-[10px] text-gray-500 mt-0.5">{timeAgo(lastMessageTimes[p.id])}</p>
+                      )}
                       <div className="flex flex-wrap items-center gap-2 mt-2">
                         <span className={`text-[10px] px-2 py-0.5 rounded-full border font-bold ${
                           p.status === 'Completed' ? 'bg-green-50 text-green-600 border-green-100' : 
@@ -588,7 +623,10 @@ const MyPurchase: React.FC = () => {
                           onClick={() => handleOpenChat(p)} 
                           className="flex-1 sm:flex-none flex justify-center p-2 text-blue-600 border border-blue-100 rounded-lg bg-white hover:bg-blue-50 transition" 
                         >
-                          <FaCommentsIcon size={14} />
+                          <div className="relative">
+                            <FaCommentsIcon size={14} />
+                            {unreadPurchases[p.id] && <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border border-white" />}
+                          </div>
                         </button>
                       </div>
                     )}
