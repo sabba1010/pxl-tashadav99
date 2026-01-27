@@ -22,6 +22,11 @@ const SellerAdminChat: React.FC = () => {
   const [messages, setMessages] = useState<IMessage[]>([]);
   const [typedMessage, setTypedMessage] = useState("");
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  
+  // নতুন মেসেজ চেক করার জন্য রেফারেন্স
+  const prevMessageCount = useRef(0);
+  // নোটিফিকেশন সাউন্ডের জন্য অডিও অবজেক্ট (একটি পাবলিক লিঙ্ক ব্যবহার করা হয়েছে)
+  const notificationSound = useRef(new Audio("https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3"));
 
   const fetchChat = async () => {
     if (!currentUserEmail) return;
@@ -29,10 +34,34 @@ const SellerAdminChat: React.FC = () => {
       const res = await axios.get<IMessage[]>(
         `${ADMIN_CHAT_API}/history/${currentUserEmail}`
       );
-      setMessages(res.data);
+      
+      const newMessages = res.data;
+
+      // অ্যালার্ট লজিক: যদি নতুন মেসেজ আসে এবং শেষ মেসেজটি আমার না হয় (অ্যাডমিনের হয়)
+      if (newMessages.length > prevMessageCount.current) {
+        const lastMsg = newMessages[newMessages.length - 1];
+        if (lastMsg.senderEmail !== currentUserEmail && prevMessageCount.current !== 0) {
+          playNotification();
+        }
+      }
+
+      setMessages(newMessages);
+      prevMessageCount.current = newMessages.length;
     } catch (err) {
       console.error("Chat fetch error:", err);
     }
+  };
+
+  const playNotification = () => {
+    // সাউন্ড প্লে করা
+    notificationSound.current.play().catch(err => console.log("Audio play blocked by browser"));
+    
+    // ব্রাউজার টাইটেল আপডেট করা (ট্যাব নোটিফিকেশন)
+    const oldTitle = document.title;
+    document.title = "🔔 New Message from Admin!";
+    setTimeout(() => {
+      document.title = oldTitle;
+    }, 3000);
   };
 
   useEffect(() => {
@@ -91,7 +120,7 @@ const SellerAdminChat: React.FC = () => {
                 className={`max-w-[75%] px-4 py-2 rounded-xl text-sm ${
                   isMe
                     ? "bg-green-500 text-white rounded-tr-none"
-                    : "bg-white border rounded-tl-none"
+                    : "bg-white border rounded-tl-none shadow-sm"
                 }`}
               >
                 {msg.message}
@@ -121,7 +150,6 @@ const SellerAdminChat: React.FC = () => {
           type="submit"
           className="bg-green-600 hover:bg-green-700 transition-colors text-white px-4 rounded-lg flex items-center justify-center"
         >
-          {/* This syntax bypasses the strict JSX type check */}
           {React.createElement(FaPaperPlane as any)}
         </button>
       </form>
