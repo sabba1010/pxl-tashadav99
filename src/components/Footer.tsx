@@ -128,7 +128,7 @@ export default function Footer({ theme = "dark" }: Props) {
               Get the latest deals and security tips straight to your inbox.
             </p>
             <div className="mt-5 flex flex-col sm:flex-row gap-3">
-              <input
+              {/* <input
                 type="email"
                 placeholder="Your email"
                 className={`px-4 py-3 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#33ac6f] focus:ring-offset-2 ${
@@ -136,9 +136,9 @@ export default function Footer({ theme = "dark" }: Props) {
                     ? "bg-gray-800 border border-gray-700 text-white placeholder-gray-500 focus:ring-offset-gray-950" 
                     : "bg-white border border-gray-300 text-gray-900 placeholder-gray-400"
                 }`}
-              />
+              /> */}
               <button className="px-6 py-3 bg-[#33ac6f] hover:bg-[#2a9a5f] text-white font-medium rounded-lg transition-colors duration-200 whitespace-nowrap">
-                Subscribe
+                Buy Now
               </button>
             </div>
           </div>

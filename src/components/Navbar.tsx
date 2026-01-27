@@ -402,7 +402,7 @@ export default function Navbar() {
                       <NavLink to="/account-settings" onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 md:px-6 py-2.5 md:py-3 hover:bg-gray-50 transition"><span className="text-xs md:text-sm font-medium">Account Settings</span></NavLink>
                       <NavLink to="/reports" onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 md:px-6 py-2.5 md:py-3 hover:bg-gray-50 transition"><span className="text-xs md:text-sm font-medium">Reports</span></NavLink>
                       {(loginUser?.role === "seller") && (
-                        <NavLink to="/seller-chat" onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 md:px-6 py-2.5 md:py-3 hover:bg-gray-50 transition"><span className="text-xs md:text-sm font-medium">Chat with Admin</span></NavLink>
+                        <NavLink to="/seller-chat" onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 md:px-6 py-2.5 md:py-3 hover:bg-gray-50 transition"><span className="text-xs md:text-sm font-medium">Admin Support</span></NavLink>
                       )}
                     </div>
 
