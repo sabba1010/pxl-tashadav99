@@ -217,7 +217,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const startHeartbeat = () => {
       // send immediately and then every 25s while visible
       sendOnline();
-      heartbeat = setInterval(sendOnline, 25000);
+      heartbeat = setInterval(sendOnline, 23200);
     };
 
     const stopHeartbeat = () => {

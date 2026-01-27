@@ -13,7 +13,7 @@ interface User {
   _id: string;
   name: string;
   email: string;
-  phone?: string; // ফোন নম্বর ফিল্ড যুক্ত করা হয়েছে
+  phone?: string;
   role: string;
   balance: number;
   status?: string;
@@ -74,17 +74,27 @@ const AllUsers: React.FC = () => {
     }
   };
 
-  /* ====================== FILTER & PAGINATION ====================== */
+  /* ====================== FILTER & SORT & PAGINATION ====================== */
   const filteredBuyers = useMemo(() => {
-    return users.filter((u: User) =>
+    const filtered = users.filter((u: User) =>
       u.role === "buyer" &&
-      (u.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      (u.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
        u.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-       u.phone?.includes(searchTerm)) // ফোন দিয়েও সার্চ করা যাবে
+       u.phone?.includes(searchTerm))
     );
+
+    // Sort: newest first (most recent accountCreationDate at the top)
+    return filtered.sort((a, b) => {
+      const dateA = a.accountCreationDate ? new Date(a.accountCreationDate).getTime() : 0;
+      const dateB = b.accountCreationDate ? new Date(b.accountCreationDate).getTime() : 0;
+      return dateB - dateA; // descending = newest → oldest
+    });
   }, [users, searchTerm]);
 
-  const paginated = filteredBuyers.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+  const paginated = filteredBuyers.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
 
   const handleOpenHistory = async (user: User) => {
     setSelectedUser(user);
@@ -95,11 +105,33 @@ const AllUsers: React.FC = () => {
         axios.get(`${BASE_URL}/purchase/getall`),
         axios.get(`${BASE_URL}/api/payments`)
       ]);
+
+      // Optional: also sort purchases & payments newest first
+      const sortedPurchases = (pur.data as any[])
+        .filter(p => p.buyerId === user._id || p.buyerEmail === user.email)
+        .sort((a, b) => {
+          const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return timeB - timeA;
+        });
+
+      const sortedPayments = (pay.data as any[])
+        .filter(p => p.customerEmail === user.email)
+        .sort((a, b) => {
+          const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return timeB - timeA;
+        });
+
       setHistoryData({
-        purchases: (pur.data as any[]).filter(p => p.buyerId === user._id || p.buyerEmail === user.email),
-        payments: (pay.data as any[]).filter(p => p.customerEmail === user.email)
+        purchases: sortedPurchases,
+        payments: sortedPayments
       });
-    } catch (err) { console.error(err); } finally { setIsHistoryLoading(false); }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsHistoryLoading(false);
+    }
   };
 
   return (
@@ -111,7 +143,9 @@ const AllUsers: React.FC = () => {
           <IconButton onClick={() => {
             queryClient.invalidateQueries({ queryKey: ["all-users"] });
             queryClient.invalidateQueries({ queryKey: ["all-purchases"] });
-          }} sx={{ bgcolor: "#F1F5F9" }}><Refresh /></IconButton>
+          }} sx={{ bgcolor: "#F1F5F9" }}>
+            <Refresh />
+          </IconButton>
           <InputBase
             placeholder="Search name, email or phone..."
             value={searchTerm}
@@ -149,7 +183,9 @@ const AllUsers: React.FC = () => {
                   <TableRow key={u._id} hover>
                     <TableCell>
                       <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                        <Avatar sx={{ width: 32, height: 32, fontSize: "14px", bgcolor: displayStatus === "ACTIVE" ? "#10B981" : "#EF4444" }}>{u.name[0]}</Avatar>
+                        <Avatar sx={{ width: 32, height: 32, fontSize: "14px", bgcolor: displayStatus === "ACTIVE" ? "#10B981" : "#EF4444" }}>
+                          {u.name[0]}
+                        </Avatar>
                         <Box>
                           <Typography variant="body2" fontWeight={600}>{u.name}</Typography>
                           <Typography variant="caption" color="textSecondary">{u.email}</Typography>
@@ -157,7 +193,6 @@ const AllUsers: React.FC = () => {
                       </Box>
                     </TableCell>
 
-                    {/* PHONE NUMBER COLUMN */}
                     <TableCell>
                       <Typography variant="body2" sx={{ color: "#475569", display: 'flex', alignItems: 'center', gap: 0.5 }}>
                         <Phone sx={{ fontSize: 14, color: "#64748b" }} /> {u.phone || "N/A"}
@@ -167,12 +202,12 @@ const AllUsers: React.FC = () => {
                     <TableCell>
                       <Box sx={{ display: 'flex', flexDirection: 'column' }}>
                         <Typography variant="body2" sx={{ color: "#475569", fontWeight: 600 }}>
-                          {u.accountCreationDate 
+                          {u.accountCreationDate
                             ? new Date(u.accountCreationDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
                             : "N/A"}
                         </Typography>
                         <Typography variant="caption" color="textSecondary">
-                          {u.accountCreationDate 
+                          {u.accountCreationDate
                             ? new Date(u.accountCreationDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                             : ""}
                         </Typography>
@@ -180,11 +215,11 @@ const AllUsers: React.FC = () => {
                     </TableCell>
 
                     <TableCell sx={{ fontWeight: 700 }}>${u.balance.toFixed(2)}</TableCell>
-                    
+
                     <TableCell>
-                      <Chip 
+                      <Chip
                         icon={<ShoppingBag style={{ fontSize: '14px' }} />}
-                        label={`${userPurchaseCount} Items`} 
+                        label={`${userPurchaseCount} Items`}
                         size="small"
                         variant="outlined"
                         sx={{ fontWeight: 700, borderColor: "#6366F1", color: "#6366F1" }}
@@ -203,8 +238,11 @@ const AllUsers: React.FC = () => {
                         </Select>
                       </FormControl>
                     </TableCell>
+
                     <TableCell>
-                      <IconButton onClick={() => handleOpenHistory(u)} color="primary"><Visibility /></IconButton>
+                      <IconButton onClick={() => handleOpenHistory(u)} color="primary">
+                        <Visibility />
+                      </IconButton>
                     </TableCell>
                   </TableRow>
                 );
@@ -212,12 +250,13 @@ const AllUsers: React.FC = () => {
             )}
           </TableBody>
         </Table>
+
         <Box sx={{ p: 2, display: "flex", justifyContent: "center" }}>
-          <Pagination 
-            count={Math.ceil(filteredBuyers.length / ITEMS_PER_PAGE)} 
-            page={currentPage} 
-            onChange={(_, v) => setCurrentPage(v)} 
-            color="primary" 
+          <Pagination
+            count={Math.ceil(filteredBuyers.length / ITEMS_PER_PAGE)}
+            page={currentPage}
+            onChange={(_, v) => setCurrentPage(v)}
+            color="primary"
           />
         </Box>
       </TableContainer>
@@ -227,17 +266,19 @@ const AllUsers: React.FC = () => {
         <Box sx={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", width: 850, bgcolor: "white", p: 4, borderRadius: 3, boxShadow: 24, outline: 'none' }}>
           <Box display="flex" justifyContent="space-between" mb={2}>
             <Box>
-                <Typography variant="h6" fontWeight={700}>Activity: {selectedUser?.name}</Typography>
-                <Typography variant="caption" sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'text.secondary' }}>
-                   <CalendarMonth sx={{ fontSize: 14 }} /> Joined: {selectedUser?.accountCreationDate ? new Date(selectedUser.accountCreationDate).toLocaleDateString() : 'N/A'}
-                </Typography>
+              <Typography variant="h6" fontWeight={700}>Activity: {selectedUser?.name}</Typography>
+              <Typography variant="caption" sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'text.secondary' }}>
+                <CalendarMonth sx={{ fontSize: 14 }} /> Joined: {selectedUser?.accountCreationDate ? new Date(selectedUser.accountCreationDate).toLocaleDateString() : 'N/A'}
+              </Typography>
             </Box>
             <IconButton onClick={() => setOpen(false)}><Close /></IconButton>
           </Box>
+
           <Tabs value={tabValue} onChange={(_, v) => setTabValue(v)} sx={{ mb: 2, borderBottom: 1, borderColor: "#E2E8F0" }}>
             <Tab label="Purchase History" sx={{ fontWeight: 700 }} />
             <Tab label="Deposit History" sx={{ fontWeight: 700 }} />
           </Tabs>
+
           {isHistoryLoading ? (
             <Box display="flex" justifyContent="center" p={4}><CircularProgress /></Box>
           ) : (
@@ -257,24 +298,29 @@ const AllUsers: React.FC = () => {
                       <TableCell>{item.productName || item.tx_ref || "N/A"}</TableCell>
                       <TableCell sx={{ fontWeight: 700 }}>${(item.price || item.amount || 0).toFixed(2)}</TableCell>
                       <TableCell>
-                        <Chip 
-                          label={item.status} 
-                          size="small" 
-                          color={item.status === 'completed' || item.status === 'successful' ? 'success' : item.status === 'canceled' ? 'error' : 'warning'} 
+                        <Chip
+                          label={item.status}
+                          size="small"
+                          color={item.status === 'completed' || item.status === 'successful' ? 'success' : item.status === 'canceled' ? 'error' : 'warning'}
                         />
                       </TableCell>
                       {tabValue === 0 && (
                         <TableCell align="center">
                           {item.status === "pending" ? (
                             <Box display="flex" gap={1} justifyContent="center">
-                              <IconButton size="small" color="success" onClick={() => handlePurchaseAction(item._id, "completed")}><CheckCircle /></IconButton>
-                              <IconButton size="small" color="error" onClick={() => handlePurchaseAction(item._id, "canceled")}><Cancel /></IconButton>
+                              <IconButton size="small" color="success" onClick={() => handlePurchaseAction(item._id, "completed")}>
+                                <CheckCircle />
+                              </IconButton>
+                              <IconButton size="small" color="error" onClick={() => handlePurchaseAction(item._id, "canceled")}>
+                                <Cancel />
+                              </IconButton>
                             </Box>
                           ) : <Typography variant="caption" color="textSecondary">No Actions</Typography>}
                         </TableCell>
                       )}
                     </TableRow>
                   ))}
+
                   {(tabValue === 0 ? historyData.purchases.length : historyData.payments.length) === 0 && (
                     <TableRow>
                       <TableCell colSpan={4} align="center" sx={{ py: 3 }}>No records found</TableCell>

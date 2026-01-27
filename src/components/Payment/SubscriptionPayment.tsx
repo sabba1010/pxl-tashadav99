@@ -134,7 +134,7 @@ const DeductAndCreditAction: React.FC<DeductAndCreditActionProps> = ({
       setTimeout(() => {
         setStatus("idle");
         setMessage("");
-      }, 5000);
+      }, 3200);
     }
   };
 

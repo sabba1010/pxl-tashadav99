@@ -131,7 +131,7 @@
 //             headers: {
 //               Authorization: `Bearer ${token}`,
 //             },
-//             timeout: 5000,
+//             timeout: 3200,
 //           }
 //         );
 

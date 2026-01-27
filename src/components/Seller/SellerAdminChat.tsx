@@ -10,7 +10,7 @@ import {
     AdminPanelSettings 
 } from '@mui/icons-material';
 
-// ১. টাইপ ডেফিনিশন (TypeScript Error সমাধান করার জন্য)
+// প্রপসগুলোকে অপশনাল (?) করে দেওয়া হয়েছে যেন Routes.tsx এ এরর না আসে
 interface ChatProps {
     sellerId?: string;
     adminId?: string;
@@ -31,11 +31,13 @@ interface StatusResponse {
     lastSeenText: string;
 }
 
-const API_BASE_URL = 'http://localhost:5000/api'; 
+const API_BASE_URL = 'http://localhost:3200/api'; 
 
 const SellerAdminChat: React.FC<ChatProps> = () => {
-    const { user } = useAuthHook() as any; 
+    const auth = useAuthHook() as any; 
+    const user = auth?.user;
 
+    // আপনার স্ক্রিনশট অনুযায়ী আইডিগুলো
     const sellerEmail = user?.email; 
     const adminEmail = "admin@gmail.com"; 
 
@@ -45,6 +47,7 @@ const SellerAdminChat: React.FC<ChatProps> = () => {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const scrollRef = useRef<HTMLDivElement | null>(null);
 
+    // চ্যাট হিস্টোরি ফেচ
     const fetchChatHistory = async () => {
         if (!sellerEmail) return;
         try {
@@ -55,10 +58,9 @@ const SellerAdminChat: React.FC<ChatProps> = () => {
         }
     };
 
-    // ২. ফিক্সড fetchStatus ফাংশন (Generic Type যুক্ত করা হয়েছে)
+    // অ্যাডমিন অনলাইন স্ট্যাটাস ফেচ
     const fetchStatus = async () => {
         try {
-            // এখানে <StatusResponse> বলে দেওয়া হয়েছে যেন TS ডাটা চিনতে পারে
             const res = await axios.get<StatusResponse>(`${API_BASE_URL}/status/${adminEmail}`);
             setOnlineStatus({ 
                 online: res.data.online, 
@@ -76,7 +78,7 @@ const SellerAdminChat: React.FC<ChatProps> = () => {
             const interval = setInterval(() => {
                 fetchChatHistory();
                 fetchStatus();
-            }, 5000); 
+            }, 3200); 
             return () => clearInterval(interval);
         }
     }, [sellerEmail]);
@@ -89,7 +91,7 @@ const SellerAdminChat: React.FC<ChatProps> = () => {
 
     const handleSend = async () => {
         if (!inputValue.trim() && !selectedFile) return;
-        if (!sellerEmail) return alert("You must be logged in!");
+        if (!sellerEmail) return alert("Please login as a seller first!");
 
         const formData = new FormData();
         formData.append('senderId', sellerEmail);
@@ -104,7 +106,7 @@ const SellerAdminChat: React.FC<ChatProps> = () => {
             fetchChatHistory();
         } catch (err) {
             console.error("Send error:", err);
-            alert("Could not connect to server.");
+            alert("Connection error! Is your backend server running on port 3200?");
         }
     };
 
@@ -114,7 +116,7 @@ const SellerAdminChat: React.FC<ChatProps> = () => {
             <Stack direction="row" p={2} spacing={2} alignItems="center" bgcolor="#fff" borderBottom="1px solid #E2E8F0">
                 <Avatar sx={{ bgcolor: '#6366F1' }}><AdminPanelSettings /></Avatar>
                 <Box sx={{ flex: 1 }}>
-                    <Typography variant="subtitle1" fontWeight={800}>Support Admin</Typography>
+                    <Typography variant="subtitle1" fontWeight={800}>Admin Support</Typography>
                     <Stack direction="row" alignItems="center" spacing={0.5}>
                         <FiberManualRecord sx={{ fontSize: 10, color: onlineStatus.online ? '#10B981' : '#CBD5E1' }} />
                         <Typography variant="caption" color="textSecondary">{onlineStatus.text}</Typography>
@@ -123,6 +125,7 @@ const SellerAdminChat: React.FC<ChatProps> = () => {
             </Stack>
 
             <Box ref={scrollRef} sx={{ flex: 1, p: 2, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 2 }}>
+                {!sellerEmail && <Typography color="error" textAlign="center">Seller not logged in!</Typography>}
                 {messages.map((msg, index) => {
                     const isFromAdmin = msg.senderId === adminEmail;
                     return (
@@ -135,9 +138,12 @@ const SellerAdminChat: React.FC<ChatProps> = () => {
                                         bgcolor: isFromAdmin ? '#fff' : '#6366F1',
                                         color: isFromAdmin ? '#1E293B' : '#fff'
                                     }}>
-                                        {msg.imageUrl && <Box component="img" src={`http://localhost:5000${msg.imageUrl}`} sx={{ width: '100%', borderRadius: 1, mb: 1 }} />}
-                                        <Typography variant="body2">{msg.message}</Typography>
+                                        {msg.imageUrl && <Box component="img" src={`http://localhost:3200${msg.imageUrl}`} sx={{ width: '100%', borderRadius: 1, mb: 1 }} />}
+                                        <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>{msg.message}</Typography>
                                     </Paper>
+                                    <Typography variant="caption" sx={{ mt: 0.5, display: 'block', textAlign: isFromAdmin ? 'left' : 'right', color: '#94A3B8' }}>
+                                        {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                    </Typography>
                                 </Box>
                             </Stack>
                         </Box>
@@ -159,7 +165,7 @@ const SellerAdminChat: React.FC<ChatProps> = () => {
                         onKeyPress={(e) => e.key === 'Enter' && handleSend()}
                         sx={{ bgcolor: '#F1F5F9', px: 2, py: 1, borderRadius: 10, fontSize: '14px' }}
                     />
-                    <IconButton onClick={handleSend} sx={{ bgcolor: '#6366F1', color: '#fff' }}><Send /></IconButton>
+                    <IconButton onClick={handleSend} sx={{ bgcolor: '#6366F1', color: '#fff' }}><Send sx={{ fontSize: 20 }} /></IconButton>
                 </Stack>
             </Box>
         </Box>
