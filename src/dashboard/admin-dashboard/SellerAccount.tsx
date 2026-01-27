@@ -8,7 +8,7 @@ import {
 } from "@mui/material";
 import { 
   Refresh, Close, Chat, TrendingUp, Send, CheckCircle, 
-  AccountBalanceWallet, Stars, ShoppingBag 
+  Stars, ShoppingBag 
 } from "@mui/icons-material";
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from "sonner";
@@ -28,6 +28,14 @@ interface Product {
   price: string;
   userEmail: string; 
   status: string;    
+}
+
+interface IPurchase {
+  _id: string;
+  productName: string;
+  sellerEmail: string;
+  amount: number;
+  status: string;
 }
 
 interface Seller {
@@ -55,12 +63,12 @@ const SellerAccount: React.FC = () => {
   const [unreadSellers, setUnreadSellers] = useState<Record<string, boolean>>({});
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
-  /* ====================== DATA FETCHING (NO CHANGES) ====================== */
+  /* ====================== DATA FETCHING ====================== */
   const { data: sellers = [], isLoading: isSellersLoading } = useQuery<Seller[]>({
     queryKey: ["all-sellers"],
     queryFn: async () => {
       const res = await axios.get(`${BASE_URL}/api/user/getall`);
-      const rawData = res.data as { users?: Seller[] } | Seller[];
+      const rawData = res.data as any;
       const sellerList = Array.isArray(rawData) ? rawData : (rawData.users || []);
       const filtered = sellerList.filter((u: any) => u.role?.toLowerCase() === "seller");
       return [...filtered].reverse(); 
@@ -75,17 +83,28 @@ const SellerAccount: React.FC = () => {
     }
   });
 
-  /* ====================== ANALYTICS LOGIC (NO CHANGES) ====================== */
-  const performanceData = useMemo(() => {
-    if (!selectedSeller) return { total: 0, approved: 0, rate: 0, products: [] as Product[] };
-    const myProducts = (allProducts as Product[]).filter(p => p.userEmail === selectedSeller.email);
-    const approved = myProducts.filter(p => p.status === "active").length;
-    const total = myProducts.length;
-    const rate = total > 0 ? (approved / total) * 100 : 0;
-    return { total, approved, rate, products: myProducts.slice(0, 5) };
-  }, [selectedSeller, allProducts]);
+  const { data: allPurchases = [] } = useQuery<IPurchase[]>({
+    queryKey: ["all-purchases-history"],
+    queryFn: async () => {
+      const res = await axios.get(`${BASE_URL}/purchase/getall`);
+      const data = res.data as any;
+      // Fixed the 'unknown' type error here
+      return Array.isArray(data) ? data : (data.purchases || []);
+    }
+  });
 
-  /* ====================== CHAT LOGIC (NO CHANGES) ====================== */
+  /* ====================== PERFORMANCE LOGIC ====================== */
+  const performanceData = useMemo(() => {
+    if (!selectedSeller) return { total: 0, approved: 0, rate: 0, soldCount: 0, products: [] as Product[] };
+    const myProducts = allProducts.filter(p => p.userEmail === selectedSeller.email);
+    const approved = myProducts.filter(p => p.status === "active").length;
+    const soldCount = allPurchases.filter(pur => pur.sellerEmail === selectedSeller.email).length;
+    const total = myProducts.length;
+    const rate = total > 0 ? (soldCount / total) * 100 : 0;
+    return { total, approved, rate, soldCount, products: myProducts.slice(0, 5) };
+  }, [selectedSeller, allProducts, allPurchases]);
+
+  /* ====================== CHAT LOGIC ====================== */
   const checkNotifications = async () => {
     if (sellers.length === 0) return;
     try {
@@ -155,7 +174,7 @@ const SellerAccount: React.FC = () => {
 
   return (
     <Box sx={{ p: 4, bgcolor: "#F8FAFC", minHeight: "100vh" }}>
-      {/* Table & Management UI (Same as before) */}
+      {/* Header */}
       <Paper elevation={0} sx={{ p: 3, mb: 4, borderRadius: 3, display: "flex", justifyContent: "space-between", alignItems: "center", border: "1px solid #E2E8F0" }}>
         <Typography variant="h5" fontWeight={800} color="#1E293B">Sellers Management</Typography>
         <Box sx={{ display: "flex", gap: 2 }}>
@@ -165,10 +184,14 @@ const SellerAccount: React.FC = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
             sx={{ border: "1px solid #CBD5E1", borderRadius: "10px", px: 2, width: 300, bgcolor: "white" }} 
           />
-          <IconButton onClick={() => queryClient.invalidateQueries({ queryKey: ["all-sellers"] })}><Refresh /></IconButton>
+          <IconButton onClick={() => {
+              queryClient.invalidateQueries({ queryKey: ["all-sellers"] });
+              queryClient.invalidateQueries({ queryKey: ["all-purchases-history"] });
+          }}><Refresh /></IconButton>
         </Box>
       </Paper>
 
+      {/* Sellers Table */}
       <TableContainer component={Paper} elevation={0} sx={{ borderRadius: 3, border: "1px solid #E2E8F0" }}>
         <Table>
           <TableHead sx={{ bgcolor: "#F1F5F9" }}>
@@ -215,93 +238,90 @@ const SellerAccount: React.FC = () => {
         </Table>
       </TableContainer>
 
-      {/* Analytics Modal (Code omitted for brevity, keep your original) */}
-
-      {/* --- SAME-TO-SAME PREMIUM CHAT UI MODAL --- */}
-      <Modal open={chatOpen} onClose={() => setChatOpen(false)} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <Box sx={{ 
-          bgcolor: "white", width: 450, height: 600, borderRadius: "24px", 
-          display: 'flex', flexDirection: 'column', overflow: 'hidden', 
-          outline: 'none', boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)" 
-        }}>
-          
-          {/* Header (Matching Seller Side) */}
-          <Box sx={{ 
-            p: 2.5, 
-            background: "linear-gradient(to right, #059669, #0d9488, #0891b2)", // emerald-600 via teal-600 to cyan-600
-            color: "white", 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: 2 
-          }}>
-            <Avatar sx={{ bgcolor: "rgba(255,255,255,0.15)", width: 44, height: 44, borderRadius: "16px", fontWeight: 700 }}>
-              {selectedSeller?.name[0].toUpperCase()}
-            </Avatar>
-            <Box sx={{ flex: 1 }}>
-              <Typography variant="subtitle1" fontWeight={700} sx={{ lineHeight: 1.2 }}>{selectedSeller?.name}</Typography>
-              <Typography variant="caption" sx={{ opacity: 0.85, fontWeight: 300 }}>Seller Support Channel • Active</Typography>
-            </Box>
-            <IconButton onClick={() => setChatOpen(false)} sx={{ color: "white" }}>
-              <Close />
-            </IconButton>
+      {/* --- PERFORMANCE ANALYTICS MODAL --- */}
+      <Modal open={analyticsOpen} onClose={() => setAnalyticsOpen(false)} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Box sx={{ bgcolor: "white", width: 550, p: 0, borderRadius: 5, outline: 'none', overflow: 'hidden' }}>
+          <Box sx={{ p: 3, bgcolor: "#0f172a", color: "white", display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Stack direction="row" spacing={1.5} alignItems="center">
+              <Stars sx={{ color: "#FBBF24" }} />
+              <Typography variant="h6" fontWeight={800}>Seller Performance</Typography>
+            </Stack>
+            <IconButton onClick={() => setAnalyticsOpen(false)} sx={{ color: "white", opacity: 0.6 }}><Close /></IconButton>
           </Box>
 
-          {/* Messages Area (Matching Seller Side) */}
-          <Box sx={{ 
-            flex: 1, p: 2.5, overflowY: 'auto', 
-            background: "linear-gradient(to bottom, #f9fafb, #f3f4f6)", 
-            display: 'flex', flexDirection: 'column', gap: 2.5 
-          }}>
+          <Box sx={{ p: 4 }}>
+            <Grid container spacing={2.5}>
+              <Grid size={{ xs: 12 }}>
+                <Box sx={{ 
+                  background: "linear-gradient(135deg, #059669 0%, #0d9488 100%)", 
+                  p: 3, borderRadius: 4, color: "white",
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+                }}>
+                  <Box>
+                    <Typography variant="caption" sx={{ opacity: 0.9, fontWeight: 700 }}>TOTAL PRODUCTS SOLD</Typography>
+                    <Typography variant="h2" fontWeight={900} sx={{ mt: 0.5 }}>{performanceData.soldCount}</Typography>
+                    <Chip label="Verified Sales" size="small" sx={{ bgcolor: "rgba(255, 255, 255, 0.2)", color: "white", mt: 1 }} />
+                  </Box>
+                  <ShoppingBag sx={{ fontSize: 70, opacity: 0.2 }} />
+                </Box>
+              </Grid>
+
+              <Grid size={{ xs: 6 }}>
+                <Paper variant="outlined" sx={{ p: 2, borderRadius: 3, textAlign: 'center' }}>
+                  <Typography variant="h5" fontWeight={900}>{performanceData.total}</Typography>
+                  <Typography variant="caption" color="textSecondary">ALL LISTINGS</Typography>
+                </Paper>
+              </Grid>
+              <Grid size={{ xs: 6 }}>
+                <Paper variant="outlined" sx={{ p: 2, borderRadius: 3, textAlign: 'center' }}>
+                  <Typography variant="h5" fontWeight={900} color="#059669">{performanceData.approved}</Typography>
+                  <Typography variant="caption" color="textSecondary">LIVE ACCOUNTS</Typography>
+                </Paper>
+              </Grid>
+
+              <Grid size={{ xs: 12 }}>
+                <Box sx={{ p: 3, bgcolor: "#f8fafc", borderRadius: 4, border: '1px solid #e2e8f0' }}>
+                  <Stack direction="row" justifyContent="space-between" sx={{ mb: 1.5 }}>
+                    <Typography variant="body2" fontWeight={800}>Sales Credit</Typography>
+                    <Typography variant="body2" fontWeight={900} color="#059669">${selectedSeller?.salesCredit || "0.00"}</Typography>
+                  </Stack>
+                  <LinearProgress 
+                    variant="determinate" 
+                    value={Math.min(performanceData.rate, 100)} 
+                    sx={{ height: 12, borderRadius: 6 }} 
+                  />
+                  <Typography variant="caption" sx={{ mt: 1, display: 'block' }}>Conversion: {performanceData.rate.toFixed(1)}%</Typography>
+                </Box>
+              </Grid>
+            </Grid>
+          </Box>
+        </Box>
+      </Modal>
+
+      {/* --- PREMIUM CHAT MODAL --- */}
+      <Modal open={chatOpen} onClose={() => setChatOpen(false)} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Box sx={{ bgcolor: "white", width: 450, height: 600, borderRadius: "24px", display: 'flex', flexDirection: 'column', overflow: 'hidden', outline: 'none' }}>
+          <Box sx={{ p: 2.5, background: "linear-gradient(to right, #059669, #0d9488, #0891b2)", color: "white", display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Avatar sx={{ bgcolor: "rgba(255,255,255,0.15)", width: 44, height: 44, borderRadius: "16px" }}>{selectedSeller?.name[0].toUpperCase()}</Avatar>
+            <Box sx={{ flex: 1 }}><Typography variant="subtitle1" fontWeight={700}>{selectedSeller?.name}</Typography></Box>
+            <IconButton onClick={() => setChatOpen(false)} sx={{ color: "white" }}><Close /></IconButton>
+          </Box>
+
+          <Box sx={{ flex: 1, p: 2.5, overflowY: 'auto', background: "#f3f4f6", display: 'flex', flexDirection: 'column', gap: 2.5 }}>
             <AnimatePresence initial={false}>
               {messages.map((msg, i) => {
                 const isAdmin = msg.senderEmail === "admin@gmail.com";
                 return (
-                  <motion.div
-                    key={msg._id || i}
-                    initial={{ opacity: 0, y: 15, scale: 0.98 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    transition={{ duration: 0.25 }}
-                    style={{ 
-                      display: 'flex', 
-                      justifyContent: isAdmin ? 'flex-end' : 'flex-start',
-                      alignItems: 'flex-start',
-                      gap: '10px'
-                    }}
-                  >
-                    {!isAdmin && (
-                      <Avatar sx={{ width: 32, height: 32, fontSize: '12px', bgcolor: "#0d9488", borderRadius: '10px' }}>S</Avatar>
-                    )}
-                    
+                  <motion.div key={msg._id || i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'flex', justifyContent: isAdmin ? 'flex-end' : 'flex-start' }}>
                     <Box sx={{ 
-                      maxWidth: '75%', 
-                      p: "12px 16px", 
-                      borderRadius: "18px",
-                      boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
-                      background: isAdmin 
-                        ? "linear-gradient(to bottom right, #059669, #0d9488)" 
-                        : "rgba(255, 255, 255, 0.9)",
-                      color: isAdmin ? "white" : "#111827",
-                      border: isAdmin ? "none" : "1px solid #e5e7eb",
+                      maxWidth: '75%', p: "12px 16px", borderRadius: "18px",
+                      background: isAdmin ? "linear-gradient(to right, #059669, #0d9488)" : "white",
+                      color: isAdmin ? "white" : "black",
                       borderBottomRightRadius: isAdmin ? "2px" : "18px",
                       borderBottomLeftRadius: isAdmin ? "18px" : "2px",
                     }}>
-                      <Typography sx={{ fontSize: "14.5px", lineHeight: 1.5, wordBreak: "break-word" }}>
-                        {msg.message}
-                      </Typography>
-                      <Typography sx={{ 
-                        fontSize: "10px", 
-                        mt: 0.8, 
-                        opacity: 0.7, 
-                        textAlign: 'right',
-                        fontWeight: 300
-                      }}>
-                        {formatMessageTime(msg.createdAt)}
-                      </Typography>
+                      <Typography variant="body2">{msg.message}</Typography>
                     </Box>
-
-                    {isAdmin && (
-                      <Avatar sx={{ width: 32, height: 32, fontSize: '12px', bgcolor: "#ecfdf5", color: "#065f46", borderRadius: '10px', fontWeight: 700 }}>You</Avatar>
-                    )}
                   </motion.div>
                 );
               })}
@@ -309,56 +329,9 @@ const SellerAccount: React.FC = () => {
             <div ref={messagesEndRef} />
           </Box>
 
-          {/* Input Area (Matching Seller Side) */}
-          <Box 
-            component="form" 
-            onSubmit={handleSendMessage} 
-            sx={{ 
-              p: 2.5, 
-              bgcolor: "white", 
-              borderTop: '1px solid rgba(0,0,0,0.05)', 
-              display: 'flex', 
-              gap: 1.5, 
-              alignItems: 'center' 
-            }}
-          >
-            <TextField 
-              fullWidth 
-              size="small" 
-              placeholder="Type your reply..." 
-              value={typedMessage} 
-              onChange={(e) => setTypedMessage(e.target.value)}
-              variant="standard"
-              InputProps={{ 
-                disableUnderline: true,
-                sx: { 
-                  bgcolor: "#f3f4f6", 
-                  p: "10px 20px", 
-                  borderRadius: "30px",
-                  fontSize: "14.5px"
-                } 
-              }}
-            />
-            <motion.button
-              type="submit"
-              disabled={!typedMessage.trim()}
-              whileTap={{ scale: 0.92 }}
-              style={{
-                border: 'none',
-                background: typedMessage.trim() ? "linear-gradient(to right, #059669, #0d9488)" : "#e5e7eb",
-                color: 'white',
-                width: '46px',
-                height: '46px',
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: typedMessage.trim() ? 'pointer' : 'default',
-                boxShadow: typedMessage.trim() ? "0 4px 10px rgba(13, 148, 136, 0.3)" : "none"
-              }}
-            >
-              <Send sx={{ fontSize: 20 }} />
-            </motion.button>
+          <Box component="form" onSubmit={handleSendMessage} sx={{ p: 2, bgcolor: "white", display: 'flex', gap: 1 }}>
+            <TextField fullWidth size="small" placeholder="Reply..." value={typedMessage} onChange={(e) => setTypedMessage(e.target.value)} />
+            <IconButton type="submit" sx={{ color: "#0d9488" }}><Send /></IconButton>
           </Box>
         </Box>
       </Modal>
