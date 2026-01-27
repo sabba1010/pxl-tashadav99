@@ -1,24 +1,24 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect, useRef } from "react";
 import {
   Box, Paper, InputBase, IconButton, Typography,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-  CircularProgress, Avatar, Modal, Select, MenuItem, FormControl, Chip, Stack, LinearProgress, Divider
+  CircularProgress, Avatar, Modal, Select, MenuItem, Stack, TextField, Badge
 } from "@mui/material";
 import { 
-  Refresh, Close, FiberManualRecord, WhatsApp, TrendingUp, 
-  AccountBalanceWallet, Stars
+  Refresh, Close, WhatsApp, TrendingUp, 
+  AccountBalanceWallet, Chat, Send
 } from "@mui/icons-material";
 import { toast } from "sonner";
 
 /* ====================== INTERFACES ====================== */
-interface Product {
-  userEmail?: string;
-  sellerEmail?: string; // Onek somoy backend e sellerEmail thake
-  status: string;
-  title: string;
-  price: number;
+interface IMessage {
+  _id?: string;
+  senderEmail: string;
+  receiverEmail: string;
+  message: string;
+  createdAt?: string;
 }
 
 interface Seller {
@@ -29,16 +29,25 @@ interface Seller {
   role: string;
   balance: number;
   status?: string;
-  subscribedPlan?: string;
 }
 
 const BASE_URL = "http://localhost:3200";
+const ADMIN_CHAT_API = `${BASE_URL}/api/adminchat`;
 
 const SellerAccount: React.FC = () => {
   const queryClient = useQueryClient();
+  
   const [searchTerm, setSearchTerm] = useState("");
-  const [open, setOpen] = useState(false);
+  const [analyticsOpen, setAnalyticsOpen] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
   const [selectedSeller, setSelectedSeller] = useState<Seller | null>(null);
+  const [typedMessage, setTypedMessage] = useState("");
+  const [messages, setMessages] = useState<IMessage[]>([]);
+  
+  // Notification State: কোন কোন সেলারের মেসেজ আনরিড আছে তা সেভ করবে
+  const [unreadSellers, setUnreadSellers] = useState<Record<string, boolean>>({});
+  
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   /* ====================== DATA FETCHING ====================== */
   const { data: sellers = [], isLoading: isSellersLoading } = useQuery<Seller[]>({
@@ -51,122 +60,144 @@ const SellerAccount: React.FC = () => {
     },
   });
 
-  const { data: allProducts = [], isLoading: isProductsLoading } = useQuery<Product[]>({
-    queryKey: ["all-products-global"],
-    queryFn: async () => {
-      const res = await axios.get(`${BASE_URL}/product/getall`);
-      return res.data as Product[];
-    },
-  });
-
-  /* ====================== ACTIONS ====================== */
-  const handleStatusChange = async (userId: string, newStatus: string) => {
+  /* ====================== NOTIFICATION LOGIC ====================== */
+  const checkNotifications = async () => {
+    if (sellers.length === 0) return;
     try {
-      await axios.patch(`${BASE_URL}/api/user/update-status/${userId}`, { status: newStatus.toLowerCase() });
-      toast.success("Status updated!");
-      queryClient.invalidateQueries({ queryKey: ["all-sellers"] });
-    } catch (err) { toast.error("Update failed"); }
-  };
+      const newUnreadStatus: Record<string, boolean> = { ...unreadSellers };
+      
+      for (const seller of sellers) {
+        const res = await axios.get<IMessage[]>(`${ADMIN_CHAT_API}/history/${seller.email}`);
+        const lastMsg = res.data[res.data.length - 1];
 
-  /* ====================== STATS LOGIC ====================== */
-  const getSellerStats = (email: string | undefined) => {
-    if (!email || !allProducts.length) {
-      return { total: 0, approved: 0, successRate: 0, ads: [] };
+        // যদি শেষ মেসেজটি এডমিনের না হয়ে সেলারের হয়, তবে নোটিফিকেশন দেখাবে
+        if (lastMsg && lastMsg.senderEmail !== "admin@gmail.com") {
+          newUnreadStatus[seller.email] = true;
+        }
+      }
+      setUnreadSellers(newUnreadStatus);
+    } catch (err) {
+      console.error("Notification check error:", err);
     }
-
-    // Checking both userEmail and sellerEmail for safety
-    const sellerAds = allProducts.filter(
-      (p) => (p.userEmail?.toLowerCase() === email.toLowerCase()) || 
-             (p.sellerEmail?.toLowerCase() === email.toLowerCase())
-    );
-
-    const approved = sellerAds.filter(
-      (p) => p.status?.toLowerCase() === 'active' || p.status?.toLowerCase() === 'approved'
-    ).length;
-
-    const successRate = sellerAds.length > 0 ? (approved / sellerAds.length) * 100 : 0;
-
-    return { total: sellerAds.length, approved, successRate, ads: sellerAds };
   };
 
+  // ৫ সেকেন্ড পর পর নোটিফিকেশন চেক করবে
+  useEffect(() => {
+    const interval = setInterval(checkNotifications, 5000);
+    return () => clearInterval(interval);
+  }, [sellers, unreadSellers]);
+
+  /* ====================== CHAT LOGIC ====================== */
+  const fetchChat = async () => {
+    if (!selectedSeller) return;
+    try {
+      const res = await axios.get<IMessage[]>(`${ADMIN_CHAT_API}/history/${selectedSeller.email}`);
+      setMessages(res.data);
+      
+      // চ্যাট বক্স ওপেন করলে নোটিফিকেশন রিমুভ করে দিবে
+      setUnreadSellers(prev => ({ ...prev, [selectedSeller.email]: false }));
+    } catch (err) {
+      console.error("Admin fetch chat error:", err);
+    }
+  };
+
+  useEffect(() => {
+    if (!chatOpen || !selectedSeller) return;
+    fetchChat();
+    const interval = setInterval(fetchChat, 3000);
+    return () => clearInterval(interval);
+  }, [chatOpen, selectedSeller]);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!typedMessage.trim() || !selectedSeller) return;
+
+    const msgText = typedMessage;
+    setTypedMessage("");
+
+    try {
+      await axios.post(`${ADMIN_CHAT_API}/send`, {
+        senderEmail: "admin@gmail.com",
+        receiverEmail: selectedSeller.email,
+        message: msgText,
+      });
+      fetchChat();
+    } catch (err) {
+      setTypedMessage(msgText);
+      toast.error("Failed to send message");
+    }
+  };
+
+  /* ====================== UI HELPERS ====================== */
   const filteredSellers = useMemo(() => {
-    return sellers.filter((s) =>
+    return sellers.filter((s) => 
       s.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-      s.phone?.includes(searchTerm)
+      s.email?.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [sellers, searchTerm]);
 
   return (
     <Box sx={{ p: 4, bgcolor: "#F8FAFC", minHeight: "100vh" }}>
-      {/* Header */}
+      {/* Search Header */}
       <Paper elevation={0} sx={{ p: 3, mb: 4, borderRadius: 3, display: "flex", justifyContent: "space-between", alignItems: "center", border: "1px solid #E2E8F0" }}>
-        <Typography variant="h5" fontWeight={800} color="#1E293B">Sellers Management</Typography>
+        <Typography variant="h5" fontWeight={800}>Sellers Management</Typography>
         <Box sx={{ display: "flex", gap: 2 }}>
           <InputBase
-            placeholder="Search seller name or phone..."
+            placeholder="Search seller..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            sx={{ border: "1px solid #CBD5E1", borderRadius: "10px", px: 2, width: 300, bgcolor: "white", height: 40 }}
+            sx={{ border: "1px solid #CBD5E1", borderRadius: "10px", px: 2, width: 250, bgcolor: "white" }}
           />
-          <IconButton onClick={() => queryClient.invalidateQueries({ queryKey: ["all-sellers"] })} sx={{ bgcolor: "#F1F5F9" }}><Refresh /></IconButton>
+          <IconButton onClick={() => queryClient.invalidateQueries({ queryKey: ["all-sellers"] })}><Refresh /></IconButton>
         </Box>
       </Paper>
 
-      {/* Main Table */}
+      {/* Sellers Table */}
       <TableContainer component={Paper} elevation={0} sx={{ borderRadius: 3, border: "1px solid #E2E8F0" }}>
         <Table>
           <TableHead sx={{ bgcolor: "#F8FAFC" }}>
             <TableRow>
-              <TableCell sx={{ fontWeight: 800, color: "#64748B", fontSize: "12px" }}>SELLER</TableCell>
-              <TableCell sx={{ fontWeight: 800, color: "#64748B", fontSize: "12px" }}>WHATSAPP</TableCell>
-              <TableCell sx={{ fontWeight: 800, color: "#64748B", fontSize: "12px" }}>PLAN</TableCell>
-              <TableCell sx={{ fontWeight: 800, color: "#64748B", fontSize: "12px" }}>BALANCE</TableCell>
-              <TableCell sx={{ fontWeight: 800, color: "#64748B", fontSize: "12px" }}>STATUS</TableCell>
-              <TableCell sx={{ fontWeight: 800, color: "#64748B", fontSize: "12px" }} align="center">PERFORMANCE</TableCell>
+              <TableCell sx={{ fontWeight: 800 }}>SELLER</TableCell>
+              <TableCell sx={{ fontWeight: 800 }}>BALANCE</TableCell>
+              <TableCell sx={{ fontWeight: 800 }} align="center">ACTIONS</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {(isSellersLoading || isProductsLoading) ? (
-              <TableRow><TableCell colSpan={6} align="center"><CircularProgress sx={{ m: 3 }} /></TableCell></TableRow>
+            {isSellersLoading ? (
+              <TableRow><TableCell colSpan={3} align="center"><CircularProgress sx={{ m: 3 }} /></TableCell></TableRow>
             ) : filteredSellers.map((s) => (
               <TableRow key={s._id} hover>
                 <TableCell>
                   <Stack direction="row" spacing={2} alignItems="center">
-                    <Avatar sx={{ width: 36, height: 36, bgcolor: "#6366F1", fontWeight: 700 }}>{s.name[0]}</Avatar>
+                    <Avatar sx={{ bgcolor: "#6366F1" }}>{s.name[0]}</Avatar>
                     <Box>
-                        <Typography variant="body2" fontWeight={700} color="#1E293B">{s.name}</Typography>
-                        <Typography variant="caption" color="textSecondary">{s.email}</Typography>
+                      <Typography variant="body2" fontWeight={700}>{s.name}</Typography>
+                      <Typography variant="caption" color="textSecondary">{s.email}</Typography>
                     </Box>
                   </Stack>
                 </TableCell>
-                <TableCell>
-                   <Stack direction="row" spacing={1} alignItems="center">
-                    <WhatsApp sx={{ color: "#25D366", fontSize: 16 }} />
-                    <Typography variant="body2" fontWeight={600}>{s.phone || "N/A"}</Typography>
-                  </Stack>
-                </TableCell>
-                <TableCell>
-                  <Chip label={s.subscribedPlan || "FREE"} size="small" sx={{ fontWeight: 800, fontSize: "10px", bgcolor: "#F1F5F9" }} />
-                </TableCell>
-                <TableCell>
-                  <Typography variant="body2" fontWeight={800} color="#10B981">${s.balance?.toFixed(2)}</Typography>
-                </TableCell>
-                <TableCell>
-                   <FormControl size="small">
-                    <Select
-                      value={s.status?.toUpperCase() || "ACTIVE"}
-                      onChange={(e) => handleStatusChange(s._id, e.target.value)}
-                      sx={{ borderRadius: "8px", fontWeight: 800, fontSize: "10px", height: 28, minWidth: 100, bgcolor: s.status === 'blocked' ? '#FEF2F2' : '#ECFDF5', color: s.status === 'blocked' ? '#EF4444' : '#10B981', "& fieldset": { border: 'none' } }}
-                    >
-                      <MenuItem value="ACTIVE">ACTIVE</MenuItem>
-                      <MenuItem value="BLOCKED">BLOCKED</MenuItem>
-                    </Select>
-                  </FormControl>
-                </TableCell>
+                <TableCell><Typography variant="body2" fontWeight={800} color="#10B981">${s.balance?.toFixed(2)}</Typography></TableCell>
                 <TableCell align="center">
-                  <IconButton onClick={() => { setSelectedSeller(s); setOpen(true); }} sx={{ color: "#3B82F6", bgcolor: "#EFF6FF", "&:hover": { bgcolor: "#DBEAFE" } }}>
-                    <TrendingUp sx={{ fontSize: 20 }} />
-                  </IconButton>
+                  <Stack direction="row" spacing={1} justifyContent="center">
+                    
+                    {/* CHAT BUTTON WITH NOTIFICATION BADGE */}
+                    <IconButton 
+                      onClick={() => { setSelectedSeller(s); setChatOpen(true); }} 
+                      sx={{ color: "#6366F1", bgcolor: "#EEF2FF" }}
+                    >
+                      <Badge color="error" variant="dot" invisible={!unreadSellers[s.email]}>
+                        <Chat sx={{ fontSize: 20 }} />
+                      </Badge>
+                    </IconButton>
+
+                    <IconButton onClick={() => { setSelectedSeller(s); setAnalyticsOpen(true); }} sx={{ color: "#3B82F6", bgcolor: "#EFF6FF" }}>
+                      <TrendingUp sx={{ fontSize: 20 }} />
+                    </IconButton>
+                  </Stack>
                 </TableCell>
               </TableRow>
             ))}
@@ -174,78 +205,36 @@ const SellerAccount: React.FC = () => {
         </Table>
       </TableContainer>
 
-      {/* Analytics Modal */}
-      <Modal open={open} onClose={() => setOpen(false)} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <Box sx={{ bgcolor: "white", width: 550, borderRadius: 4, boxShadow: 24, outline: 'none', overflow: 'hidden' }}>
-          <Box sx={{ p: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9' }}>
-            <Typography variant="h6" fontWeight={800}>Performance Analytics</Typography>
-            <IconButton onClick={() => setOpen(false)}><Close /></IconButton>
+      {/* --- CHAT MODAL --- */}
+      <Modal open={chatOpen} onClose={() => setChatOpen(false)} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Box sx={{ bgcolor: "white", width: 450, height: 600, borderRadius: 4, display: 'flex', flexDirection: 'column', overflow: 'hidden', outline: 'none' }}>
+          <Box sx={{ p: 2, bgcolor: "#1E293B", color: "white", display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Typography variant="subtitle1" fontWeight={700}>Chatting with {selectedSeller?.name}</Typography>
+            <IconButton onClick={() => setChatOpen(false)} sx={{ color: "white" }}><Close /></IconButton>
           </Box>
           
-          <Box sx={{ p: 4 }}>
-            {selectedSeller && (() => {
-              const stats = getSellerStats(selectedSeller.email);
+          <Box sx={{ flex: 1, p: 2, overflowY: 'auto', bgcolor: "#F8FAFC", display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+            {messages.map((msg, i) => {
+              const isAdmin = msg.senderEmail === "admin@gmail.com";
               return (
-                <>
-                  <Stack direction="row" spacing={3} mb={4}>
-                    {/* Dark Wallet Card */}
-                    <Box sx={{ 
-                      bgcolor: "#1E293B", color: "white", p: 3, borderRadius: 4, flex: 1.2,
-                      backgroundImage: 'linear-gradient(135deg, #1E293B 0%, #334155 100%)',
-                      position: 'relative', overflow: 'hidden'
-                    }}>
-                      <Typography variant="caption" sx={{ opacity: 0.8, fontWeight: 700 }}>STORE WALLET</Typography>
-                      <Typography variant="h3" fontWeight={900} sx={{ my: 1 }}>${selectedSeller.balance?.toFixed(1) || "0.0"}</Typography>
-                      <Chip label="Withdrawable" size="small" sx={{ bgcolor: "#10B981", color: "white", fontWeight: 800, fontSize: "10px", height: 20 }} />
-                      <AccountBalanceWallet sx={{ position: 'absolute', right: -10, bottom: -10, fontSize: 80, opacity: 0.1 }} />
-                    </Box>
-
-                    {/* Stats Boxes */}
-                    <Stack spacing={2} sx={{ flex: 1 }}>
-                      <Paper variant="outlined" sx={{ p: 2, textAlign: 'center', borderRadius: 3, border: '1px solid #E2E8F0' }}>
-                        <Typography variant="h5" fontWeight={900} color="#3B82F6">{stats.total}</Typography>
-                        <Typography variant="caption" fontWeight={800} color="#64748B">TOTAL ADS</Typography>
-                      </Paper>
-                      <Paper variant="outlined" sx={{ p: 2, textAlign: 'center', borderRadius: 3, border: '1px solid #E2E8F0' }}>
-                        <Typography variant="h5" fontWeight={900} color="#10B981">{stats.approved}</Typography>
-                        <Typography variant="caption" fontWeight={800} color="#64748B">APPROVED</Typography>
-                      </Paper>
-                    </Stack>
-                  </Stack>
-
-                  {/* Success Rate Bar */}
-                  <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 4, mb: 4, bgcolor: "#FBFDFF", border: '1px solid #F1F5F9' }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1, alignItems: 'center' }}>
-                      <Stack direction="row" spacing={1} alignItems="center">
-                         <Stars sx={{ fontSize: 18, color: "#3B82F6" }} />
-                         <Typography variant="body2" fontWeight={800}>Store Success Rate</Typography>
-                      </Stack>
-                      <Typography variant="body2" fontWeight={900} color="#3B82F6">{stats.successRate.toFixed(1)}%</Typography>
-                    </Box>
-                    <LinearProgress 
-                      variant="determinate" 
-                      value={stats.successRate} 
-                      sx={{ height: 8, borderRadius: 5, bgcolor: "#E2E8F0", "& .MuiLinearProgress-bar": { borderRadius: 5 } }} 
-                    />
-                  </Paper>
-
-                  <Divider sx={{ mb: 2 }} />
-
-                  {/* List of Products Preview */}
-                  <Typography variant="caption" fontWeight={800} color="#64748B" sx={{ mb: 1, display: 'block' }}>RECENT LISTINGS</Typography>
-                  <Box sx={{ maxHeight: 150, overflow: 'auto' }}>
-                    {stats.ads.length > 0 ? stats.ads.slice(0, 5).map((ad, i) => (
-                      <Box key={i} sx={{ display: 'flex', justifyContent: 'space-between', p: 1, borderBottom: '1px solid #F8FAFC' }}>
-                        <Typography variant="body2" fontWeight={600} fontSize="13px">{ad.title}</Typography>
-                        <Typography variant="body2" fontWeight={800} color="#10B981" fontSize="13px">${ad.price}</Typography>
-                      </Box>
-                    )) : (
-                      <Typography variant="body2" color="textSecondary" align="center" sx={{ py: 2 }}>No products found</Typography>
-                    )}
+                <Box key={i} sx={{ alignSelf: isAdmin ? 'flex-end' : 'flex-start', maxWidth: '80%' }}>
+                  <Box sx={{ 
+                    p: 1.5, borderRadius: 3, 
+                    bgcolor: isAdmin ? "#6366F1" : "white", 
+                    color: isAdmin ? "white" : "#1E293B",
+                    border: isAdmin ? 'none' : '1px solid #E2E8F0',
+                  }}>
+                    <Typography variant="body2">{msg.message}</Typography>
                   </Box>
-                </>
+                </Box>
               );
-            })()}
+            })}
+            <div ref={messagesEndRef} />
+          </Box>
+
+          <Box component="form" onSubmit={handleSendMessage} sx={{ p: 2, borderTop: '1px solid #E2E8F0', display: 'flex', gap: 1 }}>
+            <TextField fullWidth size="small" placeholder="Type reply..." value={typedMessage} onChange={(e) => setTypedMessage(e.target.value)} />
+            <IconButton type="submit" sx={{ bgcolor: "#6366F1", color: "white" }}><Send fontSize="small" /></IconButton>
           </Box>
         </Box>
       </Modal>
