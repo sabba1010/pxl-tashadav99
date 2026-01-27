@@ -1,7 +1,10 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import axios from "axios";
 import { useAuthHook } from "../../hook/useAuthHook";
 import { FaPaperPlane } from "react-icons/fa";
+
+// TypeScript ke ignore korar jonno ekhane icon ke 'any' type-e assign kora holo
+const SendIcon = FaPaperPlane as any;
 
 interface IMessage {
   _id?: string;
@@ -16,19 +19,27 @@ const ADMIN_CHAT_API = `${BASE_URL}/api/adminchat`;
 
 const SellerAdminChat: React.FC = () => {
   const loginUserData = useAuthHook();
-  const currentUserEmail =
+  const currentUserEmail: string | null =
     loginUserData?.data?.email || localStorage.getItem("userEmail");
 
   const [messages, setMessages] = useState<IMessage[]>([]);
-  const [typedMessage, setTypedMessage] = useState("");
-  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const [typedMessage, setTypedMessage] = useState<string>("");
   
-  // নতুন মেসেজ চেক করার জন্য রেফারেন্স
-  const prevMessageCount = useRef(0);
-  // নোটিফিকেশন সাউন্ডের জন্য অডিও অবজেক্ট (একটি পাবলিক লিঙ্ক ব্যবহার করা হয়েছে)
-  const notificationSound = useRef(new Audio("https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3"));
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const prevMessageCount = useRef<number>(0);
+  const notificationSound = useRef<HTMLAudioElement | null>(null);
 
-  const fetchChat = async () => {
+  useEffect(() => {
+    notificationSound.current = new Audio("https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3");
+  }, []);
+
+  const scrollToBottom = useCallback((behavior: ScrollBehavior = "smooth") => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior, block: "end" });
+    }
+  }, []);
+
+  const fetchChat = async (isInitial = false) => {
     if (!currentUserEmail) return;
     try {
       const res = await axios.get<IMessage[]>(
@@ -37,43 +48,33 @@ const SellerAdminChat: React.FC = () => {
       
       const newMessages = res.data;
 
-      // অ্যালার্ট লজিক: যদি নতুন মেসেজ আসে এবং শেষ মেসেজটি আমার না হয় (অ্যাডমিনের হয়)
-      if (newMessages.length > prevMessageCount.current) {
+      if (newMessages.length !== prevMessageCount.current) {
         const lastMsg = newMessages[newMessages.length - 1];
-        if (lastMsg.senderEmail !== currentUserEmail && prevMessageCount.current !== 0) {
-          playNotification();
+        
+        if (newMessages.length > prevMessageCount.current && 
+            lastMsg?.senderEmail !== currentUserEmail && 
+            !isInitial) {
+          notificationSound.current?.play().catch(() => {});
         }
-      }
 
-      setMessages(newMessages);
-      prevMessageCount.current = newMessages.length;
+        setMessages(newMessages);
+        prevMessageCount.current = newMessages.length;
+
+        setTimeout(() => {
+          scrollToBottom(isInitial ? "auto" : "smooth");
+        }, 100);
+      }
     } catch (err) {
       console.error("Chat fetch error:", err);
     }
   };
 
-  const playNotification = () => {
-    // সাউন্ড প্লে করা
-    notificationSound.current.play().catch(err => console.log("Audio play blocked by browser"));
-    
-    // ব্রাউজার টাইটেল আপডেট করা (ট্যাব নোটিফিকেশন)
-    const oldTitle = document.title;
-    document.title = "🔔 New Message from Admin!";
-    setTimeout(() => {
-      document.title = oldTitle;
-    }, 3000);
-  };
-
   useEffect(() => {
     if (!currentUserEmail) return;
-    fetchChat();
-    const interval = setInterval(fetchChat, 3000);
+    fetchChat(true);
+    const interval = setInterval(() => fetchChat(false), 3000);
     return () => clearInterval(interval);
   }, [currentUserEmail]);
-
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
 
   const sendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -87,70 +88,55 @@ const SellerAdminChat: React.FC = () => {
         senderEmail: currentUserEmail,
         message: messageToSend,
       });
-      fetchChat();
+      await fetchChat(false);
+      scrollToBottom("smooth");
     } catch (err: any) {
       setTypedMessage(messageToSend);
-      alert(err?.response?.data?.error || "Failed to send message");
+      alert(err.response?.data?.error || "Failed to send message");
     }
   };
 
-  if (!currentUserEmail) {
-    return (
-      <p className="text-center text-red-500 mt-10">
-        Please login to chat with admin
-      </p>
-    );
-  }
+  if (!currentUserEmail) return <div className="p-10 text-center">Loading...</div>;
 
   return (
-    <div className="max-w-md mx-auto h-[80vh] flex flex-col border rounded-xl shadow bg-white">
-      <div className="p-4 border-b font-bold text-center">
-        Chat with Admin
+    <div className="flex flex-col w-full max-w-2xl mx-auto h-[85vh] md:h-[80vh] border rounded-xl shadow-2xl bg-white overflow-hidden my-4">
+      <div className="h-16 flex items-center px-4 bg-green-600 text-white shrink-0">
+        <h2 className="font-bold">Admin Support</h2>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-100 flex flex-col">
         {messages.map((msg, idx) => {
           const isMe = msg.senderEmail === currentUserEmail;
           return (
-            <div
-              key={msg._id || idx}
-              className={`flex ${isMe ? "justify-end" : "justify-start"}`}
-            >
-              <div
-                className={`max-w-[75%] px-4 py-2 rounded-xl text-sm ${
-                  isMe
-                    ? "bg-green-500 text-white rounded-tr-none"
-                    : "bg-white border rounded-tl-none shadow-sm"
-                }`}
-              >
-                {msg.message}
+            <div key={msg._id || idx} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
+              <div className={`max-w-[85%] px-4 py-2 rounded-2xl shadow-sm ${
+                isMe ? "bg-green-600 text-white rounded-tr-none" : "bg-white text-gray-800 border rounded-tl-none"
+              }`}>
+                <div className="break-words text-sm md:text-base">{msg.message}</div>
                 <div className="text-[10px] mt-1 opacity-60 text-right">
-                  {msg.createdAt
-                    ? new Date(msg.createdAt).toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })
-                    : ""}
+                  {msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ""}
                 </div>
               </div>
             </div>
           );
         })}
-        <div ref={messagesEndRef} />
+        <div ref={messagesEndRef} className="pt-2" />
       </div>
 
-      <form onSubmit={sendMessage} className="p-3 border-t flex gap-2">
+      <form onSubmit={sendMessage} className="h-20 p-3 md:p-4 bg-white border-t flex items-center gap-2 shrink-0">
         <input
           value={typedMessage}
           onChange={(e) => setTypedMessage(e.target.value)}
-          placeholder="Type message..."
-          className="flex-1 border rounded-lg px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-green-500"
+          placeholder="Type a message..."
+          className="flex-1 border border-gray-300 rounded-full px-4 py-2.5 outline-none focus:ring-2 focus:ring-green-500"
         />
         <button
           type="submit"
-          className="bg-green-600 hover:bg-green-700 transition-colors text-white px-4 rounded-lg flex items-center justify-center"
+          disabled={!typedMessage.trim()}
+          className="bg-green-600 hover:bg-green-700 text-white p-3.5 rounded-full disabled:bg-gray-400 flex items-center justify-center transition-all"
         >
-          {React.createElement(FaPaperPlane as any)}
+          {/* Component hishebe ekhon SendIcon (any type) call korchi */}
+          <SendIcon style={{ fontSize: '18px' }} />
         </button>
       </form>
     </div>
