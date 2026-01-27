@@ -33,7 +33,7 @@ type NItem = {
   createdAt?: string;
   userEmail?: string;
   target?: string;
-    senderId?: string;   // ✅ ADD
+  senderId?: string;   // ✅ ADD
   data?: any;
 };
 
@@ -180,7 +180,7 @@ export default function Navbar() {
   return (
     <>
       <header
-        className="sticky top-0 z-40 w-full bg-white border-b border-gray-200 shadow-sm"
+        className="sticky top-0 z-40 w-full bg-white border-b border-gray-200 shadow-sm py-2"
         style={{ backgroundColor: CLEAN_WHITE }}
       >
         <nav className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -201,8 +201,18 @@ export default function Navbar() {
                 )}
               </button>
 
-              <NavLink to="/" className="flex items-center gap-3 pr-4">
-                <img src={headerlogo} alt="AcctEmpire" className="h-14 md:h-16 lg:h-18 w-auto" />
+              <NavLink
+                to="/"
+                className="flex items-center gap-3 pr-4 ml-0 md:ml-[40px] lg:ml-[90px]"
+              >
+                <img
+                  src={headerlogo}
+                  alt="AcctEmpire"
+                  className="h-16 sm:h-18 md:h-20 lg:h-24 w-auto object-contain"
+                /* h-16 (64px) for mobile - "a little big"
+                   h-24 (96px) for desktop - "large/medium"
+                */
+                />
               </NavLink>
             </div>
 
@@ -229,119 +239,118 @@ export default function Navbar() {
 
             <div className="flex items-center gap-1">
               {/* Notifications Dropdown */}
-            <div className="relative" ref={notifRef}>
-  <button
-    onClick={handleShowNotifications}
-    className="p-2 rounded-md hover:bg-gray-100 transition relative"
-  >
-    <svg className="w-6 h-6" fill="none" stroke={EMPIRE_BLUE} viewBox="0 0 24 24">
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-      />
-    </svg>
+              <div className="relative" ref={notifRef}>
+                <button
+                  onClick={handleShowNotifications}
+                  className="p-2 rounded-md hover:bg-gray-100 transition relative"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke={EMPIRE_BLUE} viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                    />
+                  </svg>
 
-    {unreadCount > 0 && (
-      <span className="absolute -top-1 -right-1 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-600 rounded-full shadow-sm border border-white">
-        {unreadCount}
-      </span>
-    )}
-  </button>
-
-  {notifOpen && (
-    <div
-      className="fixed top-14 left-4 right-4 md:absolute md:top-full md:left-auto md:right-0 md:mt-2 md:w-96 bg-white border rounded-xl shadow-2xl z-50 overflow-hidden"
-      style={{ backgroundColor: CLEAN_WHITE }}
-    >
-      <div className="px-4 py-3 border-b flex items-center justify-between">
-        <div className="font-bold text-gray-900">Notifications</div>
-        <div className="text-xs font-semibold text-gray-600">
-          {loadingNotifs ? "Loading..." : `${notifications.length} total`}
-        </div>
-      </div>
-
-      <div className="max-h-[60vh] md:max-h-80 overflow-y-auto divide-y">
-        {notifications.length === 0 && !loadingNotifs && (
-          <div className="p-4 text-center text-sm text-gray-500">
-            No notifications found for <br />
-            <span className="font-semibold">{currentUserEmail}</span>
-          </div>
-        )}
-
-        {notifications.map((n) => {
-          const senderName = n.senderId?.split("@")[0];
-
-          return (
-            <div
-              key={n._id}
-              className={`p-3 hover:bg-gray-50 transition-colors ${
-                n.read
-                  ? "bg-white"
-                  : "bg-blue-50 border-l-4 border-blue-600"
-              }`}
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex-1">
-                  <div className="text-sm font-bold text-black">
-                    New message from {senderName}
-                  </div>
-
-                  <div className="text-xs text-gray-800 font-medium mt-1 line-clamp-2 leading-relaxed">
-                    {n.message || n.description || "No description"}
-                  </div>
-
-                  {n.link && (
-                    <a
-                      href={n.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-[10px] text-blue-600 font-bold mt-2 inline-flex items-center gap-1 hover:underline bg-blue-50 px-2 py-1 rounded"
-                    >
-                      Action Link:{" "}
-                      {n.link.length > 30
-                        ? n.link.substring(0, 30) + "..."
-                        : n.link}
-                    </a>
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-600 rounded-full shadow-sm border border-white">
+                      {unreadCount}
+                    </span>
                   )}
+                </button>
 
-                  <div className="text-[10px] text-gray-600 font-semibold mt-1">
-                    {n.createdAt
-  ? new Date(n.createdAt).toLocaleString()
-  : ""}
+                {notifOpen && (
+                  <div
+                    className="fixed top-14 left-4 right-4 md:absolute md:top-full md:left-auto md:right-0 md:mt-2 md:w-96 bg-white border rounded-xl shadow-2xl z-50 overflow-hidden"
+                    style={{ backgroundColor: CLEAN_WHITE }}
+                  >
+                    <div className="px-4 py-3 border-b flex items-center justify-between">
+                      <div className="font-bold text-gray-900">Notifications</div>
+                      <div className="text-xs font-semibold text-gray-600">
+                        {loadingNotifs ? "Loading..." : `${notifications.length} total`}
+                      </div>
+                    </div>
 
+                    <div className="max-h-[60vh] md:max-h-80 overflow-y-auto divide-y">
+                      {notifications.length === 0 && !loadingNotifs && (
+                        <div className="p-4 text-center text-sm text-gray-500">
+                          No notifications found for <br />
+                          <span className="font-semibold">{currentUserEmail}</span>
+                        </div>
+                      )}
+
+                      {notifications.map((n) => {
+                        const senderName = n.senderId?.split("@")[0];
+
+                        return (
+                          <div
+                            key={n._id}
+                            className={`p-3 hover:bg-gray-50 transition-colors ${n.read
+                                ? "bg-white"
+                                : "bg-blue-50 border-l-4 border-blue-600"
+                              }`}
+                          >
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="flex-1">
+                                <div className="text-sm font-bold text-black">
+                                  New message from {senderName}
+                                </div>
+
+                                <div className="text-xs text-gray-800 font-medium mt-1 line-clamp-2 leading-relaxed">
+                                  {n.message || n.description || "No description"}
+                                </div>
+
+                                {n.link && (
+                                  <a
+                                    href={n.link}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-[10px] text-blue-600 font-bold mt-2 inline-flex items-center gap-1 hover:underline bg-blue-50 px-2 py-1 rounded"
+                                  >
+                                    Action Link:{" "}
+                                    {n.link.length > 30
+                                      ? n.link.substring(0, 30) + "..."
+                                      : n.link}
+                                  </a>
+                                )}
+
+                                <div className="text-[10px] text-gray-600 font-semibold mt-1">
+                                  {n.createdAt
+                                    ? new Date(n.createdAt).toLocaleString()
+                                    : ""}
+
+                                </div>
+                              </div>
+
+                              {!n.read && (
+                                <div className="ml-2 w-2.5 h-2.5 rounded-full bg-blue-600 mt-1 shadow-sm" />
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    <div className="px-4 py-3 border-t bg-gray-50 flex justify-between items-center">
+                      <button
+                        onClick={clearAllNotifications}
+                        className="text-xs text-red-600 hover:text-red-800 hover:underline font-bold flex items-center gap-1"
+                        disabled={notifications.length === 0}
+                      >
+                        <FaTrashIcon /> Clear All
+                      </button>
+
+                      <button
+                        onClick={() => fetchNotifications()}
+                        className="text-xs text-blue-700 hover:underline font-bold"
+                      >
+                        Refresh List
+                      </button>
+                    </div>
                   </div>
-                </div>
-
-                {!n.read && (
-                  <div className="ml-2 w-2.5 h-2.5 rounded-full bg-blue-600 mt-1 shadow-sm" />
                 )}
               </div>
-            </div>
-          );
-        })}
-      </div>
-
-      <div className="px-4 py-3 border-t bg-gray-50 flex justify-between items-center">
-        <button
-          onClick={clearAllNotifications}
-          className="text-xs text-red-600 hover:text-red-800 hover:underline font-bold flex items-center gap-1"
-          disabled={notifications.length === 0}
-        >
-          <FaTrashIcon /> Clear All
-        </button>
-
-        <button
-          onClick={() => fetchNotifications()}
-          className="text-xs text-blue-700 hover:underline font-bold"
-        >
-          Refresh List
-        </button>
-      </div>
-    </div>
-  )}
-</div>
 
 
               {/* Avatar Dropdown */}
