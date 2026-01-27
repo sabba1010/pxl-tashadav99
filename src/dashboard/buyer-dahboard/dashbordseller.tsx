@@ -1303,40 +1303,6 @@ const DashboardSeller: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-16 sm:pb-20">
-      {/* ─── Sticky Header ────────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-lg border-b border-gray-100">
-        <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 sm:w-10 sm:h-10 bg-black rounded-xl flex items-center justify-center shadow-md">
-              <LayoutGrid className="text-[#d4a643] size-5 sm:size-6" />
-            </div>
-            <h1 className="text-lg sm:text-xl font-black tracking-tighter uppercase italic">
-              Seller<span className="text-[#d4a643]">Vault</span>
-            </h1>
-          </div>
-
-          <div className="flex items-center gap-4 sm:gap-6">
-            <div className="hidden sm:flex flex-col items-end pr-4 sm:pr-6 border-r border-gray-100">
-              <div className="flex items-center gap-1.5 text-amber-500">
-                <Star size={14} className="fill-current" />
-                <span className="font-black text-sm">{analytics.avgRating.toFixed(1)}</span>
-              </div>
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Reputation</p>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <div className="hidden xs:block text-right">
-                <p className="text-xs font-bold text-gray-500 uppercase">Verified Seller</p>
-                <p className="text-sm font-semibold text-gray-900 truncate max-w-[140px]">
-                  {user?.email?.split('@')[0]}
-                </p>
-              </div>
-              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gradient-to-tr from-[#d4a643] to-amber-200 border-2 border-white shadow-md" />
-            </div>
-          </div>
-        </div>
-      </header>
-
       <main className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-10">
         {/* ─── Top Stats ────────────────────────────────────────────────────── */}
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6 mb-8 sm:mb-10">
