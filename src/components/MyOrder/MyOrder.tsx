@@ -19,6 +19,8 @@ import {
   FaBan,
   FaFlag,
   FaImage,
+  FaClock,
+  FaCheckCircle,
 } from "react-icons/fa";
 
 // Icon Casting
@@ -29,6 +31,8 @@ const FaPaperPlaneIcon = FaPaperPlane as unknown as React.ComponentType<any>;
 const FaBanIcon = FaBan as unknown as React.ComponentType<any>;
 const FaFlagIcon = FaFlag as unknown as React.ComponentType<any>;
 const FaImageIcon = FaImage as unknown as React.ComponentType<any>;
+const FaClockIcon = FaClock as unknown as React.ComponentType<any>;
+const FaCheckCircleIcon = FaCheckCircle as unknown as React.ComponentType<any>;
 
 const ICON_COLOR_MAP = new Map<IconType, string>([
   [FaInstagram, "#E1306C"],
@@ -56,6 +60,7 @@ interface Order {
   buyerEmail: string;
   price: number;
   date: string;
+  rawDate: string;
   status: OrderStatus;
   orderNumber?: string;
   icon?: string;
@@ -199,6 +204,28 @@ const SELLER_REPORT_REASONS = [
   "Other",
 ];
 
+const maskEmail = (email: string) => {
+  if (!email) return "User";
+  return email.split('@')[0];
+};
+
+const getStatusDisplay = (online: boolean, lastSeen?: string | null): string => {
+  if (online) return "Online";
+  if (!lastSeen) return "Offline";
+
+  const date = new Date(lastSeen);
+  if (isNaN(date.getTime())) return "Offline";
+
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMin = Math.floor(diffMs / 60000);
+
+  if (diffMin < 1) return "Just now";
+  if (diffMin < 60) return `${diffMin}m ago`;
+  if (diffMin < 1440) return `${Math.floor(diffMin / 60)}h ago`;
+  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+};
+
 const MyOrder: React.FC = () => {
   const [activeTab, setActiveTab] = useState<Tab>("All");
   const [selected, setSelected] = useState<Order | null>(null);
@@ -206,6 +233,8 @@ const MyOrder: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
   const [buyerNames, setBuyerNames] = useState<Record<string, string>>({});
+  const [now, setNow] = useState(Date.now());
+  const autoCompletedRef = useRef<Set<string>>(new Set());
 
   const loginUserData = useAuthHook();
   const sellerId = loginUserData.data?.email || localStorage.getItem("userEmail");
@@ -221,6 +250,9 @@ const MyOrder: React.FC = () => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [buyerOnline, setBuyerOnline] = useState<boolean>(false);
+  const [buyerLastSeen, setBuyerLastSeen] = useState<string | null>(null);
+  const [partnerStatusText, setPartnerStatusText] = useState<string>("Offline");
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -239,6 +271,8 @@ const MyOrder: React.FC = () => {
 
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10000;
+
+  const [onlineBuyersMap, setOnlineBuyersMap] = useState<Record<string, boolean>>({});
 
   // Auto-resize textarea
   useEffect(() => {
@@ -267,6 +301,77 @@ const MyOrder: React.FC = () => {
       messagesContainerRef.current?.scrollIntoView({ behavior: "smooth" });
     }
   }, [chatMessages]);
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    if (orders.length === 0) return;
+    fetchAllBuyersStatus();
+    const interval = setInterval(fetchAllBuyersStatus, 10000);
+    return () => clearInterval(interval);
+  }, [orders]);
+
+  useEffect(() => {
+    if (orders.length === 0) return;
+    orders.forEach((o) => {
+      if (o.status !== 'Pending') return;
+      const expiresAt = new Date(o.rawDate).getTime() + 14400000;
+      if (Date.now() >= expiresAt && !autoCompletedRef.current.has(o.id)) {
+        autoCompletedRef.current.add(o.id);
+        handleUpdateStatus('completed', o.id);
+      }
+    });
+  }, [orders, now]);
+
+  const getRemainingTime = (rawDate: string) => {
+    const diff = (new Date(rawDate).getTime() + 14400000) - now;
+    if (diff <= 0) return "Confirming...";
+    const h = Math.floor(diff / 3600000).toString().padStart(2, '0');
+    const m = Math.floor((diff % 3600000) / 60000).toString().padStart(2, '0');
+    const s = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
+    return `${h}h ${m}m ${s}s`;
+  };
+
+  const setPresence = async (status: 'online' | 'offline') => {
+    if (!sellerId) return;
+    try {
+      await axios.post(`${CHAT_API}/status`, { userId: sellerId, status });
+    } catch (err) {}
+  };
+
+  const fetchBuyerStatus = async () => {
+    if (!activeChatBuyerEmail) return;
+    try {
+      const res = await axios.get<PresenceResponse>(`${CHAT_API}/status/${activeChatBuyerEmail}`);
+      const online = Boolean(res.data?.online);
+      const lastSeen = res.data.lastSeen;
+
+      setBuyerOnline(online);
+      setBuyerLastSeen(lastSeen || null);
+      setPartnerStatusText(getStatusDisplay(online, lastSeen));
+    } catch (err) {
+      setBuyerOnline(false);
+      setBuyerLastSeen(null);
+      setPartnerStatusText("Offline");
+    }
+  };
+
+  const fetchAllBuyersStatus = async () => {
+    const buyers = Array.from(new Set(orders.map(o => o.buyerEmail)));
+    const statusMap: Record<string, boolean> = {};
+    for (const email of buyers) {
+      try {
+        const res = await axios.get<PresenceResponse>(`${CHAT_API}/status/${email}`);
+        statusMap[email] = Boolean(res.data?.online);
+      } catch (err) {
+        statusMap[email] = false;
+      }
+    }
+    setOnlineBuyersMap(statusMap);
+  };
 
   const fetchOrders = async () => {
     if (!sellerId) {
@@ -304,6 +409,7 @@ const MyOrder: React.FC = () => {
         buyerEmail: item.buyerEmail,
         price: item.price,
         date: formatDate(item.purchaseDate),
+        rawDate: item.purchaseDate,
         status: (item.status.charAt(0).toUpperCase() + item.status.slice(1)) as OrderStatus,
         orderNumber: `ORD-${item._id.slice(-6).toUpperCase()}`,
         icon: item.categoryIcon,
@@ -336,8 +442,17 @@ const MyOrder: React.FC = () => {
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (isChatOpen && activeChatBuyerEmail && activeChatOrderId) {
+      setPresence('online');
       fetchChat();
-      interval = setInterval(fetchChat, 4000);
+      fetchBuyerStatus();
+      interval = setInterval(() => {
+        fetchChat();
+        fetchBuyerStatus();
+      }, 4000);
+    } else {
+      setPresence('offline');
+      setBuyerOnline(false);
+      setPartnerStatusText("Offline");
     }
     return () => clearInterval(interval);
   }, [isChatOpen, activeChatBuyerEmail, activeChatOrderId]);
@@ -409,6 +524,19 @@ const MyOrder: React.FC = () => {
     }
   };
 
+  const handleUpdateStatus = async (status: string, orderId?: string) => {
+    const id = orderId || selected?.id;
+    if (!id) return;
+    try {
+      await axios.patch(`${PURCHASE_API}/update-status/${id}`, { status, sellerEmail: sellerId });
+      toast.success(`Order ${status} successfully!`);
+      setSelected(null);
+      fetchOrders();
+    } catch (err) {
+      toast.error("Failed to update status");
+    }
+  };
+
   const filteredOrders = useMemo(() => {
     if (activeTab === "All") return orders;
     return orders.filter((o) => o.status === activeTab);
@@ -430,17 +558,15 @@ const MyOrder: React.FC = () => {
               {TABS.map((tab) => (
                 <button
                   key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`pb-2 text-sm font-bold transition ${
-                    activeTab === tab ? "text-[#d4a643] border-b-2 border-[#d4a643]" : "text-gray-500"
-                  }`}
+                  onClick={() => {setActiveTab(tab); setCurrentPage(1);}}
+                  className={`pb-2 text-sm whitespace-nowrap transition-all ${activeTab === tab ? "text-[#d4a643] border-b-2 border-[#d4a643] font-bold" : "text-gray-500"}`}
                 >
                   {tab}
                 </button>
               ))}
             </div>
 
-            <div className="p-6 space-y-4">
+            <div className="p-4 sm:p-6 space-y-4">
               {isLoading ? (
                 <p className="text-center py-10 text-gray-400">Loading...</p>
               ) : filteredOrders.length === 0 ? (
@@ -465,7 +591,11 @@ const MyOrder: React.FC = () => {
                         </h3>
                         <div className="flex items-center gap-2 mt-1">
                           <span className="text-xs text-gray-400 font-medium">
-                            Buyer: {buyerNames[order.buyerEmail] || order.buyerEmail.split("@")[0]}
+                            Buyer: {buyerNames[order.buyerEmail] || maskEmail(order.buyerEmail)}
+                          </span>
+                          <span className={`w-2 h-2 rounded-full ${onlineBuyersMap[order.buyerEmail] ? 'bg-green-500' : 'bg-gray-300'}`} />
+                          <span className="text-[10px] text-gray-500 font-medium">
+                            {onlineBuyersMap[order.buyerEmail] ? "Online" : "Offline"}
                           </span>
                         </div>
                         <div className="flex flex-wrap items-center gap-2 mt-2">
@@ -476,6 +606,11 @@ const MyOrder: React.FC = () => {
                           }`}>
                             {order.status}
                           </span>
+                          {order.status === "Pending" && (
+                            <span className="text-[10px] text-blue-600 font-bold flex items-center gap-1">
+                              <FaClockIcon size={10} /> {getRemainingTime(order.rawDate)}
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -490,21 +625,21 @@ const MyOrder: React.FC = () => {
                         <div className="flex gap-2 w-full justify-end sm:justify-start" onClick={(e) => e.stopPropagation()}>
                           <button 
                             onClick={() => { setReportTargetOrder(order); setIsReportModalOpen(true); }} 
-                            className="p-2 text-red-500 border border-red-100 rounded-lg hover:bg-red-50"
+                            className="flex-1 sm:flex-none flex justify-center p-2 text-red-500 border border-red-100 rounded-lg bg-white hover:bg-red-50 transition"
                           >
                             <FaFlagIcon size={14} />
                           </button>
                           
                           <button 
                             onClick={() => setSelected(order)} 
-                            className="p-2 text-gray-600 border rounded-lg hover:bg-gray-50"
+                            className="flex-1 sm:flex-none flex justify-center p-2 text-gray-600 border rounded-lg bg-white hover:bg-gray-50 transition"
                           >
                             <FaEyeIcon size={14} />
                           </button>
                           
                           <button 
                             onClick={() => handleOpenChat(order)} 
-                            className="p-2 text-blue-600 border border-blue-100 rounded-lg hover:bg-blue-50"
+                            className="flex-1 sm:flex-none flex justify-center p-2 text-blue-600 border border-blue-100 rounded-lg bg-white hover:bg-blue-50 transition"
                           >
                             <FaCommentsIcon size={14} />
                           </button>
@@ -596,20 +731,24 @@ const MyOrder: React.FC = () => {
             <div className="bg-white p-4 flex justify-between items-center border-b shadow-sm">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center border text-[#0A1A3A] font-bold text-sm">
-                  {buyerNames[activeChatBuyerEmail]?.[0]?.toUpperCase() || activeChatBuyerEmail?.[0]?.toUpperCase() || "?"}
+                  {maskEmail(activeChatBuyerEmail || "").charAt(0).toUpperCase()}
                 </div>
                 <div>
                   <h4 className="font-bold text-sm text-[#0A1A3A]">
-                    {buyerNames[activeChatBuyerEmail] || activeChatBuyerEmail.split("@")[0]}
+                    {buyerNames[activeChatBuyerEmail] || maskEmail(activeChatBuyerEmail)}
                   </h4>
                   <div className="flex items-center gap-1.5 text-[10px]">
-                    <span className={`w-2 h-2 rounded-full bg-gray-300`} />
-                    <span className="text-gray-500 font-medium">Buyer</span>
+                    <span className={`w-2 h-2 rounded-full ${buyerOnline ? "bg-green-500" : "bg-gray-300"}`} />
+                    <span 
+                      className={`font-medium ${buyerOnline ? "text-green-600" : "text-gray-500"}`}
+                    >
+                      {partnerStatusText}
+                    </span>
                   </div>
                 </div>
               </div>
               <button 
-                onClick={() => setIsChatOpen(false)} 
+                onClick={() => { setIsChatOpen(false); setPresence('offline'); }} 
                 className="p-2 text-gray-400 hover:text-red-500 transition rounded-full hover:bg-gray-100"
               >
                 <FaTimesIcon size={20} />
@@ -732,6 +871,7 @@ const MyOrder: React.FC = () => {
             </div>
           </div>
 
+          {/* Full-screen Image Preview */}
           {previewImage && (
             <div 
               className="fixed inset-0 z-[200] bg-black/90 flex items-center justify-center p-4"
@@ -743,6 +883,19 @@ const MyOrder: React.FC = () => {
                   alt="Full size preview" 
                   className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
                 />
+                
+                <a
+                  href={previewImage}
+                  download={`chat-image-${Date.now()}.jpg`}
+                  className="absolute bottom-6 right-6 bg-white/90 hover:bg-white text-black px-5 py-3 rounded-xl shadow-xl flex items-center gap-2 text-sm font-medium transition"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4 4m0 0l-4-4m4 4V4" />
+                  </svg>
+                  Download
+                </a>
+
                 <button 
                   className="absolute top-6 right-6 text-white bg-black/60 hover:bg-black/80 rounded-full p-3"
                   onClick={() => setPreviewImage(null)}
@@ -757,27 +910,41 @@ const MyOrder: React.FC = () => {
 
       {/* Report Modal */}
       {isReportModalOpen && reportTargetOrder && (
-        <>
-          <div className="fixed inset-0 bg-black/70 z-50" onClick={() => setIsReportModalOpen(false)} />
-          <div className="fixed inset-x-4 top-1/2 -translate-y-1/2 max-w-md mx-auto bg-white rounded-2xl shadow-2xl z-50">
-            <div className="bg-red-600 text-white p-4 font-bold flex justify-between items-center">
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md">
+          <div className="bg-white w-full max-w-md rounded-2xl overflow-hidden shadow-2xl">
+            <div className="bg-red-600 p-4 text-white font-bold flex justify-between items-center">
               <span className="flex items-center gap-2"><FaFlagIcon /> Report Buyer</span>
-              <button onClick={() => setIsReportModalOpen(false)}><FaTimesIcon /></button>
+              <button onClick={() => setIsReportModalOpen(false)}>
+                <FaTimesIcon />
+              </button>
             </div>
             <form onSubmit={handleReportSubmit} className="p-6 space-y-4">
-              <select value={reportReason} onChange={(e) => setReportReason(e.target.value)} className="w-full border p-3 rounded-lg">
-                {SELLER_REPORT_REASONS.map((r) => <option key={r} value={r}>{r}</option>)}
+              <select 
+                value={reportReason} 
+                onChange={(e) => setReportReason(e.target.value)} 
+                className="w-full border p-2.5 rounded-xl text-sm outline-none"
+              >
+                {SELLER_REPORT_REASONS.map(r => (
+                  <option key={r} value={r}>{r}</option>
+                ))}
               </select>
-              <textarea value={reportMessage} onChange={(e) => setReportMessage(e.target.value)} placeholder="Describe the issue..." required rows={5} className="w-full border p-3 rounded-lg resize-none" />
-              <div className="flex gap-3">
-                <button type="button" onClick={() => setIsReportModalOpen(false)} className="flex-1 py-3 border rounded-lg">Cancel</button>
-                <button type="submit" disabled={isSubmittingReport} className="flex-1 py-3 bg-red-600 text-white rounded-lg">
-                  {isSubmittingReport ? "Submitting..." : "Submit Report"}
-                </button>
-              </div>
+              <textarea 
+                value={reportMessage} 
+                onChange={(e) => setReportMessage(e.target.value)} 
+                placeholder="Describe the issue..." 
+                className="w-full border p-3 rounded-xl text-sm h-32 outline-none" 
+                required 
+              />
+              <button 
+                type="submit" 
+                disabled={isSubmittingReport} 
+                className="w-full bg-red-600 text-white py-3 rounded-xl font-bold"
+              >
+                {isSubmittingReport ? "Sending..." : "Submit Report"}
+              </button>
             </form>
           </div>
-        </>
+        </div>
       )}
     </>
   );
