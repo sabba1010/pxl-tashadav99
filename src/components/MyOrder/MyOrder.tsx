@@ -285,7 +285,7 @@ const MyOrder: React.FC = () => {
   const [isSubmittingReport, setIsSubmittingReport] = useState(false);
 
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10000;
+  const itemsPerPage = 40;
 
   const [onlineBuyersMap, setOnlineBuyersMap] = useState<Record<string, boolean>>({});
   const [unreadOrders, setUnreadOrders] = useState<Record<string, boolean>>({});
@@ -716,6 +716,30 @@ const MyOrder: React.FC = () => {
                 ))
               )}
             </div>
+
+            {/* Pagination Controls */}
+            {filteredOrders.length > itemsPerPage && (
+              <div className="flex justify-center items-center gap-2 mt-6 flex-wrap">
+                {Array.from({ length: Math.ceil(filteredOrders.length / itemsPerPage) }).map((_, i) => {
+                  const pageNumber = i + 1;
+                  const isActive = pageNumber === currentPage;
+
+                  return (
+                    <button
+                      key={pageNumber}
+                      onClick={() => setCurrentPage(pageNumber)}
+                      className={`px-3 py-2 rounded-lg text-sm font-medium transition ${
+                        isActive
+                          ? 'bg-[#33ac6f] text-white'
+                          : 'border hover:bg-gray-50'
+                      }`}
+                    >
+                      {pageNumber}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
       </div>
