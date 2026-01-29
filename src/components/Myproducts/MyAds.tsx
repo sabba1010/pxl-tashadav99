@@ -72,8 +72,12 @@ const MyAds: React.FC = () => {
       );
 
       const userAds = res.data.filter(
-        (ad: { userEmail: string; isVisible?: boolean }) => 
-          ad.userEmail === user.user?.email && ad.isVisible !== false
+        (ad: { userEmail: string; isVisible?: boolean; status?: string }) => {
+          const st = (ad.status || "").toString().toLowerCase();
+          // exclude sold/completed from My Ads — they will be shown in Active Listings
+          if (st === "sold" || st === "completed") return false;
+          return ad.userEmail === user.user?.email && ad.isVisible !== false;
+        }
       );
 
       setItems(userAds);
@@ -292,6 +296,17 @@ const MyAds: React.FC = () => {
               </svg>
               <span className="hidden sm:inline">Reload</span>
             </button>
+
+            <Link
+              to="/active-listings"
+              className="flex items-center justify-center gap-2 px-4 py-2.5 sm:px-5 sm:py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg sm:rounded-xl font-semibold text-sm transition-all active:scale-95 shadow-sm"
+              title="Active Listings"
+            >
+              <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span className="hidden sm:inline">Active Listings</span>
+            </Link>
 
             <Link
               to="/selling-form"

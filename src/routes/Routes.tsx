@@ -41,6 +41,7 @@ import AdminSettings from "../dashboard/admin-dashboard/AdminSettings";
 
 import CartPage from "../components/Cart/CartPage";
 import MyAds from "../components/Myproducts/MyAds";
+import ActiveListings from "../components/Myproducts/ActiveListings";
 import SellerGuide from "../components/SellerGuide";
 import BuyerGuide from "../components/BuyerGuide";
 import Post from "../components/Notification/Post";
@@ -158,6 +159,14 @@ const Routes = createBrowserRouter([
         element: (
           <SellerPrivateRoute>
             <MyAds />
+          </SellerPrivateRoute>
+        ),
+      },
+      {
+        path: "/active-listings",
+        element: (
+          <SellerPrivateRoute>
+            <ActiveListings />
           </SellerPrivateRoute>
         ),
       },
