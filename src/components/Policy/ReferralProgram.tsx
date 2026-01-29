@@ -41,7 +41,7 @@ const ReferralProgram: React.FC = () => {
           <h1 className="text-4xl md:text-6xl font-bold text-[#e6c06c] mb-6">
             Invite Friends.
             <br />
-            Earn $10 Each!
+            Earn $5 Each!
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
             Share your link → Friend completes first $50+ trade → Both get $10
@@ -54,7 +54,7 @@ const ReferralProgram: React.FC = () => {
           {[
             { step: "1", title: "Share Your Link", icon: Share2 },
             { step: "2", title: "Friend Signs Up & Trades", icon: Users },
-            { step: "3", title: "Both Get $10 Credit", icon: Gift },
+            { step: "3", title: "Both Get $5 Credit", icon: Gift },
           ].map((item) => (
             <div key={item.step} className="text-center">
               <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[#33ac6f] flex items-center justify-center">
