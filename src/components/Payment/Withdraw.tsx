@@ -59,7 +59,7 @@ const WithdrawForm: React.FC = () => {
       if (!data?._id) return;
       
       try {
-        const response = await fetch(`https://tasha-vps-backend-2.onrender.com/api/user/get-bank-account/${data._id}`);
+        const response = await fetch(`http://localhost:3200/api/user/get-bank-account/${data._id}`);
         const result = await response.json();
         
         if (result.success && result.bankDetails) {
@@ -110,7 +110,7 @@ const WithdrawForm: React.FC = () => {
     }
 
     try {
-      const response = await fetch("https://tasha-vps-backend-2.onrender.com/api/user/save-bank-account", {
+      const response = await fetch("http://localhost:3200/api/user/save-bank-account", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -203,7 +203,7 @@ const WithdrawForm: React.FC = () => {
       };
 
       const withdrawResponse = await fetch(
-        "https://tasha-vps-backend-2.onrender.com/withdraw/post",
+        "http://localhost:3200/withdraw/post",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -224,7 +224,7 @@ const WithdrawForm: React.FC = () => {
         // Save bank account for local bank method
         if (paymentMethod === "localbank" && formData.bankName) {
           try {
-            await fetch("https://tasha-vps-backend-2.onrender.com/api/user/save-bank-account", {
+            await fetch("http://localhost:3200/api/user/save-bank-account", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({

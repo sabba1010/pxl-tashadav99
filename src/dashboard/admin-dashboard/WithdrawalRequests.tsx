@@ -172,8 +172,8 @@ const WithdrawalRequests: React.FC = () => {
   const fetchDetailsForEmail = useCallback(async (email: string) => {
     try {
       const [pRes, rRes] = await Promise.all([
-        fetch("https://tasha-vps-backend-2.onrender.com/purchase/getall"),
-        fetch("https://tasha-vps-backend-2.onrender.com/purchase/report/getall")
+        fetch("http://localhost:3200/purchase/getall"),
+        fetch("http://localhost:3200/purchase/report/getall")
       ]);
       const purchases = pRes.ok ? await pRes.json() : [];
       const reports = rRes.ok ? await rRes.json() : [];
@@ -188,9 +188,9 @@ const WithdrawalRequests: React.FC = () => {
     setLoading(true);
     try {
       const [wRes, pRes, rRes] = await Promise.all([
-        fetch("https://tasha-vps-backend-2.onrender.com/withdraw/getall"),
-        fetch("https://tasha-vps-backend-2.onrender.com/purchase/getall"),
-        fetch("https://tasha-vps-backend-2.onrender.com/purchase/report/getall")
+        fetch("http://localhost:3200/withdraw/getall"),
+        fetch("http://localhost:3200/purchase/getall"),
+        fetch("http://localhost:3200/purchase/report/getall")
       ]);
       const withdrawData = await wRes.json();
       const purchases = await pRes.json();
@@ -211,7 +211,7 @@ const WithdrawalRequests: React.FC = () => {
   const handleReview = async (req: WithdrawalRequest) => {
     setActionLoading(true);
     try {
-      const userRes = await fetch("https://tasha-vps-backend-2.onrender.com/api/user/getall");
+      const userRes = await fetch("http://localhost:3200/api/user/getall");
       const userData = await userRes.json();
       const users = Array.isArray(userData) ? userData : (userData.users || []);
       const seller = users.find((u: any) => u.email.toLowerCase() === req.email.toLowerCase());
@@ -328,7 +328,7 @@ const WithdrawalRequests: React.FC = () => {
         setActionLoading(true);
         try {
           const endpoint = status === "approved" ? "approve" : "decline";
-          const res = await fetch(`https://tasha-vps-backend-2.onrender.com/withdraw/${endpoint}/${id}`, {
+          const res = await fetch(`http://localhost:3200/withdraw/${endpoint}/${id}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: status === "declined" ? JSON.stringify({ reason }) : null

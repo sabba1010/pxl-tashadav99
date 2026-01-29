@@ -50,7 +50,7 @@ interface Seller {
   createdAt?: string; // sorting এর জন্য
 }
 
-const BASE_URL = "https://tasha-vps-backend-2.onrender.com";
+const BASE_URL = "http://localhost:3200";
 const ADMIN_CHAT_API = `${BASE_URL}/api/adminchat`;
 const USER_API = `${BASE_URL}/api/user`;
 
