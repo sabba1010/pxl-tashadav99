@@ -242,6 +242,8 @@ const MyAds: React.FC = () => {
     if (st === "denied" || st === "reject")
       return "bg-rose-100 text-rose-700";
     if (st === "restore") return "bg-gray-100 text-gray-600";
+    if (st === "sold") return "bg-blue-100 text-blue-700";
+    if (st === "completed") return "bg-green-50 text-green-600";
     return "bg-gray-100 text-gray-600";
   };
 
@@ -251,6 +253,8 @@ const MyAds: React.FC = () => {
     if (st === "pending") return "Pending";
     if (st === "denied" || st === "reject") return "Denied";
     if (st === "restore") return "Restore";
+    if (st === "sold") return "Sold";
+    if (st === "completed") return "Completed";
     return "Unknown";
   };
 
