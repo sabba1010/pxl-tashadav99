@@ -202,7 +202,7 @@ const MyPurchase: React.FC = () => {
   const [unreadPurchases, setUnreadPurchases] = useState<Record<string, boolean>>({});
   const [lastMessageTimes, setLastMessageTimes] = useState<Record<string, string>>({});
 
-  const itemsPerPage = 10000000;
+  const itemsPerPage = 40;
   const [currentPage, setCurrentPage] = useState(1);
   const [showAccountDetails, setShowAccountDetails] = useState(false);
 
@@ -676,6 +676,30 @@ const MyPurchase: React.FC = () => {
                   </div>
                 </div>
               ))
+            )}
+
+            {/* Pagination Controls */}
+            {filtered.length > itemsPerPage && (
+              <div className="flex justify-center items-center gap-2 mt-6 flex-wrap">
+                {Array.from({ length: Math.ceil(filtered.length / itemsPerPage) }).map((_, i) => {
+                  const pageNumber = i + 1;
+                  const isActive = pageNumber === currentPage;
+
+                  return (
+                    <button
+                      key={pageNumber}
+                      onClick={() => setCurrentPage(pageNumber)}
+                      className={`px-3 py-2 rounded-lg text-sm font-medium transition ${
+                        isActive
+                          ? 'bg-[#33ac6f] text-white'
+                          : 'border hover:bg-gray-50'
+                      }`}
+                    >
+                      {pageNumber}
+                    </button>
+                  );
+                })}
+              </div>
             )}
           </div>
         </div>

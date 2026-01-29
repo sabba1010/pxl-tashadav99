@@ -44,7 +44,7 @@ const ReferralProgram: React.FC = () => {
             Earn $5 Each!
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Share your link → Friend completes first $50+ trade → Both get $10
+            Share your link → Friend completes first $50+ trade → Both get $5
             wallet credit instantly!
           </p>
         </div>
