@@ -28,6 +28,7 @@ interface AdminMetrics {
   platformProfitUSD: number;
   pendingDepositRequests: number;
   pendingWithdrawalRequests: number;
+  totalWithdrawn: number; // New metric for total withdrawn amount
 }
 
 const MetricCard: React.FC<{
@@ -83,6 +84,7 @@ const DashboardOverview: React.FC = () => {
     totalUsers: 0, totalBuyers: 0, totalSellers: 0, totalUserBalance: 0,
     activeListings: 0, pendingListings: 0, totalSystemBalance: 0,
     platformProfitUSD: 0, pendingDepositRequests: 0, pendingWithdrawalRequests: 0,
+    totalWithdrawn: 0, // Initialized new metric
   });
   const [loading, setLoading] = useState(true);
 
@@ -114,6 +116,23 @@ const DashboardOverview: React.FC = () => {
         return acc;
       }, 0);
 
+      // New: Calculate total withdrawn amount from approved/successful withdrawals
+      const totalWithdrawn = withdraws.reduce((acc: number, w: any) => {
+        const isApproved = ["approved", "success", "completed"].includes(w.status?.toLowerCase());
+        if (isApproved) {
+          return acc + Number(w.amount || 0);
+        }
+        return acc;
+      }, 0);
+
+      // Note: To ensure withdrawals affect wallet balances automatically:
+      // This should be handled in the backend. When a withdrawal is approved (e.g., status changed to "approved"),
+      // the backend should deduct the amount from the seller's balance in the users collection.
+      // Example backend logic (in your withdrawal approval endpoint):
+      // const user = await User.findById(withdrawal.sellerId);
+      // user.balance -= withdrawal.amount;
+      // await user.save();
+
       setMetrics({
         totalUsers: users.length,
         totalBuyers: users.filter((u: any) => u.role === "buyer").length,
@@ -128,6 +147,7 @@ const DashboardOverview: React.FC = () => {
            return status !== "successful" && status !== "completed" && !p.credited;
         }).length,
         pendingWithdrawalRequests: withdraws.filter((w: any) => w.status?.toLowerCase() === "pending").length,
+        totalWithdrawn,
       });
     } catch (err) {
       console.error("Fetch Error:", err);
@@ -210,6 +230,23 @@ const DashboardOverview: React.FC = () => {
         <MetricCard title="Pending Listings" value={metrics.pendingListings} variant="warning" icon={<ListAlt sx={{ color: "#EA580C" }} />} linkTo="/admin-dashboard/listings" isLoading={loading} />
         <MetricCard title="Withdrawal Claims" value={metrics.pendingWithdrawalRequests} variant="warning" icon={<AccountBalanceWallet sx={{ color: "#EA580C" }} />} linkTo="/admin-dashboard/withdrawals" isLoading={loading} />
         <MetricCard title="Live Products" value={metrics.activeListings} variant="success" icon={<ShoppingBag sx={{ color: "#059669" }} />} isLoading={loading} />
+      </div>
+
+      {/* New Metric for Total Withdrawn */}
+      <div className="flex items-center gap-4">
+        <h2 className="text-xl font-[1000] text-slate-800 uppercase tracking-tighter">Withdrawal Statistics</h2>
+        <div className="h-[2px] flex-1 bg-slate-200 rounded-full" />
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <MetricCard
+          title="Total Withdrawn"
+          value={`$${metrics.totalWithdrawn.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`}
+          variant="info"
+          subtitle="Total amount withdrawn by sellers"
+          icon={<AccountBalanceWallet sx={{ color: "#2563EB", fontSize: 38 }} />}
+          isLoading={loading}
+        />
       </div>
     </div>
   );
