@@ -419,13 +419,6 @@ const MyPurchase: React.FC = () => {
     const id = orderId || selected?.id;
     if (!id) return;
 
-    // If completing order, show rating modal instead
-    if (status === "completed") {
-      setRatingTargetOrder(selected);
-      setIsRatingModalOpen(true);
-      return;
-    }
-
     try {
       await axios.patch(`${PURCHASE_API}/update-status/${id}`, { status, sellerEmail });
       toast.success(`Order ${status} successfully!`);
@@ -436,22 +429,15 @@ const MyPurchase: React.FC = () => {
     }
   };
 
-  const handleRatingSubmitted = async () => {
-    // After rating is submitted, complete the order
-    if (!ratingTargetOrder?.id) return;
-    
-    try {
-      await axios.patch(`${PURCHASE_API}/update-status/${ratingTargetOrder.id}`, {
-        status: "completed",
-        sellerEmail: ratingTargetOrder.sellerEmail,
-      });
-      toast.success("Order completed successfully!");
-      setSelected(null);
-      setRatingTargetOrder(null);
-      fetchPurchases();
-    } catch (err) {
-      toast.error("Failed to complete order");
-    }
+  const handleOpenRatingModal = (purchase: Purchase) => {
+    setRatingTargetOrder(purchase);
+    setIsRatingModalOpen(true);
+  };
+
+  const handleRatingSubmitted = () => {
+    // Rating submitted, refresh the list to show updated rating
+    fetchPurchases();
+    setRatingTargetOrder(null);
   };
 
   const handleOpenChat = (p: Purchase) => {
@@ -648,7 +634,20 @@ const MyPurchase: React.FC = () => {
                     </div>
                     
                     {p.status !== "Cancelled" && p.status !== "Refunded" && (
-                      <div className="flex gap-2 w-full justify-end sm:justify-start">
+                      <div className="flex gap-2 w-full flex-wrap justify-end sm:justify-start">
+                        {p.status === "Completed" && (
+                          <button 
+                            onClick={() => handleOpenRatingModal(p)} 
+                            className="flex-1 sm:flex-none flex items-center justify-center gap-1 px-3 py-2 text-amber-600 border border-amber-100 rounded-lg bg-amber-50 hover:bg-amber-100 transition text-xs font-semibold"
+                            title="Give rating"
+                          >
+                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                            <span className="hidden sm:inline">Rate</span>
+                          </button>
+                        )}
+                        
                         <button 
                           onClick={() => { setReportTargetOrder(p); setIsReportModalOpen(true); }} 
                           className="flex-1 sm:flex-none flex justify-center p-2 text-red-500 border border-red-100 rounded-lg bg-white hover:bg-red-50 transition" 
