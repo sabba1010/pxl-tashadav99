@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Search, RotateCcw, CheckCircle, Clock, XCircle, Info, MessageCircle, Mail } from "lucide-react";
+import { Search, RotateCcw, CheckCircle, Clock, XCircle, Info, MessageCircle, Mail, ExternalLink } from "lucide-react";
 import axios from "axios";
 import { toast } from "sonner";
 import Swal from "sweetalert2";
@@ -10,7 +10,7 @@ type ReferralStatus = "pending" | "approved" | "rejected";
 type UserType = {
   _id: string;
   email: string;
-  phone?: string; // Database theke phone number field
+  phone?: string;
   referralCode?: string;
   referredBy?: string;
   referralStatus?: ReferralStatus;
@@ -43,13 +43,30 @@ const RefDetails = () => {
     fetchData();
   }, []);
 
-  // Referrer (Je invite koreche) er details khuje ber korar function
   const getReferrerInfo = (code?: string) => {
     const ref = allUsers.find((u) => u.referralCode === code);
     return {
       email: ref?.email || "N/A",
-      phone: ref?.phone || "N/A"
+      phone: ref?.phone || ""
     };
+  };
+
+  /* ================= HELPERS FOR LINKS ================= */
+  // Gmail ওপেন করার জন্য
+  const openGmail = (email: string) => {
+    if (email === "N/A") return;
+    window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${email}`, "_blank");
+  };
+
+  // WhatsApp ওপেন করার জন্য
+  const openWhatsApp = (phone: string) => {
+    if (!phone || phone === "N/A") {
+      toast.error("Phone number not available");
+      return;
+    }
+    // নম্বর থেকে সব স্পেস বা সিম্বল সরিয়ে শুধু ডিজিট রাখা হচ্ছে
+    const cleanPhone = phone.replace(/\D/g, "");
+    window.open(`https://wa.me/${cleanPhone}`, "_blank");
   };
 
   /* ================= UPDATE STATUS ================= */
@@ -111,7 +128,7 @@ const RefDetails = () => {
   const statusBadge = (user: UserType) => {
     if (user.referralStatus === "approved")
       return (
-        <span className="flex items-center gap-1 text-green-600 text-xs font-bold bg-green-50 px-2 py-1 rounded-full">
+        <span className="flex items-center gap-1 text-green-600 text-xs font-bold bg-green-50 px-2 py-1 rounded-full w-fit">
           <CheckCircle size={14} /> Approved
         </span>
       );
@@ -131,7 +148,7 @@ const RefDetails = () => {
       );
 
     return (
-      <span className="flex items-center gap-1 text-yellow-600 text-xs font-bold bg-yellow-50 px-2 py-1 rounded-full">
+      <span className="flex items-center gap-1 text-yellow-600 text-xs font-bold bg-yellow-50 px-2 py-1 rounded-full w-fit">
         <Clock size={14} /> Pending
       </span>
     );
@@ -196,25 +213,43 @@ const RefDetails = () => {
                     {/* Referrer Details */}
                     <td className="px-6 py-4">
                       <div className="space-y-1">
-                        <div className="flex items-center gap-1.5 text-sm font-bold text-gray-700">
-                           <Mail size={12} className="text-gray-400" /> {inviter.email}
+                        <button 
+                          onClick={() => openGmail(inviter.email)}
+                          className="flex items-center gap-1.5 text-sm font-bold text-gray-700 hover:text-blue-600 group"
+                        >
+                           <Mail size={12} className="text-gray-400 group-hover:text-blue-500" /> 
+                           {inviter.email}
+                           <ExternalLink size={10} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </button>
+                        <button 
+                          onClick={() => openWhatsApp(inviter.phone)}
+                          className="flex items-center gap-1.5 text-xs text-green-600 font-semibold hover:bg-green-50 px-1 rounded transition-colors"
+                        >
+                           <MessageCircle size={12} /> {inviter.phone || "N/A"}
+                        </button>
+                        <div className="mt-1">
+                          <span className="text-[10px] text-blue-500 font-mono font-bold bg-blue-50 px-1 rounded uppercase">CODE: {user.referredBy}</span>
                         </div>
-                        <div className="flex items-center gap-1.5 text-xs text-green-600">
-                           <MessageCircle size={12} /> {inviter.phone}
-                        </div>
-                        <span className="text-[10px] text-blue-500 font-mono font-bold bg-blue-50 px-1 rounded">CODE: {user.referredBy}</span>
                       </div>
                     </td>
 
                     {/* New User Details */}
                     <td className="px-6 py-4">
                       <div className="space-y-1">
-                        <div className="flex items-center gap-1.5 text-sm font-medium text-gray-700">
-                           <Mail size={12} className="text-gray-400" /> {user.email}
-                        </div>
-                        <div className="flex items-center gap-1.5 text-xs text-green-600">
+                        <button 
+                          onClick={() => openGmail(user.email)}
+                          className="flex items-center gap-1.5 text-sm font-medium text-gray-700 hover:text-blue-600 group"
+                        >
+                           <Mail size={12} className="text-gray-400 group-hover:text-blue-500" /> 
+                           {user.email}
+                           <ExternalLink size={10} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </button>
+                        <button 
+                          onClick={() => openWhatsApp(user.phone || "")}
+                          className="flex items-center gap-1.5 text-xs text-green-600 font-semibold hover:bg-green-50 px-1 rounded transition-colors"
+                        >
                            <MessageCircle size={12} /> {user.phone || "N/A"}
-                        </div>
+                        </button>
                       </div>
                     </td>
 
