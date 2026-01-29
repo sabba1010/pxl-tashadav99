@@ -23,7 +23,7 @@ import { Search, Refresh } from "@mui/icons-material";
 interface Payment {
   _id: string;
   transactionId: number | string;
-  tx_ref?: string; // Flutterwave ba Korta Pay chinhar jonno
+  tx_ref?: string; 
   amount: number;
   currency: string;
   status: string; 
@@ -45,10 +45,8 @@ const DepositRequests: React.FC = () => {
   const queryClient = useQueryClient();
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortBy, setSortBy] = useState<
-    "createdAt" | "amount" | "status" | "customerEmail"
-  >("createdAt");
-  const [sortOrder, setSortOrder] = useState<"desc" | "asc">("desc");
+  const [sortBy] = useState<"createdAt">("createdAt");
+  const [sortOrder] = useState<"desc" | "asc">("desc"); // Default set to desc (Latest first)
   const [currentPage, setCurrentPage] = useState(1);
 
   // Fetch data
@@ -62,50 +60,29 @@ const DepositRequests: React.FC = () => {
     queryFn: fetchPayments,
   });
 
-  const handleSort = (column: typeof sortBy) => {
-    setSortBy((prev) => {
-      if (prev === column) {
-        setSortOrder((o) => (o === "asc" ? "desc" : "asc"));
-      } else {
-        setSortOrder(column === "createdAt" ? "desc" : "asc");
-      }
-      return column;
-    });
-  };
-
   // Client-side filtering & sorting
   const filteredAndSorted = useMemo(() => {
-    let filtered = payments.filter(
-      (p) =>
-        p._id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        String(p.transactionId).toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.customerEmail.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.status.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (p.tx_ref && p.tx_ref.toLowerCase().includes(searchTerm.toLowerCase()))
-    );
+    // Search logic with safe checks to prevent errors
+    let filtered = payments.filter((p) => {
+      const search = searchTerm.toLowerCase();
+      return (
+        p._id?.toLowerCase().includes(search) ||
+        String(p.transactionId || "").toLowerCase().includes(search) ||
+        p.customerEmail?.toLowerCase().includes(search) ||
+        p.status?.toLowerCase().includes(search) ||
+        (p.tx_ref && p.tx_ref.toLowerCase().includes(search))
+      );
+    });
 
+    // Sorting logic (Latest First by default)
     filtered.sort((a, b) => {
-      let comp = 0;
-      switch (sortBy) {
-        case "amount":
-          comp = a.amount - b.amount;
-          break;
-        case "status":
-          comp = a.status.localeCompare(b.status);
-          break;
-        case "customerEmail":
-          comp = a.customerEmail.localeCompare(b.customerEmail);
-          break;
-        case "createdAt":
-        default:
-          comp = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-          break;
-      }
-      return sortOrder === "asc" ? comp : -comp;
+      const timeA = new Date(a.createdAt).getTime();
+      const timeB = new Date(b.createdAt).getTime();
+      return sortOrder === "asc" ? timeA - timeB : timeB - timeA;
     });
 
     return filtered;
-  }, [payments, searchTerm, sortBy, sortOrder]);
+  }, [payments, searchTerm, sortOrder]);
 
   const paginated = useMemo(() => {
     const start = (currentPage - 1) * ITEMS_PER_PAGE;
@@ -141,7 +118,7 @@ const DepositRequests: React.FC = () => {
         <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
           <Tooltip title="Refresh payments">
             <IconButton
-              onClick={() => queryClient.refetchQueries({ queryKey: ["payments"] })}
+              onClick={() => queryClient.invalidateQueries({ queryKey: ["payments"] })}
               sx={{
                 width: 44, height: 44, background: "linear-gradient(135deg,#33ac6f,#2a8e5b)",
                 color: "#fff", borderRadius: "12px", boxShadow: "0 8px 20px rgba(51,172,111,0.18)",
@@ -188,7 +165,6 @@ const DepositRequests: React.FC = () => {
             <TableBody>
               {paginated.length > 0 ? (
                 paginated.map((p) => {
-                  // logic for Flutterwave vs Korta Pay
                   const isFlutterwave = p.tx_ref?.toLowerCase().startsWith("flw");
                   const platformName = isFlutterwave ? "Flutterwave" : "Korta Pay";
                   
@@ -196,7 +172,6 @@ const DepositRequests: React.FC = () => {
                     <TableRow key={p._id} hover sx={{ "&:hover": { background: "rgba(51,172,111,0.03)" } }}>
                       <TableCell sx={{ fontSize: "13px", color: "#6B7280", fontWeight: 600 }}>{p.customerEmail}</TableCell>
                       
-                      {/* Platform Cell */}
                       <TableCell>
                         <Box sx={{ 
                           display: "inline-block", px: 1.5, py: 0.5, borderRadius: "6px", fontSize: "11px", fontWeight: "bold",
@@ -230,7 +205,7 @@ const DepositRequests: React.FC = () => {
         )}
       </TableContainer>
 
-      {/* Pagination UI same as your provided code */}
+      {/* Pagination */}
       {totalPages > 1 && (
         <Box sx={{ mt: 5, display: "flex", flexDirection: "column", alignItems: "center" }}>
           <Pagination
