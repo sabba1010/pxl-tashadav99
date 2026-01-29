@@ -64,28 +64,29 @@ const MyAds: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
+  const fetchAds = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get<Ad[]>(
+        "http://localhost:3200/product/all-sells"
+      );
+
+      const userAds = res.data.filter(
+        (ad: { userEmail: string; isVisible?: boolean }) => 
+          ad.userEmail === user.user?.email && ad.isVisible !== false
+      );
+
+      setItems(userAds);
+      toast.success("Listings reloaded!");
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to load ads");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchAds = async () => {
-      try {
-        const res = await axios.get<Ad[]>(
-          "http://localhost:3200/product/all-sells"
-        );
-
-        const userAds = res.data.filter(
-          (ad: { userEmail: string; isVisible?: boolean }) => 
-            ad.userEmail === user.user?.email && ad.isVisible !== false
-        );
-
-        setItems(userAds);
-      } catch (err) {
-        console.error(err);
-        toast.dismiss();
-        toast.error("Failed to load ads");
-      } finally {
-        setLoading(false);
-      }
-    };
-
     if (user.user?.email) {
       fetchAds();
     }
@@ -265,7 +266,7 @@ const MyAds: React.FC = () => {
       <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Header Section */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8 sm:mb-10">
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8 sm:mb-10">
           <div>
             <h1 className="text-2xl sm:text-4xl font-bold text-[#0A1A3A] tracking-tight">
               My Listings
@@ -275,13 +276,27 @@ const MyAds: React.FC = () => {
             </p>
           </div>
 
-          <Link
-            to="/selling-form"
-            className="flex items-center justify-center gap-2 bg-[#d4a643] hover:bg-[#33ac6f] text-white px-6 py-3 rounded-xl sm:rounded-2xl font-semibold text-sm sm:text-base shadow-lg transition-all duration-300 active:scale-95"
-          >
-            <Plus size={18} />
-            Create New Ad
-          </Link>
+          <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
+            <button
+              onClick={fetchAds}
+              disabled={loading}
+              className="flex items-center justify-center gap-2 px-4 py-2.5 sm:px-5 sm:py-3 bg-[#33ac6f] hover:bg-[#28935a] disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg sm:rounded-xl font-semibold text-sm transition-all active:scale-95 shadow-sm"
+              title="Refresh listings"
+            >
+              <svg className={`w-4 h-4 sm:w-5 sm:h-5 transition-transform ${loading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              <span className="hidden sm:inline">Reload</span>
+            </button>
+
+            <Link
+              to="/selling-form"
+              className="flex items-center justify-center gap-2 bg-[#d4a643] hover:bg-[#33ac6f] text-white px-6 py-3 rounded-xl sm:rounded-2xl font-semibold text-sm shadow-lg transition-all duration-300 active:scale-95"
+            >
+              <Plus size={18} />
+              Create New Ad
+            </Link>
+          </div>
         </div>
 
         {/* Tabs Section - Fixed Overflow and Gaps */}
