@@ -11,9 +11,10 @@ type Tx = {
   id: string;
   type: "deposit" | "withdraw";
   amount: number;
-  status: "pending" | "completed" | "rejected" | "successful";
+  status: "pending" | "completed" | "rejected" | "successful" | "declined";
   date: string;
   note?: string;
+  reason?: string;           // ← for showing why it was declined/rejected
 };
 
 export default function Wallet(): React.ReactElement {
@@ -41,33 +42,44 @@ export default function Wallet(): React.ReactElement {
 
   // Fetch withdrawals
   const fetchWithdrawals = async () => {
-    // ইউজার ডাটা লোড না হওয়া পর্যন্ত অপেক্ষা করা বা রিটার্ন করা
     if (!loginUserData?.data?.email) return;
 
     try {
       setWithdrawLoading(true);
       const response = await fetch("http://localhost:3200/withdraw/getall");
-      if (!response.ok) throw new Error("Failed to fetch");
+      if (!response.ok) throw new Error("Failed to fetch withdrawals");
       const data = await response.json();
 
-      // === ফিল্টারিং লজিক ===
       const currentUserEmail = loginUserData.data.email;
 
-      // শুধুমাত্র কারেন্ট ইউজারের ইমেইলের সাথে মেলা ডাটাগুলো ফিল্টার করা হচ্ছে
       const filteredData = data.filter(
         (wd: any) => wd.email === currentUserEmail
       );
 
-      const mapped: Tx[] = filteredData.map((wd: any) => ({
-        id: wd._id,
-        type: "withdraw",
-        amount: Number(wd.amount) || 0,
-        status: wd.status === "success" ? "completed" : wd.status || "pending",
-        date: new Date(wd.createdAt).toISOString().split("T")[0],
-        note:
-          wd.note ||
-          `${wd.paymentMethod?.toUpperCase() || ""} • ${wd.bankCode || ""}`,
-      }));
+      const mapped: Tx[] = filteredData.map((wd: any) => {
+        let displayStatus = wd.status?.toLowerCase() || "pending";
+        let displayReason = "";
+
+        // Normalize status
+        if (displayStatus === "success") {
+          displayStatus = "completed";
+        } else if (displayStatus === "declined" || displayStatus === "rejected") {
+          displayStatus = "rejected";
+          displayReason = wd.adminNote || wd.note || "";
+        }
+
+        return {
+          id: wd._id,
+          type: "withdraw",
+          amount: Number(wd.amount) || 0,
+          status: displayStatus as Tx["status"],
+          date: new Date(wd.createdAt).toISOString().split("T")[0],
+          note: `${wd.paymentMethod?.toUpperCase() || "Unknown"} • ${
+            wd.bankCode || wd.accountNumber || "N/A"
+          }`,
+          reason: displayReason.trim() || undefined,
+        };
+      });
 
       setWithdrawals(mapped);
       setWithdrawError(false);
@@ -79,14 +91,14 @@ export default function Wallet(): React.ReactElement {
     }
   };
 
-  // Auto refresh when withdraw tab active
+  // Auto refresh when withdraw tab is active
   useEffect(() => {
     if (activeTab === "withdraw") {
       fetchWithdrawals();
       const interval = setInterval(fetchWithdrawals, 10000);
       return () => clearInterval(interval);
     }
-  }, [activeTab, loginUserData?.data?.email]); // ডিপেনডেন্সিতে email যোগ করা হয়েছে
+  }, [activeTab, loginUserData?.data?.email]);
 
   // Map deposits
   const onlineDeposits: Tx[] = payments.map((tx) => ({
@@ -100,7 +112,7 @@ export default function Wallet(): React.ReactElement {
         ? "pending"
         : "rejected",
     date: new Date(tx.createdAt).toISOString().split("T")[0],
-    note: `Tx ID: ${tx.transactionId}`,
+    note: `Tx ID: ${tx.transactionId || "N/A"}`,
   }));
 
   // Helpers
@@ -112,9 +124,19 @@ export default function Wallet(): React.ReactElement {
     }`;
 
   const getStatusColor = (status: string) => {
-    if (status === "completed" || status === "successful") return EMERALD;
-    if (status === "pending") return PENDING_COLOR;
-    return REJECTED_COLOR;
+    const s = status.toLowerCase();
+    if (s === "completed" || s === "successful") return EMERALD;
+    if (s === "pending") return PENDING_COLOR;
+    if (s === "rejected" || s === "declined") return REJECTED_COLOR;
+    return "#6B7280"; // gray fallback
+  };
+
+  const getStatusDisplay = (status: string) => {
+    const s = status.toLowerCase();
+    if (s === "successful" || s === "completed") return "Completed";
+    if (s === "declined") return "Declined";
+    if (s === "rejected") return "Rejected";
+    return status.charAt(0).toUpperCase() + status.slice(1);
   };
 
   const renderList = (items: Tx[]) => {
@@ -133,16 +155,25 @@ export default function Wallet(): React.ReactElement {
             key={t.id}
             className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-5 rounded-2xl bg-white shadow-lg border border-gray-100 hover:shadow-xl transition-shadow duration-300"
           >
-            <div>
+            <div className="flex-1">
               <div
                 className="text-lg font-semibold"
                 style={{ color: EMPIRE_BLUE }}
               >
                 {t.type === "withdraw" ? "Withdrawal" : "Online Deposit"}
               </div>
+
               <div className="text-sm text-gray-500 mt-1">
                 {t.date} • {t.note || "-"}
               </div>
+
+              {/* Show decline/reject reason */}
+              {(t.status === "rejected" || t.status === "declined") &&
+                t.reason && (
+                  <div className="mt-2 text-sm text-red-600 font-medium">
+                    Reason: {t.reason}
+                  </div>
+                )}
             </div>
 
             <div className="text-right mt-4 sm:mt-0">
@@ -156,7 +187,7 @@ export default function Wallet(): React.ReactElement {
                 className="text-sm font-medium mt-1"
                 style={{ color: getStatusColor(t.status) }}
               >
-                {t.status.charAt(0).toUpperCase() + t.status.slice(1)}
+                {getStatusDisplay(t.status)}
               </div>
             </div>
           </div>
@@ -212,18 +243,17 @@ export default function Wallet(): React.ReactElement {
         </h2>
 
         <div className="grid grid-cols-12 gap-6 lg:gap-10">
-          {/* Left */}
+          {/* Left - Balance & Actions */}
           <div className="col-span-12 lg:col-span-5">
             <div
-              className="rounded-3xl overflow-hidden relative text-white h-52 sm:h-80 lg:h-96 p-8 flex flex-col justify-between
-                shadow-2xl"
+              className="rounded-3xl overflow-hidden relative text-white h-52 sm:h-80 lg:h-96 p-8 flex flex-col justify-between shadow-2xl"
               style={{
                 background: `linear-gradient(135deg, ${EMPIRE_BLUE} 0%, #152850 50%, ${ROYAL_GOLD} 100%)`,
               }}
             >
               <div className="text-lg opacity-90">Available Balance</div>
               <div className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight">
-                ${loginUserData.data?.balance.toFixed(2) || "0.00"}
+                ${loginUserData.data?.balance?.toFixed(2) || "0.00"}
               </div>
               <div className="text-sm opacity-80">Updated just now</div>
             </div>
@@ -237,7 +267,7 @@ export default function Wallet(): React.ReactElement {
                 Deposit Funds
               </Link>
 
-              {loginUserData.data?.role !== "buyer" ? (
+              {loginUserData.data?.role !== "buyer" && (
                 <Link
                   to="/withdraw"
                   className="flex-1 flex items-center justify-center gap-3 px-8 py-5 rounded-2xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 bg-white border-2 text-[#0A1A3A] hover:bg-[#0A1A3A] hover:text-white hover:scale-105"
@@ -246,11 +276,11 @@ export default function Wallet(): React.ReactElement {
                   <FaArrowUpIcon size={22} className="rotate-45" />
                   Withdraw Funds
                 </Link>
-              ) : null}
+              )}
             </div>
           </div>
 
-          {/* Right */}
+          {/* Right - Transaction History */}
           <div className="col-span-12 lg:col-span-7">
             <div className="flex gap-8 border-b pb-4 mb-8 overflow-x-auto">
               <button
@@ -260,11 +290,7 @@ export default function Wallet(): React.ReactElement {
                 Online Deposit
               </button>
               <button
-                onClick={() => {
-                  setActiveTab("withdraw");
-                  // fetchWithdrawals এখানে কল না করলেও চলবে কারণ useEffect হ্যান্ডেল করবে,
-                  // তবুও রাখা যেতে পারে instant call এর জন্য
-                }}
+                onClick={() => setActiveTab("withdraw")}
                 className={tabClass("withdraw")}
               >
                 Withdraw History
