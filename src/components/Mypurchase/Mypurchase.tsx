@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 import { useAuthHook } from "../../hook/useAuthHook";
 import { toast } from "sonner";
+import RatingModal from "../Rating/RatingModal";
 
 import {
   FaTimes,
@@ -204,6 +205,10 @@ const MyPurchase: React.FC = () => {
   const itemsPerPage = 10000000;
   const [currentPage, setCurrentPage] = useState(1);
   const [showAccountDetails, setShowAccountDetails] = useState(false);
+
+  // Rating Modal States
+  const [isRatingModalOpen, setIsRatingModalOpen] = useState(false);
+  const [ratingTargetOrder, setRatingTargetOrder] = useState<Purchase | null>(null);
 
   const BASE_URL = "http://localhost:3200";
   const PURCHASE_API = `${BASE_URL}/purchase`;
@@ -413,6 +418,14 @@ const MyPurchase: React.FC = () => {
   const handleUpdateStatus = async (status: string, sellerEmail: string, orderId?: string) => {
     const id = orderId || selected?.id;
     if (!id) return;
+
+    // If completing order, show rating modal instead
+    if (status === "completed") {
+      setRatingTargetOrder(selected);
+      setIsRatingModalOpen(true);
+      return;
+    }
+
     try {
       await axios.patch(`${PURCHASE_API}/update-status/${id}`, { status, sellerEmail });
       toast.success(`Order ${status} successfully!`);
@@ -420,6 +433,24 @@ const MyPurchase: React.FC = () => {
       fetchPurchases();
     } catch (err) {
       toast.error("Failed to update status");
+    }
+  };
+
+  const handleRatingSubmitted = async () => {
+    // After rating is submitted, complete the order
+    if (!ratingTargetOrder?.id) return;
+    
+    try {
+      await axios.patch(`${PURCHASE_API}/update-status/${ratingTargetOrder.id}`, {
+        status: "completed",
+        sellerEmail: ratingTargetOrder.sellerEmail,
+      });
+      toast.success("Order completed successfully!");
+      setSelected(null);
+      setRatingTargetOrder(null);
+      fetchPurchases();
+    } catch (err) {
+      toast.error("Failed to complete order");
     }
   };
 
@@ -536,7 +567,20 @@ const MyPurchase: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#F3EFEE] pt-16 pb-20 px-4 sm:px-6 font-sans">
       <div className="max-w-screen-xl mx-auto">
-        <h1 className="text-2xl sm:text-3xl font-bold text-[#0A1A3A] mb-6">My Purchase</h1>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+          <h1 className="text-2xl sm:text-3xl font-bold text-[#0A1A3A]">My Purchase</h1>
+          <button
+            onClick={fetchPurchases}
+            disabled={isLoading}
+            className="flex items-center justify-center gap-2 px-4 py-2.5 sm:px-5 sm:py-3 bg-[#33ac6f] hover:bg-[#28935a] disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg sm:rounded-xl font-semibold text-sm sm:text-base transition-all active:scale-95 shadow-sm"
+            title="Refresh purchases"
+          >
+            <svg className={`w-4 h-4 sm:w-5 sm:h-5 transition-transform ${isLoading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            <span className="hidden sm:inline">Reload</span>
+          </button>
+        </div>
         <div className="bg-white rounded-2xl shadow-sm border overflow-hidden">
           <div className="flex gap-6 p-4 border-b overflow-x-auto">
             {TABS.map((t) => (
@@ -948,6 +992,22 @@ const MyPurchase: React.FC = () => {
             </div>
           )}
         </div>
+      )}
+
+      {/* Rating Modal */}
+      {isRatingModalOpen && ratingTargetOrder && (
+        <RatingModal
+          isOpen={isRatingModalOpen}
+          onClose={() => {
+            setIsRatingModalOpen(false);
+            setRatingTargetOrder(null);
+          }}
+          orderId={ratingTargetOrder.id}
+          productName={ratingTargetOrder.title}
+          sellerEmail={ratingTargetOrder.sellerEmail}
+          buyerEmail={ratingTargetOrder.buyerEmail}
+          onRatingSubmitted={handleRatingSubmitted}
+        />
       )}
     </div>
   );
