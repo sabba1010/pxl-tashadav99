@@ -315,7 +315,7 @@ const SellerAccount: React.FC = () => {
               <TableCell sx={{ fontWeight: 800 }}>#</TableCell>
               <TableCell sx={{ fontWeight: 800 }}>SELLER</TableCell>
               <TableCell sx={{ fontWeight: 800 }}>JOINED AT</TableCell>
-              <TableCell sx={{ fontWeight: 800 }}>PHONE</TableCell>
+              <TableCell sx={{ fontWeight: 800 }}>WHATSAPP</TableCell>
               <TableCell sx={{ fontWeight: 800 }}>BALANCE</TableCell>
               <TableCell sx={{ fontWeight: 800 }}>STATUS</TableCell>
               <TableCell sx={{ fontWeight: 800 }} align="center">
