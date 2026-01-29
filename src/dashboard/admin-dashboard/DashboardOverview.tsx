@@ -28,7 +28,9 @@ interface AdminMetrics {
   platformProfitUSD: number;
   pendingDepositRequests: number;
   pendingWithdrawalRequests: number;
-  totalWithdrawn: number; // New metric for total withdrawn amount
+  totalBuyerDeposits: number;
+  totalAdminWithdrawn: number;
+  totalSellerWithdrawn: number;
 }
 
 const MetricCard: React.FC<{
@@ -81,10 +83,19 @@ const MetricCard: React.FC<{
 
 const DashboardOverview: React.FC = () => {
   const [metrics, setMetrics] = useState<AdminMetrics>({
-    totalUsers: 0, totalBuyers: 0, totalSellers: 0, totalUserBalance: 0,
-    activeListings: 0, pendingListings: 0, totalSystemBalance: 0,
-    platformProfitUSD: 0, pendingDepositRequests: 0, pendingWithdrawalRequests: 0,
-    totalWithdrawn: 0, // Initialized new metric
+    totalUsers: 0,
+    totalBuyers: 0,
+    totalSellers: 0,
+    totalUserBalance: 0,
+    activeListings: 0,
+    pendingListings: 0,
+    totalSystemBalance: 0,
+    platformProfitUSD: 0,
+    pendingDepositRequests: 0,
+    pendingWithdrawalRequests: 0,
+    totalBuyerDeposits: 0,
+    totalAdminWithdrawn: 0,
+    totalSellerWithdrawn: 0,
   });
   const [loading, setLoading] = useState(true);
 
@@ -105,33 +116,56 @@ const DashboardOverview: React.FC = () => {
       const payments = Array.isArray(payRes.data) ? payRes.data : [];
       const withdraws = Array.isArray(wRes.data) ? wRes.data : [];
 
-      // Logic for calculating profit from completed transactions
+      const usersMap = new Map(users.map((u: any) => [u._id.toString(), u]));
+
+      // Calculate platform profit from completed purchases
       const calculatedProfit = purchases.reduce((acc: number, p: any) => {
         const isCompleted = ["completed", "success"].includes(p.status?.toLowerCase());
         if (isCompleted) {
-          // Priority: 1. Specific adminFee field | 2. 20% of totalAmount | 3. 20% of price
           const fee = Number(p.adminFee) || (Number(p.totalAmount || p.price || 0) * 0.20);
           return acc + fee;
         }
         return acc;
       }, 0);
 
-      // New: Calculate total withdrawn amount from approved/successful withdrawals
-      const totalWithdrawn = withdraws.reduce((acc: number, w: any) => {
-        const isApproved = ["approved", "success", "completed"].includes(w.status?.toLowerCase());
-        if (isApproved) {
-          return acc + Number(w.amount || 0);
+      // Total buyer deposits (successful/credited payments)
+      const totalBuyerDeposits = payments.reduce((acc: number, p: any) => {
+        const status = p.status?.toLowerCase();
+        if (["successful", "completed"].includes(status) || p.credited) {
+          return acc + Number(p.amount || 0);
         }
         return acc;
       }, 0);
 
-      // Note: To ensure withdrawals affect wallet balances automatically:
-      // This should be handled in the backend. When a withdrawal is approved (e.g., status changed to "approved"),
-      // the backend should deduct the amount from the seller's balance in the users collection.
-      // Example backend logic (in your withdrawal approval endpoint):
-      // const user = await User.findById(withdrawal.sellerId);
-      // user.balance -= withdrawal.amount;
-      // await user.save();
+      // Separate seller vs admin withdrawals
+      let totalSellerWithdrawn = 0;
+      let totalAdminWithdrawn = 0;
+
+      withdraws.forEach((w: any) => {
+        const statusLower = w.status?.toLowerCase() || "";
+        if (["approved", "success", "completed"].includes(statusLower)) {
+          const amount = Number(w.amount || 0);
+          const sellerId = w.sellerId?.toString();
+
+          if (!sellerId) {
+            // If no sellerId → likely admin withdrawal
+            totalAdminWithdrawn += amount;
+            return;
+          }
+
+          const user = usersMap.get(sellerId);
+          if (user) {
+            if (user.role === "admin") {
+              totalAdminWithdrawn += amount;
+            } else {
+              totalSellerWithdrawn += amount;
+            }
+          } else {
+            // If sellerId exists but user not found → assume seller
+            totalSellerWithdrawn += amount;
+          }
+        }
+      });
 
       setMetrics({
         totalUsers: users.length,
@@ -143,11 +177,13 @@ const DashboardOverview: React.FC = () => {
         totalSystemBalance: purchases.reduce((s: number, p: any) => s + (Number(p.totalAmount || p.price) || 0), 0),
         platformProfitUSD: calculatedProfit,
         pendingDepositRequests: payments.filter((p: any) => {
-           const status = p.status?.toLowerCase() || "";
-           return status !== "successful" && status !== "completed" && !p.credited;
+          const status = p.status?.toLowerCase() || "";
+          return status !== "successful" && status !== "completed" && !p.credited;
         }).length,
         pendingWithdrawalRequests: withdraws.filter((w: any) => w.status?.toLowerCase() === "pending").length,
-        totalWithdrawn,
+        totalBuyerDeposits,
+        totalAdminWithdrawn,
+        totalSellerWithdrawn,
       });
     } catch (err) {
       console.error("Fetch Error:", err);
@@ -156,7 +192,9 @@ const DashboardOverview: React.FC = () => {
     }
   }, []);
 
-  useEffect(() => { fetchAllData(); }, [fetchAllData]);
+  useEffect(() => {
+    fetchAllData();
+  }, [fetchAllData]);
 
   return (
     <div className="p-10 bg-[#F4F7FE] min-h-screen space-y-10">
@@ -170,8 +208,8 @@ const DashboardOverview: React.FC = () => {
             Comprehensive analytics and platform control center
           </Typography>
         </Box>
-        <button 
-          onClick={fetchAllData} 
+        <button
+          onClick={fetchAllData}
           className="flex items-center gap-3 px-7 py-3.5 bg-[#1B2559] text-white rounded-[1.2rem] shadow-xl shadow-indigo-200 hover:bg-indigo-800 transition-all active:scale-95"
         >
           <Refresh className={loading ? "animate-spin" : ""} fontSize="small" />
@@ -183,7 +221,7 @@ const DashboardOverview: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <MetricCard
           title="Total Wallet Balance"
-          value={`$${metrics.totalUserBalance.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`}
+          value={`$${metrics.totalUserBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
           variant="balance"
           subtitle="Total funds held by users"
           icon={<MonetizationOn sx={{ color: "#059669", fontSize: 38 }} />}
@@ -191,7 +229,7 @@ const DashboardOverview: React.FC = () => {
         />
         <MetricCard
           title="Net Platform Profit"
-          value={`$${metrics.platformProfitUSD.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`}
+          value={`$${metrics.platformProfitUSD.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
           variant="profit"
           subtitle="Automatic 20% commission on sales"
           icon={<TrendingUp sx={{ color: "#B45309", fontSize: 38 }} />}
@@ -199,7 +237,7 @@ const DashboardOverview: React.FC = () => {
         />
         <MetricCard
           title="System Turnover"
-          value={`$${metrics.totalSystemBalance.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`}
+          value={`$${metrics.totalSystemBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
           variant="info"
           subtitle="Total transaction volume"
           icon={<AccountBalanceWallet sx={{ color: "#2563EB", fontSize: 38 }} />}
@@ -232,21 +270,30 @@ const DashboardOverview: React.FC = () => {
         <MetricCard title="Live Products" value={metrics.activeListings} variant="success" icon={<ShoppingBag sx={{ color: "#059669" }} />} isLoading={loading} />
       </div>
 
-      {/* New Metric for Total Withdrawn */}
+      {/* Transaction Summaries */}
       <div className="flex items-center gap-4">
-        <h2 className="text-xl font-[1000] text-slate-800 uppercase tracking-tighter">Withdrawal Statistics</h2>
+        <h2 className="text-xl font-[1000] text-slate-800 uppercase tracking-tighter">Transaction Summaries</h2>
         <div className="h-[2px] flex-1 bg-slate-200 rounded-full" />
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <MetricCard
-          title="Total Withdrawn"
-          value={`$${metrics.totalWithdrawn.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`}
-          variant="info"
-          subtitle="Total amount withdrawn by sellers"
-          icon={<AccountBalanceWallet sx={{ color: "#2563EB", fontSize: 38 }} />}
+          title="Total Buyer Deposits"
+          value={`$${metrics.totalBuyerDeposits.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+          variant="success"
+          subtitle="Sum of successful deposits"
+          icon={<Payments sx={{ color: "#059669", fontSize: 38 }} />}
           isLoading={loading}
         />
+        <MetricCard
+          title="Total Seller Withdrawals"
+          value={`$${metrics.totalAdminWithdrawn.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+          variant="warning"
+          subtitle="From platform profit"
+          icon={<AccountBalanceWallet sx={{ color: "#B45309", fontSize: 38 }} />}
+          isLoading={loading}
+        />
+        
       </div>
     </div>
   );
