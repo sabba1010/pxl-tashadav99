@@ -73,7 +73,6 @@ const MetricCard: React.FC<{
         </Link>
       )}
 
-      {/* Background Decorative Shape */}
       <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-current opacity-[0.03] rounded-full" />
     </div>
   );
@@ -104,6 +103,17 @@ const DashboardOverview: React.FC = () => {
       const payments = Array.isArray(payRes.data) ? payRes.data : [];
       const withdraws = Array.isArray(wRes.data) ? wRes.data : [];
 
+      // Logic for calculating profit from completed transactions
+      const calculatedProfit = purchases.reduce((acc: number, p: any) => {
+        const isCompleted = ["completed", "success"].includes(p.status?.toLowerCase());
+        if (isCompleted) {
+          // Priority: 1. Specific adminFee field | 2. 20% of totalAmount | 3. 20% of price
+          const fee = Number(p.adminFee) || (Number(p.totalAmount || p.price || 0) * 0.20);
+          return acc + fee;
+        }
+        return acc;
+      }, 0);
+
       setMetrics({
         totalUsers: users.length,
         totalBuyers: users.filter((u: any) => u.role === "buyer").length,
@@ -112,9 +122,12 @@ const DashboardOverview: React.FC = () => {
         activeListings: products.filter((p: any) => p.status === "active").length,
         pendingListings: products.filter((p: any) => p.status === "pending").length,
         totalSystemBalance: purchases.reduce((s: number, p: any) => s + (Number(p.totalAmount || p.price) || 0), 0),
-        platformProfitUSD: purchases.filter((p: any) => ["completed", "success"].includes(p.status)).reduce((s: number, p: any) => s + (Number(p.adminFee) || 0), 0),
-        pendingDepositRequests: payments.filter((p: any) => p.status.toLowerCase() !== "successful" && !p.credited).length,
-        pendingWithdrawalRequests: withdraws.filter((w: any) => w.status === "pending").length,
+        platformProfitUSD: calculatedProfit,
+        pendingDepositRequests: payments.filter((p: any) => {
+           const status = p.status?.toLowerCase() || "";
+           return status !== "successful" && status !== "completed" && !p.credited;
+        }).length,
+        pendingWithdrawalRequests: withdraws.filter((w: any) => w.status?.toLowerCase() === "pending").length,
       });
     } catch (err) {
       console.error("Fetch Error:", err);
@@ -150,7 +163,7 @@ const DashboardOverview: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <MetricCard
           title="Total Wallet Balance"
-          value={`$${metrics.totalUserBalance.toLocaleString()}`}
+          value={`$${metrics.totalUserBalance.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`}
           variant="balance"
           subtitle="Total funds held by users"
           icon={<MonetizationOn sx={{ color: "#059669", fontSize: 38 }} />}
@@ -158,15 +171,15 @@ const DashboardOverview: React.FC = () => {
         />
         <MetricCard
           title="Net Platform Profit"
-          value={`$${metrics.platformProfitUSD.toLocaleString()}`}
+          value={`$${metrics.platformProfitUSD.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`}
           variant="profit"
-          subtitle="Verified admin commissions"
+          subtitle="Automatic 20% commission on sales"
           icon={<TrendingUp sx={{ color: "#B45309", fontSize: 38 }} />}
           isLoading={loading}
         />
         <MetricCard
           title="System Turnover"
-          value={`$${metrics.totalSystemBalance.toLocaleString()}`}
+          value={`$${metrics.totalSystemBalance.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`}
           variant="info"
           subtitle="Total transaction volume"
           icon={<AccountBalanceWallet sx={{ color: "#2563EB", fontSize: 38 }} />}
@@ -174,7 +187,7 @@ const DashboardOverview: React.FC = () => {
         />
       </div>
 
-      {/* Section Divider */}
+      {/* User Statistics */}
       <div className="flex items-center gap-4">
         <h2 className="text-xl font-[1000] text-slate-800 uppercase tracking-tighter">User Statistics</h2>
         <div className="h-[2px] flex-1 bg-slate-200 rounded-full" />
@@ -186,7 +199,7 @@ const DashboardOverview: React.FC = () => {
         <MetricCard title="Active Buyers" value={metrics.totalBuyers} variant="user" icon={<PersonOutline sx={{ color: "#6366F1", fontSize: 32 }} />} isLoading={loading} />
       </div>
 
-      {/* Section Divider */}
+      {/* Pending Actions */}
       <div className="flex items-center gap-4">
         <h2 className="text-xl font-[1000] text-slate-800 uppercase tracking-tighter">Pending Actions</h2>
         <div className="h-[2px] flex-1 bg-slate-200 rounded-full" />
