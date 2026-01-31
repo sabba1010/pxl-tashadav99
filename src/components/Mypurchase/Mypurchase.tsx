@@ -394,8 +394,9 @@ const MyPurchase: React.FC = () => {
                 previewLink: productRes.data.previewLink,
                 additionalInfo: productRes.data.additionalInfo,
                 categoryIcon: productRes.data.categoryIcon,
-                deliveryType: productRes.data.deliveryType,
-                deliveryTime: productRes.data.deliveryTime,
+                // Use purchase deliveryTime if exists (stored at purchase time), fallback to product
+                deliveryType: item.deliveryType || productRes.data.deliveryType,
+                deliveryTime: item.deliveryTime || productRes.data.deliveryTime,
               };
             }
           } catch (err) {
@@ -636,8 +637,8 @@ const MyPurchase: React.FC = () => {
                       )}
                       <div className="flex flex-wrap items-center gap-2 mt-2">
                         <span className={`text-[10px] px-2 py-0.5 rounded-full border font-bold ${p.status === 'Completed' ? 'bg-green-50 text-green-600 border-green-100' :
-                            (p.status === 'Cancelled' || p.status === 'Refunded') ? 'bg-red-50 text-red-600 border-red-100' :
-                              'bg-amber-50 text-amber-600 border-amber-100'
+                          (p.status === 'Cancelled' || p.status === 'Refunded') ? 'bg-red-50 text-red-600 border-red-100' :
+                            'bg-amber-50 text-amber-600 border-amber-100'
                           }`}>
                           {p.status}
                         </span>
@@ -713,8 +714,8 @@ const MyPurchase: React.FC = () => {
                       key={pageNumber}
                       onClick={() => setCurrentPage(pageNumber)}
                       className={`px-3 py-2 rounded-lg text-sm font-medium transition ${isActive
-                          ? 'bg-[#33ac6f] text-white'
-                          : 'border hover:bg-gray-50'
+                        ? 'bg-[#33ac6f] text-white'
+                        : 'border hover:bg-gray-50'
                         }`}
                     >
                       {pageNumber}
@@ -806,12 +807,21 @@ const MyPurchase: React.FC = () => {
             )}
 
             {selected.status === "Pending" && (
-              <button
-                onClick={() => handleUpdateStatus("completed", selected.sellerEmail)}
-                className="w-full bg-[#33ac6f] text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition active:scale-95 shadow-lg"
-              >
-                <FaCheckCircleIcon /> Confirm & Complete Order
-              </button>
+              <>
+                <button
+                  onClick={() => handleUpdateStatus("completed", selected.sellerEmail)}
+                  className="w-full bg-[#33ac6f] text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition active:scale-95 shadow-lg"
+                >
+                  <FaCheckCircleIcon /> Confirm & Complete Order
+                </button>
+
+                <button
+                  onClick={() => handleUpdateStatus("cancelled", selected.sellerEmail)}
+                  className="w-full bg-red-500 text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition active:scale-95 shadow-lg mt-3"
+                >
+                  <FaTimesIcon /> Cancel Order
+                </button>
+              </>
             )}
           </div>
         </div>
@@ -904,8 +914,8 @@ const MyPurchase: React.FC = () => {
                   <div className={`max-w-[85%] ${m.senderId === buyerId ? 'items-end' : 'items-start'} flex flex-col`}>
                     <div
                       className={`rounded-2xl px-4 py-2.5 shadow-sm text-sm ${m.senderId === buyerId
-                          ? 'bg-[#33ac6f] text-white rounded-tr-none'
-                          : 'bg-white text-[#0A1A3A] border rounded-tl-none font-medium'
+                        ? 'bg-[#33ac6f] text-white rounded-tr-none'
+                        : 'bg-white text-[#0A1A3A] border rounded-tl-none font-medium'
                         }`}
                     >
                       {m.imageUrl && (

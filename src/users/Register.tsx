@@ -319,10 +319,9 @@ const Register = () => {
       accountCreationDate: new Date(),
       referralCode: Math.random().toString(36).substring(2, 10).toUpperCase(),
       // URL এর কোড থাকলে সেটা নেবে, না থাকলে ম্যানুয়াল ইনপুট নেবে
-      referredBy: refFromUrl || manualRefCode || null, 
+      referredBy: refFromUrl || manualRefCode || null,
       balance: 0,
-      salesCredit: 10,
-      subscribedPlan: "free",
+      // Backend controls salesCredit and subscribedPlan
     };
 
     try {
@@ -339,10 +338,16 @@ const Register = () => {
           email: formData.email,
           role: formData.role,
         };
+
+        const isLocalhost =
+          window.location.hostname === "localhost" ||
+          window.location.hostname === "127.0.0.1";
+
         Cookies.set("aAcctEmpire_2XLD", JSON.stringify(savedUser), {
           expires: 7,
-          secure: true,
+          secure: !isLocalhost,
           sameSite: "strict",
+          path: "/",
         });
         form.reset();
         navigate("/marketplace");
@@ -357,7 +362,7 @@ const Register = () => {
     <div className="min-h-screen w-full bg-[#111827] relative overflow-hidden font-sans">
       <div className="flex max-w-7xl mx-auto px-6 min-h-screen items-center justify-center py-10">
         <div className="grid lg:grid-cols-2 gap-20 items-center w-full">
-          
+
           {/* Left Side Content */}
           <motion.div initial={{ opacity: 0, x: -80 }} animate={{ opacity: 1, x: 0 }} className="hidden lg:block">
             <div className="relative">
@@ -401,7 +406,7 @@ const Register = () => {
                 <label className="text-sm font-medium text-gray-300">WhatsApp Number</label>
                 <div className="relative mt-2 flex gap-2">
                   <button type="button" onClick={() => setIsCountryOpen(!isCountryOpen)} className="bg-gray-800 px-3 py-2 rounded-xl text-white flex items-center gap-2 text-sm">
-                    <img src={selectedCountry.flag} alt="flag" className="w-5 h-5 rounded-sm" /> 
+                    <img src={selectedCountry.flag} alt="flag" className="w-5 h-5 rounded-sm" />
                     <span>{selectedCountry.dial_code}</span>
                     <ChevronDown className="w-4 h-4" />
                   </button>
@@ -439,13 +444,13 @@ const Register = () => {
                 <label className="text-sm font-medium text-gray-300">Referral Code (Optional)</label>
                 <div className="relative mt-2">
                   <Sparkles className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-orange-400" />
-                  <input 
-                    type="text" 
-                    value={refFromUrl || manualRefCode} 
+                  <input
+                    type="text"
+                    value={refFromUrl || manualRefCode}
                     onChange={(e) => setManualRefCode(e.target.value)} // .toUpperCase() সরানো হয়েছে
-                    disabled={!!refFromUrl} 
+                    disabled={!!refFromUrl}
                     placeholder="e.g. 5w4p6nr5"
-                    className="w-full pl-14 pr-5 py-4 bg-gray-900/60 border border-gray-700 rounded-xl text-white outline-none focus:border-orange-500 transition disabled:opacity-50 disabled:cursor-not-allowed font-mono" 
+                    className="w-full pl-14 pr-5 py-4 bg-gray-900/60 border border-gray-700 rounded-xl text-white outline-none focus:border-orange-500 transition disabled:opacity-50 disabled:cursor-not-allowed font-mono"
                   />
                 </div>
               </div>

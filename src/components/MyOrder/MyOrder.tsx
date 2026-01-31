@@ -64,6 +64,8 @@ interface Order {
   status: OrderStatus;
   orderNumber?: string;
   icon?: string;
+  deliveryMs?: number;
+  deliveryType?: string;
 }
 
 interface ApiOrder {
@@ -241,6 +243,18 @@ const getStatusDisplay = (online: boolean, lastSeen?: string | null): string => 
   return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 };
 
+const parseDeliveryTime = (str?: string): number | undefined => {
+  if (!str) return undefined;
+  const match = str.match(/(\d+)\s*(min(?:s)?|hour(?:s)?|day(?:s)?)/i);
+  if (!match) return undefined;
+  const num = parseInt(match[1]);
+  const unit = match[2].toLowerCase();
+  if (unit.startsWith('min')) return num * 60 * 1000;
+  if (unit.startsWith('hour')) return num * 3600 * 1000;
+  if (unit.startsWith('day')) return num * 86400 * 1000;
+  return undefined;
+};
+
 const MyOrder: React.FC = () => {
   const [activeTab, setActiveTab] = useState<Tab>("All");
   const [selected, setSelected] = useState<Order | null>(null);
@@ -335,7 +349,9 @@ const MyOrder: React.FC = () => {
     if (orders.length === 0) return;
     orders.forEach((o) => {
       if (o.status !== 'Pending') return;
-      const expiresAt = new Date(o.rawDate).getTime() + 14400000;
+      if (o.deliveryType === 'manual') return; // No auto-complete for manual
+      const timeoutMs = o.deliveryMs ?? 14400000;
+      const expiresAt = new Date(o.rawDate).getTime() + timeoutMs;
       if (Date.now() >= expiresAt && !autoCompletedRef.current.has(o.id)) {
         autoCompletedRef.current.add(o.id);
         handleUpdateStatus('completed', o.id);
@@ -343,13 +359,18 @@ const MyOrder: React.FC = () => {
     });
   }, [orders, now]);
 
-  const getRemainingTime = (rawDate: string) => {
-    const diff = (new Date(rawDate).getTime() + 14400000) - now;
-    if (diff <= 0) return "Confirming...";
+  const getRemainingTime = (rawDate: string, deliveryMs?: number, deliveryType?: string) => {
+    const timeoutMs = deliveryMs ?? 14400000;
+    const diff = (new Date(rawDate).getTime() + timeoutMs) - now;
+    if (diff <= 0) return deliveryType === 'manual' ? "Overdue" : "Confirming...";
     const h = Math.floor(diff / 3600000).toString().padStart(2, '0');
     const m = Math.floor((diff % 3600000) / 60000).toString().padStart(2, '0');
     const s = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
     return `${h}h ${m}m ${s}s`;
+  };
+
+  const getTimeLabel = (deliveryType?: string) => {
+    return deliveryType === 'manual' ? "Expected delivery in" : "Auto-confirm in";
   };
 
   const setPresence = async (status: 'online' | 'offline') => {
@@ -435,9 +456,12 @@ const MyOrder: React.FC = () => {
           try {
             const productRes = await axios.get<any>(`${PURCHASE_API.replace('/purchase', '')}/product/${item.productId}`);
             if (productRes?.data) {
+              const deliveryMs = parseDeliveryTime(productRes.data.deliveryTime);
               return {
                 ...item,
                 categoryIcon: productRes.data.categoryIcon,
+                deliveryType: productRes.data.deliveryType,
+                deliveryMs,
               };
             }
           } catch (err) {
@@ -447,7 +471,7 @@ const MyOrder: React.FC = () => {
         return item;
       }));
       
-      const mapped: Order[] = enrichedData.map((item) => ({
+      const mapped: Order[] = enrichedData.map((item: any) => ({
         id: item._id,
         platform: inferPlatform(item.productName),
         title: item.productName || "Product Deleted / Old Order",
@@ -459,6 +483,8 @@ const MyOrder: React.FC = () => {
         status: (item.status.charAt(0).toUpperCase() + item.status.slice(1)) as OrderStatus,
         orderNumber: `ORD-${item._id.slice(-6).toUpperCase()}`,
         icon: item.categoryIcon,
+        deliveryMs: item.deliveryMs,
+        deliveryType: item.deliveryType,
       }));
       setOrders(mapped);
     } catch (err) {
@@ -574,6 +600,7 @@ const MyOrder: React.FC = () => {
   const handleUpdateStatus = async (status: string, orderId?: string) => {
     const id = orderId || selected?.id;
     if (!id) return;
+    setIsUpdating(true);
     try {
       await axios.patch(`${PURCHASE_API}/update-status/${id}`, { status, sellerEmail: sellerId });
       toast.success(`Order ${status} successfully!`);
@@ -581,6 +608,8 @@ const MyOrder: React.FC = () => {
       fetchOrders();
     } catch (err) {
       toast.error("Failed to update status");
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -671,7 +700,7 @@ const MyOrder: React.FC = () => {
                           </span>
                           {order.status === "Pending" && (
                             <span className="text-[10px] text-blue-600 font-bold flex items-center gap-1">
-                              <FaClockIcon size={10} /> {getRemainingTime(order.rawDate)}
+                              <FaClockIcon size={10} /> {getTimeLabel(order.deliveryType)}: {getRemainingTime(order.rawDate, order.deliveryMs, order.deliveryType)}
                             </span>
                           )}
                         </div>
@@ -757,29 +786,35 @@ const MyOrder: React.FC = () => {
               <p className="text-3xl font-black text-[#33ac6f] mt-2">${selected.price.toFixed(2)}</p>
             </div>
             <div className="bg-gray-50 rounded-2xl p-4 space-y-3 border border-gray-100 mb-6 text-sm">
-               <div className="flex justify-between border-b pb-2">
-                 <span className="text-gray-500">Order Number</span>
-                 <span className="font-bold">{selected.orderNumber}</span>
-               </div>
-               <div className="flex justify-between border-b pb-2">
-                 <span className="text-gray-500">Status</span>
-                 <span className={`font-bold ${selected.status === 'Completed' ? 'text-green-600' : 'text-amber-600'}`}>
-                   {selected.status}
-                 </span>
-               </div>
-               <div className="pt-2">
-                 <p className="text-gray-500 mb-1">Product Details</p>
-                 <div className="bg-white p-3 rounded-lg border font-mono text-xs break-all">
-                    {selected.desc || "No additional details provided."}
-                 </div>
-               </div>
+              <div className="flex justify-between border-b pb-2">
+                <span className="text-gray-500">Order Number</span>
+                <span className="font-bold">{selected.orderNumber}</span>
+              </div>
+              <div className="flex justify-between border-b pb-2">
+                <span className="text-gray-500">Status</span>
+                <span className={`font-bold ${selected.status === 'Completed' ? 'text-green-600' : selected.status === 'Cancelled' ? 'text-red-600' : 'text-amber-600'}`}>
+                  {selected.status}
+                </span>
+              </div>
+              {selected.status === "Pending" && (
+                <div className="flex justify-between border-b pb-2">
+                  <span className="text-gray-500">{getTimeLabel(selected.deliveryType)}</span>
+                  <span className="font-bold text-blue-600">{getRemainingTime(selected.rawDate, selected.deliveryMs, selected.deliveryType)}</span>
+                </div>
+              )}
+              <div className="pt-2">
+                <p className="text-gray-500 mb-1">Product Details</p>
+                <div className="bg-white p-3 rounded-lg border font-mono text-xs break-all">
+                  {selected.desc || "No additional details provided."}
+                </div>
+              </div>
             </div>
             {selected.status !== "Cancelled" && (
               <div className="mt-8 grid grid-cols-2 gap-3">
                 <button
                   disabled={isUpdating}
-                  onClick={() => {/* cancel logic if needed */}}
-                  className="py-3.5 px-4 border border-red-200 text-red-600 rounded-lg hover:bg-red-50 flex items-center justify-center gap-2 font-semibold text-base transition"
+                  onClick={() => handleUpdateStatus('cancelled')}
+                  className="py-3.5 px-4 border border-red-200 text-red-600 rounded-lg hover:bg-red-50 flex items-center justify-center gap-2 font-semibold text-base transition disabled:opacity-50"
                 >
                   <FaBanIcon size={20} /> Cancel
                 </button>
@@ -791,6 +826,17 @@ const MyOrder: React.FC = () => {
                   className="py-3.5 px-4 bg-red-50 text-red-600 border border-red-200 rounded-lg hover:bg-red-100 flex items-center justify-center gap-2 font-semibold text-base transition"
                 >
                   <FaFlagIcon size={20} /> Report
+                </button>
+              </div>
+            )}
+            {selected.status === "Pending" && selected.deliveryType === 'manual' && (
+              <div className="mt-4">
+                <button
+                  disabled={isUpdating}
+                  onClick={() => handleUpdateStatus('completed')}
+                  className="w-full py-3.5 px-4 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center gap-2 font-semibold text-base transition disabled:opacity-50"
+                >
+                  <FaCheckCircleIcon size={20} /> Confirm Delivery
                 </button>
               </div>
             )}
