@@ -30,8 +30,14 @@ const SellerPlans: React.FC = () => {
 
             <ul className="mt-6 space-y-3">
               <li className="flex items-start gap-3">
-                <span className="text-[#1BC47D] text-xl">✔</span>
-                <span className="text-[#111111]">10 listings per day</span>
+                <span className="text-[#1BC47D] text-xl">ℹ️</span>
+                <span className="text-[#111111] font-bold">0 listings (View Only)</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="text-red-500 text-xl">⚠️</span>
+                <span className="text-red-500 font-bold">
+                  Paid plan required to list
+                </span>
               </li>
               <li className="flex items-start gap-3">
                 <span className="text-[#1BC47D] text-xl">✔</span>
@@ -72,9 +78,9 @@ const SellerPlans: React.FC = () => {
                 </span>
               ) : (
                 <button>
-                <span className="px-6 py-3 bg-gray-300 text-gray-700 rounded-2xl cursor-not-allowed">
-                  Current Plan
-                </span>
+                  <span className="px-6 py-3 bg-gray-300 text-gray-700 rounded-2xl cursor-not-allowed">
+                    Current Plan
+                  </span>
                 </button>
               )}
             </div>
