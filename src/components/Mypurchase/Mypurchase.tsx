@@ -46,6 +46,8 @@ interface Purchase {
   recoveryEmailPassword?: string;
   previewLink?: string;
   icon?: string;
+  deliveryType?: string;
+  deliveryTime?: string;
 }
 
 interface RawPurchaseItem {
@@ -64,6 +66,8 @@ interface RawPurchaseItem {
   previewLink?: string;
   additionalInfo?: string;
   categoryIcon?: string;
+  deliveryType?: string;
+  deliveryTime?: string;
 }
 
 interface ChatMessage {
@@ -125,14 +129,14 @@ const formatChatTime = (dateString?: string) => {
   try {
     const date = new Date(dateString);
     if (isNaN(date.getTime())) return "Just now";
-    
+
     const now = new Date();
     const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-    
+
     if (diffInSeconds >= 0 && diffInSeconds < 86400) {
       return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
     }
-    
+
     return date.toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true });
   } catch {
     return "Just now";
@@ -185,7 +189,7 @@ const MyPurchase: React.FC = () => {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null); // ← নতুন ref যোগ করা হয়েছে
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [reportTargetOrder, setReportTargetOrder] = useState<Purchase | null>(null);
@@ -257,7 +261,7 @@ const MyPurchase: React.FC = () => {
     if (!buyerId) return;
     try {
       await axios.post(`${CHAT_API}/status`, { userId: buyerId, status });
-    } catch (err) {}
+    } catch (err) { }
   };
 
   const fetchSellerStatus = async () => {
@@ -337,7 +341,7 @@ const MyPurchase: React.FC = () => {
     if (purchases.length === 0) return;
     purchases.forEach((p) => {
       if (p.status !== 'Pending') return;
-      const expiresAt = new Date(p.rawDate).getTime() + 14400000;
+      const expiresAt = new Date(p.rawDate).getTime() + getDeliveryTimeInMs(p);
       if (Date.now() >= expiresAt && !autoCompletedRef.current.has(p.id)) {
         autoCompletedRef.current.add(p.id);
         handleUpdateStatus('completed', p.sellerEmail, p.id);
@@ -346,8 +350,23 @@ const MyPurchase: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [purchases, now]);
 
-  const getRemainingTime = (rawDate: string) => {
-    const diff = (new Date(rawDate).getTime() + 14400000) - now;
+  const getDeliveryTimeInMs = (p: Purchase) => {
+    if (p.deliveryType === 'manual' && p.deliveryTime) {
+      const match = p.deliveryTime.match(/(\d+)\s*(mins?|minutes?|h|hours?|d|days?)/i);
+      if (match) {
+        const num = parseInt(match[1]);
+        const unit = match[2].toLowerCase();
+        if (unit.startsWith('min')) return num * 60000;
+        if (unit.startsWith('h')) return num * 3600000;
+        if (unit.startsWith('d')) return num * 86400000;
+      }
+    }
+    return 14400000; // default 4h
+  };
+
+  const getRemainingTime = (p: Purchase) => {
+    const addedMs = getDeliveryTimeInMs(p);
+    const diff = (new Date(p.rawDate).getTime() + addedMs) - now;
     if (diff <= 0) return "Confirming...";
     const h = Math.floor(diff / 3600000).toString().padStart(2, '0');
     const m = Math.floor((diff % 3600000) / 60000).toString().padStart(2, '0');
@@ -360,7 +379,7 @@ const MyPurchase: React.FC = () => {
     try {
       setIsLoading(true);
       const res = await axios.get<RawPurchaseItem[]>(`${PURCHASE_API}/getall?email=${buyerId}&role=buyer`);
-      
+
       const enrichedData = await Promise.all(res.data.map(async (item) => {
         if (item.productId) {
           try {
@@ -373,7 +392,10 @@ const MyPurchase: React.FC = () => {
                 email: productRes.data.email,
                 password: productRes.data.password,
                 previewLink: productRes.data.previewLink,
+                additionalInfo: productRes.data.additionalInfo,
                 categoryIcon: productRes.data.categoryIcon,
+                deliveryType: productRes.data.deliveryType,
+                deliveryTime: productRes.data.deliveryTime,
               };
             }
           } catch (err) {
@@ -401,6 +423,8 @@ const MyPurchase: React.FC = () => {
         recoveryEmailPassword: item.password,
         icon: item.categoryIcon,
         previewLink: item.previewLink,
+        deliveryType: item.deliveryType,
+        deliveryTime: item.deliveryTime,
       }));
       setPurchases(mapped);
     } catch (err) {
@@ -486,7 +510,7 @@ const MyPurchase: React.FC = () => {
   useEffect(() => {
     const container = messagesContainerRef.current;
     if (!container) return;
-    
+
     if (shouldAutoScrollRef.current) {
       container.scrollTo({ top: container.scrollHeight, behavior: "smooth" });
     }
@@ -558,7 +582,7 @@ const MyPurchase: React.FC = () => {
           <button
             onClick={fetchPurchases}
             disabled={isLoading}
-            className="flex items-center justify-center gap-2 px-4 py-2.5 sm:px-5 sm:py-3 bg-[#33ac6f] hover:bg-[#28935a] disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg sm:rounded-xl font-semibold text-sm sm:text-base transition-all active:scale-95 shadow-sm"
+            className="flex items-center justify-center gap-2 px-4 py-2.5 sm:px-5 sm:py-3 bg-[#33ac6f] hover:bg-[#28935a] disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg sm:rounded-xl font-semibold text-sm transition-all active:scale-95 shadow-sm"
             title="Refresh purchases"
           >
             <svg className={`w-4 h-4 sm:w-5 sm:h-5 transition-transform ${isLoading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -570,9 +594,9 @@ const MyPurchase: React.FC = () => {
         <div className="bg-white rounded-2xl shadow-sm border overflow-hidden">
           <div className="flex gap-6 p-4 border-b overflow-x-auto">
             {TABS.map((t) => (
-              <button 
-                key={t} 
-                onClick={() => {setActiveTab(t); setCurrentPage(1);}}
+              <button
+                key={t}
+                onClick={() => { setActiveTab(t); setCurrentPage(1); }}
                 className={`pb-2 text-sm whitespace-nowrap transition-all ${activeTab === t ? "text-[#d4a643] border-b-2 border-[#d4a643] font-bold" : "text-gray-500"}`}
               >
                 {t}
@@ -592,8 +616,8 @@ const MyPurchase: React.FC = () => {
               </div>
             ) : (
               paginated.map((p) => (
-                <div 
-                  key={p.id} 
+                <div
+                  key={p.id}
                   className="bg-[#F8FAFB] border rounded-xl p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:shadow-md transition"
                 >
                   <div className="flex gap-4 items-start">
@@ -611,16 +635,15 @@ const MyPurchase: React.FC = () => {
                         <p className="text-[10px] text-gray-500 mt-0.5">{timeAgo(lastMessageTimes[p.id])}</p>
                       )}
                       <div className="flex flex-wrap items-center gap-2 mt-2">
-                        <span className={`text-[10px] px-2 py-0.5 rounded-full border font-bold ${
-                          p.status === 'Completed' ? 'bg-green-50 text-green-600 border-green-100' : 
-                          (p.status === 'Cancelled' || p.status === 'Refunded') ? 'bg-red-50 text-red-600 border-red-100' : 
-                          'bg-amber-50 text-amber-600 border-amber-100'
-                        }`}>
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full border font-bold ${p.status === 'Completed' ? 'bg-green-50 text-green-600 border-green-100' :
+                            (p.status === 'Cancelled' || p.status === 'Refunded') ? 'bg-red-50 text-red-600 border-red-100' :
+                              'bg-amber-50 text-amber-600 border-amber-100'
+                          }`}>
                           {p.status}
                         </span>
                         {p.status === "Pending" && (
                           <span className="text-[10px] text-blue-600 font-bold flex items-center gap-1">
-                            <FaClockIcon size={10} /> {getRemainingTime(p.rawDate)}
+                            <FaClockIcon size={10} /> {getRemainingTime(p)}
                           </span>
                         )}
                       </div>
@@ -632,12 +655,12 @@ const MyPurchase: React.FC = () => {
                       <p className="text-lg font-bold text-[#0A1A3A]">${p.price.toFixed(2)}</p>
                       <p className="text-[10px] text-gray-400 font-medium">{p.date}</p>
                     </div>
-                    
+
                     {p.status !== "Cancelled" && p.status !== "Refunded" && (
                       <div className="flex gap-2 w-full flex-wrap justify-end sm:justify-start">
                         {p.status === "Completed" && (
-                          <button 
-                            onClick={() => handleOpenRatingModal(p)} 
+                          <button
+                            onClick={() => handleOpenRatingModal(p)}
                             className="flex-1 sm:flex-none flex items-center justify-center gap-1 px-3 py-2 text-amber-600 border border-amber-100 rounded-lg bg-amber-50 hover:bg-amber-100 transition text-xs font-semibold"
                             title="Give rating"
                           >
@@ -647,24 +670,24 @@ const MyPurchase: React.FC = () => {
                             <span className="hidden sm:inline">Rate</span>
                           </button>
                         )}
-                        
-                        <button 
-                          onClick={() => { setReportTargetOrder(p); setIsReportModalOpen(true); }} 
-                          className="flex-1 sm:flex-none flex justify-center p-2 text-red-500 border border-red-100 rounded-lg bg-white hover:bg-red-50 transition" 
+
+                        <button
+                          onClick={() => { setReportTargetOrder(p); setIsReportModalOpen(true); }}
+                          className="flex-1 sm:flex-none flex justify-center p-2 text-red-500 border border-red-100 rounded-lg bg-white hover:bg-red-50 transition"
                         >
                           <FaFlagIcon size={14} />
                         </button>
-                        
-                        <button 
-                          onClick={() => setSelected(p)} 
-                          className="flex-1 sm:flex-none flex justify-center p-2 text-gray-600 border rounded-lg bg-white hover:bg-gray-50 transition" 
+
+                        <button
+                          onClick={() => setSelected(p)}
+                          className="flex-1 sm:flex-none flex justify-center p-2 text-gray-600 border rounded-lg bg-white hover:bg-gray-50 transition"
                         >
                           <FaEyeIcon size={14} />
                         </button>
-                        
-                        <button 
-                          onClick={() => handleOpenChat(p)} 
-                          className="flex-1 sm:flex-none flex justify-center p-2 text-blue-600 border border-blue-100 rounded-lg bg-white hover:bg-blue-50 transition" 
+
+                        <button
+                          onClick={() => handleOpenChat(p)}
+                          className="flex-1 sm:flex-none flex justify-center p-2 text-blue-600 border border-blue-100 rounded-lg bg-white hover:bg-blue-50 transition"
                         >
                           <div className="relative">
                             <FaCommentsIcon size={14} />
@@ -689,11 +712,10 @@ const MyPurchase: React.FC = () => {
                     <button
                       key={pageNumber}
                       onClick={() => setCurrentPage(pageNumber)}
-                      className={`px-3 py-2 rounded-lg text-sm font-medium transition ${
-                        isActive
+                      className={`px-3 py-2 rounded-lg text-sm font-medium transition ${isActive
                           ? 'bg-[#33ac6f] text-white'
                           : 'border hover:bg-gray-50'
-                      }`}
+                        }`}
                     >
                       {pageNumber}
                     </button>
@@ -718,22 +740,22 @@ const MyPurchase: React.FC = () => {
               <p className="text-3xl font-black text-[#33ac6f] mt-2">${selected.price.toFixed(2)}</p>
             </div>
             <div className="bg-gray-50 rounded-2xl p-4 space-y-3 border border-gray-100 mb-6 text-sm">
-               <div className="flex justify-between border-b pb-2">
-                 <span className="text-gray-500">Order Number</span>
-                 <span className="font-bold">{selected.purchaseNumber}</span>
-               </div>
-               <div className="flex justify-between border-b pb-2">
-                 <span className="text-gray-500">Status</span>
-                 <span className={`font-bold ${selected.status === 'Completed' ? 'text-green-600' : 'text-amber-600'}`}>
-                   {selected.status}
-                 </span>
-               </div>
-               <div className="pt-2">
-                 <p className="text-gray-500 mb-1">Product Details</p>
-                 <div className="bg-white p-3 rounded-lg border font-mono text-xs break-all">
-                    {selected.desc || "No additional details provided."}
-                 </div>
-               </div>
+              <div className="flex justify-between border-b pb-2">
+                <span className="text-gray-500">Order Number</span>
+                <span className="font-bold">{selected.purchaseNumber}</span>
+              </div>
+              <div className="flex justify-between border-b pb-2">
+                <span className="text-gray-500">Status</span>
+                <span className={`font-bold ${selected.status === 'Completed' ? 'text-green-600' : 'text-amber-600'}`}>
+                  {selected.status}
+                </span>
+              </div>
+              <div className="pt-2">
+                <p className="text-gray-500 mb-1">Product Details</p>
+                <div className="bg-white p-3 rounded-lg border font-mono text-xs break-all">
+                  {selected.desc || "No additional details provided."}
+                </div>
+              </div>
             </div>
 
             {(selected.accountUsername || selected.accountPassword || selected.recoveryEmail || selected.recoveryEmailPassword || selected.previewLink) && (
@@ -784,8 +806,8 @@ const MyPurchase: React.FC = () => {
             )}
 
             {selected.status === "Pending" && (
-              <button 
-                onClick={() => handleUpdateStatus("completed", selected.sellerEmail)} 
+              <button
+                onClick={() => handleUpdateStatus("completed", selected.sellerEmail)}
                 className="w-full bg-[#33ac6f] text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition active:scale-95 shadow-lg"
               >
                 <FaCheckCircleIcon /> Confirm & Complete Order
@@ -806,25 +828,25 @@ const MyPurchase: React.FC = () => {
               </button>
             </div>
             <form onSubmit={handleReportSubmit} className="p-6 space-y-4">
-              <select 
-                value={reportReason} 
-                onChange={(e) => setReportReason(e.target.value)} 
+              <select
+                value={reportReason}
+                onChange={(e) => setReportReason(e.target.value)}
                 className="w-full border p-2.5 rounded-xl text-sm outline-none"
               >
                 {REPORT_REASONS.map(r => (
                   <option key={r} value={r}>{r}</option>
                 ))}
               </select>
-              <textarea 
-                value={reportMessage} 
-                onChange={(e) => setReportMessage(e.target.value)} 
-                placeholder="Describe the issue..." 
-                className="w-full border p-3 rounded-xl text-sm h-32 outline-none" 
-                required 
+              <textarea
+                value={reportMessage}
+                onChange={(e) => setReportMessage(e.target.value)}
+                placeholder="Describe the issue..."
+                className="w-full border p-3 rounded-xl text-sm h-32 outline-none"
+                required
               />
-              <button 
-                type="submit" 
-                disabled={isSubmittingReport} 
+              <button
+                type="submit"
+                disabled={isSubmittingReport}
                 className="w-full bg-red-600 text-white py-3 rounded-xl font-bold"
               >
                 {isSubmittingReport ? "Sending..." : "Submit Report"}
@@ -849,7 +871,7 @@ const MyPurchase: React.FC = () => {
                   </h4>
                   <div className="flex items-center gap-1.5 text-[10px]">
                     <span className={`w-2 h-2 rounded-full ${sellerOnline ? "bg-green-500" : "bg-gray-300"}`} />
-                    <span 
+                    <span
                       className={`font-medium ${sellerOnline ? "text-green-600" : "text-gray-500"}`}
                     >
                       {partnerStatusText}
@@ -857,15 +879,15 @@ const MyPurchase: React.FC = () => {
                   </div>
                 </div>
               </div>
-              <button 
-                onClick={() => { setIsChatOpen(false); setPresence('offline'); }} 
+              <button
+                onClick={() => { setIsChatOpen(false); setPresence('offline'); }}
                 className="p-2 text-gray-400 hover:text-red-500 transition rounded-full hover:bg-gray-100"
               >
                 <FaTimesIcon size={20} />
               </button>
             </div>
 
-            <div 
+            <div
               ref={messagesContainerRef}
               className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#F3EFEE]/30 scroll-smooth"
               onScroll={(e) => {
@@ -880,15 +902,14 @@ const MyPurchase: React.FC = () => {
                   className={`flex ${m.senderId === buyerId ? 'justify-end' : 'justify-start'}`}
                 >
                   <div className={`max-w-[85%] ${m.senderId === buyerId ? 'items-end' : 'items-start'} flex flex-col`}>
-                    <div 
-                      className={`rounded-2xl px-4 py-2.5 shadow-sm text-sm ${
-                        m.senderId === buyerId 
-                          ? 'bg-[#33ac6f] text-white rounded-tr-none' 
+                    <div
+                      className={`rounded-2xl px-4 py-2.5 shadow-sm text-sm ${m.senderId === buyerId
+                          ? 'bg-[#33ac6f] text-white rounded-tr-none'
                           : 'bg-white text-[#0A1A3A] border rounded-tl-none font-medium'
-                      }`}
+                        }`}
                     >
                       {m.imageUrl && (
-                        <div 
+                        <div
                           className="mb-2 cursor-pointer hover:opacity-90 transition"
                           onClick={() => setPreviewImage(m.imageUrl!.startsWith('http') ? m.imageUrl! : `${BASE_URL}${m.imageUrl!}`)}
                         >
@@ -912,9 +933,9 @@ const MyPurchase: React.FC = () => {
                 <div className="flex justify-end px-4 py-2">
                   <div className="p-1 bg-[#33ac6f] rounded-2xl rounded-tr-none shadow-md">
                     <div className="relative">
-                      <img 
-                        src={imagePreview} 
-                        alt="preview" 
+                      <img
+                        src={imagePreview}
+                        alt="preview"
                         className="rounded-lg max-w-full max-h-[420px] object-contain"
                       />
                       <button
@@ -928,8 +949,8 @@ const MyPurchase: React.FC = () => {
             </div>
 
             <div className="p-4 bg-white border-t">
-              <form 
-                onSubmit={sendChat} 
+              <form
+                onSubmit={sendChat}
                 className="flex items-center gap-2 bg-[#F8FAFB] border rounded-2xl p-1.5 focus-within:border-[#33ac6f] transition-all"
               >
                 <input
@@ -982,17 +1003,17 @@ const MyPurchase: React.FC = () => {
 
           {/* Full-screen Image Preview */}
           {previewImage && (
-            <div 
+            <div
               className="fixed inset-0 z-[200] bg-black/90 flex items-center justify-center p-4"
               onClick={() => setPreviewImage(null)}
             >
               <div className="relative max-w-4xl max-h-[90vh] w-full h-full flex flex-col items-center justify-center">
-                <img 
-                  src={previewImage} 
-                  alt="Full size preview" 
+                <img
+                  src={previewImage}
+                  alt="Full size preview"
                   className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
                 />
-                
+
                 <a
                   href={previewImage}
                   download={`chat-image-${Date.now()}.jpg`}
@@ -1005,7 +1026,7 @@ const MyPurchase: React.FC = () => {
                   Download
                 </a>
 
-                <button 
+                <button
                   className="absolute top-6 right-6 text-white bg-black/60 hover:bg-black/80 rounded-full p-3"
                   onClick={() => setPreviewImage(null)}
                 >

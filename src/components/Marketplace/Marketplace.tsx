@@ -664,7 +664,9 @@ const Marketplace: React.FC = () => {
             desc: p.description,
             price: Number(p.price) || 0,
             seller: p.userEmail,
-            delivery: "Instant",
+            delivery: p.deliveryType === 'manual' ? (p.deliveryTime || "Manual") : "Instant",
+            deliveryType: p.deliveryType,
+            deliveryTime: p.deliveryTime,
             icon: p.categoryIcon || FaBullhorn,
             category: "Social Media", // fallback — you may want to improve this
             subcategory: p.category,   // <--- assuming backend sends correct subcategory here
