@@ -42,10 +42,10 @@ const DeductAndCreditAction: React.FC<DeductAndCreditActionProps> = ({
 
   const handleTransaction = async () => {
     // Validation before showing alert
-    if (deductAmount <= 0) {
+    if (deductAmount < 0) {
       setStatus("error");
-      setMessage("Deduct amount must be greater than 0");
-      onError?.("Deduct amount must be greater than 0");
+      setMessage("Deduct amount cannot be negative");
+      onError?.("Deduct amount cannot be negative");
       return;
     }
     if (creditAmount < 0) {
@@ -142,14 +142,13 @@ const DeductAndCreditAction: React.FC<DeductAndCreditActionProps> = ({
     <div className="space-y-4">
       <Button
         onClick={handleTransaction}
-        disabled={loading || disabled || deductAmount <= 0}
+        disabled={loading || disabled}
         className={`
           relative w-full overflow-hidden rounded-xl px-6 py-4 text-base font-semibold
           shadow-lg transition-all duration-300 transform
-          ${
-            loading || disabled || deductAmount <= 0
-              ? "cursor-not-allowed bg-gray-400 text-gray-200"
-              : "hover:scale-[1.02] hover:shadow-xl active:scale-[0.98]"
+          ${loading || disabled
+            ? "cursor-not-allowed bg-gray-400 text-gray-200"
+            : "hover:scale-[1.02] hover:shadow-xl active:scale-[0.98]"
           }
           bg-gradient-to-r from-[#0A1A3A] to-[#1e3a6d] text-white border-0
         `}
@@ -167,10 +166,9 @@ const DeductAndCreditAction: React.FC<DeductAndCreditActionProps> = ({
             relative overflow-hidden rounded-xl px-5 py-4 text-sm font-medium
             shadow-md border backdrop-blur-sm transition-all duration-500
             flex items-center gap-3
-            ${
-              status === "success"
-                ? "bg-green-50 border-green-200 text-green-800"
-                : "bg-red-50 border-red-200 text-red-800"
+            ${status === "success"
+              ? "bg-green-50 border-green-200 text-green-800"
+              : "bg-red-50 border-red-200 text-red-800"
             }
           `}
         >
@@ -181,9 +179,8 @@ const DeductAndCreditAction: React.FC<DeductAndCreditActionProps> = ({
           )}
           <span className="relative">{message}</span>
           <div
-            className={`absolute left-0 top-0 bottom-0 w-1 ${
-              status === "success" ? "bg-green-500" : "bg-red-500"
-            }`}
+            className={`absolute left-0 top-0 bottom-0 w-1 ${status === "success" ? "bg-green-500" : "bg-red-500"
+              }`}
           />
         </div>
       )}
