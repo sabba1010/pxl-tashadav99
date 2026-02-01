@@ -3,6 +3,9 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 import { useAuthHook } from "../../hook/useAuthHook";
 import { toast } from "sonner";
+import { useSocket } from "../../context/SocketContext";
+import NotificationBadge from "../NotificationBadge";
+import UserActivityStatus from "../UserActivityStatus";
 
 import type { IconType } from "react-icons";
 import {
@@ -301,10 +304,13 @@ const MyOrder: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 40;
 
-  const [onlineBuyersMap, setOnlineBuyersMap] = useState<Record<string, boolean>>({});
-  const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
+  // const [onlineBuyersMap, setOnlineBuyersMap] = useState<Record<string, boolean>>({}); // REMOVED: Using Context
+  // const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({}); // REMOVED: Using Context
   const [lastMessageTimes, setLastMessageTimes] = useState<Record<string, string>>({});
-  const [lastSeenMap, setLastSeenMap] = useState<Record<string, string | null>>({});
+  const [lastSeenMap, setLastSeenMap] = useState<Record<string, string | null>>({}); // Keeping for specific logic if needed, or replace with Context
+
+  const { socket, unreadCounts, onlineUsers, markOrderRead } = useSocket();
+
 
   // Auto-resize textarea
   useEffect(() => {
@@ -330,21 +336,41 @@ const MyOrder: React.FC = () => {
 
   useEffect(() => {
     if (shouldAutoScrollRef.current) {
-      messagesContainerRef.current?.scrollIntoView({ behavior: "smooth" });
+      messagesContainerRef.current?.scrollTo({ top: messagesContainerRef.current.scrollHeight, behavior: "smooth" });
     }
   }, [chatMessages]);
+
+  useEffect(() => {
+    if (socket && activeChatOrderId) {
+      const handleMsg = (newMsg: any) => {
+        // Only add if belongs to this chat
+        // AND check if we are not duplicating (though result.insertedId helps)
+        // Ideally we check orderId
+        if (newMsg.orderId === activeChatOrderId) {
+          setChatMessages(prev => [...prev, newMsg]);
+          // If user is near bottom, scroll to bottom
+          if (messagesContainerRef.current) {
+            const container = messagesContainerRef.current;
+            const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 150;
+            if (isNearBottom) {
+              shouldAutoScrollRef.current = true;
+            }
+          }
+        }
+      };
+      socket.on('receive_message', handleMsg);
+      return () => {
+        socket.off('receive_message', handleMsg);
+      };
+    }
+  }, [socket, activeChatOrderId]);
 
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(timer);
   }, []);
 
-  useEffect(() => {
-    if (orders.length === 0) return;
-    fetchAllBuyersStatus();
-    const interval = setInterval(fetchAllBuyersStatus, 10000);
-    return () => clearInterval(interval);
-  }, [orders]);
+
 
   useEffect(() => {
     if (orders.length === 0) return;
@@ -398,52 +424,7 @@ const MyOrder: React.FC = () => {
     }
   };
 
-  const fetchAllBuyersStatus = async () => {
-    const buyers = Array.from(new Set(orders.map(o => o.buyerEmail)));
-    const statusMap: Record<string, boolean> = {};
-    const seenMap: Record<string, string | null> = {};
-
-    for (const email of buyers) {
-      try {
-        const res = await axios.get<PresenceResponse>(`${CHAT_API}/status/${email}`);
-        statusMap[email] = Boolean(res.data?.online);
-        seenMap[email] = res.data?.lastSeen || null;
-      } catch (err) {
-        statusMap[email] = false;
-        seenMap[email] = null;
-      }
-    }
-    setOnlineBuyersMap(statusMap);
-    setLastSeenMap(seenMap);
-  };
-
-  const checkNotifications = async () => {
-    if (!sellerId) return;
-    try {
-      // 1. Fetch unread counts
-      const countRes = await axios.get<Record<string, number>>(`${CHAT_API}/unread/counts/${sellerId}`);
-      setUnreadCounts(countRes.data || {});
-
-      // 2. Fetch last message times (keeping existing logic for timestamp accuracy)
-      const newLastTimes: Record<string, string> = { ...lastMessageTimes };
-      for (const order of orders) {
-        const res = await axios.get<IMessage[]>(`${CHAT_API}/history/${sellerId}/${order.buyerEmail}`, {
-          params: { orderId: order.id }
-        });
-        const history = res.data;
-        const lastMsg = history[history.length - 1];
-        if (lastMsg) {
-          newLastTimes[order.id] = lastMsg.createdAt!;
-        }
-      }
-      setLastMessageTimes(newLastTimes);
-    } catch (err) { console.error(err); }
-  };
-
-  useEffect(() => {
-    const interval = setInterval(checkNotifications, 10000);
-    return () => clearInterval(interval);
-  }, [orders, sellerId]);
+  // Removed fetchAllBuyersStatus as we use SocketContext for status
 
   const fetchOrders = async () => {
     if (!sellerId) {
@@ -512,12 +493,8 @@ const MyOrder: React.FC = () => {
       });
       setChatMessages(res.data);
 
-      // Mark as read immediately when chat opens
       if (activeChatOrderId) {
-        try {
-          await axios.post(`${CHAT_API}/mark-read`, { userId: sellerId, orderId: activeChatOrderId });
-          setUnreadCounts(prev => ({ ...prev, [activeChatOrderId!]: 0 }));
-        } catch (e) { console.error("Mark read failed", e); }
+        markOrderRead(activeChatOrderId);
       }
     } catch (err) {
       console.error("Chat fetch error:", err);
@@ -525,15 +502,10 @@ const MyOrder: React.FC = () => {
   };
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: NodeJS.Timeout | undefined;
     if (isChatOpen && activeChatBuyerEmail && activeChatOrderId) {
       setPresence('online');
       fetchChat();
-      fetchBuyerStatus();
-      interval = setInterval(() => {
-        fetchChat();
-        fetchBuyerStatus();
-      }, 4000);
     } else {
       setPresence('offline');
       setBuyerOnline(false);
@@ -694,18 +666,15 @@ const MyOrder: React.FC = () => {
                           <span className="text-xs text-gray-400 font-medium">
                             Buyer: {buyerNames[order.buyerEmail] || maskEmail(order.buyerEmail)}
                           </span>
-                          <span className={`w-2 h-2 rounded-full ${onlineBuyersMap[order.buyerEmail] ? 'bg-green-500 animate-pulse' : 'bg-gray-300'}`} />
-                          <span className="text-[10px] text-gray-500 font-medium">
-                            {onlineBuyersMap[order.buyerEmail] ? "Active now" : getStatusDisplay(false, lastSeenMap[order.buyerEmail])}
-                          </span>
+                          <UserActivityStatus userId={order.buyerEmail} />
                         </div>
                         {lastMessageTimes[order.id] && (
                           <p className="text-[10px] text-gray-500 mt-0.5">{timeAgo(lastMessageTimes[order.id])}</p>
                         )}
                         <div className="flex flex-wrap items-center gap-2 mt-2">
                           <span className={`text-[10px] px-2 py-0.5 rounded-full border font-bold ${order.status === 'Completed' ? 'bg-green-50 text-green-600 border-green-100' :
-                              (order.status === 'Cancelled') ? 'bg-red-50 text-red-600 border-red-100' :
-                                'bg-amber-50 text-amber-600 border-amber-100'
+                            (order.status === 'Cancelled') ? 'bg-red-50 text-red-600 border-red-100' :
+                              'bg-amber-50 text-amber-600 border-amber-100'
                             }`}>
                             {order.status}
                           </span>
@@ -746,11 +715,7 @@ const MyOrder: React.FC = () => {
                           >
                             <div className="relative">
                               <FaCommentsIcon size={14} />
-                              {unreadCounts[order.id] > 0 && (
-                                <span className="absolute -top-2 -right-2 min-w-[18px] h-[18px] bg-red-500 text-white text-[9px] font-bold flex items-center justify-center rounded-full border border-white shadow-sm px-1">
-                                  {unreadCounts[order.id] > 99 ? '99+' : unreadCounts[order.id]}
-                                </span>
-                              )}
+                              <NotificationBadge count={unreadCounts.get(order.id) || 0} />
                             </div>
                           </button>
                         </div>
@@ -773,8 +738,8 @@ const MyOrder: React.FC = () => {
                       key={pageNumber}
                       onClick={() => setCurrentPage(pageNumber)}
                       className={`px-3 py-2 rounded-lg text-sm font-medium transition ${isActive
-                          ? 'bg-[#33ac6f] text-white'
-                          : 'border hover:bg-gray-50'
+                        ? 'bg-[#33ac6f] text-white'
+                        : 'border hover:bg-gray-50'
                         }`}
                     >
                       {pageNumber}
@@ -887,14 +852,7 @@ const MyOrder: React.FC = () => {
                   <h4 className="font-bold text-sm text-[#0A1A3A]">
                     {buyerNames[activeChatBuyerEmail] || maskEmail(activeChatBuyerEmail)}
                   </h4>
-                  <div className="flex items-center gap-1.5 text-[10px]">
-                    <span className={`w-2 h-2 rounded-full ${buyerOnline ? "bg-green-500" : "bg-gray-300"}`} />
-                    <span
-                      className={`font-medium ${buyerOnline ? "text-green-600" : "text-gray-500"}`}
-                    >
-                      {partnerStatusText}
-                    </span>
-                  </div>
+                  <UserActivityStatus userId={activeChatBuyerEmail} />
                 </div>
               </div>
               <button
@@ -922,21 +880,32 @@ const MyOrder: React.FC = () => {
                   <div className={`max-w-[85%] ${msg.senderId === sellerId ? 'items-end' : 'items-start'} flex flex-col`}>
                     <div
                       className={`rounded-2xl px-4 py-2.5 shadow-sm text-sm ${msg.senderId === sellerId
-                          ? 'bg-[#33ac6f] text-white rounded-tr-none'
-                          : 'bg-white text-[#0A1A3A] border rounded-tl-none font-medium'
+                        ? 'bg-[#33ac6f] text-white rounded-tr-none'
+                        : 'bg-white text-[#0A1A3A] border rounded-tl-none font-medium'
                         }`}
                     >
                       {msg.imageUrl && (
                         <div
-                          className="mb-2 cursor-pointer hover:opacity-90 transition"
-                          onClick={() => setPreviewImage(msg.imageUrl!.startsWith('http') ? msg.imageUrl! : `${BASE_URL}${msg.imageUrl!}`)}
+                          className="mb-2 relative group"
                         >
                           <img
                             src={msg.imageUrl!.startsWith('http') ? msg.imageUrl : `${BASE_URL}${msg.imageUrl}`}
                             alt="attachment"
-                            className="rounded-lg max-w-full max-h-[220px] object-contain border border-black/5 mx-auto"
+                            className="rounded-lg max-w-full max-h-[220px] object-contain border border-black/5 mx-auto cursor-pointer"
+                            onClick={() => setPreviewImage(msg.imageUrl!.startsWith('http') ? msg.imageUrl! : `${BASE_URL}${msg.imageUrl!}`)}
                             onError={(e) => (e.currentTarget.style.display = 'none')}
                           />
+                          <a
+                            href={msg.imageUrl!.startsWith('http') ? msg.imageUrl : `${BASE_URL}${msg.imageUrl}`}
+                            download
+                            target="_blank"
+                            rel="noreferrer"
+                            className="absolute bottom-2 right-2 bg-black/50 hover:bg-black/70 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition"
+                            onClick={(e) => e.stopPropagation()}
+                            title="Download"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
+                          </a>
                         </div>
                       )}
                       <p className="leading-relaxed break-words whitespace-pre-wrap">{msg.message}</p>

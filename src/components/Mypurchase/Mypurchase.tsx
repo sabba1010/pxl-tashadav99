@@ -4,6 +4,9 @@ import axios from "axios";
 import { useAuthHook } from "../../hook/useAuthHook";
 import { toast } from "sonner";
 import RatingModal from "../Rating/RatingModal";
+import { useSocket } from "../../context/SocketContext";
+import NotificationBadge from "../NotificationBadge";
+import UserActivityStatus from "../UserActivityStatus";
 
 import {
   FaTimes,
@@ -202,10 +205,11 @@ const MyPurchase: React.FC = () => {
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const shouldAutoScrollRef = useRef(true);
 
-  const [onlineSellersMap, setOnlineSellersMap] = useState<Record<string, boolean>>({});
-  const [lastSeenMap, setLastSeenMap] = useState<Record<string, string | null>>({});
-  const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
+  // const [onlineSellersMap, setOnlineSellersMap] = useState<Record<string, boolean>>({}); // CONTEXT
+  // const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({}); // CONTEXT
   const [lastMessageTimes, setLastMessageTimes] = useState<Record<string, string>>({});
+
+  const { socket, unreadCounts, onlineUsers, markOrderRead } = useSocket();
 
   const itemsPerPage = 40;
   const [currentPage, setCurrentPage] = useState(1);
@@ -282,48 +286,15 @@ const MyPurchase: React.FC = () => {
     }
   };
 
-  const fetchAllSellersStatus = async () => {
-    const sellers = Array.from(new Set(purchases.map(p => p.sellerEmail)));
-    const statusMap: Record<string, boolean> = {};
-    const seenMap: Record<string, string | null> = {};
-
-    for (const email of sellers) {
-      try {
-        const res = await axios.get<PresenceResponse>(`${CHAT_API}/status/${email}`);
-        statusMap[email] = Boolean(res.data?.online);
-        seenMap[email] = res.data?.lastSeen || null;
-      } catch (err) {
-        statusMap[email] = false;
-        seenMap[email] = null;
-      }
-    }
-    setOnlineSellersMap(statusMap);
-    setLastSeenMap(seenMap);
-  };
+  // fetchAllSellersStatus removed (using SocketContext)
 
   const checkNotifications = async () => {
     if (!buyerId) return;
     try {
-      // 1. Fetch unread counts
-      const countRes = await axios.get<Record<string, number>>(`${CHAT_API}/unread/counts/${buyerId}`);
-      setUnreadCounts(countRes.data || {});
+      // 1. Fetch unread counts - REMOVED, handled by SocketContext
 
-      // 2. We still need last message times for the UI
-      // Optimization: limiting this call or piggybacking would be better, 
-      // but safely we can iterate active chats or stick to existing logic for times.
-      // For now, let's keep the time update separate or just assume it is handled by socket in future.
-      // To strictly follow "optimized polling", we can skip fetching history for all orders just for time.
-      // If user wants accurate "last msg time", we might need another endpoint or stick to what we have but less frequent.
-      // Let's keep the old loop for timestamps but run it less often (handled by interval).
-
+      // 2. Fetch last message times (keeping logic)
       const newLastTimes: Record<string, string> = { ...lastMessageTimes };
-      // Only update timestamps for orders that have unread messages to save bandwidth?
-      // Or just do a lightweight check.
-      // For simplicity/reliability in this step, we keep the loop but maybe we can optimize later.
-      // Actually, let's trust the unread count is enough for "Notifications". 
-      // User asked for "Message count must update".
-
-      // Let's keep fetching history for timestamps to make the UI "Last msg Xm ago" accurate.
       for (const p of purchases) {
         const res = await axios.get<ChatMessage[]>(`${CHAT_API}/history/${buyerId}/${p.sellerEmail}`, {
           params: { orderId: p.id }
@@ -339,208 +310,35 @@ const MyPurchase: React.FC = () => {
   };
 
   useEffect(() => {
-    const interval = setInterval(checkNotifications, 10000);
+    // Only fetching timestamps now
+    const interval = setInterval(checkNotifications, 15000);
     return () => clearInterval(interval);
   }, [purchases, buyerId]);
 
   useEffect(() => {
-    const timer = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(timer);
-  }, []);
-
-  useEffect(() => {
-    if (purchases.length === 0) return;
-    fetchAllSellersStatus();
-    const interval = setInterval(fetchAllSellersStatus, 10000);
-    return () => clearInterval(interval);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [purchases]);
-
-  useEffect(() => {
-    if (purchases.length === 0) return;
-    purchases.forEach((p) => {
-      if (p.status !== 'Pending') return;
-      const expiresAt = new Date(p.rawDate).getTime() + getDeliveryTimeInMs(p);
-      if (Date.now() >= expiresAt && !autoCompletedRef.current.has(p.id)) {
-        autoCompletedRef.current.add(p.id);
-        handleUpdateStatus('completed', p.sellerEmail, p.id);
-      }
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [purchases, now]);
-
-  const getDeliveryTimeInMs = (p: Purchase) => {
-    if (p.deliveryType === 'manual' && p.deliveryTime) {
-      const match = p.deliveryTime.match(/(\d+)\s*(mins?|minutes?|h|hours?|d|days?)/i);
-      if (match) {
-        const num = parseInt(match[1]);
-        const unit = match[2].toLowerCase();
-        if (unit.startsWith('min')) return num * 60000;
-        if (unit.startsWith('h')) return num * 3600000;
-        if (unit.startsWith('d')) return num * 86400000;
-      }
-    }
-    return 14400000; // default 4h
-  };
-
-  const getRemainingTime = (p: Purchase) => {
-    const addedMs = getDeliveryTimeInMs(p);
-    const diff = (new Date(p.rawDate).getTime() + addedMs) - now;
-    if (diff <= 0) return "Confirming...";
-    const h = Math.floor(diff / 3600000).toString().padStart(2, '0');
-    const m = Math.floor((diff % 3600000) / 60000).toString().padStart(2, '0');
-    const s = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
-    return `${h}h ${m}m ${s}s`;
-  };
-
-  const fetchPurchases = async () => {
-    if (!buyerId) return;
-    try {
-      setIsLoading(true);
-      const res = await axios.get<RawPurchaseItem[]>(`${PURCHASE_API}/getall?email=${buyerId}&role=buyer`);
-
-      const enrichedData = await Promise.all(res.data.map(async (item) => {
-        if (item.productId) {
-          try {
-            const productRes = await axios.get<any>(`${BASE_URL}/product/${item.productId}`);
-            if (productRes?.data) {
-              return {
-                ...item,
-                username: productRes.data.username,
-                accountPass: productRes.data.accountPass,
-                email: productRes.data.email,
-                password: productRes.data.password,
-                previewLink: productRes.data.previewLink,
-                additionalInfo: productRes.data.additionalInfo,
-                categoryIcon: productRes.data.categoryIcon,
-                // Use purchase deliveryTime if exists (stored at purchase time), fallback to product
-                deliveryType: item.deliveryType || productRes.data.deliveryType,
-                deliveryTime: item.deliveryTime || productRes.data.deliveryTime,
-              };
+    if (socket && activeChatOrderId) {
+      const handleMsg = (newMsg: any) => {
+        if (newMsg.orderId === activeChatOrderId) {
+          setChatMessages(prev => [...prev, newMsg]);
+          if (messagesContainerRef.current) {
+            const container = messagesContainerRef.current;
+            const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 150;
+            if (isNearBottom) {
+              shouldAutoScrollRef.current = true;
             }
-          } catch (err) {
-            console.error(`Failed to fetch product ${item.productId}:`, err);
           }
         }
-        return item;
-      }));
-
-      const mapped: Purchase[] = enrichedData.map((item) => ({
-        id: item._id,
-        platform: inferPlatform(item.productName),
-        title: item.productName || "Untitled",
-        desc: item.additionalInfo || "No additional details provided.",
-        sellerEmail: item.sellerEmail,
-        buyerEmail: item.buyerEmail,
-        price: item.price || 0,
-        date: formatDate(item.purchaseDate),
-        rawDate: item.purchaseDate,
-        status: (item.status?.charAt(0).toUpperCase() + item.status?.slice(1)) as PurchaseStatus || "Pending",
-        purchaseNumber: `ORD-${item._id.slice(-6).toUpperCase()}`,
-        accountUsername: item.username,
-        accountPassword: item.accountPass,
-        recoveryEmail: item.email,
-        recoveryEmailPassword: item.password,
-        icon: item.categoryIcon,
-        previewLink: item.previewLink,
-        deliveryType: item.deliveryType,
-        deliveryTime: item.deliveryTime,
-      }));
-      setPurchases(mapped);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsLoading(false);
+      };
+      socket.on('receive_message', handleMsg);
+      return () => {
+        socket.off('receive_message', handleMsg);
+      };
     }
-  };
+  }, [socket, activeChatOrderId]);
 
   useEffect(() => {
-    fetchPurchases();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [buyerId]);
-
-  const handleUpdateStatus = async (status: string, sellerEmail: string, orderId?: string) => {
-    const id = orderId || selected?.id;
-    if (!id) return;
-
-    try {
-      await axios.patch(`${PURCHASE_API}/update-status/${id}`, { status, sellerEmail });
-      toast.success(`Order ${status} successfully!`);
-      setSelected(null);
-      fetchPurchases();
-    } catch (err) {
-      toast.error("Failed to update status");
-    }
-  };
-
-  const handleOpenRatingModal = (purchase: Purchase) => {
-    setRatingTargetOrder(purchase);
-    setIsRatingModalOpen(true);
-  };
-
-  const handleRatingSubmitted = () => {
-    // Rating submitted, refresh the list to show updated rating
-    fetchPurchases();
-    setRatingTargetOrder(null);
-  };
-
-  const handleOpenChat = (p: Purchase) => {
-    setActiveChatSellerEmail(p.sellerEmail);
-    setActiveChatOrderId(p.id);
-    setIsChatOpen(true);
-  };
-
-  const fetchChat = async () => {
-    if (!buyerId || !activeChatSellerEmail) return;
-    try {
-      const res = await axios.get<ChatMessage[]>(`${CHAT_API}/history/${buyerId}/${activeChatSellerEmail}`, {
-        params: { orderId: activeChatOrderId }
-      });
-      setChatMessages(res.data);
-
-      // Mark as read immediately when fetching chat
-      if (activeChatOrderId) {
-        try {
-          await axios.post(`${CHAT_API}/mark-read`, { userId: buyerId, orderId: activeChatOrderId });
-          // Optimistically clear unread count
-          setUnreadCounts(prev => ({ ...prev, [activeChatOrderId!]: 0 }));
-        } catch (e) { console.error("Mark read failed", e); }
-      }
-    } catch (err) {
-      console.error("Fetch chat error:", err);
-    }
-  };
-
-  useEffect(() => {
-    let timer: NodeJS.Timeout | null = null;
-
-    if (isChatOpen && activeChatSellerEmail) {
-      setPresence('online');
-      fetchChat();
-      fetchSellerStatus();
-
-      timer = setInterval(() => {
-        fetchChat();
-        fetchSellerStatus();
-      }, 4000);
-    } else {
-      setPresence('offline');
-      setSellerOnline(false);
-      setPartnerStatusText("Offline");
-    }
-
-    return () => {
-      if (timer) clearInterval(timer);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isChatOpen, activeChatSellerEmail, buyerId]);
-
-  useEffect(() => {
-    const container = messagesContainerRef.current;
-    if (!container) return;
-
     if (shouldAutoScrollRef.current) {
-      container.scrollTo({ top: container.scrollHeight, behavior: "smooth" });
+      messagesContainerRef.current?.scrollTo({ top: messagesContainerRef.current.scrollHeight, behavior: "smooth" });
     }
   }, [chatMessages, imagePreview]);
 
@@ -590,6 +388,153 @@ const MyPurchase: React.FC = () => {
     } finally {
       setIsSubmittingReport(false);
     }
+  };
+
+  const handleUpdateStatus = async (status: string, sellerEmail: string, orderId?: string) => {
+    const id = orderId || selected?.id;
+    if (!id) return;
+
+    try {
+      await axios.patch(`${PURCHASE_API}/update-status/${id}`, { status, sellerEmail });
+      toast.success(`Order ${status} successfully!`);
+      setSelected(null);
+      fetchPurchases();
+    } catch (err) {
+      toast.error("Failed to update status");
+    }
+  };
+
+  const handleOpenRatingModal = (purchase: Purchase) => {
+    setRatingTargetOrder(purchase);
+    setIsRatingModalOpen(true);
+  };
+
+  const handleRatingSubmitted = () => {
+    fetchPurchases();
+    setRatingTargetOrder(null);
+  };
+
+  const handleOpenChat = (p: Purchase) => {
+    setActiveChatSellerEmail(p.sellerEmail);
+    setActiveChatOrderId(p.id);
+    setIsChatOpen(true);
+  };
+
+  const fetchChat = async () => {
+    if (!buyerId || !activeChatSellerEmail) return;
+    try {
+      const res = await axios.get<ChatMessage[]>(`${CHAT_API}/history/${buyerId}/${activeChatSellerEmail}`, {
+        params: { orderId: activeChatOrderId }
+      });
+      setChatMessages(res.data);
+      if (activeChatOrderId) {
+        markOrderRead(activeChatOrderId);
+      }
+    } catch (err) {
+      console.error("Fetch chat error:", err);
+    }
+  };
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout | undefined;
+    if (isChatOpen && activeChatSellerEmail) {
+      setPresence('online');
+      fetchChat();
+    } else {
+      setPresence('offline');
+      setSellerOnline(false);
+      setPartnerStatusText("Offline");
+    }
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, [isChatOpen, activeChatSellerEmail, buyerId]);
+
+  const fetchPurchases = async () => {
+    if (!buyerId) return;
+    try {
+      setIsLoading(true);
+      const res = await axios.get<RawPurchaseItem[]>(`${PURCHASE_API}/getall?email=${buyerId}&role=buyer`);
+
+      const enrichedData = await Promise.all(res.data.map(async (item) => {
+        if (item.productId) {
+          try {
+            const productRes = await axios.get<any>(`${BASE_URL}/product/${item.productId}`);
+            if (productRes?.data) {
+              return {
+                ...item,
+                username: productRes.data.username,
+                accountPass: productRes.data.accountPass,
+                email: productRes.data.email,
+                password: productRes.data.password,
+                previewLink: productRes.data.previewLink,
+                additionalInfo: productRes.data.additionalInfo,
+                categoryIcon: productRes.data.categoryIcon,
+                deliveryType: item.deliveryType || productRes.data.deliveryType,
+                deliveryTime: item.deliveryTime || productRes.data.deliveryTime,
+              };
+            }
+          } catch (err) {
+            console.error(`Failed to fetch product ${item.productId}:`, err);
+          }
+        }
+        return item;
+      }));
+
+      const mapped: Purchase[] = enrichedData.map((item) => ({
+        id: item._id,
+        platform: inferPlatform(item.productName),
+        title: item.productName || "Untitled",
+        desc: item.additionalInfo || "No additional details provided.",
+        sellerEmail: item.sellerEmail,
+        buyerEmail: item.buyerEmail,
+        price: item.price || 0,
+        date: formatDate(item.purchaseDate),
+        rawDate: item.purchaseDate,
+        status: (item.status?.charAt(0).toUpperCase() + item.status?.slice(1)) as PurchaseStatus || "Pending",
+        purchaseNumber: `ORD-${item._id.slice(-6).toUpperCase()}`,
+        accountUsername: item.username,
+        accountPassword: item.accountPass,
+        recoveryEmail: item.email,
+        recoveryEmailPassword: item.password,
+        icon: item.categoryIcon,
+        previewLink: item.previewLink,
+        deliveryType: item.deliveryType,
+        deliveryTime: item.deliveryTime,
+      }));
+      setPurchases(mapped);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPurchases();
+  }, [buyerId]);
+
+  const getRemainingTime = (p: Purchase) => {
+    const getDeliveryTimeInMs = (p: Purchase) => {
+      if (p.deliveryType === 'manual' && p.deliveryTime) {
+        const match = p.deliveryTime.match(/(\d+)\s*(mins?|minutes?|h|hours?|d|days?)/i);
+        if (match) {
+          const num = parseInt(match[1]);
+          const unit = match[2].toLowerCase();
+          if (unit.startsWith('min')) return num * 60000;
+          if (unit.startsWith('h')) return num * 3600000;
+          if (unit.startsWith('d')) return num * 86400000;
+        }
+      }
+      return 14400000; // default 4h
+    };
+    const addedMs = getDeliveryTimeInMs(p);
+    const diff = (new Date(p.rawDate).getTime() + addedMs) - now;
+    if (diff <= 0) return "Confirming...";
+    const h = Math.floor(diff / 3600000).toString().padStart(2, '0');
+    const m = Math.floor((diff % 3600000) / 60000).toString().padStart(2, '0');
+    const s = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
+    return `${h}h ${m}m ${s}s`;
   };
 
   const filtered = useMemo(() => {
@@ -655,10 +600,7 @@ const MyPurchase: React.FC = () => {
                       <div className="flex items-center gap-2 mt-1">
                         <span className="text-xs text-gray-400 font-medium">Seller: {maskEmail(p.sellerEmail)}</span>
                         <div className="flex items-center gap-1 bg-white px-2 py-0.5 rounded-full border shadow-sm">
-                          <span className={`w-2 h-2 rounded-full ${onlineSellersMap[p.sellerEmail] ? 'bg-green-500 animate-pulse' : 'bg-gray-300'}`} />
-                          <span className="text-[10px] text-gray-600 font-medium">
-                            {onlineSellersMap[p.sellerEmail] ? "Active now" : getStatusDisplay(false, lastSeenMap[p.sellerEmail])}
-                          </span>
+                          <UserActivityStatus userId={p.sellerEmail} />
                         </div>
                       </div>
                       {lastMessageTimes[p.id] && (
@@ -722,11 +664,7 @@ const MyPurchase: React.FC = () => {
                           className="flex-1 sm:flex-none flex justify-center p-2 text-blue-600 border border-blue-100 rounded-lg bg-white hover:bg-blue-50 transition relative overflow-visible"
                         >
                           <FaCommentsIcon size={14} />
-                          {unreadCounts[p.id] > 0 && (
-                            <span className="absolute -top-2 -right-2 min-w-[18px] h-[18px] bg-red-500 text-white text-[9px] font-bold flex items-center justify-center rounded-full border border-white shadow-sm px-1">
-                              {unreadCounts[p.id] > 99 ? '99+' : unreadCounts[p.id]}
-                            </span>
-                          )}
+                          <NotificationBadge count={unreadCounts.get(p.id) || 0} />
                         </button>
                       </div>
                     )}
@@ -912,14 +850,7 @@ const MyPurchase: React.FC = () => {
                   <h4 className="font-bold text-sm text-[#0A1A3A]">
                     {maskEmail(activeChatSellerEmail || "")}
                   </h4>
-                  <div className="flex items-center gap-1.5 text-[10px]">
-                    <span className={`w-2 h-2 rounded-full ${sellerOnline ? "bg-green-500" : "bg-gray-300"}`} />
-                    <span
-                      className={`font-medium ${sellerOnline ? "text-green-600" : "text-gray-500"}`}
-                    >
-                      {partnerStatusText}
-                    </span>
-                  </div>
+                  <UserActivityStatus userId={activeChatSellerEmail || ""} />
                 </div>
               </div>
               <button
@@ -953,15 +884,26 @@ const MyPurchase: React.FC = () => {
                     >
                       {m.imageUrl && (
                         <div
-                          className="mb-2 cursor-pointer hover:opacity-90 transition"
-                          onClick={() => setPreviewImage(m.imageUrl!.startsWith('http') ? m.imageUrl! : `${BASE_URL}${m.imageUrl!}`)}
+                          className="mb-2 relative group"
                         >
                           <img
-                            src={m.imageUrl.startsWith('http') ? m.imageUrl : `${BASE_URL}${m.imageUrl}`}
+                            src={m.imageUrl!.startsWith('http') ? m.imageUrl : `${BASE_URL}${m.imageUrl}`}
                             alt="attachment"
-                            className="rounded-lg max-w-full max-h-[220px] object-contain border border-black/5 mx-auto"
+                            className="rounded-lg max-w-full max-h-[220px] object-contain border border-black/5 mx-auto cursor-pointer"
+                            onClick={() => setPreviewImage(m.imageUrl!.startsWith('http') ? m.imageUrl! : `${BASE_URL}${m.imageUrl!}`)}
                             onError={(e) => (e.currentTarget.style.display = 'none')}
                           />
+                          <a
+                            href={m.imageUrl!.startsWith('http') ? m.imageUrl : `${BASE_URL}${m.imageUrl}`}
+                            download
+                            target="_blank"
+                            rel="noreferrer"
+                            className="absolute bottom-2 right-2 bg-black/50 hover:bg-black/70 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition"
+                            onClick={(e) => e.stopPropagation()}
+                            title="Download"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
+                          </a>
                         </div>
                       )}
                       <p className="leading-relaxed break-words whitespace-pre-wrap">{m.message}</p>

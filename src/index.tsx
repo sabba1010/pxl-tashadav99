@@ -4,7 +4,8 @@ import ReactDOM from "react-dom/client";
 import { RouterProvider } from "react-router-dom";
 import { Toaster } from "sonner";
 import { AuthProvider } from "./context/AuthContext";
-import { LanguageProvider } from "./i18n/LanguageContext"; //
+import { LanguageProvider } from "./i18n/LanguageContext";
+import { SocketProvider } from "./context/SocketContext"; //
 import "./index.css";
 import reportWebVitals from "./reportWebVitals";
 import Routes from "./routes/Routes";
@@ -18,10 +19,12 @@ root.render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <LanguageProvider>
-          <Toaster position="bottom-right" richColors />
-          <RouterProvider router={Routes} />
-        </LanguageProvider>
+        <SocketProvider>
+          <LanguageProvider>
+            <Toaster position="bottom-right" richColors />
+            <RouterProvider router={Routes} />
+          </LanguageProvider>
+        </SocketProvider>
       </AuthProvider>
     </QueryClientProvider>
   </React.StrictMode>
