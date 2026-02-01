@@ -304,8 +304,6 @@ const MyOrder: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 40;
 
-  // const [onlineBuyersMap, setOnlineBuyersMap] = useState<Record<string, boolean>>({}); // REMOVED: Using Context
-  // const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({}); // REMOVED: Using Context
   const [lastMessageTimes, setLastMessageTimes] = useState<Record<string, string>>({});
   const [lastSeenMap, setLastSeenMap] = useState<Record<string, string | null>>({}); // Keeping for specific logic if needed, or replace with Context
 
