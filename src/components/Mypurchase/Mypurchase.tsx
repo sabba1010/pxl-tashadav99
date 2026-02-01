@@ -74,6 +74,7 @@ interface RawPurchaseItem {
 }
 
 interface ChatMessage {
+  _id?: string;
   senderId: string;
   receiverId: string;
   message: string;
@@ -170,6 +171,8 @@ const RenderIcon = ({ icon, size = 40 }: { icon?: string; size?: number }) => {
 const TABS = ["All", "Pending", "Completed", "Cancelled"] as const;
 type Tab = (typeof TABS)[number];
 
+const STORAGE_KEY = 'lastReadIds';
+
 const MyPurchase: React.FC = () => {
   const [activeTab, setActiveTab] = useState<Tab>("All");
   const [selected, setSelected] = useState<Purchase | null>(null);
@@ -208,9 +211,9 @@ const MyPurchase: React.FC = () => {
   // const [onlineSellersMap, setOnlineSellersMap] = useState<Record<string, boolean>>({});
   // const [lastSeenMap, setLastSeenMap] = useState<Record<string, string | null>>({});
   // const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
-  const [lastMessageTimes, setLastMessageTimes] = useState<Record<string, string>>({});
+  const [lastMessageTimes, setLastMessageTimes] = useState<Record<string, string | undefined>>({});
 
-  const { socket, unreadCounts, onlineUsers, markOrderRead } = useSocket();
+  const { socket, onlineUsers } = useSocket();
 
   const itemsPerPage = 40;
   const [currentPage, setCurrentPage] = useState(1);
@@ -223,6 +226,18 @@ const MyPurchase: React.FC = () => {
   const BASE_URL = "http://localhost:3200";
   const PURCHASE_API = `${BASE_URL}/purchase`;
   const CHAT_API = `${BASE_URL}/chat`;
+
+  const [unreadCounts, setUnreadCounts] = useState(new Map<string, number>());
+  const [fetchedOrders, setFetchedOrders] = useState(new Set<string>());
+  const [lastReadIds, setLastReadIds] = useState<Record<string, string | undefined>>({});
+
+  // Load lastReadIds from localStorage
+  useEffect(() => {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      setLastReadIds(JSON.parse(stored));
+    }
+  }, []);
 
   // Auto-resize textarea
   useEffect(() => {
@@ -287,63 +302,12 @@ const MyPurchase: React.FC = () => {
     }
   };
 
-  // fetchAllSellersStatus removed (using SocketContext)
-
-  const checkNotifications = async () => {
-    if (!buyerId) return;
-    try {
-      // 1. Fetch unread counts
-      // 1. Fetch unread counts - REMOVED, handled by SocketContext
-      // const countRes = await axios.get<Record<string, number>>(`${CHAT_API}/unread/counts/${buyerId}`);
-      // setUnreadCounts(countRes.data || {});
-
-      // 2. We still need last message times for the UI
-      // Optimization: limiting this call or piggybacking would be better, 
-      // but safely we can iterate active chats or stick to existing logic for times.
-      // For now, let's keep the time update separate or just assume it is handled by socket in future.
-      // To strictly follow "optimized polling", we can skip fetching history for all orders just for time.
-      // If user wants accurate "last msg time", we might need another endpoint or stick to what we have but less frequent.
-      // Let's keep the old loop for timestamps but run it less often (handled by interval).
-
-      const newLastTimes: Record<string, string> = { ...lastMessageTimes };
-      // Only update timestamps for orders that have unread messages to save bandwidth?
-      // Or just do a lightweight check.
-      // For simplicity/reliability in this step, we keep the loop but maybe we can optimize later.
-      // Actually, let's trust the unread count is enough for "Notifications". 
-      // User asked for "Message count must update".
-
-      // Let's keep fetching history for timestamps to make the UI "Last msg Xm ago" accurate.
-      for (const p of purchases) {
-        const res = await axios.get<ChatMessage[]>(`${CHAT_API}/history/${buyerId}/${p.sellerEmail}`, {
-          params: { orderId: p.id }
-        });
-        const history = res.data;
-        const lastMsg = history[history.length - 1];
-        if (lastMsg) {
-          newLastTimes[p.id] = lastMsg.createdAt;
-        }
-      }
-      setLastMessageTimes(newLastTimes);
-    } catch (err) { console.error(err); }
-  };
-
-  useEffect(() => {
-    const interval = setInterval(checkNotifications, 10000);
-    return () => clearInterval(interval);
-  }, [purchases, buyerId]);
+  // Removed checkNotifications
 
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(timer);
   }, []);
-
-  useEffect(() => {
-    if (purchases.length === 0) return;
-    // Removed legacy polling for status
-    // fetchAllSellersStatus();
-    // const interval = setInterval(fetchAllSellersStatus, 10000);
-    // return () => clearInterval(interval);
-  }, [purchases]);
 
   useEffect(() => {
     if (purchases.length === 0) return;
@@ -355,7 +319,6 @@ const MyPurchase: React.FC = () => {
         handleUpdateStatus('completed', p.sellerEmail, p.id);
       }
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [purchases, now]);
 
   const getDeliveryTimeInMs = (p: Purchase) => {
@@ -445,7 +408,6 @@ const MyPurchase: React.FC = () => {
 
   useEffect(() => {
     fetchPurchases();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [buyerId]);
 
   const handleUpdateStatus = async (status: string, sellerEmail: string, orderId?: string) => {
@@ -491,8 +453,30 @@ const MyPurchase: React.FC = () => {
       if (activeChatOrderId) {
         try {
           await axios.post(`${CHAT_API}/mark-read`, { userId: buyerId, orderId: activeChatOrderId });
-          // Optimistically clear unread count - Handled by SocketContext
+          // Optimistically clear unread count
+          setUnreadCounts(prev => {
+            const newMap = new Map(prev);
+            newMap.set(activeChatOrderId, 0);
+            return newMap;
+          });
         } catch (e) { console.error("Mark read failed", e); }
+      }
+
+      if (res.data.length > 0) {
+        const last = res.data[res.data.length - 1];
+        if (last._id) {
+          setLastReadIds(prev => {
+            const updated = { ...prev, [activeChatOrderId!]: last._id };
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+            return updated;
+          });
+        }
+        if (last.createdAt) {
+          setLastMessageTimes(prev => ({
+            ...prev,
+            [activeChatOrderId!]: last.createdAt,
+          }));
+        }
       }
     } catch (err) {
       console.error("Fetch chat error:", err);
@@ -520,7 +504,6 @@ const MyPurchase: React.FC = () => {
     return () => {
       if (timer) clearInterval(timer);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isChatOpen, activeChatSellerEmail, buyerId]);
 
   useEffect(() => {
@@ -531,6 +514,57 @@ const MyPurchase: React.FC = () => {
       container.scrollTo({ top: container.scrollHeight, behavior: "smooth" });
     }
   }, [chatMessages, imagePreview]);
+
+  useEffect(() => {
+    if (!socket || !activeChatOrderId) return () => {};
+
+    const handleMsg = (newMsg: any) => {
+      if (newMsg.orderId === activeChatOrderId) {
+        setChatMessages(prev => [...prev, newMsg]);
+        if (newMsg._id) {
+          setLastReadIds(prev => {
+            const updated = { ...prev, [activeChatOrderId]: newMsg._id };
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+            return updated;
+          });
+        }
+      }
+    };
+    socket.on('receive_message', handleMsg);
+    return () => socket.off('receive_message', handleMsg);
+  }, [socket, activeChatOrderId]);
+
+  useEffect(() => {
+    if (!socket) return () => {};
+
+    const handleReceiveMessage = (newMsg: any) => {
+      setLastMessageTimes(prev => ({
+        ...prev,
+        [newMsg.orderId]: newMsg.createdAt || new Date().toISOString(),
+      }));
+
+      if (newMsg.senderId !== buyerId && (newMsg.orderId !== activeChatOrderId || !isChatOpen)) {
+        setUnreadCounts(prev => {
+          const newMap = new Map(prev);
+          const count = newMap.get(newMsg.orderId) || 0;
+          newMap.set(newMsg.orderId, count + 1);
+          return newMap;
+        });
+      } else if (newMsg.orderId === activeChatOrderId && isChatOpen && newMsg._id) {
+        setLastReadIds(prev => {
+          const updated = { ...prev, [newMsg.orderId]: newMsg._id };
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+          return updated;
+        });
+      }
+    };
+
+    socket.on('receive_message', handleReceiveMessage);
+
+    return () => {
+      socket.off('receive_message', handleReceiveMessage);
+    };
+  }, [socket, buyerId, activeChatOrderId, isChatOpen]);
 
   const sendChat = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -590,6 +624,57 @@ const MyPurchase: React.FC = () => {
     return filtered.slice(start, start + itemsPerPage);
   }, [filtered, currentPage]);
 
+  useEffect(() => {
+    const fetchInitialData = async () => {
+      if (buyerId) {
+        for (const p of paginated) {
+          if (!fetchedOrders.has(p.id)) {
+            try {
+              const res = await axios.get<ChatMessage[]>(`${CHAT_API}/history/${buyerId}/${p.sellerEmail}`, {
+                params: { orderId: p.id }
+              });
+              const messages = res.data;
+              if (messages.length > 0) {
+                const last = messages[messages.length - 1];
+                setLastMessageTimes(prev => ({
+                  ...prev,
+                  [p.id]: last.createdAt,
+                }));
+
+                const lastReadId = lastReadIds[p.id];
+                let unread = 0;
+                if (lastReadId) {
+                  const lastReadIndex = messages.findIndex(m => m._id === lastReadId);
+                  if (lastReadIndex > -1) {
+                    unread = messages.slice(lastReadIndex + 1).filter(m => m.senderId !== buyerId).length;
+                  } else {
+                    unread = messages.filter(m => m.senderId !== buyerId).length;
+                  }
+                } else {
+                  unread = messages.filter(m => m.senderId !== buyerId).length;
+                }
+                setUnreadCounts(prev => {
+                  const newMap = new Map(prev);
+                  newMap.set(p.id, unread);
+                  return newMap;
+                });
+              }
+              setFetchedOrders(prev => {
+                const newSet = new Set(prev);
+                newSet.add(p.id);
+                return newSet;
+              });
+            } catch (err) {
+              console.error(`Failed to fetch chat for order ${p.id}`, err);
+            }
+          }
+        }
+      }
+    };
+
+    fetchInitialData();
+  }, [paginated, buyerId, fetchedOrders, lastReadIds]);
+
   return (
     <div className="min-h-screen bg-[#F3EFEE] pt-16 pb-20 px-4 sm:px-6 font-sans">
       <div className="max-w-screen-xl mx-auto">
@@ -642,11 +727,8 @@ const MyPurchase: React.FC = () => {
                       <h3 className="font-bold text-[#0A1A3A] text-sm sm:text-base leading-tight">{p.title}</h3>
                       <div className="flex items-center gap-2 mt-1">
                         <span className="text-xs text-gray-400 font-medium">Seller: {maskEmail(p.sellerEmail)}</span>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className="text-xs text-gray-400 font-medium">Seller: {maskEmail(p.sellerEmail)}</span>
-                          <div className="flex items-center gap-1 bg-white px-2 py-0.5 rounded-full border shadow-sm">
-                            <UserActivityStatus userId={p.sellerEmail} />
-                          </div>
+                        <div className="flex items-center gap-1 bg-white px-2 py-0.5 rounded-full border shadow-sm">
+                          <UserActivityStatus userId={p.sellerEmail} />
                         </div>
                       </div>
                       {lastMessageTimes[p.id] && (
@@ -685,7 +767,7 @@ const MyPurchase: React.FC = () => {
                             title="Give rating"
                           >
                             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3 .921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784 .57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81 .588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                             </svg>
                             <span className="hidden sm:inline">Rate</span>
                           </button>
