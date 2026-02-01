@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
 
-const API_BASE_URL = "http://localhost:3200/api/user";
+const API_BASE_URL = "https://tasha-vps-backend-2.onrender.com/api/user";
 
 // ────────────────────────────────────────────────
 // Types

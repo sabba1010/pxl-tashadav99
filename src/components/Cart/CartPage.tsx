@@ -26,7 +26,7 @@ interface CartItem {
   UserEmail: string;
 }
 
-const API_URL = "http://localhost:3200";
+const API_URL = "https://tasha-vps-backend-2.onrender.com";
 
 const CartPage: React.FC = () => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);

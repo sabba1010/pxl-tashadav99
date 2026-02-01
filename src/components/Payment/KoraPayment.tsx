@@ -42,7 +42,7 @@ export default function KoraPayment({
       setLoading(true);
 
       const response = await axios.post(
-        "http://localhost:3200/korapay/create",
+        "https://tasha-vps-backend-2.onrender.com/korapay/create",
         { amount, user, currency },
         { headers: { "Content-Type": "application/json" } }
       );

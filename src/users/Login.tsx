@@ -30,7 +30,7 @@ const Login = () => {
 
     try {
       const res = await axios.post<{ success: any; user: any }>(
-        "http://localhost:3200/api/user/login",
+        "https://tasha-vps-backend-2.onrender.com/api/user/login",
         {
           email,
           password,
