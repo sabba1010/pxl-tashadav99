@@ -157,14 +157,14 @@ const formatChatTime = (dateString?: string) => {
   try {
     const date = new Date(dateString);
     if (isNaN(date.getTime())) return "Just now";
-    
+
     const now = new Date();
     const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-    
+
     if (diffInSeconds >= 0 && diffInSeconds < 86400) {
       return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
     }
-    
+
     return date.toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true });
   } catch {
     return "Just now";
@@ -302,8 +302,9 @@ const MyOrder: React.FC = () => {
   const itemsPerPage = 40;
 
   const [onlineBuyersMap, setOnlineBuyersMap] = useState<Record<string, boolean>>({});
-  const [unreadOrders, setUnreadOrders] = useState<Record<string, boolean>>({});
+  const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
   const [lastMessageTimes, setLastMessageTimes] = useState<Record<string, string>>({});
+  const [lastSeenMap, setLastSeenMap] = useState<Record<string, string | null>>({});
 
   // Auto-resize textarea
   useEffect(() => {
@@ -377,7 +378,7 @@ const MyOrder: React.FC = () => {
     if (!sellerId) return;
     try {
       await axios.post(`${CHAT_API}/status`, { userId: sellerId, status });
-    } catch (err) {}
+    } catch (err) { }
   };
 
   const fetchBuyerStatus = async () => {
@@ -400,21 +401,30 @@ const MyOrder: React.FC = () => {
   const fetchAllBuyersStatus = async () => {
     const buyers = Array.from(new Set(orders.map(o => o.buyerEmail)));
     const statusMap: Record<string, boolean> = {};
+    const seenMap: Record<string, string | null> = {};
+
     for (const email of buyers) {
       try {
         const res = await axios.get<PresenceResponse>(`${CHAT_API}/status/${email}`);
         statusMap[email] = Boolean(res.data?.online);
+        seenMap[email] = res.data?.lastSeen || null;
       } catch (err) {
         statusMap[email] = false;
+        seenMap[email] = null;
       }
     }
     setOnlineBuyersMap(statusMap);
+    setLastSeenMap(seenMap);
   };
 
   const checkNotifications = async () => {
-    if (orders.length === 0 || !sellerId) return;
+    if (!sellerId) return;
     try {
-      const newUnreadStatus: Record<string, boolean> = { ...unreadOrders };
+      // 1. Fetch unread counts
+      const countRes = await axios.get<Record<string, number>>(`${CHAT_API}/unread/counts/${sellerId}`);
+      setUnreadCounts(countRes.data || {});
+
+      // 2. Fetch last message times (keeping existing logic for timestamp accuracy)
       const newLastTimes: Record<string, string> = { ...lastMessageTimes };
       for (const order of orders) {
         const res = await axios.get<IMessage[]>(`${CHAT_API}/history/${sellerId}/${order.buyerEmail}`, {
@@ -423,14 +433,9 @@ const MyOrder: React.FC = () => {
         const history = res.data;
         const lastMsg = history[history.length - 1];
         if (lastMsg) {
-          newUnreadStatus[order.id] = lastMsg.senderId !== sellerId;
           newLastTimes[order.id] = lastMsg.createdAt!;
-        } else {
-          newUnreadStatus[order.id] = false;
-          delete newLastTimes[order.id];
         }
       }
-      setUnreadOrders(newUnreadStatus);
       setLastMessageTimes(newLastTimes);
     } catch (err) { console.error(err); }
   };
@@ -450,7 +455,7 @@ const MyOrder: React.FC = () => {
       const res = await axios.get<ApiOrder[]>(`${PURCHASE_API}/getall`);
       const allData = res.data;
       const mySales = allData.filter((item) => item.sellerEmail === sellerId);
-      
+
       const enrichedData = await Promise.all(mySales.map(async (item) => {
         if (item.productId) {
           try {
@@ -470,7 +475,7 @@ const MyOrder: React.FC = () => {
         }
         return item;
       }));
-      
+
       const mapped: Order[] = enrichedData.map((item: any) => ({
         id: item._id,
         platform: inferPlatform(item.productName),
@@ -506,7 +511,14 @@ const MyOrder: React.FC = () => {
         params: { orderId: activeChatOrderId },
       });
       setChatMessages(res.data);
-      setUnreadOrders(prev => ({ ...prev, [activeChatOrderId]: false }));
+
+      // Mark as read immediately when chat opens
+      if (activeChatOrderId) {
+        try {
+          await axios.post(`${CHAT_API}/mark-read`, { userId: sellerId, orderId: activeChatOrderId });
+          setUnreadCounts(prev => ({ ...prev, [activeChatOrderId!]: 0 }));
+        } catch (e) { console.error("Mark read failed", e); }
+      }
     } catch (err) {
       console.error("Chat fetch error:", err);
     }
@@ -533,7 +545,7 @@ const MyOrder: React.FC = () => {
   const sendChat = async (e: React.FormEvent) => {
     e.preventDefault();
     if ((!typedMessage.trim() && !selectedImage) || !activeChatBuyerEmail || !activeChatOrderId) return;
-    
+
     try {
       const formData = new FormData();
       formData.append("senderId", sellerId!);
@@ -647,7 +659,7 @@ const MyOrder: React.FC = () => {
               {TABS.map((tab) => (
                 <button
                   key={tab}
-                  onClick={() => {setActiveTab(tab); setCurrentPage(1);}}
+                  onClick={() => { setActiveTab(tab); setCurrentPage(1); }}
                   className={`pb-2 text-sm whitespace-nowrap transition-all ${activeTab === tab ? "text-[#d4a643] border-b-2 border-[#d4a643] font-bold" : "text-gray-500"}`}
                 >
                   {tab}
@@ -682,20 +694,19 @@ const MyOrder: React.FC = () => {
                           <span className="text-xs text-gray-400 font-medium">
                             Buyer: {buyerNames[order.buyerEmail] || maskEmail(order.buyerEmail)}
                           </span>
-                          <span className={`w-2 h-2 rounded-full ${onlineBuyersMap[order.buyerEmail] ? 'bg-green-500' : 'bg-gray-300'}`} />
+                          <span className={`w-2 h-2 rounded-full ${onlineBuyersMap[order.buyerEmail] ? 'bg-green-500 animate-pulse' : 'bg-gray-300'}`} />
                           <span className="text-[10px] text-gray-500 font-medium">
-                            {onlineBuyersMap[order.buyerEmail] ? "Online" : "Offline"}
+                            {onlineBuyersMap[order.buyerEmail] ? "Active now" : getStatusDisplay(false, lastSeenMap[order.buyerEmail])}
                           </span>
                         </div>
                         {lastMessageTimes[order.id] && (
                           <p className="text-[10px] text-gray-500 mt-0.5">{timeAgo(lastMessageTimes[order.id])}</p>
                         )}
                         <div className="flex flex-wrap items-center gap-2 mt-2">
-                          <span className={`text-[10px] px-2 py-0.5 rounded-full border font-bold ${
-                            order.status === 'Completed' ? 'bg-green-50 text-green-600 border-green-100' : 
-                            (order.status === 'Cancelled') ? 'bg-red-50 text-red-600 border-red-100' : 
-                            'bg-amber-50 text-amber-600 border-amber-100'
-                          }`}>
+                          <span className={`text-[10px] px-2 py-0.5 rounded-full border font-bold ${order.status === 'Completed' ? 'bg-green-50 text-green-600 border-green-100' :
+                              (order.status === 'Cancelled') ? 'bg-red-50 text-red-600 border-red-100' :
+                                'bg-amber-50 text-amber-600 border-amber-100'
+                            }`}>
                             {order.status}
                           </span>
                           {order.status === "Pending" && (
@@ -712,30 +723,34 @@ const MyOrder: React.FC = () => {
                         <p className="text-lg font-bold text-[#0A1A3A]">${order.price.toFixed(2)}</p>
                         <p className="text-[10px] text-gray-400 font-medium">{order.date}</p>
                       </div>
-                      
+
                       {!["Cancelled"].includes(order.status) && (
                         <div className="flex gap-2 w-full justify-end sm:justify-start" onClick={(e) => e.stopPropagation()}>
-                          <button 
-                            onClick={() => { setReportTargetOrder(order); setIsReportModalOpen(true); }} 
+                          <button
+                            onClick={() => { setReportTargetOrder(order); setIsReportModalOpen(true); }}
                             className="flex-1 sm:flex-none flex justify-center p-2 text-red-500 border border-red-100 rounded-lg bg-white hover:bg-red-50 transition"
                           >
                             <FaFlagIcon size={14} />
                           </button>
-                          
-                          <button 
-                            onClick={() => setSelected(order)} 
+
+                          <button
+                            onClick={() => setSelected(order)}
                             className="flex-1 sm:flex-none flex justify-center p-2 text-gray-600 border rounded-lg bg-white hover:bg-gray-50 transition"
                           >
                             <FaEyeIcon size={14} />
                           </button>
-                          
-                          <button 
-                            onClick={() => handleOpenChat(order)} 
+
+                          <button
+                            onClick={() => handleOpenChat(order)}
                             className="flex-1 sm:flex-none flex justify-center p-2 text-blue-600 border border-blue-100 rounded-lg bg-white hover:bg-blue-50 transition"
                           >
                             <div className="relative">
                               <FaCommentsIcon size={14} />
-                              {unreadOrders[order.id] && <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border border-white" />}
+                              {unreadCounts[order.id] > 0 && (
+                                <span className="absolute -top-2 -right-2 min-w-[18px] h-[18px] bg-red-500 text-white text-[9px] font-bold flex items-center justify-center rounded-full border border-white shadow-sm px-1">
+                                  {unreadCounts[order.id] > 99 ? '99+' : unreadCounts[order.id]}
+                                </span>
+                              )}
                             </div>
                           </button>
                         </div>
@@ -757,11 +772,10 @@ const MyOrder: React.FC = () => {
                     <button
                       key={pageNumber}
                       onClick={() => setCurrentPage(pageNumber)}
-                      className={`px-3 py-2 rounded-lg text-sm font-medium transition ${
-                        isActive
+                      className={`px-3 py-2 rounded-lg text-sm font-medium transition ${isActive
                           ? 'bg-[#33ac6f] text-white'
                           : 'border hover:bg-gray-50'
-                      }`}
+                        }`}
                     >
                       {pageNumber}
                     </button>
@@ -875,7 +889,7 @@ const MyOrder: React.FC = () => {
                   </h4>
                   <div className="flex items-center gap-1.5 text-[10px]">
                     <span className={`w-2 h-2 rounded-full ${buyerOnline ? "bg-green-500" : "bg-gray-300"}`} />
-                    <span 
+                    <span
                       className={`font-medium ${buyerOnline ? "text-green-600" : "text-gray-500"}`}
                     >
                       {partnerStatusText}
@@ -883,15 +897,15 @@ const MyOrder: React.FC = () => {
                   </div>
                 </div>
               </div>
-              <button 
-                onClick={() => { setIsChatOpen(false); setPresence('offline'); }} 
+              <button
+                onClick={() => { setIsChatOpen(false); setPresence('offline'); }}
                 className="p-2 text-gray-400 hover:text-red-500 transition rounded-full hover:bg-gray-100"
               >
                 <FaTimesIcon size={20} />
               </button>
             </div>
 
-            <div 
+            <div
               ref={messagesContainerRef}
               className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#F3EFEE]/30 scroll-smooth"
               onScroll={(e) => {
@@ -906,15 +920,14 @@ const MyOrder: React.FC = () => {
                   className={`flex ${msg.senderId === sellerId ? 'justify-end' : 'justify-start'}`}
                 >
                   <div className={`max-w-[85%] ${msg.senderId === sellerId ? 'items-end' : 'items-start'} flex flex-col`}>
-                    <div 
-                      className={`rounded-2xl px-4 py-2.5 shadow-sm text-sm ${
-                        msg.senderId === sellerId 
-                          ? 'bg-[#33ac6f] text-white rounded-tr-none' 
+                    <div
+                      className={`rounded-2xl px-4 py-2.5 shadow-sm text-sm ${msg.senderId === sellerId
+                          ? 'bg-[#33ac6f] text-white rounded-tr-none'
                           : 'bg-white text-[#0A1A3A] border rounded-tl-none font-medium'
-                      }`}
+                        }`}
                     >
                       {msg.imageUrl && (
-                        <div 
+                        <div
                           className="mb-2 cursor-pointer hover:opacity-90 transition"
                           onClick={() => setPreviewImage(msg.imageUrl!.startsWith('http') ? msg.imageUrl! : `${BASE_URL}${msg.imageUrl!}`)}
                         >
@@ -939,9 +952,9 @@ const MyOrder: React.FC = () => {
                 <div className="flex justify-end px-4 py-2">
                   <div className="p-1 bg-[#33ac6f] rounded-2xl rounded-tr-none shadow-md">
                     <div className="relative">
-                      <img 
-                        src={imagePreview} 
-                        alt="preview" 
+                      <img
+                        src={imagePreview}
+                        alt="preview"
                         className="rounded-lg max-w-full max-h-[420px] object-contain"
                       />
                       <button
@@ -955,8 +968,8 @@ const MyOrder: React.FC = () => {
             </div>
 
             <div className="p-4 bg-white border-t">
-              <form 
-                onSubmit={sendChat} 
+              <form
+                onSubmit={sendChat}
                 className="flex items-center gap-2 bg-[#F8FAFB] border rounded-2xl p-1.5 focus-within:border-[#33ac6f] transition-all"
               >
                 <input
@@ -1009,17 +1022,17 @@ const MyOrder: React.FC = () => {
 
           {/* Full-screen Image Preview */}
           {previewImage && (
-            <div 
+            <div
               className="fixed inset-0 z-[200] bg-black/90 flex items-center justify-center p-4"
               onClick={() => setPreviewImage(null)}
             >
               <div className="relative max-w-4xl max-h-[90vh] w-full h-full flex flex-col items-center justify-center">
-                <img 
-                  src={previewImage} 
-                  alt="Full size preview" 
+                <img
+                  src={previewImage}
+                  alt="Full size preview"
                   className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
                 />
-                
+
                 <a
                   href={previewImage}
                   download={`chat-image-${Date.now()}.jpg`}
@@ -1032,7 +1045,7 @@ const MyOrder: React.FC = () => {
                   Download
                 </a>
 
-                <button 
+                <button
                   className="absolute top-6 right-6 text-white bg-black/60 hover:bg-black/80 rounded-full p-3"
                   onClick={() => setPreviewImage(null)}
                 >
@@ -1055,25 +1068,25 @@ const MyOrder: React.FC = () => {
               </button>
             </div>
             <form onSubmit={handleReportSubmit} className="p-6 space-y-4">
-              <select 
-                value={reportReason} 
-                onChange={(e) => setReportReason(e.target.value)} 
+              <select
+                value={reportReason}
+                onChange={(e) => setReportReason(e.target.value)}
                 className="w-full border p-2.5 rounded-xl text-sm outline-none"
               >
                 {SELLER_REPORT_REASONS.map(r => (
                   <option key={r} value={r}>{r}</option>
                 ))}
               </select>
-              <textarea 
-                value={reportMessage} 
-                onChange={(e) => setReportMessage(e.target.value)} 
-                placeholder="Describe the issue..." 
-                className="w-full border p-3 rounded-xl text-sm h-32 outline-none" 
-                required 
+              <textarea
+                value={reportMessage}
+                onChange={(e) => setReportMessage(e.target.value)}
+                placeholder="Describe the issue..."
+                className="w-full border p-3 rounded-xl text-sm h-32 outline-none"
+                required
               />
-              <button 
-                type="submit" 
-                disabled={isSubmittingReport} 
+              <button
+                type="submit"
+                disabled={isSubmittingReport}
                 className="w-full bg-red-600 text-white py-3 rounded-xl font-bold"
               >
                 {isSubmittingReport ? "Sending..." : "Submit Report"}

@@ -203,7 +203,8 @@ const MyPurchase: React.FC = () => {
   const shouldAutoScrollRef = useRef(true);
 
   const [onlineSellersMap, setOnlineSellersMap] = useState<Record<string, boolean>>({});
-  const [unreadPurchases, setUnreadPurchases] = useState<Record<string, boolean>>({});
+  const [lastSeenMap, setLastSeenMap] = useState<Record<string, string | null>>({});
+  const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
   const [lastMessageTimes, setLastMessageTimes] = useState<Record<string, string>>({});
 
   const itemsPerPage = 40;
@@ -284,22 +285,45 @@ const MyPurchase: React.FC = () => {
   const fetchAllSellersStatus = async () => {
     const sellers = Array.from(new Set(purchases.map(p => p.sellerEmail)));
     const statusMap: Record<string, boolean> = {};
+    const seenMap: Record<string, string | null> = {};
+
     for (const email of sellers) {
       try {
         const res = await axios.get<PresenceResponse>(`${CHAT_API}/status/${email}`);
         statusMap[email] = Boolean(res.data?.online);
+        seenMap[email] = res.data?.lastSeen || null;
       } catch (err) {
         statusMap[email] = false;
+        seenMap[email] = null;
       }
     }
     setOnlineSellersMap(statusMap);
+    setLastSeenMap(seenMap);
   };
 
   const checkNotifications = async () => {
-    if (purchases.length === 0 || !buyerId) return;
+    if (!buyerId) return;
     try {
-      const newUnreadStatus: Record<string, boolean> = { ...unreadPurchases };
+      // 1. Fetch unread counts
+      const countRes = await axios.get<Record<string, number>>(`${CHAT_API}/unread/counts/${buyerId}`);
+      setUnreadCounts(countRes.data || {});
+
+      // 2. We still need last message times for the UI
+      // Optimization: limiting this call or piggybacking would be better, 
+      // but safely we can iterate active chats or stick to existing logic for times.
+      // For now, let's keep the time update separate or just assume it is handled by socket in future.
+      // To strictly follow "optimized polling", we can skip fetching history for all orders just for time.
+      // If user wants accurate "last msg time", we might need another endpoint or stick to what we have but less frequent.
+      // Let's keep the old loop for timestamps but run it less often (handled by interval).
+
       const newLastTimes: Record<string, string> = { ...lastMessageTimes };
+      // Only update timestamps for orders that have unread messages to save bandwidth?
+      // Or just do a lightweight check.
+      // For simplicity/reliability in this step, we keep the loop but maybe we can optimize later.
+      // Actually, let's trust the unread count is enough for "Notifications". 
+      // User asked for "Message count must update".
+
+      // Let's keep fetching history for timestamps to make the UI "Last msg Xm ago" accurate.
       for (const p of purchases) {
         const res = await axios.get<ChatMessage[]>(`${CHAT_API}/history/${buyerId}/${p.sellerEmail}`, {
           params: { orderId: p.id }
@@ -307,14 +331,9 @@ const MyPurchase: React.FC = () => {
         const history = res.data;
         const lastMsg = history[history.length - 1];
         if (lastMsg) {
-          newUnreadStatus[p.id] = lastMsg.senderId !== buyerId;
           newLastTimes[p.id] = lastMsg.createdAt;
-        } else {
-          newUnreadStatus[p.id] = false;
-          delete newLastTimes[p.id];
         }
       }
-      setUnreadPurchases(newUnreadStatus);
       setLastMessageTimes(newLastTimes);
     } catch (err) { console.error(err); }
   };
@@ -478,7 +497,15 @@ const MyPurchase: React.FC = () => {
         params: { orderId: activeChatOrderId }
       });
       setChatMessages(res.data);
-      setUnreadPurchases(prev => ({ ...prev, [activeChatOrderId!]: false }));
+
+      // Mark as read immediately when fetching chat
+      if (activeChatOrderId) {
+        try {
+          await axios.post(`${CHAT_API}/mark-read`, { userId: buyerId, orderId: activeChatOrderId });
+          // Optimistically clear unread count
+          setUnreadCounts(prev => ({ ...prev, [activeChatOrderId!]: 0 }));
+        } catch (e) { console.error("Mark read failed", e); }
+      }
     } catch (err) {
       console.error("Fetch chat error:", err);
     }
@@ -627,13 +654,17 @@ const MyPurchase: React.FC = () => {
                       <h3 className="font-bold text-[#0A1A3A] text-sm sm:text-base leading-tight">{p.title}</h3>
                       <div className="flex items-center gap-2 mt-1">
                         <span className="text-xs text-gray-400 font-medium">Seller: {maskEmail(p.sellerEmail)}</span>
-                        <span className={`w-2 h-2 rounded-full ${onlineSellersMap[p.sellerEmail] ? 'bg-green-500' : 'bg-gray-300'}`} />
-                        <span className="text-[10px] text-gray-500 font-medium">
-                          {onlineSellersMap[p.sellerEmail] ? "Online" : "Offline"}
-                        </span>
+                        <div className="flex items-center gap-1 bg-white px-2 py-0.5 rounded-full border shadow-sm">
+                          <span className={`w-2 h-2 rounded-full ${onlineSellersMap[p.sellerEmail] ? 'bg-green-500 animate-pulse' : 'bg-gray-300'}`} />
+                          <span className="text-[10px] text-gray-600 font-medium">
+                            {onlineSellersMap[p.sellerEmail] ? "Active now" : getStatusDisplay(false, lastSeenMap[p.sellerEmail])}
+                          </span>
+                        </div>
                       </div>
                       {lastMessageTimes[p.id] && (
-                        <p className="text-[10px] text-gray-500 mt-0.5">{timeAgo(lastMessageTimes[p.id])}</p>
+                        <p className="text-[10px] text-gray-500 mt-0.5 ml-0.5 flex items-center gap-1">
+                          <FaClockIcon size={8} />  Last msg {timeAgo(lastMessageTimes[p.id])}
+                        </p>
                       )}
                       <div className="flex flex-wrap items-center gap-2 mt-2">
                         <span className={`text-[10px] px-2 py-0.5 rounded-full border font-bold ${p.status === 'Completed' ? 'bg-green-50 text-green-600 border-green-100' :
@@ -688,12 +719,14 @@ const MyPurchase: React.FC = () => {
 
                         <button
                           onClick={() => handleOpenChat(p)}
-                          className="flex-1 sm:flex-none flex justify-center p-2 text-blue-600 border border-blue-100 rounded-lg bg-white hover:bg-blue-50 transition"
+                          className="flex-1 sm:flex-none flex justify-center p-2 text-blue-600 border border-blue-100 rounded-lg bg-white hover:bg-blue-50 transition relative overflow-visible"
                         >
-                          <div className="relative">
-                            <FaCommentsIcon size={14} />
-                            {unreadPurchases[p.id] && <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border border-white" />}
-                          </div>
+                          <FaCommentsIcon size={14} />
+                          {unreadCounts[p.id] > 0 && (
+                            <span className="absolute -top-2 -right-2 min-w-[18px] h-[18px] bg-red-500 text-white text-[9px] font-bold flex items-center justify-center rounded-full border border-white shadow-sm px-1">
+                              {unreadCounts[p.id] > 99 ? '99+' : unreadCounts[p.id]}
+                            </span>
+                          )}
                         </button>
                       </div>
                     )}

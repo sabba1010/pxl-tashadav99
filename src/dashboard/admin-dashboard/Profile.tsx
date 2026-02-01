@@ -250,41 +250,6 @@ const Profile: React.FC = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
-          {/* Address Information */}
-          <div>
-            <SectionTitle>Address Information</SectionTitle>
-            <div className="bg-gray-50/50 rounded-xl p-4 border border-gray-100">
-              <DetailItem label="Address" value={profile.address} />
-              <DetailItem label="City" value={profile.city} />
-              <DetailItem label="State" value={profile.state} />
-              <DetailItem label="Country" value={profile.country} />
-            </div>
-          </div>
-
-          {/* Bank Information */}
-          <div>
-            <SectionTitle>Bank Information</SectionTitle>
-            <div className="bg-gray-50/50 rounded-xl p-4 border border-gray-100 h-full">
-              {profile.savedBankAccount ? (
-                <>
-                  <DetailItem label="Bank Name" value={profile.savedBankAccount.bankName} />
-                  <DetailItem label="Account Number" value={profile.savedBankAccount.accountNumber} />
-                  <DetailItem label="Account Holder" value={profile.savedBankAccount.fullName} />
-                  <DetailItem label="Bank Code" value={profile.savedBankAccount.bankCode} />
-                </>
-              ) : (
-                <div className="flex flex-col items-center justify-center h-full min-h-[150px] text-gray-400">
-                  <svg className="w-12 h-12 mb-3 opacity-20" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z" />
-                    <path fillRule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clipRule="evenodd" />
-                  </svg>
-                  <p>No bank account added</p>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
 
         {/* Security section */}
         <div className="space-y-6">
@@ -309,6 +274,9 @@ const Profile: React.FC = () => {
         </div>
 
         {/* Edit Name Modal */}
+
+
+
         {isEditModalOpen && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
             <div className="bg-white rounded-xl p-6 w-full max-w-sm mx-4">
