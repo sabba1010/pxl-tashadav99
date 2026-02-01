@@ -8,11 +8,12 @@ import {
   ListAlt,
   Logout,
   People,
-  //Person,
+  Person,
   Star,
   Diversity3,
   ManageAccounts,
-  NotificationsActive, // নোটিফিকেশনের জন্য আইকন যোগ করা হলো
+  NotificationsActive,
+
 } from "@mui/icons-material";
 import { Box } from "@mui/material";
 import React, { useState } from "react";
@@ -28,20 +29,20 @@ interface NavItem {
 }
 
 const mainNavItems: NavItem[] = [
-  { 
-    name: "Dashboard Overview", 
-    path: "/admin-dashboard", 
-    icon: <Dashboard /> 
+  {
+    name: "Dashboard Overview",
+    path: "/admin-dashboard",
+    icon: <Dashboard />
   },
-  { 
-    name: "Listings", 
-    path: "/admin-dashboard/listings", 
-    icon: <ListAlt /> 
+  {
+    name: "Listings",
+    path: "/admin-dashboard/listings",
+    icon: <ListAlt />
   },
-  { 
-    name: "Buyer Account", 
-    path: "/admin-dashboard/users", 
-    icon: <People /> 
+  {
+    name: "Buyer Account",
+    path: "/admin-dashboard/users",
+    icon: <People />
   },
   {
     name: "Seller Account",
@@ -79,15 +80,18 @@ const mainNavItems: NavItem[] = [
     path: "/admin-dashboard/sent-notifications",
     icon: <NotificationsActive />,
   },
-  {
-    name: "User Account Changes",
-    path: "/admin-dashboard/account-changes",
-    icon: <Assessment />,
-  },
+
   {
     name: "Account Rate",
     path: "/admin-dashboard/settings",
     icon: <ManageAccounts />,
+  },
+
+
+  {
+    name: "Profile",
+    path: "/admin-dashboard/profile",
+    icon: <Person />,
   },
 ];
 
@@ -102,7 +106,7 @@ const AdminAdmins: React.FC = () => {
   const handelLogout = () => {
     // @ts-ignore
     if (user && typeof user.logout === 'function') {
-        user.logout();
+      user.logout();
     }
     toast.success("Logged out successfully");
     navigate("/");
@@ -112,17 +116,15 @@ const AdminAdmins: React.FC = () => {
     <div className="flex h-screen font-sans">
       {/* Sidebar */}
       <aside
-        className={`${
-          collapsed ? "w-20" : "w-64"
-        } bg-[#00183C] text-white flex flex-col transition-all duration-300 ease-in-out shadow-2xl z-50`}
+        className={`${collapsed ? "w-20" : "w-64"
+          } bg-[#00183C] text-white flex flex-col transition-all duration-300 ease-in-out shadow-2xl z-50`}
       >
         {/* Header */}
         <div className="p-6 border-b border-gray-700 flex items-center justify-between">
           <Link
             to="/"
-            className={`font-extrabold text-[#D1A148] transition-opacity ${
-              collapsed ? "opacity-0 w-0" : "text-xl opacity-100"
-            } overflow-hidden whitespace-nowrap`}
+            className={`font-extrabold text-[#D1A148] transition-opacity ${collapsed ? "opacity-0 w-0" : "text-xl opacity-100"
+              } overflow-hidden whitespace-nowrap`}
           >
             Admin Panel
           </Link>
@@ -144,22 +146,20 @@ const AdminAdmins: React.FC = () => {
               <Link
                 key={item.path}
                 to={item.path}
-                className={`flex items-center gap-4 p-3 text-sm font-medium rounded-lg transition-all duration-150 group relative ${
-                  isActive
-                    ? "bg-[#D1A148] text-white shadow-md"
-                    : "text-gray-300 hover:bg-[#D1A148] hover:text-white"
-                }`}
+                className={`flex items-center gap-4 p-3 text-sm font-medium rounded-lg transition-all duration-150 group relative ${isActive
+                  ? "bg-[#D1A148] text-white shadow-md"
+                  : "text-gray-300 hover:bg-[#D1A148] hover:text-white"
+                  }`}
               >
                 <Box sx={{ display: "flex", alignItems: "center", minWidth: "24px" }}>
                   {item.icon}
                 </Box>
 
                 <span
-                  className={`${
-                    collapsed
-                      ? "opacity-0 w-0"
-                      : "opacity-100 whitespace-nowrap"
-                  } transition-all duration-300 overflow-hidden`}
+                  className={`${collapsed
+                    ? "opacity-0 w-0"
+                    : "opacity-100 whitespace-nowrap"
+                    } transition-all duration-300 overflow-hidden`}
                 >
                   {item.name}
                 </span>
@@ -176,23 +176,7 @@ const AdminAdmins: React.FC = () => {
 
         {/* Bottom Section */}
         <div className="border-t border-gray-700 p-4 space-y-2 bg-[#00122e]">
-          {/* <Link
-            to="/admin-dashboard/profile"
-            className={`flex items-center gap-4 p-3 text-sm font-medium rounded-lg transition-all duration-150 group relative ${
-              location.pathname === "/admin-dashboard/profile"
-                ? "bg-[#D1A148] text-white shadow-md"
-                : "text-gray-300 hover:bg-[#D1A148] hover:text-white"
-            }`}
-          >
-            <Person />
-            <span
-              className={`${
-                collapsed ? "opacity-0 w-0" : "opacity-100 whitespace-nowrap"
-              } transition-all duration-300 overflow-hidden`}
-            >
-              My Profile
-            </span>
-          </Link> */}
+
 
           <button
             onClick={handelLogout}
@@ -200,9 +184,8 @@ const AdminAdmins: React.FC = () => {
           >
             <Logout />
             <span
-              className={`${
-                collapsed ? "opacity-0 w-0" : "opacity-100 whitespace-nowrap"
-              } transition-all duration-300 overflow-hidden`}
+              className={`${collapsed ? "opacity-0 w-0" : "opacity-100 whitespace-nowrap"
+                } transition-all duration-300 overflow-hidden`}
             >
               Logout
             </span>

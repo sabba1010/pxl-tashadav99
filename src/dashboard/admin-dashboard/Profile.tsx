@@ -1,279 +1,409 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import axios from "axios";
+import { useAuth } from "../../context/AuthContext";
 
-/**
- * Interface for mock admin data
- */
+const API_BASE_URL = "http://localhost:3200/api/user";
+
+// ────────────────────────────────────────────────
+// Types
+// ────────────────────────────────────────────────
+
 interface AdminProfile {
-  id: string;
+  _id: string;
   name: string;
   email: string;
-  role: "Super Admin" | "Moderator" | "Finance";
-  lastLogin: string;
+  role: string;
+  status: "active" | "blocked" | "suspended";
   isTwoFactorEnabled: boolean;
-  notificationPreferences: {
-    deposits: boolean;
-    withdrawals: boolean;
-    userReports: boolean;
+  profilePicture: string | null;
+  phone: string;
+  createdAt: string;
+  lastLogin?: string;
+  countryCode?: string;
+  referralCode?: string;
+  balance?: number;
+  salesCredit?: number;
+  subscribedPlan?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  dob?: string;
+  accountCreationDate?: string;
+  savedBankAccount?: {
+    accountNumber: string;
+    bankCode: string;
+    fullName: string;
+    bankName: string;
   };
 }
 
-// --- MOCK DATA ---
-const mockAdmin: AdminProfile = {
-  id: "ADM001",
-  name: "Aurora Borealis",
-  email: "aurora.admin@platform.com",
-  role: "Super Admin",
-  lastLogin: "2024-07-25 09:30 AM UTC",
-  isTwoFactorEnabled: true,
-  notificationPreferences: {
-    deposits: true,
-    withdrawals: true,
-    userReports: false,
-  },
-};
-
-// --- HELPER COMPONENT: Profile Stat Card ---
-interface StatCardProps {
-  title: string;
-  value: string | React.ReactNode;
-  color: string;
+interface UpdateResponse {
+  success: boolean;
+  message?: string;
+  user?: AdminProfile;
 }
 
-const StatCard: React.FC<StatCardProps> = ({ title, value, color }) => (
-  <div className={`p-5 rounded-xl shadow-lg border-l-4 ${color}`}>
-    <p className="text-sm font-medium text-gray-500">{title}</p>
-    <div className="mt-1 text-xl font-bold text-gray-900">{value}</div>
+// ────────────────────────────────────────────────
+// Helper Components
+// ────────────────────────────────────────────────
+
+const SectionTitle: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <h3 className="text-xl font-bold text-gray-800 mb-4 pb-2 border-b border-gray-100">
+    {children}
+  </h3>
+);
+
+const DetailItem: React.FC<{ label: string; value: string | number | null | undefined }> = ({
+  label,
+  value,
+}) => (
+  <div className="flex flex-col sm:flex-row sm:justify-between py-3 border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition px-2 rounded-lg">
+    <span className="text-gray-500 font-medium mb-1 sm:mb-0">{label}</span>
+    <span className="text-gray-900 font-semibold text-right break-words max-w-full sm:max-w-[60%]">
+      {value || <span className="text-gray-400 italic">Not set</span>}
+    </span>
   </div>
 );
 
-// --- MAIN COMPONENT: PROFILE ---
+// ────────────────────────────────────────────────
+// Main Component
+// ────────────────────────────────────────────────
 
 const Profile: React.FC = () => {
-  // We use state to hold the profile data, simulating an API fetch or local store
-  const [profile, setProfile] = useState<AdminProfile>(mockAdmin);
-  const [isEditing, setIsEditing] = useState(false);
-  const [nameInput, setNameInput] = useState(profile.name);
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
 
-  // Simulated action for updating the profile name
-  const handleSave = () => {
-    setProfile((prev) => ({ ...prev, name: nameInput }));
-    setIsEditing(false);
-    // In a real app, an API call would be made here
+  const [profile, setProfile] = useState<AdminProfile | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const [editForm, setEditForm] = useState({ name: "", email: "" });
+  const [passwordForm, setPasswordForm] = useState({
+    current: "",
+    new: "",
+    confirm: "",
+  });
+
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+
+  // Fetch profile data
+  useEffect(() => {
+    if (!user?._id) return;
+
+    const fetchProfile = async () => {
+      setLoading(true);
+      try {
+        const response = await axios.get<AdminProfile>(
+          `${API_BASE_URL}/getall/${user._id}`
+        );
+
+        if (response.data) {
+          setProfile(response.data);
+          setEditForm({
+            name: response.data.name || "",
+            email: response.data.email || "",
+          });
+        }
+      } catch (err) {
+        console.error("Profile fetch failed:", err);
+        toast.error("Failed to load profile");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, [user?._id]);
+
+  // Save edited name
+  const handleEditSave = async () => {
+    if (!profile) return;
+
+    try {
+      const { data } = await axios.put<UpdateResponse>(
+        `${API_BASE_URL}/update-profile`,
+        {
+          email: profile.email,
+          name: editForm.name.trim(),
+        }
+      );
+
+      if (data.success) {
+        setProfile((prev) =>
+          prev ? { ...prev, name: editForm.name } : null
+        );
+        setIsEditModalOpen(false);
+        toast.success("Profile updated successfully");
+      } else {
+        toast.error(data.message || "Update failed");
+      }
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || "Error updating profile");
+    }
   };
 
-  // Simulated action for changing password (modal/form placeholder)
-  const handleChangePassword = () => {
-    // Implement a dedicated modal/form for password change here
-    alert("Password change form launched (simulated).");
+  // Change password
+  const handlePasswordChange = async () => {
+    if (passwordForm.new !== passwordForm.confirm) {
+      return toast.error("New passwords do not match");
+    }
+
+    if (passwordForm.new.length < 6) {
+      return toast.error("Password must be at least 6 characters");
+    }
+
+    try {
+      if (!profile) return;
+
+      const response = await axios.put<UpdateResponse>(
+        `${API_BASE_URL}/update-password`,
+        {
+          email: profile.email,
+          currentPassword: passwordForm.current,
+          newPassword: passwordForm.new,
+        }
+      );
+
+      if (response.data?.success) {
+        setIsPasswordModalOpen(false);
+        setPasswordForm({ current: "", new: "", confirm: "" });
+        toast.success("Password changed successfully!");
+      } else {
+        toast.error(response.data?.message || "Password change failed");
+      }
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || "Error changing password");
+    }
   };
 
-  // Simulated action for toggling 2FA
-  const handleToggle2FA = () => {
-    const newStatus = !profile.isTwoFactorEnabled;
-    setProfile((prev) => ({ ...prev, isTwoFactorEnabled: newStatus }));
+  const handleLogout = () => {
+    logout();
+    navigate("/");
   };
 
-  // Simulated action for toggling notification preferences
-  const handleToggleNotification = (
-    key: keyof AdminProfile["notificationPreferences"]
-  ) => {
-    setProfile((prev) => ({
-      ...prev,
-      notificationPreferences: {
-        ...prev.notificationPreferences,
-        [key]: !prev.notificationPreferences[key],
-      },
-    }));
-  };
+  if (loading) {
+    return <div className="p-10 text-center">Loading profile...</div>;
+  }
+
+  if (!profile) {
+    return <div className="p-10 text-center text-red-600">Profile not found</div>;
+  }
 
   return (
-    <div className="p-4 space-y-8 max-w-4xl mx-auto">
-      <h2 className="text-3xl font-extrabold text-gray-900 border-b pb-2">
-        Administrator Profile
-      </h2>
+    <div className="p-6 bg-gray-50 min-h-screen">
+      <div className="max-w-4xl mx-auto bg-white shadow-xl rounded-2xl p-8">
+        <h1 className="text-2xl font-bold mb-6">Admin Profile</h1>
 
-      {/* Profile Overview Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        <StatCard
-          title="Admin Role"
-          value={profile.role}
-          color="border-indigo-500 bg-white"
-        />
-        <StatCard
-          title="Account ID"
-          value={<span className="font-mono text-sm">{profile.id}</span>}
-          color="border-gray-500 bg-white"
-        />
-        <StatCard
-          title="Last Login"
-          value={
-            <span className="text-sm">{profile.lastLogin.split(" ")[0]}</span>
-          }
-          color="border-green-500 bg-white"
-        />
-      </div>
-
-      {/* General Information Section */}
-      <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-xl font-semibold text-gray-800">
-            General Information
-          </h3>
-          {!isEditing ? (
+        {/* Profile header */}
+        <div className="flex items-center gap-6 mb-10 pb-8 border-b">
+          <div className="w-24 h-24 rounded-full bg-[#00183C] text-[#D1A148] flex items-center justify-center text-4xl font-bold uppercase">
+            {profile.name.charAt(0) || "?"}
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold">{profile.name}</h2>
+            <p className="text-gray-600">{profile.email}</p>
             <button
-              onClick={() => setIsEditing(true)}
-              className="px-4 py-2 text-sm font-medium text-[#00183C] bg-indigo-100 rounded-lg hover:bg-indigo-200 transition duration-150"
+              onClick={() => setIsEditModalOpen(true)}
+              className="mt-2 text-sm text-blue-600 hover:underline font-medium"
             >
-              Edit
+              Edit name
             </button>
-          ) : (
-            <div className="space-x-2">
-              <button
-                onClick={() => {
-                  setIsEditing(false);
-                  setNameInput(profile.name);
-                }}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition duration-150"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSave}
-                className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition duration-150 shadow-md"
-              >
-                Save
-              </button>
-            </div>
-          )}
+          </div>
         </div>
 
-        <div className="space-y-4">
-          {/* Name Field */}
-          <div className="flex flex-col sm:flex-row sm:items-center py-2 border-b border-gray-100">
-            <span className="w-full sm:w-1/3 text-sm font-medium text-gray-600">
-              Full Name
-            </span>
-            <div className="w-full sm:w-2/3 mt-1 sm:mt-0">
-              {isEditing ? (
-                <input
-                  type="text"
-                  value={nameInput}
-                  onChange={(e) => setNameInput(e.target.value)}
-                  className="p-2 border border-gray-300 rounded-lg w-full focus:ring-indigo-500 focus:border-indigo-500 transition duration-150"
-                />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
+          {/* Profile Information */}
+          <div>
+            <SectionTitle>Profile Information</SectionTitle>
+            <div className="bg-gray-50/50 rounded-xl p-4 border border-gray-100">
+              <DetailItem label="Full Name" value={profile.name} />
+              <DetailItem label="Email" value={profile.email} />
+              <DetailItem
+                label="Phone"
+                value={profile.phone ? `${profile.countryCode || ""} ${profile.phone}` : null}
+              />
+              <DetailItem label="Role" value={profile.role} />
+              <DetailItem label="Date of Birth" value={profile.dob} />
+              <DetailItem
+                label="Account Created"
+                value={profile.accountCreationDate ? new Date(profile.accountCreationDate).toLocaleDateString() : new Date(profile.createdAt).toLocaleDateString()}
+              />
+            </div>
+          </div>
+
+          {/* Account & System Info */}
+          <div>
+            <SectionTitle>Account & System Info</SectionTitle>
+            <div className="bg-gray-50/50 rounded-xl p-4 border border-gray-100">
+              <DetailItem label="Subscribed Plan" value={profile.subscribedPlan} />
+              <DetailItem label="Sales Credit" value={profile.salesCredit} />
+              <DetailItem
+                label="Balance"
+                value={profile.balance !== undefined ? `$${profile.balance.toFixed(2)}` : null}
+              />
+              <DetailItem label="Referral Code" value={profile.referralCode} />
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
+          {/* Address Information */}
+          <div>
+            <SectionTitle>Address Information</SectionTitle>
+            <div className="bg-gray-50/50 rounded-xl p-4 border border-gray-100">
+              <DetailItem label="Address" value={profile.address} />
+              <DetailItem label="City" value={profile.city} />
+              <DetailItem label="State" value={profile.state} />
+              <DetailItem label="Country" value={profile.country} />
+            </div>
+          </div>
+
+          {/* Bank Information */}
+          <div>
+            <SectionTitle>Bank Information</SectionTitle>
+            <div className="bg-gray-50/50 rounded-xl p-4 border border-gray-100 h-full">
+              {profile.savedBankAccount ? (
+                <>
+                  <DetailItem label="Bank Name" value={profile.savedBankAccount.bankName} />
+                  <DetailItem label="Account Number" value={profile.savedBankAccount.accountNumber} />
+                  <DetailItem label="Account Holder" value={profile.savedBankAccount.fullName} />
+                  <DetailItem label="Bank Code" value={profile.savedBankAccount.bankCode} />
+                </>
               ) : (
-                <span className="text-base font-semibold text-gray-900">
-                  {profile.name}
-                </span>
+                <div className="flex flex-col items-center justify-center h-full min-h-[150px] text-gray-400">
+                  <svg className="w-12 h-12 mb-3 opacity-20" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z" />
+                    <path fillRule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clipRule="evenodd" />
+                  </svg>
+                  <p>No bank account added</p>
+                </div>
               )}
             </div>
           </div>
-
-          {/* Email Field (Read-only) */}
-          <div className="flex flex-col sm:flex-row sm:items-center py-2 border-b border-gray-100">
-            <span className="w-full sm:w-1/3 text-sm font-medium text-gray-600">
-              Email Address
-            </span>
-            <span className="w-full sm:w-2/3 text-base text-gray-900 mt-1 sm:mt-0">
-              {profile.email}
-            </span>
-          </div>
-
-          {/* Role Field (Read-only) */}
-          <div className="flex flex-col sm:flex-row sm:items-center py-2">
-            <span className="w-full sm:w-1/3 text-sm font-medium text-gray-600">
-              Access Level
-            </span>
-            <span className="w-full sm:w-2/3 text-base font-bold text-indigo-600 mt-1 sm:mt-0">
-              {profile.role}
-            </span>
-          </div>
         </div>
-      </div>
 
-      {/* Security Section */}
-      <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
-        <h3 className="text-xl font-semibold text-gray-800 mb-4">
-          Security Settings
-        </h3>
+        {/* Security section */}
+        <div className="space-y-6">
+          <h3 className="font-bold text-lg">Security</h3>
 
-        <div className="space-y-4">
-          {/* Change Password */}
-          <div className="flex justify-between items-center py-2 border-b border-gray-100">
-            <span className="text-base font-medium text-gray-900">
-              Change Password
-            </span>
+          <div className="p-4 bg-gray-50 rounded-lg flex justify-between items-center">
+            <span>Password</span>
             <button
-              onClick={handleChangePassword}
-              className="px-4 py-2 text-sm font-medium text-white bg-[#D1A148] rounded-lg hover:bg-[#755823] transition duration-150 shadow-md"
+              onClick={() => setIsPasswordModalOpen(true)}
+              className="text-blue-600 hover:underline"
             >
-              Update Password
+              Change
             </button>
           </div>
 
-          {/* Two-Factor Authentication */}
-          <div className="flex justify-between items-center py-2">
-            <div className="flex items-center space-x-2">
-              <span className="text-base font-medium text-gray-900">
-                Two-Factor Authentication (2FA)
-              </span>
-              <span
-                className={`text-xs px-2 py-0.5 rounded-full font-semibold ${
-                  profile.isTwoFactorEnabled
-                    ? "bg-green-100 text-green-800"
-                    : "bg-red-100 text-red-800"
-                }`}
-              >
-                {profile.isTwoFactorEnabled ? "Enabled" : "Disabled"}
-              </span>
-            </div>
-            <button
-              onClick={handleToggle2FA}
-              className={`px-4 py-2 text-sm font-medium text-white rounded-lg transition duration-150 shadow-md ${
-                profile.isTwoFactorEnabled
-                  ? "bg-[#D1A148] hover:bg-[#755823]"
-                  : "bg-[#D1A148] hover:bg-[#755823]"
-              }`}
-            >
-              {profile.isTwoFactorEnabled ? "Disable" : "Enable"}
-            </button>
-          </div>
+          <button
+            onClick={() => setIsLogoutModalOpen(true)}
+            className="w-full mt-8 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-semibold transition"
+          >
+            Logout
+          </button>
         </div>
-      </div>
 
-      {/* Notification Preferences Section */}
-      <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
-        <h3 className="text-xl font-semibold text-gray-800 mb-4">
-          Notification Preferences
-        </h3>
-
-        <div className="space-y-2">
-          {Object.entries(profile.notificationPreferences).map(
-            ([key, value]) => (
-              <div
-                key={key}
-                className="flex justify-between items-center py-2 border-b border-gray-100 last:border-b-0"
-              >
-                <span className="text-base text-gray-700 capitalize">
-                  {key.replace(/([A-Z])/g, " $1").trim()} Alerts
-                </span>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={value}
-                    onChange={() =>
-                      handleToggleNotification(
-                        key as keyof AdminProfile["notificationPreferences"]
-                      )
-                    }
-                    className="sr-only peer"
-                  />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#D1A148]"></div>
-                </label>
+        {/* Edit Name Modal */}
+        {isEditModalOpen && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-xl p-6 w-full max-w-sm mx-4">
+              <h2 className="text-xl font-bold mb-4">Edit Name</h2>
+              <input
+                className="w-full border p-3 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={editForm.name}
+                onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+              />
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setIsEditModalOpen(false)}
+                  className="flex-1 border py-3 rounded hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleEditSave}
+                  className="flex-1 bg-blue-600 text-white py-3 rounded hover:bg-blue-700"
+                >
+                  Save
+                </button>
               </div>
-            )
-          )}
-        </div>
+            </div>
+          </div>
+        )}
+
+        {/* Change Password Modal */}
+        {isPasswordModalOpen && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-xl p-6 w-full max-w-sm mx-4">
+              <h2 className="text-xl font-bold mb-4">Change Password</h2>
+
+              <input
+                type="password"
+                placeholder="Current password"
+                className="w-full border p-3 rounded mb-3"
+                value={passwordForm.current}
+                onChange={(e) => setPasswordForm({ ...passwordForm, current: e.target.value })}
+              />
+              <input
+                type="password"
+                placeholder="New password"
+                className="w-full border p-3 rounded mb-3"
+                value={passwordForm.new}
+                onChange={(e) => setPasswordForm({ ...passwordForm, new: e.target.value })}
+              />
+              <input
+                type="password"
+                placeholder="Confirm new password"
+                className="w-full border p-3 rounded mb-5"
+                value={passwordForm.confirm}
+                onChange={(e) => setPasswordForm({ ...passwordForm, confirm: e.target.value })}
+              />
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setIsPasswordModalOpen(false)}
+                  className="flex-1 border py-3 rounded hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handlePasswordChange}
+                  className="flex-1 bg-black text-white py-3 rounded hover:bg-gray-800"
+                >
+                  Update
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Logout Confirmation */}
+        {isLogoutModalOpen && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-xl p-6 w-full max-w-xs mx-4 text-center">
+              <p className="text-lg mb-5">Are you sure you want to log out?</p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setIsLogoutModalOpen(false)}
+                  className="flex-1 border py-3 rounded hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleLogout}
+                  className="flex-1 bg-red-600 text-white py-3 rounded hover:bg-red-700"
+                >
+                  Logout
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

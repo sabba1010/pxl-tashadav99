@@ -103,8 +103,8 @@ const Routes = createBrowserRouter([
         element: <WhyChooseUs />,
       },
       {
-       path: "/cart",
-       element: <CartPage/>
+        path: "/cart",
+        element: <CartPage />
       },
       {
         path: "/refund",
@@ -128,7 +128,7 @@ const Routes = createBrowserRouter([
       },
       {
         path: "report-seller",
-        element:<MyReport/>,
+        element: <MyReport />,
       },
       {
         path: "/login",
@@ -178,11 +178,11 @@ const Routes = createBrowserRouter([
           </SellerPrivateRoute>
         ),
       },
-       {
+      {
         path: "/seller-chat",
         element: (
           <SellerPrivateRoute>
-           <SellerAdminChat />
+            <SellerAdminChat />
           </SellerPrivateRoute>
         ),
       },
@@ -257,11 +257,11 @@ const Routes = createBrowserRouter([
       },
       {
         path: "/seller-dashboard",
-        element: <DashboardSeller/>,
+        element: <DashboardSeller />,
       },
       {
         path: "/account-settings",
-        element: <AccountSettings/>,
+        element: <AccountSettings />,
       },
       {
         path: "*",
@@ -285,6 +285,10 @@ const Routes = createBrowserRouter([
       {
         path: "users",
         element: <AllUsers />,
+      },
+      {
+        path: "profile",
+        element: <Profile />
       },
       {
         path: "deposits",
@@ -316,15 +320,17 @@ const Routes = createBrowserRouter([
       },
       {
         path: "ref",
-        element:<RefDetails/>,
-      },  {
+        element: <RefDetails />,
+      }, {
         path: "Sent-Notifications",
         element: <SentNotification />,
       },
-      {        path: "account-changes",
+      {
+        path: "account-changes",
         element: <UserAccountChanges />,
       },
-      {        path: "settings",
+      {
+        path: "settings",
         element: <AdminSettings />,
       },
       // {
