@@ -442,7 +442,7 @@ const SellForm: React.FC = () => {
           <strong>Remaining Listing Credits: {salesCredit}</strong>
         </Typography>
         <Typography variant="body2" mt={0.5}>
-          Each new listing consumes 1 credit.
+          Each new listing consumes 1 credit. Credits reset every 24 hours based on your plan.
         </Typography>
       </Box>
     );
