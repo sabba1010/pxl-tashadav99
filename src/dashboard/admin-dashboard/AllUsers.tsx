@@ -40,6 +40,7 @@ const AllUsers: React.FC = () => {
       const res = await axios.get(`${BASE_URL}/api/user/getall`);
       return res.data as User[];
     },
+    refetchInterval: 5000,
   });
 
   // 2. Fetch All Purchases
@@ -49,6 +50,7 @@ const AllUsers: React.FC = () => {
       const res = await axios.get(`${BASE_URL}/purchase/getall`);
       return res.data as any[];
     },
+    refetchInterval: 5000,
   });
 
   /* ====================== ACTIONS ====================== */
@@ -79,8 +81,8 @@ const AllUsers: React.FC = () => {
     const filtered = users.filter((u: User) =>
       u.role === "buyer" &&
       (u.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-       u.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-       u.phone?.includes(searchTerm))
+        u.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        u.phone?.includes(searchTerm))
     );
 
     // Sort: newest first (most recent accountCreationDate at the top)

@@ -271,6 +271,7 @@ import {
   Package,
 } from "lucide-react";
 import Swal from "sweetalert2";
+import { useQuery } from "@tanstack/react-query";
 
 // API URL
 const API_BASE = "http://localhost:3200/purchase";
@@ -285,7 +286,7 @@ interface IReport {
   reason: string;
   message: string;
   status: string;
-  role?: string; 
+  role?: string;
   createdAt: string;
   sellerPhone?: string;
 }
@@ -296,51 +297,47 @@ interface IUpdateResponse {
 }
 
 const ReportAdmin: React.FC = () => {
-  const [reports, setReports] = useState<IReport[]>([]);
+  /* 
+   * Note: reports and loading are handled by useQuery now. 
+   */
   const [filteredReports, setFilteredReports] = useState<IReport[]>([]);
-  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [selectedReport, setSelectedReport] = useState<IReport | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const reportsPerPage = 8;
 
-  useEffect(() => {
-    fetchReports();
-  }, []);
+  const fetchReportsData = async (): Promise<IReport[]> => {
+    const res = await axios.get<IReport[]>(`${API_BASE}/report/getall`);
+    const usersRes = await axios.get<any>(`${API_BASE.replace('/purchase', '')}/api/user/getall`);
+    const users: any[] = Array.isArray(usersRes.data) ? usersRes.data : usersRes.data?.users || [];
 
-  const fetchReports = async () => {
-    try {
-      setLoading(true);
-      const res = await axios.get<IReport[]>(`${API_BASE}/report/getall`);
-      const usersRes = await axios.get<any>(`${API_BASE.replace('/purchase','')}/api/user/getall`);
-      const users: any[] = Array.isArray(usersRes.data) ? usersRes.data : usersRes.data?.users || [];
-
-      const phoneMap = new Map<string, string>();
-      users.forEach((u) => {
-        if (u.email) {
-          const phone = `${u.countryCode || ''} ${u.phone || ''}`.trim();
-          phoneMap.set(u.email.toLowerCase(), phone);
-        }
-      });
-
-      if (Array.isArray(res.data)) {
-        const withPhones = res.data.map((r) => ({
-          ...r,
-          sellerPhone: phoneMap.get(r.sellerEmail?.toLowerCase() || '') || undefined,
-        } as IReport));
-
-        const sorted = [...withPhones].sort(
-          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        );
-        setReports(sorted);
-        setFilteredReports(sorted);
+    const phoneMap = new Map<string, string>();
+    users.forEach((u) => {
+      if (u.email) {
+        const phone = `${u.countryCode || ''} ${u.phone || ''}`.trim();
+        phoneMap.set(u.email.toLowerCase(), phone);
       }
-    } catch (err) {
-      console.error("Load Error:", err);
-    } finally {
-      setLoading(false);
+    });
+
+    if (Array.isArray(res.data)) {
+      const withPhones = res.data.map((r) => ({
+        ...r,
+        sellerPhone: phoneMap.get(r.sellerEmail?.toLowerCase() || '') || undefined,
+      } as IReport));
+
+      const sorted = [...withPhones].sort(
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+      return sorted;
     }
+    return [];
   };
+
+  const { data: reports = [], isLoading: loading, refetch } = useQuery({
+    queryKey: ["adminReports"],
+    queryFn: fetchReportsData,
+    refetchInterval: 5000,
+  });
 
   const handleStatusChange = async (id: string, newStatus: string) => {
     if (!newStatus || newStatus === "Pending") return;
@@ -355,7 +352,7 @@ const ReportAdmin: React.FC = () => {
     });
 
     if (!confirmResult.isConfirmed) {
-      fetchReports();
+      refetch();
       return;
     }
 
@@ -380,12 +377,12 @@ const ReportAdmin: React.FC = () => {
           showConfirmButton: false,
           timer: 2000
         });
-        fetchReports();
+        refetch();
       }
     } catch (error: any) {
       console.error("Update Error:", error);
       Swal.fire("Error", error.response?.data?.message || "Operation failed", "error");
-      fetchReports();
+      refetch();
     }
   };
 
@@ -448,7 +445,7 @@ const ReportAdmin: React.FC = () => {
                     <td className="p-4">
                       <div className="flex items-center gap-3">
                         <div className="p-2 bg-amber-50 rounded-lg text-amber-600">
-                           <Package size={20} />
+                          <Package size={20} />
                         </div>
                         <div className="flex flex-col">
                           <span className="text-sm font-black text-slate-800 uppercase italic">
@@ -463,9 +460,8 @@ const ReportAdmin: React.FC = () => {
                     <td className="p-4">
                       <div className="flex flex-col gap-1">
                         <span className="text-sm font-semibold text-slate-700">{r.reporterEmail}</span>
-                        <span className={`w-fit text-[10px] font-bold px-1.5 py-0.5 rounded uppercase ${
-                          r.role === 'buyer' ? 'bg-indigo-50 text-indigo-600' : 'bg-orange-50 text-orange-600'
-                        }`}>
+                        <span className={`w-fit text-[10px] font-bold px-1.5 py-0.5 rounded uppercase ${r.role === 'buyer' ? 'bg-indigo-50 text-indigo-600' : 'bg-orange-50 text-orange-600'
+                          }`}>
                           {r.role || "seller"}
                         </span>
                       </div>
@@ -485,11 +481,10 @@ const ReportAdmin: React.FC = () => {
                         <select
                           value={r.status}
                           onChange={(e) => handleStatusChange(r._id, e.target.value)}
-                          className={`w-full appearance-none px-3 py-2 rounded-lg text-xs font-black border outline-none cursor-pointer transition-all uppercase ${
-                            r.status === "Refunded" ? "bg-red-50 text-red-600 border-red-200" :
+                          className={`w-full appearance-none px-3 py-2 rounded-lg text-xs font-black border outline-none cursor-pointer transition-all uppercase ${r.status === "Refunded" ? "bg-red-50 text-red-600 border-red-200" :
                             r.status === "Sold" ? "bg-emerald-50 text-emerald-600 border-emerald-200" :
-                            "bg-amber-50 text-amber-600 border-amber-200"
-                          }`}
+                              "bg-amber-50 text-amber-600 border-amber-200"
+                            }`}
                         >
                           <option value="Pending">Pending</option>
                           <option value="Sold">Sold</option>
@@ -499,8 +494,8 @@ const ReportAdmin: React.FC = () => {
                       </div>
                     </td>
                     <td className="p-4 text-right">
-                      <button 
-                        onClick={() => setSelectedReport(r)} 
+                      <button
+                        onClick={() => setSelectedReport(r)}
                         className="px-5 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-slate-800 transition active:scale-95 shadow-sm uppercase italic"
                       >
                         Review
@@ -515,9 +510,9 @@ const ReportAdmin: React.FC = () => {
 
         {totalPages > 1 && (
           <div className="flex justify-center items-center gap-2 mt-8">
-            <button className="p-2 border rounded-lg bg-white disabled:opacity-50" disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}><ChevronLeft size={18}/></button>
+            <button className="p-2 border rounded-lg bg-white disabled:opacity-50" disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}><ChevronLeft size={18} /></button>
             <span className="text-sm font-bold text-slate-600">Page {currentPage} of {totalPages}</span>
-            <button className="p-2 border rounded-lg bg-white disabled:opacity-50" disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)}><ChevronRight size={18}/></button>
+            <button className="p-2 border rounded-lg bg-white disabled:opacity-50" disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)}><ChevronRight size={18} /></button>
           </div>
         )}
       </div>
@@ -531,15 +526,15 @@ const ReportAdmin: React.FC = () => {
                 <ShieldAlert size={22} className="text-amber-400" />
                 <span className="font-black text-lg uppercase italic tracking-tighter">Case Review</span>
               </div>
-              <button onClick={() => setSelectedReport(null)} className="hover:bg-white/10 p-1 rounded-full"><X size={24}/></button>
+              <button onClick={() => setSelectedReport(null)} className="hover:bg-white/10 p-1 rounded-full"><X size={24} /></button>
             </div>
             <div className="p-6">
               <div className="mb-4 flex items-center gap-3 p-3 bg-amber-50 rounded-xl border border-amber-100">
-                 <Package className="text-amber-600" />
-                 <div>
-                    <label className="text-[10px] font-extrabold text-amber-600 uppercase tracking-widest block">Product Name</label>
-                    <p className="font-black text-slate-800 uppercase italic">{selectedReport.productName || "Unknown"}</p>
-                 </div>
+                <Package className="text-amber-600" />
+                <div>
+                  <label className="text-[10px] font-extrabold text-amber-600 uppercase tracking-widest block">Product Name</label>
+                  <p className="font-black text-slate-800 uppercase italic">{selectedReport.productName || "Unknown"}</p>
+                </div>
               </div>
 
               <div className="mb-4">
@@ -555,17 +550,17 @@ const ReportAdmin: React.FC = () => {
               </div>
 
               <div className="grid grid-cols-2 gap-3 mb-6">
-                 <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
-                    <label className="text-[9px] font-bold text-slate-400 uppercase block">Reporter</label>
-                    <span className="text-[11px] font-semibold text-slate-700 truncate block">{selectedReport.reporterEmail}</span>
-                 </div>
-                 <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
-                    <label className="text-[9px] font-bold text-slate-400 uppercase block">Reported Email</label>
-                    <span className="text-[11px] font-semibold text-slate-700 truncate block">{selectedReport.sellerEmail}</span>
-                 </div>
+                <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
+                  <label className="text-[9px] font-bold text-slate-400 uppercase block">Reporter</label>
+                  <span className="text-[11px] font-semibold text-slate-700 truncate block">{selectedReport.reporterEmail}</span>
+                </div>
+                <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
+                  <label className="text-[9px] font-bold text-slate-400 uppercase block">Reported Email</label>
+                  <span className="text-[11px] font-semibold text-slate-700 truncate block">{selectedReport.sellerEmail}</span>
+                </div>
               </div>
 
-              <button 
+              <button
                 onClick={() => setSelectedReport(null)}
                 className="w-full py-3.5 bg-slate-900 text-white rounded-2xl font-black text-sm hover:bg-slate-800 transition shadow-lg uppercase tracking-widest"
               >

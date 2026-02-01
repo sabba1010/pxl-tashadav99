@@ -114,6 +114,7 @@ const SellerAccount: React.FC = () => {
           return dateB - dateA;
         });
     },
+    refetchInterval: 5000,
   });
 
   const { data: allProducts = [] } = useQuery<Product[]>({
@@ -122,6 +123,7 @@ const SellerAccount: React.FC = () => {
       const res = await axios.get(`${BASE_URL}/product/all-sells`);
       return (res.data as Product[]) || [];
     },
+    refetchInterval: 5000,
   });
 
   const { data: allPurchases = [] } = useQuery<IPurchase[]>({
@@ -131,6 +133,7 @@ const SellerAccount: React.FC = () => {
       const data = res.data as any;
       return Array.isArray(data) ? data : (data.purchases || []);
     },
+    refetchInterval: 5000,
   });
 
   /* ====================== PAGINATION & FILTERING ====================== */
@@ -252,10 +255,10 @@ const SellerAccount: React.FC = () => {
     if (!phone) return "No phone";
     const cleaned = phone.replace(/\D/g, "");
     if (cleaned.startsWith("880") && cleaned.length === 13) {
-      return `+880 ${cleaned.slice(3,6)} ${cleaned.slice(6,9)} ${cleaned.slice(9)}`;
+      return `+880 ${cleaned.slice(3, 6)} ${cleaned.slice(6, 9)} ${cleaned.slice(9)}`;
     }
     if (cleaned.startsWith("1") && cleaned.length === 11) {
-      return `+1 (${cleaned.slice(1,4)}) ${cleaned.slice(4,7)}-${cleaned.slice(7)}`;
+      return `+1 (${cleaned.slice(1, 4)}) ${cleaned.slice(4, 7)}-${cleaned.slice(7)}`;
     }
     return phone;
   };
@@ -773,10 +776,10 @@ const SellerAccount: React.FC = () => {
                                 <Typography variant="caption" color="text.secondary">
                                   {pur.createdAt
                                     ? new Date(pur.createdAt).toLocaleDateString("en-US", {
-                                        year: "numeric",
-                                        month: "short",
-                                        day: "numeric",
-                                      })
+                                      year: "numeric",
+                                      month: "short",
+                                      day: "numeric",
+                                    })
                                     : "No date"}
                                 </Typography>
                               </TableCell>

@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useCallback, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   Box, Paper, InputBase, Table, TableBody, TableCell, TableContainer,
   TableHead, TableRow, Pagination, Typography, CircularProgress,
@@ -161,13 +162,35 @@ const DetailsModal: React.FC<{ request: WithdrawalRequest | null; onClose: () =>
 /* ================= MAIN ================= */
 const WithdrawalRequests: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [requests, setRequests] = useState<WithdrawalRequest[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [actionLoading, setActionLoading] = useState(false);
-  const [sellerBalance, setSellerBalance] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [selectedRequest, setSelectedRequest] = useState<WithdrawalRequest | null>(null);
-  const [detailsRequest, setDetailsRequest] = useState<WithdrawalRequest | null>(null);
+  /* ─────────────────────────────────────────────────────────────
+   * REAL-TIME DATA FETCHING (POLLING STRATEGY)
+   * ─────────────────────────────────────────────────────────────
+   * - Uses React Query with 5s polling.
+   */
+  const fetchWithdrawalsData = async (): Promise<WithdrawalRequest[]> => {
+    const [wRes, pRes, rRes] = await Promise.all([
+      fetch("http://localhost:3200/withdraw/getall"),
+      fetch("http://localhost:3200/purchase/getall"),
+      fetch("http://localhost:3200/purchase/report/getall")
+    ]);
+    const withdrawData = await wRes.json();
+    const purchases = await pRes.json();
+    const reports = await rRes.json();
+
+    const enriched = withdrawData.map((req: any) => {
+      const email = (req.email || "").toLowerCase().trim();
+      const unfinished = purchases.filter((p: any) => (p.sellerEmail || "").toLowerCase().trim() === email && !["completed", "delivered", "success"].includes((p.status || "").toLowerCase())).length;
+      const reportsCount = reports.filter((r: any) => (r.sellerEmail || "").toLowerCase().trim() === email).length;
+      return { ...req, sellerReportsCount: reportsCount, unfinishedOrdersCount: unfinished, hasBlockingIssues: unfinished > 0 || reportsCount > 0 };
+    });
+    return enriched;
+  };
+
+  const { data: requests = [], isLoading: loading, refetch } = useQuery({
+    queryKey: ["adminWithdrawalRequests"],
+    queryFn: fetchWithdrawalsData,
+    refetchInterval: 5000,
+  });
 
   const fetchDetailsForEmail = useCallback(async (email: string) => {
     try {
@@ -184,29 +207,13 @@ const WithdrawalRequests: React.FC = () => {
     } catch { return { unfinished: [], sellerReports: [] }; }
   }, []);
 
-  const fetchRequests = async () => {
-    setLoading(true);
-    try {
-      const [wRes, pRes, rRes] = await Promise.all([
-        fetch("http://localhost:3200/withdraw/getall"),
-        fetch("http://localhost:3200/purchase/getall"),
-        fetch("http://localhost:3200/purchase/report/getall")
-      ]);
-      const withdrawData = await wRes.json();
-      const purchases = await pRes.json();
-      const reports = await rRes.json();
-
-      const enriched = withdrawData.map((req: any) => {
-        const email = (req.email || "").toLowerCase().trim();
-        const unfinished = purchases.filter((p: any) => (p.sellerEmail || "").toLowerCase().trim() === email && !["completed", "delivered", "success"].includes((p.status || "").toLowerCase())).length;
-        const reportsCount = reports.filter((r: any) => (r.sellerEmail || "").toLowerCase().trim() === email).length;
-        return { ...req, sellerReportsCount: reportsCount, unfinishedOrdersCount: unfinished, hasBlockingIssues: unfinished > 0 || reportsCount > 0 };
-      });
-      setRequests(enriched);
-    } catch { setRequests([]); } finally { setLoading(false); }
-  };
-
-  useEffect(() => { fetchRequests(); }, []);
+  // const [requests, setRequests] = useState<WithdrawalRequest[]>([]); // Replaced by useQuery data
+  // const [loading, setLoading] = useState(true); // Replaced by useQuery loading
+  const [actionLoading, setActionLoading] = useState(false);
+  const [sellerBalance, setSellerBalance] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedRequest, setSelectedRequest] = useState<WithdrawalRequest | null>(null);
+  const [detailsRequest, setDetailsRequest] = useState<WithdrawalRequest | null>(null);
 
   const handleReview = async (req: WithdrawalRequest) => {
     setActionLoading(true);
@@ -239,7 +246,7 @@ const WithdrawalRequests: React.FC = () => {
           <Typography fontWeight={800}>Withdrawal Requests ({filteredRequests.length})</Typography>
           <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
             <Tooltip title="Refresh requests">
-              <IconButton onClick={() => { setCurrentPage(1); fetchRequests(); }} sx={{ width: 44, height: 44, background: "linear-gradient(135deg,#33ac6f,#2a8e5b)", color: "#fff", borderRadius: "12px" }}>
+              <IconButton onClick={() => { setCurrentPage(1); refetch(); }} sx={{ width: 44, height: 44, background: "linear-gradient(135deg,#33ac6f,#2a8e5b)", color: "#fff", borderRadius: "12px" }}>
                 {loading ? <CircularProgress size={18} sx={{ color: '#fff' }} /> : <Refresh fontSize="small" />}
               </IconButton>
             </Tooltip>
@@ -257,12 +264,12 @@ const WithdrawalRequests: React.FC = () => {
             <TableHead sx={{ bgcolor: "#F8FAFC" }}>
               <TableRow>
                 {["DATE", "SELLER", "METHOD", "AMOUNT", "STATUS", "REPORTS", "UNFINISHED", "ACTION"].map(h => (
-                  <TableCell 
-                    key={h} 
+                  <TableCell
+                    key={h}
                     align={h === "ACTION" ? "center" : "left"} // ACTION কে সেন্টারে আনা হয়েছে
-                    sx={{ 
-                      fontWeight: 700, 
-                      fontSize: 12, 
+                    sx={{
+                      fontWeight: 700,
+                      fontSize: 12,
                       color: "#64748B",
                       width: h === "ACTION" ? "180px" : "auto" // কলামের জায়গা ফিক্সড করা হয়েছে
                     }}
@@ -287,22 +294,22 @@ const WithdrawalRequests: React.FC = () => {
                   {/* বাটনগুলোকে হেডারের ঠিক নিচে সেন্টারে আনা হয়েছে */}
                   <TableCell align="center">
                     <Stack direction="row" spacing={1} justifyContent="center" alignItems="center">
-                      <IconButton 
-                        size="small" 
-                        onClick={() => setDetailsRequest(req)} 
+                      <IconButton
+                        size="small"
+                        onClick={() => setDetailsRequest(req)}
                         sx={{ color: "#4F46E5" }}
                       >
                         <Visibility fontSize="small" />
                       </IconButton>
-                      <Button 
-                        variant="contained" 
-                        size="small" 
-                        onClick={() => handleReview(req)} 
-                        disabled={actionLoading} 
-                        sx={{ 
-                          bgcolor: "#0F172A", 
-                          textTransform: "none", 
-                          fontWeight: 600, 
+                      <Button
+                        variant="contained"
+                        size="small"
+                        onClick={() => handleReview(req)}
+                        disabled={actionLoading}
+                        sx={{
+                          bgcolor: "#0F172A",
+                          textTransform: "none",
+                          fontWeight: 600,
                           borderRadius: 2,
                           minWidth: "80px"
                         }}
@@ -333,7 +340,7 @@ const WithdrawalRequests: React.FC = () => {
             headers: { "Content-Type": "application/json" },
             body: status === "declined" ? JSON.stringify({ reason }) : null
           });
-          if (res.ok) { fetchRequests(); setSelectedRequest(null); }
+          if (res.ok) { refetch(); setSelectedRequest(null); }
         } finally { setActionLoading(false); }
       }} />}
 

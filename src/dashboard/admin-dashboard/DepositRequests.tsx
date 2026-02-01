@@ -23,10 +23,10 @@ import { Search, Refresh } from "@mui/icons-material";
 interface Payment {
   _id: string;
   transactionId: number | string;
-  tx_ref?: string; 
+  tx_ref?: string;
   amount: number;
   currency: string;
-  status: string; 
+  status: string;
   customerEmail: string;
   createdAt: string;
   credited: boolean;
@@ -37,7 +37,7 @@ const ITEMS_PER_PAGE = 15;
 /* ====================== API FUNCTIONS ====================== */
 const fetchPayments = async (): Promise<Payment[]> => {
   const response = await axios.get("http://localhost:3200/api/payments");
-  return response.data as Payment[]; 
+  return response.data as Payment[];
 };
 
 /* ====================== MAIN COMPONENT ====================== */
@@ -58,6 +58,7 @@ const DepositRequests: React.FC = () => {
   } = useQuery<Payment[]>({
     queryKey: ["payments"],
     queryFn: fetchPayments,
+    refetchInterval: 5000,
   });
 
   // Client-side filtering & sorting
@@ -167,13 +168,13 @@ const DepositRequests: React.FC = () => {
                 paginated.map((p) => {
                   const isFlutterwave = p.tx_ref?.toLowerCase().startsWith("flw");
                   const platformName = isFlutterwave ? "Flutterwave" : "Korta Pay";
-                  
+
                   return (
                     <TableRow key={p._id} hover sx={{ "&:hover": { background: "rgba(51,172,111,0.03)" } }}>
                       <TableCell sx={{ fontSize: "13px", color: "#6B7280", fontWeight: 600 }}>{p.customerEmail}</TableCell>
-                      
+
                       <TableCell>
-                        <Box sx={{ 
+                        <Box sx={{
                           display: "inline-block", px: 1.5, py: 0.5, borderRadius: "6px", fontSize: "11px", fontWeight: "bold",
                           bgcolor: isFlutterwave ? "#eff6ff" : "#f5f3ff", color: isFlutterwave ? "#2563eb" : "#7c3aed"
                         }}>
@@ -185,7 +186,7 @@ const DepositRequests: React.FC = () => {
                       <TableCell sx={{ fontFamily: "monospace", color: "#6B7280" }}>{String(p.transactionId)}</TableCell>
                       <TableCell sx={{ fontWeight: 700 }}>{formatCurrency(p.amount, p.currency)}</TableCell>
                       <TableCell>
-                        <Box sx={{ 
+                        <Box sx={{
                           display: "inline-block", px: 1.5, py: 0.5, borderRadius: "20px", fontSize: "12px", fontWeight: "700",
                           bgcolor: p.status.toLowerCase() === "successful" ? "#E8F9EE" : "#F3F4F6",
                           color: p.status.toLowerCase() === "successful" ? "#16A34A" : "#374151"

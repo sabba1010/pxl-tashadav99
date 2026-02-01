@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { 
-  TrendingUp, 
-  ShoppingBag, 
-  PeopleAlt, 
-  Storefront, 
-  Refresh, 
-  Payments, 
+import {
+  TrendingUp,
+  ShoppingBag,
+  PeopleAlt,
+  Storefront,
+  Refresh,
+  Payments,
   AccountBalanceWallet,
   PersonOutline,
   ListAlt,
@@ -21,7 +22,7 @@ interface AdminMetrics {
   totalUsers: number;
   totalBuyers: number;
   totalSellers: number;
-  totalUserBalance: number; 
+  totalUserBalance: number;
   activeListings: number;
   pendingListings: number;
   totalSystemBalance: number;
@@ -42,7 +43,7 @@ const MetricCard: React.FC<{
   variant?: "default" | "profit" | "warning" | "success" | "info" | "user" | "balance";
   isLoading?: boolean;
 }> = ({ title, value, subtitle, icon, linkTo, variant = "default", isLoading = false }) => {
-  
+
   const variantStyles = {
     default: "border-gray-300 bg-white shadow-sm",
     profit: "border-amber-500/40 bg-gradient-to-br from-amber-50 to-white",
@@ -69,7 +70,7 @@ const MetricCard: React.FC<{
           {icon}
         </div>
       </div>
-      
+
       {linkTo && (
         <Link to={linkTo} className="mt-6 flex items-center gap-1 text-xs font-[900] uppercase text-indigo-600 tracking-wider hover:gap-3 transition-all">
           Manage Section <span className="text-lg">→</span>
@@ -82,7 +83,108 @@ const MetricCard: React.FC<{
 };
 
 const DashboardOverview: React.FC = () => {
-  const [metrics, setMetrics] = useState<AdminMetrics>({
+  /* ─────────────────────────────────────────────────────────────
+   * REAL-TIME DATA FETCHING (POLLING STRATEGY)
+   * ─────────────────────────────────────────────────────────────
+   * - Uses React Query (TanStack Query) for automatic background updates.
+   * - Refetches every 5 seconds (5000ms) to ensure admin data is live.
+   * - 'metrics' state is derived directly from the 'data' query result.
+   */
+  const fetchDashboardData = async (): Promise<AdminMetrics> => {
+    const [uRes, prRes, puRes, payRes, wRes] = await Promise.all([
+      axios.get(`${BASE_URL}/api/user/getall`).catch(() => ({ data: [] })),
+      axios.get(`${BASE_URL}/product/all-sells`).catch(() => ({ data: [] })),
+      axios.get(`${BASE_URL}/purchase/getall`).catch(() => ({ data: [] })),
+      axios.get(`${BASE_URL}/api/payments`).catch(() => ({ data: [] })),
+      axios.get(`${BASE_URL}/withdraw/getall`).catch(() => ({ data: [] })),
+    ]);
+
+    const users = Array.isArray(uRes.data) ? uRes.data : [];
+    const products = Array.isArray(prRes.data) ? prRes.data : [];
+    const purchases = Array.isArray(puRes.data) ? puRes.data : [];
+    const payments = Array.isArray(payRes.data) ? payRes.data : [];
+    const withdraws = Array.isArray(wRes.data) ? wRes.data : [];
+
+    const usersMap = new Map(users.map((u: any) => [u._id.toString(), u]));
+
+    // Calculate platform profit from completed purchases
+    const calculatedProfit = purchases.reduce((acc: number, p: any) => {
+      const isCompleted = ["completed", "success"].includes(p.status?.toLowerCase());
+      if (isCompleted) {
+        const fee = Number(p.adminFee) || (Number(p.totalAmount || p.price || 0) * 0.20);
+        return acc + fee;
+      }
+      return acc;
+    }, 0);
+
+    // Total buyer deposits (successful/credited payments)
+    const totalBuyerDeposits = payments.reduce((acc: number, p: any) => {
+      const status = p.status?.toLowerCase();
+      if (["successful", "completed"].includes(status) || p.credited) {
+        return acc + Number(p.amount || 0);
+      }
+      return acc;
+    }, 0);
+
+    // Separate seller vs admin withdrawals
+    let totalSellerWithdrawn = 0;
+    let totalAdminWithdrawn = 0;
+
+    withdraws.forEach((w: any) => {
+      const statusLower = w.status?.toLowerCase() || "";
+      if (["approved", "success", "completed"].includes(statusLower)) {
+        const amount = Number(w.amount || 0);
+        const sellerId = w.sellerId?.toString();
+
+        if (!sellerId) {
+          // If no sellerId → likely admin withdrawal
+          totalAdminWithdrawn += amount;
+          return;
+        }
+
+        const user = usersMap.get(sellerId);
+        if (user) {
+          if (user.role === "admin") {
+            totalAdminWithdrawn += amount;
+          } else {
+            totalSellerWithdrawn += amount;
+          }
+        } else {
+          // If sellerId exists but user not found → assume seller
+          totalSellerWithdrawn += amount;
+        }
+      }
+    });
+
+    return {
+      totalUsers: users.length,
+      totalBuyers: users.filter((u: any) => u.role === "buyer").length,
+      totalSellers: users.filter((u: any) => u.role === "seller").length,
+      totalUserBalance: users.reduce((sum: number, u: any) => sum + (Number(u.balance) || 0), 0),
+      activeListings: products.filter((p: any) => p.status === "active").length,
+      pendingListings: products.filter((p: any) => p.status === "pending").length,
+      totalSystemBalance: purchases.reduce((s: number, p: any) => s + (Number(p.totalAmount || p.price) || 0), 0),
+      platformProfitUSD: calculatedProfit,
+      pendingDepositRequests: payments.filter((p: any) => {
+        const status = p.status?.toLowerCase() || "";
+        return status !== "successful" && status !== "completed" && !p.credited;
+      }).length,
+      pendingWithdrawalRequests: withdraws.filter((w: any) => w.status?.toLowerCase() === "pending").length,
+      totalBuyerDeposits,
+      totalAdminWithdrawn,
+      totalSellerWithdrawn,
+    };
+  };
+
+  const { data: metrics, isLoading: loading, refetch } = useQuery({
+    queryKey: ["adminDashboardOverview"],
+    queryFn: fetchDashboardData,
+    refetchInterval: 5000,
+    // This enables the 5-second polling
+  });
+
+  // Fallback for metrics if data is undefined (e.g. loading)
+  const safeMetrics = metrics || {
     totalUsers: 0,
     totalBuyers: 0,
     totalSellers: 0,
@@ -96,105 +198,10 @@ const DashboardOverview: React.FC = () => {
     totalBuyerDeposits: 0,
     totalAdminWithdrawn: 0,
     totalSellerWithdrawn: 0,
-  });
-  const [loading, setLoading] = useState(true);
+  };
 
-  const fetchAllData = useCallback(async () => {
-    try {
-      setLoading(true);
-      const [uRes, prRes, puRes, payRes, wRes] = await Promise.all([
-        axios.get(`${BASE_URL}/api/user/getall`).catch(() => ({ data: [] })),
-        axios.get(`${BASE_URL}/product/all-sells`).catch(() => ({ data: [] })),
-        axios.get(`${BASE_URL}/purchase/getall`).catch(() => ({ data: [] })),
-        axios.get(`${BASE_URL}/api/payments`).catch(() => ({ data: [] })),
-        axios.get(`${BASE_URL}/withdraw/getall`).catch(() => ({ data: [] })),
-      ]);
-
-      const users = Array.isArray(uRes.data) ? uRes.data : [];
-      const products = Array.isArray(prRes.data) ? prRes.data : [];
-      const purchases = Array.isArray(puRes.data) ? puRes.data : [];
-      const payments = Array.isArray(payRes.data) ? payRes.data : [];
-      const withdraws = Array.isArray(wRes.data) ? wRes.data : [];
-
-      const usersMap = new Map(users.map((u: any) => [u._id.toString(), u]));
-
-      // Calculate platform profit from completed purchases
-      const calculatedProfit = purchases.reduce((acc: number, p: any) => {
-        const isCompleted = ["completed", "success"].includes(p.status?.toLowerCase());
-        if (isCompleted) {
-          const fee = Number(p.adminFee) || (Number(p.totalAmount || p.price || 0) * 0.20);
-          return acc + fee;
-        }
-        return acc;
-      }, 0);
-
-      // Total buyer deposits (successful/credited payments)
-      const totalBuyerDeposits = payments.reduce((acc: number, p: any) => {
-        const status = p.status?.toLowerCase();
-        if (["successful", "completed"].includes(status) || p.credited) {
-          return acc + Number(p.amount || 0);
-        }
-        return acc;
-      }, 0);
-
-      // Separate seller vs admin withdrawals
-      let totalSellerWithdrawn = 0;
-      let totalAdminWithdrawn = 0;
-
-      withdraws.forEach((w: any) => {
-        const statusLower = w.status?.toLowerCase() || "";
-        if (["approved", "success", "completed"].includes(statusLower)) {
-          const amount = Number(w.amount || 0);
-          const sellerId = w.sellerId?.toString();
-
-          if (!sellerId) {
-            // If no sellerId → likely admin withdrawal
-            totalAdminWithdrawn += amount;
-            return;
-          }
-
-          const user = usersMap.get(sellerId);
-          if (user) {
-            if (user.role === "admin") {
-              totalAdminWithdrawn += amount;
-            } else {
-              totalSellerWithdrawn += amount;
-            }
-          } else {
-            // If sellerId exists but user not found → assume seller
-            totalSellerWithdrawn += amount;
-          }
-        }
-      });
-
-      setMetrics({
-        totalUsers: users.length,
-        totalBuyers: users.filter((u: any) => u.role === "buyer").length,
-        totalSellers: users.filter((u: any) => u.role === "seller").length,
-        totalUserBalance: users.reduce((sum: number, u: any) => sum + (Number(u.balance) || 0), 0),
-        activeListings: products.filter((p: any) => p.status === "active").length,
-        pendingListings: products.filter((p: any) => p.status === "pending").length,
-        totalSystemBalance: purchases.reduce((s: number, p: any) => s + (Number(p.totalAmount || p.price) || 0), 0),
-        platformProfitUSD: calculatedProfit,
-        pendingDepositRequests: payments.filter((p: any) => {
-          const status = p.status?.toLowerCase() || "";
-          return status !== "successful" && status !== "completed" && !p.credited;
-        }).length,
-        pendingWithdrawalRequests: withdraws.filter((w: any) => w.status?.toLowerCase() === "pending").length,
-        totalBuyerDeposits,
-        totalAdminWithdrawn,
-        totalSellerWithdrawn,
-      });
-    } catch (err) {
-      console.error("Fetch Error:", err);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchAllData();
-  }, [fetchAllData]);
+  // Use safeMetrics for display
+  const displayMetrics = safeMetrics;
 
   return (
     <div className="p-10 bg-[#F4F7FE] min-h-screen space-y-10">
@@ -209,7 +216,7 @@ const DashboardOverview: React.FC = () => {
           </Typography>
         </Box>
         <button
-          onClick={fetchAllData}
+          onClick={() => refetch()}
           className="flex items-center gap-3 px-7 py-3.5 bg-[#1B2559] text-white rounded-[1.2rem] shadow-xl shadow-indigo-200 hover:bg-indigo-800 transition-all active:scale-95"
         >
           <Refresh className={loading ? "animate-spin" : ""} fontSize="small" />
@@ -221,7 +228,7 @@ const DashboardOverview: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <MetricCard
           title="Total Wallet Balance"
-          value={`$${metrics.totalUserBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+          value={`$${displayMetrics.totalUserBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
           variant="balance"
           subtitle="Total funds held by users"
           icon={<MonetizationOn sx={{ color: "#059669", fontSize: 38 }} />}
@@ -229,7 +236,7 @@ const DashboardOverview: React.FC = () => {
         />
         <MetricCard
           title="Net Platform Profit"
-          value={`$${metrics.platformProfitUSD.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+          value={`$${displayMetrics.platformProfitUSD.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
           variant="profit"
           subtitle="Automatic 20% commission on sales"
           icon={<TrendingUp sx={{ color: "#B45309", fontSize: 38 }} />}
@@ -237,7 +244,7 @@ const DashboardOverview: React.FC = () => {
         />
         <MetricCard
           title="System Turnover"
-          value={`$${metrics.totalSystemBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+          value={`$${displayMetrics.totalSystemBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
           variant="info"
           subtitle="Total transaction volume"
           icon={<AccountBalanceWallet sx={{ color: "#2563EB", fontSize: 38 }} />}
@@ -252,9 +259,9 @@ const DashboardOverview: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <MetricCard title="Total Registered" value={metrics.totalUsers} variant="user" icon={<PeopleAlt sx={{ color: "#7C3AED", fontSize: 32 }} />} isLoading={loading} />
-        <MetricCard title="Active Sellers" value={metrics.totalSellers} variant="user" icon={<Storefront sx={{ color: "#8B5CF6", fontSize: 32 }} />} isLoading={loading} />
-        <MetricCard title="Active Buyers" value={metrics.totalBuyers} variant="user" icon={<PersonOutline sx={{ color: "#6366F1", fontSize: 32 }} />} isLoading={loading} />
+        <MetricCard title="Total Registered" value={displayMetrics.totalUsers} variant="user" icon={<PeopleAlt sx={{ color: "#7C3AED", fontSize: 32 }} />} isLoading={loading} />
+        <MetricCard title="Active Sellers" value={displayMetrics.totalSellers} variant="user" icon={<Storefront sx={{ color: "#8B5CF6", fontSize: 32 }} />} isLoading={loading} />
+        <MetricCard title="Active Buyers" value={displayMetrics.totalBuyers} variant="user" icon={<PersonOutline sx={{ color: "#6366F1", fontSize: 32 }} />} isLoading={loading} />
       </div>
 
       {/* Pending Actions */}
@@ -264,10 +271,10 @@ const DashboardOverview: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <MetricCard title="Deposit Requests" value={metrics.pendingDepositRequests} variant="info" icon={<Payments sx={{ color: "#2563EB" }} />} linkTo="/admin-dashboard/deposits" isLoading={loading} />
-        <MetricCard title="Pending Listings" value={metrics.pendingListings} variant="warning" icon={<ListAlt sx={{ color: "#EA580C" }} />} linkTo="/admin-dashboard/listings" isLoading={loading} />
-        <MetricCard title="Withdrawal Claims" value={metrics.pendingWithdrawalRequests} variant="warning" icon={<AccountBalanceWallet sx={{ color: "#EA580C" }} />} linkTo="/admin-dashboard/withdrawals" isLoading={loading} />
-        <MetricCard title="Live Products" value={metrics.activeListings} variant="success" icon={<ShoppingBag sx={{ color: "#059669" }} />} isLoading={loading} />
+        <MetricCard title="Deposit Requests" value={displayMetrics.pendingDepositRequests} variant="info" icon={<Payments sx={{ color: "#2563EB" }} />} linkTo="/admin-dashboard/deposits" isLoading={loading} />
+        <MetricCard title="Pending Listings" value={displayMetrics.pendingListings} variant="warning" icon={<ListAlt sx={{ color: "#EA580C" }} />} linkTo="/admin-dashboard/listings" isLoading={loading} />
+        <MetricCard title="Withdrawal Claims" value={displayMetrics.pendingWithdrawalRequests} variant="warning" icon={<AccountBalanceWallet sx={{ color: "#EA580C" }} />} linkTo="/admin-dashboard/withdrawals" isLoading={loading} />
+        <MetricCard title="Live Products" value={displayMetrics.activeListings} variant="success" icon={<ShoppingBag sx={{ color: "#059669" }} />} isLoading={loading} />
       </div>
 
       {/* Transaction Summaries */}
@@ -279,7 +286,7 @@ const DashboardOverview: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <MetricCard
           title="Total Buyer Deposits"
-          value={`$${metrics.totalBuyerDeposits.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+          value={`$${displayMetrics.totalBuyerDeposits.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
           variant="success"
           subtitle="Sum of successful deposits"
           icon={<Payments sx={{ color: "#059669", fontSize: 38 }} />}
@@ -287,13 +294,13 @@ const DashboardOverview: React.FC = () => {
         />
         <MetricCard
           title="Total Seller Withdrawals"
-          value={`$${metrics.totalAdminWithdrawn.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+          value={`$${displayMetrics.totalAdminWithdrawn.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
           variant="warning"
           subtitle="From platform profit"
           icon={<AccountBalanceWallet sx={{ color: "#B45309", fontSize: 38 }} />}
           isLoading={loading}
         />
-        
+
       </div>
     </div>
   );
