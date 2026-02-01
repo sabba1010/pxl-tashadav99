@@ -100,7 +100,7 @@ export default function Footer({ theme = "dark" }: Props) {
                   href="mailto:support@acctempire.com" 
                   className={`hover:text-[#33ac6f] ${isDark ? "text-gray-300" : "text-gray-600"}`}
                 >
-                  Yourmail@gmail.com
+                  tajudeentoyeeb095@gmail.com
                 </a>
               </li>
               <li className="flex items-start gap-3">
