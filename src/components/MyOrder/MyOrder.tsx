@@ -100,6 +100,18 @@ interface PresenceResponse {
   online?: boolean;
 }
 
+interface IReport {
+  _id: string;
+  orderId: string;
+  productName: string;
+  reporterEmail: string;
+  sellerEmail: string;
+  reason: string;
+  message: string;
+  status: string;
+  createdAt: string;
+}
+
 const truncateTitle = (title: string, maxLength: number = 30): string => {
   if (title.length <= maxLength) return title;
   return title.slice(0, maxLength) + "...";
@@ -213,7 +225,7 @@ const renderBadge = (platform: PlatformType, size = 36) => {
   );
 };
 
-const TABS = ["All", "Pending", "Completed", "Cancelled"] as const;
+const TABS = ["All", "Pending", "Completed", "Cancelled", "Reported"] as const;
 type Tab = (typeof TABS)[number];
 
 const SELLER_REPORT_REASONS = [
@@ -269,6 +281,7 @@ const MyOrder: React.FC = () => {
   const [isUpdating, setIsUpdating] = useState(false);
   const [buyerNames, setBuyerNames] = useState<Record<string, string>>({});
   const [now, setNow] = useState(Date.now());
+  const [reports, setReports] = useState<IReport[]>([]);
   const autoCompletedRef = useRef<Set<string>>(new Set());
 
   const loginUserData = useAuthHook();
@@ -413,8 +426,19 @@ const MyOrder: React.FC = () => {
     }
   };
 
+  const fetchReports = async () => {
+    if (!sellerId) return;
+    try {
+      const res = await axios.get<IReport[]>(`${PURCHASE_API}/my-reports?email=${sellerId}`);
+      setReports(res.data);
+    } catch (err) {
+      console.error("Failed to fetch reports:", err);
+    }
+  };
+
   useEffect(() => {
     fetchOrders();
+    fetchReports();
   }, [sellerId]);
 
   // Removed sendChat as logic moved to ChatWindow
@@ -473,8 +497,12 @@ const MyOrder: React.FC = () => {
 
   const filteredOrders = useMemo(() => {
     if (activeTab === "All") return orders;
+    if (activeTab === "Reported") {
+      const reportedOrderIds = new Set(reports.map(r => r.orderId));
+      return orders.filter(o => reportedOrderIds.has(o.id));
+    }
     return orders.filter((o) => o.status === activeTab);
-  }, [activeTab, orders]);
+  }, [activeTab, orders, reports]);
 
   const paginatedOrders = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
@@ -640,6 +668,11 @@ const MyOrder: React.FC = () => {
                               <FaClockIcon size={10} /> {getTimeLabel(order.deliveryType)}: {getRemainingTime(order.rawDate, order.deliveryMs, order.deliveryType)}
                             </span>
                           )}
+                          {reports.some(r => r.orderId === order.id) && (
+                            <span className="text-[10px] bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-bold flex items-center gap-1">
+                              ⚠️ Reported
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -744,6 +777,48 @@ const MyOrder: React.FC = () => {
                   {selected.desc || "No additional details provided."}
                 </div>
               </div>
+
+              {(() => {
+                const report = reports.find(r => r.orderId === selected?.id);
+                if (!report) return null;
+                return (
+                  <div className="pt-4 border-t mt-4">
+                    <div className="bg-red-50 border border-red-100 rounded-xl p-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <FaFlagIcon className="text-red-500" size={14} />
+                        <span className="text-sm font-bold text-red-700 uppercase">Order Reported</span>
+                      </div>
+                      <div className="space-y-2 text-xs">
+                        <div className="flex justify-between">
+                          <span className="text-red-600/70">Reason:</span>
+                          <span className="font-bold text-red-800">{report.reason}</span>
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <span className="text-red-600/70">Message:</span>
+                          <p className="bg-white/50 p-2 rounded border border-red-100 italic">
+                            "{report.message}"
+                          </p>
+                        </div>
+                        <div className="flex justify-between pt-1">
+                          <span className="text-red-600/70">Time:</span>
+                          <span className="text-red-800 font-medium">
+                            {new Date(report.createdAt).toLocaleString()}
+                          </span>
+                        </div>
+                        <div className="mt-2 flex items-center gap-2 bg-red-100/50 p-2 rounded">
+                          <span className="text-red-600/70 font-semibold">Status:</span>
+                          <span className="bg-red-500 text-white px-2 py-0.5 rounded-full text-[10px] font-bold">
+                            {report.status || "Pending Review"}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <p className="text-[10px] text-gray-500 mt-2 italic text-center">
+                      This order is currently under review by administrators.
+                    </p>
+                  </div>
+                );
+              })()}
             </div>
             {selected.status !== "Cancelled" && (
               <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -759,21 +834,27 @@ const MyOrder: React.FC = () => {
                     setReportTargetOrder(selected);
                     setIsReportModalOpen(true);
                   }}
-                  className="py-3.5 px-4 bg-red-50 text-red-600 border border-red-200 rounded-lg hover:bg-red-100 flex items-center justify-center gap-2 font-semibold text-base transition"
+                  disabled={reports.some(r => r.orderId === selected.id)}
+                  className="py-3.5 px-4 bg-red-50 text-red-600 border border-red-200 rounded-lg hover:bg-red-100 flex items-center justify-center gap-2 font-semibold text-base transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <FaFlagIcon size={20} /> Report
+                  <FaFlagIcon size={20} /> {reports.some(r => r.orderId === selected.id) ? "Already Reported" : "Report"}
                 </button>
               </div>
             )}
             {selected.status === "Pending" && selected.deliveryType === 'manual' && (
               <div className="mt-4">
                 <button
-                  disabled={isUpdating}
+                  disabled={isUpdating || reports.some(r => r.orderId === selected.id)}
                   onClick={() => handleUpdateStatus('completed')}
-                  className="w-full py-3.5 px-4 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center gap-2 font-semibold text-base transition disabled:opacity-50"
+                  className="w-full py-3.5 px-4 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center gap-2 font-semibold text-base transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <FaCheckCircleIcon size={20} /> Confirm Delivery
+                  <FaCheckCircleIcon size={20} /> {reports.some(r => r.orderId === selected.id) ? "Under Review" : "Confirm Delivery"}
                 </button>
+                {reports.some(r => r.orderId === selected.id) && (
+                  <p className="text-[10px] text-red-500 font-bold mt-2 text-center animate-pulse">
+                    ⚠️ Actions disabled while under review.
+                  </p>
+                )}
               </div>
             )}
             <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">

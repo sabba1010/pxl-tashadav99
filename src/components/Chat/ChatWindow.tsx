@@ -9,6 +9,11 @@ import {
     FaImage,
 } from "react-icons/fa";
 
+// Icon Casting to fix TS2786
+const FaTimesIcon = FaTimes as any;
+const FaPaperPlaneIcon = FaPaperPlane as any;
+const FaImageIcon = FaImage as any;
+
 // Component Types
 interface IMessage {
     _id?: string;
@@ -226,7 +231,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                         onClick={onClose}
                         className="p-2 text-gray-400 hover:text-red-500 transition rounded-full hover:bg-gray-100"
                     >
-                        <FaTimes size={20} />
+                        <FaTimesIcon size={20} />
                     </button>
                 </div>
             </div>
@@ -341,7 +346,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                             onClick={() => fileInputRef.current?.click()}
                             className="p-2 text-gray-500 hover:text-[#33ac6f]"
                         >
-                            <FaImage size={18} />
+                            <FaImageIcon size={18} />
                         </button>
 
                         <textarea
@@ -363,7 +368,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                             type="submit"
                             className="bg-[#33ac6f] text-white p-2 rounded-xl hover:opacity-90 transition active:scale-95"
                         >
-                            <FaPaperPlane size={16} />
+                            <FaPaperPlaneIcon size={16} />
                         </button>
                     </form>
                 )}
@@ -396,7 +401,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                             className="absolute top-6 right-6 text-white bg-black/60 hover:bg-black/80 rounded-full p-3"
                             onClick={() => setPreviewImage(null)}
                         >
-                            <FaTimes size={24} />
+                            <FaTimesIcon size={24} />
                         </button>
                     </div>
                 </div>

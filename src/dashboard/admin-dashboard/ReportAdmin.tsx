@@ -102,6 +102,19 @@ const ReportAdmin: React.FC = () => {
       } else if (newStatus === "Refunded") {
         endpoint = `${API_BASE}/report/refund/${id}`;
       } else {
+        // Generic status update for Resolved/Dismissed
+        const res = await axios.patch<IUpdateResponse>(`${API_BASE}/report/update/${id}`, { status: newStatus });
+        if (res.data.success) {
+          Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'success',
+            title: `Report marked as ${newStatus}`,
+            showConfirmButton: false,
+            timer: 2000
+          });
+          refetch();
+        }
         return;
       }
 
@@ -228,6 +241,8 @@ const ReportAdmin: React.FC = () => {
                           <option value="Pending">Pending</option>
                           <option value="Sold">Sold</option>
                           <option value="Refunded">Refunded</option>
+                          <option value="Resolved">Resolved</option>
+                          <option value="Dismissed">Dismissed</option>
                         </select>
                         <ChevronDown size={14} className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400" />
                       </div>
