@@ -19,7 +19,6 @@ interface AdminProfile {
   email: string;
   role: string;
   status?: string;
-  isTwoFactorEnabled: boolean;
   profilePicture: string | null;
   phone: string;
   countryCode?: string;
@@ -248,10 +247,6 @@ const Profile: React.FC = () => {
               <p className="text-gray-300 mt-1">{profile.email}</p>
               <div className="mt-3 flex flex-wrap gap-3 justify-center sm:justify-start">
                 <StatusBadge />
-                <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold ${profile.isTwoFactorEnabled ? "bg-green-600" : "bg-red-600"}`}>
-                  {profile.isTwoFactorEnabled ? <ShieldCheck size={14} /> : <ShieldX size={14} />}
-                  2FA {profile.isTwoFactorEnabled ? "Enabled" : "Disabled"}
-                </span>
               </div>
             </div>
           </div>
@@ -305,7 +300,7 @@ const Profile: React.FC = () => {
               </div>
             </div>
 
-            {/* Financial Information - Full width on larger screens to fill gap */}
+            {/* Financial Information */}
             <div className="md:col-span-2">
               <SectionTitle icon={<Wallet size={20} />}>Financial Information</SectionTitle>
               <div className="space-y-1 bg-gray-50 rounded-xl p-5 border border-gray-100 shadow-sm">
@@ -465,7 +460,7 @@ const Profile: React.FC = () => {
         </div>
       )}
 
-      {/* Change Password Modal - with eye toggle */}
+      {/* Change Password Modal */}
       {isPasswordModalOpen && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-7 w-full max-w-md shadow-2xl">
