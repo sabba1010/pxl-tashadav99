@@ -14,6 +14,7 @@ import Profile from "../dashboard/admin-dashboard/Profile";
 import TotalListings from "../dashboard/admin-dashboard/TotalListings";
 import WithdrawalRequests from "../dashboard/admin-dashboard/WithdrawalRequests";
 import UserAccountChanges from "../dashboard/admin-dashboard/UserAccountChanges";
+import AdminOrders from "../dashboard/admin-dashboard/AdminOrders";
 
 import BuyerAddProduct from "../dashboard/buyer-dahboard/BuyerAddProduct";
 
@@ -285,6 +286,10 @@ const Routes = createBrowserRouter([
       {
         path: "users",
         element: <AllUsers />,
+      },
+      {
+        path: "orders",
+        element: <AdminOrders />,
       },
       {
         path: "profile",

@@ -13,6 +13,8 @@ import {
   Diversity3,
   ManageAccounts,
   NotificationsActive,
+  ShoppingBag,
+
 
 } from "@mui/icons-material";
 import { Box } from "@mui/material";
@@ -38,6 +40,11 @@ const mainNavItems: NavItem[] = [
     name: "Listings",
     path: "/admin-dashboard/listings",
     icon: <ListAlt />
+  },
+  {
+    name: "All Orders",
+    path: "/admin-dashboard/orders",
+    icon: <ShoppingBag /> // Reusing ShoppingBag or finding another icon
   },
   {
     name: "Buyer Account",
