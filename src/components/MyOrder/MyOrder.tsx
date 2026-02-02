@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { useSocket } from "../../context/SocketContext";
 import NotificationBadge from "../NotificationBadge";
 import UserActivityStatus from "../UserActivityStatus";
+import ChatWindow from "../Chat/ChatWindow";
 
 import type { IconType } from "react-icons";
 import {
@@ -278,20 +279,7 @@ const MyOrder: React.FC = () => {
   const CHAT_API = `${BASE_URL}/chat`;
   const USER_API = `${BASE_URL}/user`;
 
-  const [isChatOpen, setIsChatOpen] = useState(false);
-  const [chatMessages, setChatMessages] = useState<IMessage[]>([]);
-  const [typedMessage, setTypedMessage] = useState("");
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
-  const [buyerOnline, setBuyerOnline] = useState<boolean>(false);
-  const [buyerLastSeen, setBuyerLastSeen] = useState<string | null>(null);
-  const [partnerStatusText, setPartnerStatusText] = useState<string>("Offline");
-
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const messagesContainerRef = useRef<HTMLDivElement>(null);
-  const shouldAutoScrollRef = useRef(true);
 
   const [activeChatBuyerEmail, setActiveChatBuyerEmail] = useState<string | null>(null);
   const [activeChatOrderId, setActiveChatOrderId] = useState<string | null>(null);
@@ -323,63 +311,6 @@ const MyOrder: React.FC = () => {
       setLastReadIds(JSON.parse(stored));
     }
   }, []);
-
-  // Auto-resize textarea
-  useEffect(() => {
-    const textarea = textareaRef.current;
-    if (!textarea) return;
-
-    const resize = () => {
-      textarea.style.height = "auto";
-      textarea.style.height = `${textarea.scrollHeight}px`;
-    };
-
-    resize();
-    textarea.addEventListener("input", resize);
-    return () => textarea.removeEventListener("input", resize);
-  }, [typedMessage]);
-
-  // Auto focus textarea when chat opens
-  useEffect(() => {
-    if (isChatOpen && textareaRef.current) {
-      textareaRef.current.focus();
-    }
-  }, [isChatOpen]);
-
-  useEffect(() => {
-    if (shouldAutoScrollRef.current) {
-      messagesContainerRef.current?.scrollTo({ top: messagesContainerRef.current.scrollHeight, behavior: "smooth" });
-    }
-  }, [chatMessages]);
-
-  useEffect(() => {
-    if (socket && activeChatOrderId) {
-      const handleMsg = (newMsg: any) => {
-        if (newMsg.orderId === activeChatOrderId) {
-          setChatMessages(prev => [...prev, newMsg]);
-          if (newMsg._id) {
-            setLastReadIds(prev => {
-              const updated = { ...prev, [activeChatOrderId]: newMsg._id };
-              localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-              return updated;
-            });
-          }
-          // If user is near bottom, scroll to bottom
-          if (messagesContainerRef.current) {
-            const container = messagesContainerRef.current;
-            const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 150;
-            if (isNearBottom) {
-              shouldAutoScrollRef.current = true;
-            }
-          }
-        }
-      };
-      socket.on('receive_message', handleMsg);
-      return () => {
-        socket.off('receive_message', handleMsg);
-      };
-    }
-  }, [socket, activeChatOrderId]);
 
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 1000);
@@ -423,22 +354,7 @@ const MyOrder: React.FC = () => {
     } catch (err) { }
   };
 
-  const fetchBuyerStatus = async () => {
-    if (!activeChatBuyerEmail) return;
-    try {
-      const res = await axios.get<PresenceResponse>(`${CHAT_API}/status/${activeChatBuyerEmail}`);
-      const online = Boolean(res.data?.online);
-      const lastSeen = res.data.lastSeen;
-
-      setBuyerOnline(online);
-      setBuyerLastSeen(lastSeen || null);
-      setPartnerStatusText(getStatusDisplay(online, lastSeen));
-    } catch (err) {
-      setBuyerOnline(false);
-      setBuyerLastSeen(null);
-      setPartnerStatusText("Offline");
-    }
-  };
+  // Removed fetchBuyerStatus as logic moved to ChatWindow
 
   // Removed fetchAllBuyersStatus as we use SocketContext for status
 
@@ -501,89 +417,12 @@ const MyOrder: React.FC = () => {
     fetchOrders();
   }, [sellerId]);
 
-  const fetchChat = async () => {
-    if (!sellerId || !activeChatBuyerEmail || !activeChatOrderId) return;
-    try {
-      const res = await axios.get<IMessage[]>(`${CHAT_API}/history/${sellerId}/${activeChatBuyerEmail}`, {
-        params: { orderId: activeChatOrderId },
-      });
-      setChatMessages(res.data);
-
-      if (res.data.length > 0) {
-        const last = res.data[res.data.length - 1];
-        if (last._id) {
-          setLastReadIds(prev => {
-            const updated = { ...prev, [activeChatOrderId]: last._id };
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-            return updated;
-          });
-        }
-        if (last.createdAt) {
-          setLastMessageTimes(prev => ({
-            ...prev,
-            [activeChatOrderId]: last.createdAt,
-          }));
-        }
-      }
-
-      setUnreadCounts(prev => {
-        const newMap = new Map(prev);
-        newMap.set(activeChatOrderId, 0);
-        return newMap;
-      });
-    } catch (err) {
-      console.error("Chat fetch error:", err);
-    }
-  };
-
-  useEffect(() => {
-    let interval: NodeJS.Timeout | undefined;
-    if (isChatOpen && activeChatBuyerEmail && activeChatOrderId) {
-      setPresence('online');
-      fetchChat();
-    } else {
-      setPresence('offline');
-      setBuyerOnline(false);
-      setPartnerStatusText("Offline");
-    }
-    return () => clearInterval(interval);
-  }, [isChatOpen, activeChatBuyerEmail, activeChatOrderId]);
-
-  const sendChat = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if ((!typedMessage.trim() && !selectedImage) || !activeChatBuyerEmail || !activeChatOrderId) return;
-
-    try {
-      const formData = new FormData();
-      formData.append("senderId", sellerId!);
-      formData.append("receiverId", activeChatBuyerEmail);
-      formData.append("message", typedMessage);
-      formData.append("orderId", activeChatOrderId);
-      if (selectedImage) {
-        formData.append("image", selectedImage);
-      }
-
-      await axios.post(`${CHAT_API}/send`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-
-      setTypedMessage("");
-      setSelectedImage(null);
-      setImagePreview(null);
-      if (textareaRef.current) {
-        textareaRef.current.style.height = "auto";
-      }
-      fetchChat();
-    } catch (err) {
-      toast.error("Failed to send message");
-    }
-  };
+  // Removed sendChat as logic moved to ChatWindow
 
   const handleOpenChat = (order: Order) => {
     setActiveChatBuyerEmail(order.buyerEmail);
     setActiveChatOrderId(order.id);
     setActiveChatProductTitle(order.title);
-    setIsChatOpen(true);
   };
 
   const handleReportSubmit = async (e: React.FormEvent) => {
@@ -650,14 +489,14 @@ const MyOrder: React.FC = () => {
           [newMsg.orderId]: newMsg.createdAt || new Date().toISOString(),
         }));
 
-        if (newMsg.senderId !== sellerId && (newMsg.orderId !== activeChatOrderId || !isChatOpen)) {
+        if (newMsg.senderId !== sellerId && (newMsg.orderId !== activeChatOrderId)) {
           setUnreadCounts(prev => {
             const newMap = new Map(prev);
             const count = newMap.get(newMsg.orderId) || 0;
             newMap.set(newMsg.orderId, count + 1);
             return newMap;
           });
-        } else if (newMsg.orderId === activeChatOrderId && isChatOpen && newMsg._id) {
+        } else if (newMsg.orderId === activeChatOrderId && newMsg._id) {
           setLastReadIds(prev => {
             const updated = { ...prev, [newMsg.orderId]: newMsg._id };
             localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
@@ -672,7 +511,7 @@ const MyOrder: React.FC = () => {
         socket.off('receive_message', handleReceiveMessage);
       };
     }
-  }, [socket, sellerId, activeChatOrderId, isChatOpen]);
+  }, [socket, sellerId, activeChatOrderId]);
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -958,189 +797,25 @@ const MyOrder: React.FC = () => {
       )}
 
       {/* Chat Modal */}
-      {isChatOpen && activeChatBuyerEmail && (
+      {activeChatBuyerEmail && activeChatOrderId && (
         <div className="fixed inset-0 z-[120] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4">
-          <div className="bg-[#F8FAFB] w-full max-w-md h-full sm:h-[620px] sm:rounded-2xl flex flex-col overflow-hidden shadow-2xl border">
-            <div className="bg-white p-4 flex justify-between items-center border-b shadow-sm">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center border text-[#0A1A3A] font-bold text-sm">
-                  {maskEmail(activeChatBuyerEmail || "").charAt(0).toUpperCase()}
-                </div>
-                <div>
-                  <h4 className="font-bold text-sm text-[#0A1A3A]">
-                    {buyerNames[activeChatBuyerEmail] || maskEmail(activeChatBuyerEmail)}
-                  </h4>
-                  <UserActivityStatus userId={activeChatBuyerEmail} />
-                </div>
-              </div>
-              <button
-                onClick={() => { setIsChatOpen(false); setPresence('offline'); }}
-                className="p-2 text-gray-400 hover:text-red-500 transition rounded-full hover:bg-gray-100"
-              >
-                <FaTimesIcon size={20} />
-              </button>
-            </div>
-
-            <div
-              ref={messagesContainerRef}
-              className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#F3EFEE]/30 scroll-smooth"
-              onScroll={(e) => {
-                const container = e.currentTarget;
-                const isAtBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
-                shouldAutoScrollRef.current = isAtBottom;
-              }}
-            >
-              {chatMessages.map((msg, index) => (
-                <div
-                  key={`${msg.createdAt || 'msg'}-${index}`}
-                  className={`flex ${msg.senderId === sellerId ? 'justify-end' : 'justify-start'}`}
-                >
-                  <div className={`max-w-[85%] ${msg.senderId === sellerId ? 'items-end' : 'items-start'} flex flex-col`}>
-                    <div
-                      className={`rounded-2xl px-4 py-2.5 shadow-sm text-sm ${msg.senderId === sellerId
-                        ? 'bg-[#33ac6f] text-white rounded-tr-none'
-                        : 'bg-white text-[#0A1A3A] border rounded-tl-none font-medium'
-                        }`}
-                    >
-                      {msg.imageUrl && (
-                        <div
-                          className="mb-2 relative group"
-                        >
-                          <img
-                            src={msg.imageUrl!.startsWith('http') ? msg.imageUrl : `${BASE_URL}${msg.imageUrl}`}
-                            alt="attachment"
-                            className="rounded-lg max-w-full max-h-[220px] object-contain border border-black/5 mx-auto cursor-pointer"
-                            onClick={() => setPreviewImage(msg.imageUrl!.startsWith('http') ? msg.imageUrl! : `${BASE_URL}${msg.imageUrl!}`)}
-                            onError={(e) => (e.currentTarget.style.display = 'none')}
-                          />
-                          <a
-                            href={msg.imageUrl!.startsWith('http') ? msg.imageUrl : `${BASE_URL}${msg.imageUrl}`}
-                            download
-                            target="_blank"
-                            rel="noreferrer"
-                            className="absolute bottom-2 right-2 bg-black/50 hover:bg-black/70 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition"
-                            onClick={(e) => e.stopPropagation()}
-                            title="Download"
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
-                          </a>
-                        </div>
-                      )}
-                      <p className="leading-relaxed break-words whitespace-pre-wrap">{msg.message}</p>
-                    </div>
-                    <span className="text-[9px] text-gray-400 mt-1 px-1 font-bold">
-                      {formatChatTime(msg.createdAt)}
-                    </span>
-                  </div>
-                </div>
-              ))}
-
-              {imagePreview && (
-                <div className="flex justify-end px-4 py-2">
-                  <div className="p-1 bg-[#33ac6f] rounded-2xl rounded-tr-none shadow-md">
-                    <div className="relative">
-                      <img
-                        src={imagePreview}
-                        alt="preview"
-                        className="rounded-lg max-w-full max-h-[420px] object-contain"
-                      />
-                      <button
-                        onClick={() => { setSelectedImage(null); setImagePreview(null); }}
-                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center shadow-lg border-2 border-white"
-                      > × </button>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className="p-4 bg-white border-t">
-              <form
-                onSubmit={sendChat}
-                className="flex items-center gap-2 bg-[#F8FAFB] border rounded-2xl p-1.5 focus-within:border-[#33ac6f] transition-all"
-              >
-                <input
-                  type="file"
-                  accept="image/*"
-                  hidden
-                  ref={fileInputRef}
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) {
-                      setSelectedImage(file);
-                      setImagePreview(URL.createObjectURL(file));
-                    }
-                  }}
-                />
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="p-2 text-gray-500 hover:text-[#33ac6f]"
-                >
-                  <FaImageIcon size={18} />
-                </button>
-
-                {/* চ্যাট ইনপুট এখানে - Shift + Enter = line break, Enter = send */}
-                <textarea
-                  ref={textareaRef}
-                  value={typedMessage}
-                  onChange={(e) => setTypedMessage(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault(); // Enter চাপলে নতুন লাইন না করে submit করবে
-                      sendChat(e as any);
-                    }
-                    // Shift + Enter চাপলে স্বাভাবিক লাইন ব্রেক হবে
-                  }}
-                  placeholder=""
-                  rows={1}
-                  className="flex-1 bg-transparent border-none outline-none text-sm px-2 py-1 resize-none max-h-32 overflow-y-auto"
-                />
-
-                <button
-                  type="submit"
-                  className="bg-[#33ac6f] text-white p-2 rounded-xl hover:opacity-90 transition active:scale-95"
-                >
-                  <FaPaperPlaneIcon size={16} />
-                </button>
-              </form>
-            </div>
-          </div>
-
-          {/* Full-screen Image Preview */}
-          {previewImage && (
-            <div
-              className="fixed inset-0 z-[200] bg-black/90 flex items-center justify-center p-4"
-              onClick={() => setPreviewImage(null)}
-            >
-              <div className="relative max-w-4xl max-h-[90vh] w-full h-full flex flex-col items-center justify-center">
-                <img
-                  src={previewImage}
-                  alt="Full size preview"
-                  className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
-                />
-
-                <a
-                  href={previewImage}
-                  download={`chat-image-${Date.now()}.jpg`}
-                  className="absolute bottom-6 right-6 bg-white/90 hover:bg-white text-black px-5 py-3 rounded-xl shadow-xl flex items-center gap-2 text-sm font-medium transition"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4 4m0 0l-4-4m4 4V4" />
-                  </svg>
-                  Download
-                </a>
-
-                <button
-                  className="absolute top-6 right-6 text-white bg-black/60 hover:bg-black/80 rounded-full p-3"
-                  onClick={() => setPreviewImage(null)}
-                >
-                  <FaTimesIcon size={24} />
-                </button>
-              </div>
-            </div>
-          )}
+          <ChatWindow
+            orderId={activeChatOrderId}
+            buyerEmail={activeChatBuyerEmail}
+            sellerEmail={sellerId || ""}
+            currentUserEmail={sellerId || ""}
+            onClose={() => {
+              setActiveChatBuyerEmail(null);
+              setActiveChatOrderId(null);
+              // Mark as read in local state when closing
+              setUnreadCounts(prev => {
+                const newMap = new Map(prev);
+                newMap.set(activeChatOrderId, 0);
+                return newMap;
+              });
+            }}
+            productTitle={activeChatProductTitle}
+          />
         </div>
       )}
 

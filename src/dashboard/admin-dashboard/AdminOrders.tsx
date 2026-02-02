@@ -21,7 +21,9 @@ import {
     Typography,
 } from "@mui/material";
 import Box from "@mui/material/Box";
-import { Cancel, Visibility } from "@mui/icons-material";
+import { Cancel, Visibility, Chat } from "@mui/icons-material";
+import ChatWindow from "../../components/Chat/ChatWindow";
+import { useAuthHook } from "../../hook/useAuthHook";
 import { toast } from "sonner";
 
 const BASE_URL = "http://localhost:3200";
@@ -53,8 +55,11 @@ const AdminOrders: React.FC = () => {
     const queryClient = useQueryClient();
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
     const [openCancelDialog, setOpenCancelDialog] = useState(false);
+    const [openChatDialog, setOpenChatDialog] = useState(false);
+    const [activeChatOrder, setActiveChatOrder] = useState<Order | null>(null);
 
-    // ✅ 2. Properly typed usage of useQuery
+    const { data: userData } = useAuthHook();
+    const adminEmail = userData?.email || localStorage.getItem("userEmail") || "admin@platform.com";
     const { data: orders = [], isLoading } = useQuery<Order[]>({
         queryKey: ["adminAllOrders"],
         queryFn: async () => {
@@ -183,6 +188,20 @@ const AdminOrders: React.FC = () => {
                                                 </IconButton>
                                             </Tooltip>
                                         )}
+
+                                        <Tooltip title="View Chat">
+                                            <IconButton
+                                                color="primary"
+                                                onClick={() => {
+                                                    setActiveChatOrder(order);
+                                                    setOpenChatDialog(true);
+                                                }}
+                                                size="small"
+                                                className="bg-blue-50 hover:bg-blue-100 ml-2"
+                                            >
+                                                <Chat fontSize="small" />
+                                            </IconButton>
+                                        </Tooltip>
                                     </TableCell>
                                 </TableRow>
                             ))
@@ -224,6 +243,37 @@ const AdminOrders: React.FC = () => {
                         {cancelMutation.isPending ? "Cancelling..." : "Yes, Cancel Order"}
                     </Button>
                 </DialogActions>
+            </Dialog>
+
+            {/* Chat Dialog */}
+            <Dialog
+                open={openChatDialog}
+                onClose={() => setOpenChatDialog(false)}
+                maxWidth="md"
+                fullWidth
+                PaperProps={{
+                    sx: {
+                        borderRadius: 3,
+                        height: "auto",
+                        maxHeight: "90vh",
+                        bgcolor: "transparent",
+                        boxShadow: "none"
+                    }
+                }}
+            >
+                {activeChatOrder && (
+                    <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                        <ChatWindow
+                            orderId={activeChatOrder._id}
+                            buyerEmail={activeChatOrder.buyerEmail}
+                            sellerEmail={activeChatOrder.sellerEmail}
+                            currentUserEmail={adminEmail}
+                            readOnly={true}
+                            onClose={() => setOpenChatDialog(false)}
+                            productTitle={activeChatOrder.productName}
+                        />
+                    </Box>
+                )}
             </Dialog>
         </Box>
     );
