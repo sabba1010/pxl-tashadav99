@@ -907,14 +907,14 @@ const MyOrder: React.FC = () => {
               </div>
             </div>
             {selected.status !== "Cancelled" && (
-              <div className="mt-8 grid grid-cols-2 gap-3">
-                <button
+              <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {/* <button
                   disabled={isUpdating}
                   onClick={() => handleUpdateStatus('cancelled')}
                   className="py-3.5 px-4 border border-red-200 text-red-600 rounded-lg hover:bg-red-50 flex items-center justify-center gap-2 font-semibold text-base transition disabled:opacity-50"
                 >
                   <FaBanIcon size={20} /> Cancel
-                </button>
+                </button> */}
                 <button
                   onClick={() => {
                     setReportTargetOrder(selected);
@@ -937,7 +937,7 @@ const MyOrder: React.FC = () => {
                 </button>
               </div>
             )}
-            <div className="mt-4 grid grid-cols-2 gap-3">
+            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
               {selected.status !== "Cancelled" && (
                 <button
                   onClick={() => {
