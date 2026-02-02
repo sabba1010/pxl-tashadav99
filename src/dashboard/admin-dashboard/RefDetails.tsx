@@ -51,25 +51,20 @@ const RefDetails = () => {
     };
   };
 
-  /* ================= HELPERS FOR LINKS ================= */
-  // Gmail ওপেন করার জন্য
   const openGmail = (email: string) => {
     if (email === "N/A") return;
     window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${email}`, "_blank");
   };
 
-  // WhatsApp ওপেন করার জন্য
   const openWhatsApp = (phone: string) => {
     if (!phone || phone === "N/A") {
       toast.error("Phone number not available");
       return;
     }
-    // নম্বর থেকে সব স্পেস বা সিম্বল সরিয়ে শুধু ডিজিট রাখা হচ্ছে
     const cleanPhone = phone.replace(/\D/g, "");
     window.open(`https://wa.me/${cleanPhone}`, "_blank");
   };
 
-  /* ================= UPDATE STATUS ================= */
   const updateStatus = async (userId: string, status: ReferralStatus) => {
     let reason = "";
 
@@ -161,11 +156,11 @@ const RefDetails = () => {
   );
 
   return (
-    <div className="p-6 bg-[#f8fafc] min-h-screen font-sans text-gray-800">
+    <div className="p-4 sm:p-6 bg-[#f8fafc] min-h-screen font-sans text-gray-800">
       {/* HEADER SECTION */}
-      <div className="bg-white p-6 rounded-xl shadow-sm mb-6 flex flex-wrap justify-between items-center gap-4 border border-gray-100">
+      <div className="max-w-6xl mx-auto bg-white p-5 sm:p-6 rounded-xl shadow-sm mb-6 flex flex-wrap justify-between items-center gap-4 border border-gray-100">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Admin Referral Control ({filtered.length})</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Admin Referral Control ({filtered.length})</h1>
           <p className="text-xs text-gray-500 mt-1 italic">Approved referrals pay $5 to the inviter.</p>
         </div>
 
@@ -173,7 +168,7 @@ const RefDetails = () => {
           <button
             onClick={fetchData}
             disabled={loading}
-            className="p-2.5 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg transition-all disabled:opacity-50"
+            className="p-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg transition-all disabled:opacity-50"
           >
             <RotateCcw size={18} className={loading ? "animate-spin" : ""} />
           </button>
@@ -182,7 +177,7 @@ const RefDetails = () => {
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               placeholder="Search user..."
-              className="pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 transition-all shadow-sm w-64 outline-none"
+              className="pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 transition-all shadow-sm w-56 sm:w-64 outline-none text-sm"
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
@@ -190,76 +185,76 @@ const RefDetails = () => {
       </div>
 
       {/* TABLE SECTION */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="max-w-6xl mx-auto bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead className="bg-gray-50 border-b border-gray-100 text-[11px] uppercase text-gray-500 font-bold tracking-widest">
+          <table className="w-full text-left min-w-[900px]"> {/* min-w দিয়ে খুব ছোট হতে দেওয়া হয়নি */}
+            <thead className="bg-gray-50 border-b border-gray-100 text-[11px] uppercase text-gray-500 font-bold tracking-wide">
               <tr>
-                <th className="px-6 py-4">Status</th>
-                <th className="px-6 py-4">Invited By (Referrer)</th>
-                <th className="px-6 py-4">New User (Referred)</th>
-                <th className="px-6 py-4">Value</th>
-                <th className="px-6 py-4 text-center">Action</th>
+                <th className="px-4 py-3">Status</th>
+                <th className="px-4 py-3">Invited By</th>
+                <th className="px-4 py-3">New User</th>
+                <th className="px-4 py-3">Value</th>
+                <th className="px-4 py-3 text-center">Action</th>
               </tr>
             </thead>
 
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-gray-100 text-sm">
               {filtered.map((user) => {
                 const inviter = getReferrerInfo(user.referredBy);
                 return (
                   <tr key={user._id} className="hover:bg-gray-50/50 transition-colors">
-                    <td className="px-6 py-4">{statusBadge(user)}</td>
-                    
-                    {/* Referrer Details */}
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-4">{statusBadge(user)}</td>
+
+                    {/* Referrer */}
+                    <td className="px-4 py-4">
                       <div className="space-y-1">
                         <button 
                           onClick={() => openGmail(inviter.email)}
-                          className="flex items-center gap-1.5 text-sm font-bold text-gray-700 hover:text-blue-600 group"
+                          className="flex items-center gap-1.5 text-sm font-medium text-gray-700 hover:text-blue-600 group"
                         >
-                           <Mail size={12} className="text-gray-400 group-hover:text-blue-500" /> 
-                           {inviter.email}
-                           <ExternalLink size={10} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+                          <Mail size={13} className="text-gray-400 group-hover:text-blue-500" /> 
+                          {inviter.email}
+                          <ExternalLink size={10} className="opacity-0 group-hover:opacity-100 transition-opacity" />
                         </button>
                         <button 
                           onClick={() => openWhatsApp(inviter.phone)}
                           className="flex items-center gap-1.5 text-xs text-green-600 font-semibold hover:bg-green-50 px-1 rounded transition-colors"
                         >
-                           <MessageCircle size={12} /> {inviter.phone || "N/A"}
+                          <MessageCircle size={13} /> {inviter.phone || "N/A"}
                         </button>
                         <div className="mt-1">
-                          <span className="text-[10px] text-blue-500 font-mono font-bold bg-blue-50 px-1 rounded uppercase">CODE: {user.referredBy}</span>
+                          <span className="text-[10px] text-blue-500 font-mono font-bold bg-blue-50 px-1.5 rounded uppercase">CODE: {user.referredBy}</span>
                         </div>
                       </div>
                     </td>
 
-                    {/* New User Details */}
-                    <td className="px-6 py-4">
+                    {/* New User */}
+                    <td className="px-4 py-4">
                       <div className="space-y-1">
                         <button 
                           onClick={() => openGmail(user.email)}
                           className="flex items-center gap-1.5 text-sm font-medium text-gray-700 hover:text-blue-600 group"
                         >
-                           <Mail size={12} className="text-gray-400 group-hover:text-blue-500" /> 
-                           {user.email}
-                           <ExternalLink size={10} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+                          <Mail size={13} className="text-gray-400 group-hover:text-blue-500" /> 
+                          {user.email}
+                          <ExternalLink size={10} className="opacity-0 group-hover:opacity-100 transition-opacity" />
                         </button>
                         <button 
                           onClick={() => openWhatsApp(user.phone || "")}
                           className="flex items-center gap-1.5 text-xs text-green-600 font-semibold hover:bg-green-50 px-1 rounded transition-colors"
                         >
-                           <MessageCircle size={12} /> {user.phone || "N/A"}
+                          <MessageCircle size={13} /> {user.phone || "N/A"}
                         </button>
                       </div>
                     </td>
 
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-4">
                       <span className={`font-bold text-sm ${user.referralStatus === "rejected" ? "text-gray-400 line-through" : "text-green-600"}`}>
                         $5.00
                       </span>
                     </td>
 
-                    <td className="px-6 py-4 text-center">
+                    <td className="px-4 py-4 text-center">
                       <select
                         disabled={updatingId === user._id || user.referralStatus !== "pending"}
                         value={user.referralStatus || "pending"}
