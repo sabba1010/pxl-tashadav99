@@ -184,6 +184,148 @@ const MyPurchase: React.FC = () => {
   const loginUserData = useAuthHook();
   const buyerId = loginUserData.data?.email || localStorage.getItem("userEmail");
 
+  // Login URL mapping - moved inside component for proper scope
+  const getLoginUrl = (productName: string): string => {
+    const name = productName?.toLowerCase().trim() || "";
+    
+    const loginMap: Record<string, string> = {
+      "facebook": "https://www.facebook.com/login",
+      "instagram": "https://www.instagram.com/accounts/login",
+      "twitter": "https://twitter.com/i/flow/login",
+      "twitter (x)": "https://twitter.com/i/flow/login",
+      "x": "https://twitter.com/i/flow/login",
+      "linkedin": "https://www.linkedin.com/login",
+      "pinterest": "https://www.pinterest.com/login",
+      "whatsapp": "https://www.whatsapp.com",
+      "telegram": "https://web.telegram.org",
+      "threads": "https://www.threads.net/login",
+      "snapchat": "https://accounts.snapchat.com/accounts/login",
+      "reddit": "https://www.reddit.com/login",
+      "tiktok": "https://www.tiktok.com/login",
+      "tinder": "https://www.tinder.com/",
+      "bumble": "https://www.bumble.com/en/login",
+      "pof": "https://www.pof.com/",
+      "discord": "https://discord.com/login",
+      "hinge": "https://hinge.co/",
+      "grindr": "https://www.grindr.com/",
+      "viber": "https://www.viber.com/",
+      "gmx": "https://login.gmx.net/",
+      "quora": "https://www.quora.com/login",
+      "match": "https://www.match.com/",
+      "ourtime": "https://www.ourtime.com/",
+      "hellotalk": "https://m.hellotalk.com/",
+      "zoosk": "https://www.zoosk.com/",
+      "okcupid": "https://www.okcupid.com/",
+      "smsmode": "https://smsmode.com/",
+      "noplace": "https://www.noplace.tv/",
+      "tenten": "https://tenten.com/",
+      "bereal": "https://bere.al/",
+      "airchat": "https://airchat.fm/",
+      "yikyak": "https://www.yikyakapp.com/",
+      "substacknotes": "https://notes.substack.com/",
+      "coverstar": "https://www.coverstarapp.com/",
+      "jagat": "https://jagat.co/",
+      "fizz": "https://fizz.co/",
+      "lemon8": "https://www.lemon8-app.com/",
+      "lapse": "https://www.lapse.photos/",
+      "gmail": "https://mail.google.com/",
+      "ymail": "https://mail.yahoo.com/",
+      "hotmail": "https://outlook.live.com/",
+      "mailru": "https://mail.ru/",
+      "outlook": "https://outlook.live.com/",
+      "google voice": "https://voice.google.com/",
+      "wechat": "https://web.wechat.com/",
+      "textplus": "https://www.textplus.com/",
+      "signal": "https://signal.org/",
+      "amazon": "https://www.amazon.com/ap/signin",
+      "amex": "https://www.americanexpress.com/login",
+      "ebay": "https://www.ebay.com/signin",
+      "google play": "https://play.google.com/store",
+      "nike": "https://www.nike.com/login",
+      "nordstrom": "https://www.nordstrom.com/account/signin",
+      "playstation": "https://www.playstation.com/en-us/",
+      "sephora": "https://www.sephora.com/login",
+      "steam": "https://steamcommunity.com/login",
+      "windscribe": "https://windscribe.com/login",
+      "nord": "https://account.nordaccount.com/",
+      "911 proxy": "https://911.re/",
+      "pia": "https://www.privateinternetaccess.com/",
+      "cyberghost": "https://www.cyberghostvpn.com/",
+      "private": "https://www.privatevpn.com/",
+      "total": "https://www.totalvpn.com/",
+      "surfshark": "https://account.surfshark.com/",
+      "onlyfans": "https://onlyfans.com/login",
+      "aliexpress": "https://www.aliexpress.com/p/login",
+      "alibaba": "https://www.alibaba.com/",
+      "shopify": "https://accounts.shopify.com/",
+      "shopee": "https://shopee.com/buyer/login",
+      "ozon": "https://www.ozon.ru/login",
+      "redbook": "https://www.xiaohongshu.com/",
+      "olx": "https://www.olx.in/login",
+      "vinted": "https://www.vinted.com/auth/login",
+      "youla.ru": "https://youla.ru/",
+      "jdcom": "https://www.jd.com/",
+      "magicbricks": "https://www.magicbricks.com/",
+      "wish": "https://www.wish.com/",
+      "call of duty": "https://www.callofduty.com/",
+      "pubg": "https://www.pubg.com/",
+      "gta": "https://www.rockstargames.com/",
+      "fortnite": "https://www.epicgames.com/fortnite/",
+      "epic": "https://www.epicgames.com/",
+      "netflix": "https://www.netflix.com/login",
+      "apple": "https://appleid.apple.com/",
+      "trustwallet": "https://trustwallet.com/",
+      "prime videos": "https://www.primevideo.com/",
+      "apple music": "https://music.apple.com/",
+      "apple tv": "https://tv.apple.com/",
+      "spotify": "https://www.spotify.com/login",
+      "audiomack": "https://www.audiomack.com/login",
+      "damus": "https://damusapp.com/",
+      "rtro": "https://www.rtro.app/",
+      "gowalla": "https://gowalla.com/",
+      "yandex": "https://yandex.com/",
+      "uber": "https://www.uber.com/",
+      "grab": "https://www.grab.com/",
+      "bolt": "https://bolt.eu/",
+      "blablacar": "https://www.blablacar.com/",
+      "indriver": "https://indriver.com/",
+      "careem": "https://www.careem.com/",
+      "ontaxi": "https://www.ontaxi.com/",
+      "gett": "https://gett.com/",
+      "youtube": "https://www.youtube.com/login",
+      "github": "https://github.com/login",
+      "canva": "https://www.canva.com/login",
+      "chatgpt": "https://openai.com/auth/login",
+      "office365": "https://www.office.com/",
+      "paypal": "https://www.paypal.com/signin",
+      "bluesky": "https://bsky.app/login",
+      "qq": "https://z.qq.com/",
+      "kick": "https://kick.com/",
+      "other": "https://www.google.com/",
+    };
+    
+    if (loginMap[name]) return loginMap[name];
+    
+    for (const [key, url] of Object.entries(loginMap)) {
+      if (name.startsWith(key) || name.startsWith(key.split(' ')[0])) {
+        return url;
+      }
+    }
+    
+    const firstWord = name.split(/[\s\-()]/)[0];
+    if (firstWord && loginMap[firstWord]) {
+      return loginMap[firstWord];
+    }
+    
+    for (const [key, url] of Object.entries(loginMap)) {
+      if (firstWord === key.split(' ')[0]) {
+        return url;
+      }
+    }
+    
+    return "https://www.google.com/";
+  };
+
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [sellerOnline, setSellerOnline] = useState<boolean>(false);
@@ -908,23 +1050,46 @@ const MyPurchase: React.FC = () => {
                 </div>
               )}
 
-              {selected.status === "Pending" && (
-                <>
-                  <button
-                    onClick={() => handleUpdateStatus("completed", selected.sellerEmail)}
-                    className="w-full bg-[#33ac6f] text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition active:scale-95 shadow-lg"
-                  >
-                    <FaCheckCircleIcon /> Confirm & Complete Order
-                  </button>
+              {/* Warning Notice and Login Button */}
+             {selected.accountUsername && selected.accountPassword && (
+                <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-4 mb-6">
+                  <div className="flex gap-3">
+                    <div className="text-xl flex-shrink-0">⚠️</div>
+                    <div>
+                      <p className="text-sm font-bold text-amber-900 mb-2">Important Notice</p>
+                      <p className="text-xs text-amber-800 leading-relaxed mb-4">
+                        "Login now before the time expires to avoid future complaints."
+                      </p>
+                      <button
+                        onClick={() => window.open(getLoginUrl(selected.title), '_blank')}
+                        className="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 px-4 rounded-lg transition active:scale-95 text-sm"
+                      >
+                        🔓 Login Now to {selected.title.split(' ')[0]}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )} 
 
-                  <button
-                    onClick={() => handleUpdateStatus("cancelled", selected.sellerEmail)}
-                    className="w-full bg-red-500 text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition active:scale-95 shadow-lg mt-3"
-                  >
-                    <FaTimesIcon /> Cancel Order
-                  </button>
-                </>
+              {selected.status === "Pending" && (
+                <button
+                  onClick={() => handleUpdateStatus("completed", selected.sellerEmail)}
+                  className="w-full bg-[#33ac6f] text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition active:scale-95 shadow-lg"
+                >
+                  <FaCheckCircleIcon /> Confirm & Complete Order
+                </button>
               )}
+
+              {/* Cancel Order button - HIDDEN/COMMENTED OUT
+              {selected.status !== "Cancelled" && selected.status !== "Refunded" && (
+                <button
+                  onClick={() => handleUpdateStatus("cancelled", selected.sellerEmail)}
+                  className="w-full bg-red-500 text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition active:scale-95 shadow-lg mt-3"
+                >
+                  <FaTimesIcon /> Cancel Order
+                </button>
+              )}
+              */}
             </div>
           </div>
         )
