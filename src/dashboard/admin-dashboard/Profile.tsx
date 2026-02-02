@@ -3,9 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
-import { 
-  ShieldCheck, ShieldX, Clock, LogOut, UserCog, Key, Mail, Phone, Calendar, MapPin, 
-  Upload, RefreshCw, Wallet, Eye, EyeOff 
+import {
+  ShieldCheck, ShieldX, Clock, LogOut, UserCog, Key, Mail, Phone, Calendar, MapPin,
+  Upload, RefreshCw, Wallet, Eye, EyeOff
 } from "lucide-react";
 
 const API_BASE_URL = "http://localhost:3200/api/user";
@@ -229,7 +229,7 @@ const Profile: React.FC = () => {
   if (!profile) return <div className="text-center text-red-600 min-h-screen flex items-center justify-center">Profile not found</div>;
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 p-4 md:p-8">
       <div className="max-w-5xl mx-auto bg-white shadow-xl rounded-2xl overflow-hidden">
         {/* Header */}
         <div className="bg-gradient-to-r from-gray-900 to-gray-800 text-white p-8 relative">

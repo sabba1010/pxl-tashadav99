@@ -240,7 +240,7 @@ const WithdrawalRequests: React.FC = () => {
   const paginatedRequests = filteredRequests.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   return (
-    <Box sx={{ p: 4, bgcolor: "#F8FAFC", minHeight: "100vh" }}>
+    <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: "#F8FAFC", minHeight: "100vh" }}>
       <Paper sx={{ p: 3, mb: 4, borderRadius: 3 }}>
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <Typography fontWeight={800}>Withdrawal Requests ({filteredRequests.length})</Typography>

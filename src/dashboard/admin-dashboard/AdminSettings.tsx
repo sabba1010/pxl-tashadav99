@@ -123,7 +123,7 @@ const AdminSettings: React.FC = () => {
   };
 
   return (
-    <div className="w-full">
+    <div className="w-full p-4 md:p-8">
       <div className="mx-auto max-w-md">
         <div className="overflow-hidden rounded-2xl bg-white shadow-lg ring-1 ring-gray-200">
           <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-8 py-6 border-b border-gray-100">
@@ -175,7 +175,7 @@ const AdminSettings: React.FC = () => {
                 )}
               </div>
             </form>
-{/* 
+            {/* 
 
     <div className="grid grid-cols-1 gap-4">
               <form onSubmit={handleSaveBuyer} className="rounded-lg border border-gray-200 bg-gray-50 p-4">
@@ -204,7 +204,7 @@ const AdminSettings: React.FC = () => {
                   </div>
                 </div> */}
 
-                {/* <div className="mt-4 flex items-center gap-4">
+            {/* <div className="mt-4 flex items-center gap-4">
                   <button
                     type="submit"
                     disabled={buyerLoading}
@@ -227,7 +227,7 @@ const AdminSettings: React.FC = () => {
                 </div>
               </form> */}
 
-              {/* <form onSubmit={handleSaveSeller} className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+            {/* <form onSubmit={handleSaveSeller} className="rounded-lg border border-gray-200 bg-gray-50 p-4">
                 <div>
                   <div>
                     <h4 className="text-lg font-semibold text-gray-900">Seller Withdrawal Rate</h4>
@@ -282,7 +282,7 @@ const AdminSettings: React.FC = () => {
 
 
 
-        
+
           </div>
         </div>
       </div>

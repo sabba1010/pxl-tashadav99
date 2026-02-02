@@ -204,7 +204,7 @@ const DashboardOverview: React.FC = () => {
   const displayMetrics = safeMetrics;
 
   return (
-    <div className="p-10 bg-[#F4F7FE] min-h-screen space-y-10">
+    <div className="p-4 md:p-8 bg-[#F4F7FE] min-h-screen space-y-6 md:space-y-10">
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <Box>

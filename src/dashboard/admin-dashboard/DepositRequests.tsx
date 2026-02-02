@@ -103,7 +103,7 @@ const DepositRequests: React.FC = () => {
   }
 
   return (
-    <Box sx={{ p: 4, bgcolor: "#F5F7FA", minHeight: "100vh" }}>
+    <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: "#F5F7FA", minHeight: "100vh" }}>
       {/* Header */}
       <Paper
         elevation={2}

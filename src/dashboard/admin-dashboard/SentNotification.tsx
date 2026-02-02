@@ -113,7 +113,7 @@ const SentNotification = () => {
     };
 
     return (
-        <div className="w-full" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', padding: '0' }}>
+        <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-6 p-4 md:p-8">
             {/* Send Notification Form */}
             <div style={{ padding: '20px', border: '1px solid #ddd', borderRadius: '8px', backgroundColor: '#fff', fontFamily: 'sans-serif' }}>
                 <h2 style={{ marginBottom: '10px', fontSize: '1.5rem', fontWeight: 'bold' }}>📢 Broadcast Announcement</h2>

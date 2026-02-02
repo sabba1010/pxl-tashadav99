@@ -156,7 +156,7 @@ const RefDetails = () => {
   );
 
   return (
-    <div className="p-4 sm:p-6 bg-[#f8fafc] min-h-screen font-sans text-gray-800">
+    <div className="p-4 md:p-8 bg-[#f8fafc] min-h-screen font-sans text-gray-800">
       {/* HEADER SECTION */}
       <div className="max-w-6xl mx-auto bg-white p-5 sm:p-6 rounded-xl shadow-sm mb-6 flex flex-wrap justify-between items-center gap-4 border border-gray-100">
         <div>
@@ -208,15 +208,15 @@ const RefDetails = () => {
                     {/* Referrer */}
                     <td className="px-4 py-4">
                       <div className="space-y-1">
-                        <button 
+                        <button
                           onClick={() => openGmail(inviter.email)}
                           className="flex items-center gap-1.5 text-sm font-medium text-gray-700 hover:text-blue-600 group"
                         >
-                          <Mail size={13} className="text-gray-400 group-hover:text-blue-500" /> 
+                          <Mail size={13} className="text-gray-400 group-hover:text-blue-500" />
                           {inviter.email}
                           <ExternalLink size={10} className="opacity-0 group-hover:opacity-100 transition-opacity" />
                         </button>
-                        <button 
+                        <button
                           onClick={() => openWhatsApp(inviter.phone)}
                           className="flex items-center gap-1.5 text-xs text-green-600 font-semibold hover:bg-green-50 px-1 rounded transition-colors"
                         >
@@ -231,15 +231,15 @@ const RefDetails = () => {
                     {/* New User */}
                     <td className="px-4 py-4">
                       <div className="space-y-1">
-                        <button 
+                        <button
                           onClick={() => openGmail(user.email)}
                           className="flex items-center gap-1.5 text-sm font-medium text-gray-700 hover:text-blue-600 group"
                         >
-                          <Mail size={13} className="text-gray-400 group-hover:text-blue-500" /> 
+                          <Mail size={13} className="text-gray-400 group-hover:text-blue-500" />
                           {user.email}
                           <ExternalLink size={10} className="opacity-0 group-hover:opacity-100 transition-opacity" />
                         </button>
-                        <button 
+                        <button
                           onClick={() => openWhatsApp(user.phone || "")}
                           className="flex items-center gap-1.5 text-xs text-green-600 font-semibold hover:bg-green-50 px-1 rounded transition-colors"
                         >

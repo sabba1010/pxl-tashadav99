@@ -72,7 +72,7 @@ const RatingsReputationPanel: React.FC = () => {
         if (!groupedSellers[email]) {
           groupedSellers[email] = {
             id: email,
-            name: email.split("@")[0], 
+            name: email.split("@")[0],
             email: email,
             rating: 0,
             reviewsCount: 0,
@@ -85,12 +85,12 @@ const RatingsReputationPanel: React.FC = () => {
         const s = groupedSellers[email];
         s.reviewsCount += 1;
         s.rating += r.rating;
-        
+
         // ১ বা ২ স্টার রেটিংকে ডিসপিউট/অ্যাট রিস্ক হিসেবে গণ্য করা হচ্ছে
         if (r.rating <= 2) {
           s.disputedCount += 1;
         }
-        
+
         s.recentReviews.push({
           id: r._id,
           buyer: r.buyerEmail,
@@ -121,7 +121,7 @@ const RatingsReputationPanel: React.FC = () => {
 
   useEffect(() => {
     fetchAdminData();
-    
+
     // Set up auto-refresh polling if enabled (every 30 seconds)
     let interval: NodeJS.Timeout | null = null;
     if (autoRefresh) {
@@ -129,7 +129,7 @@ const RatingsReputationPanel: React.FC = () => {
         fetchAdminData();
       }, 30000); // Poll every 30 seconds
     }
-    
+
     return () => {
       if (interval) clearInterval(interval);
     };
@@ -164,7 +164,7 @@ const RatingsReputationPanel: React.FC = () => {
   const renderStars = (rating: number) => (
     <Box sx={{ display: "flex", gap: 0.5 }}>
       {[1, 2, 3, 4, 5].map((i) => (
-        i <= Math.round(rating) 
+        i <= Math.round(rating)
           ? <StarIcon key={i} sx={{ color: "#FBBF24", fontSize: 18 }} />
           : <StarBorderIcon key={i} sx={{ color: "#D1D5DB", fontSize: 18 }} />
       ))}
@@ -178,7 +178,7 @@ const RatingsReputationPanel: React.FC = () => {
   );
 
   return (
-    <Box sx={{ p: 4, bgcolor: "#F8FAFC", minHeight: "100vh" }}>
+    <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: "#F8FAFC", minHeight: "100vh" }}>
       {/* Header Section */}
       <Paper elevation={0} sx={{ p: 3, mb: 4, borderRadius: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid #E2E8F0' }}>
         <Box>
@@ -191,12 +191,12 @@ const RatingsReputationPanel: React.FC = () => {
         <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Typography variant="caption" color="#64748B">Auto-refresh:</Typography>
-            <Button 
-              variant={autoRefresh ? "contained" : "outlined"} 
+            <Button
+              variant={autoRefresh ? "contained" : "outlined"}
               size="small"
               onClick={() => setAutoRefresh(!autoRefresh)}
-              sx={{ 
-                borderRadius: 2, 
+              sx={{
+                borderRadius: 2,
                 textTransform: 'none',
                 bgcolor: autoRefresh ? '#33ac6f' : 'transparent',
                 borderColor: autoRefresh ? '#33ac6f' : '#E2E8F0'
@@ -208,15 +208,15 @@ const RatingsReputationPanel: React.FC = () => {
           <IconButton onClick={fetchAdminData} sx={{ bgcolor: '#F1F5F9' }}><RefreshIcon /></IconButton>
           <Box sx={{ position: 'relative' }}>
             <SearchIcon sx={{ position: 'absolute', left: 12, top: 10, color: '#94A3B8' }} />
-            <InputBase 
-              placeholder="Search seller email..." 
+            <InputBase
+              placeholder="Search seller email..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              sx={{ pl: 5, pr: 2, py: 0.5, bgcolor: '#F1F5F9', borderRadius: 2, width: 250 }} 
+              sx={{ pl: 5, pr: 2, py: 0.5, bgcolor: '#F1F5F9', borderRadius: 2, width: 250 }}
             />
           </Box>
           <FormControl size="small">
-            <Select value={filter} onChange={(e:any) => setFilter(e.target.value)} sx={{ borderRadius: 2, bgcolor: '#F1F5F9' }}>
+            <Select value={filter} onChange={(e: any) => setFilter(e.target.value)} sx={{ borderRadius: 2, bgcolor: '#F1F5F9' }}>
               <MenuItem value="all">All Sellers</MenuItem>
               <MenuItem value="disputed">At Risk (1-2 Stars)</MenuItem>
               <MenuItem value="top">Top Rated</MenuItem>
@@ -255,7 +255,7 @@ const RatingsReputationPanel: React.FC = () => {
                   </Typography>
                 </TableCell>
                 <TableCell>
-                  <Box sx={{ 
+                  <Box sx={{
                     px: 1.5, py: 0.5, borderRadius: 5, fontSize: 11, fontWeight: 800,
                     bgcolor: s.status === "verified" ? "#DCFCE7" : s.status === "warning" ? "#FEE2E2" : "#F1F5F9",
                     color: s.status === "verified" ? "#166534" : s.status === "warning" ? "#991B1B" : "#475569"

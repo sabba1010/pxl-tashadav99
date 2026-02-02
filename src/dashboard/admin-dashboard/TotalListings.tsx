@@ -221,7 +221,7 @@ const TotalListings: React.FC = () => {
   }
 
   return (
-    <Box sx={{ p: 4, bgcolor: "#F8FAFC", minHeight: "100vh" }}>
+    <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: "#F8FAFC", minHeight: "100vh" }}>
       {/* Header & Filters */}
       <Paper elevation={0} sx={{ p: 3, mb: 4, borderRadius: 2, border: "1px solid #E2E8F0" }}>
         <Box display="flex" justifyContent="space-between" alignItems="center" flexWrap="wrap" gap={2}>

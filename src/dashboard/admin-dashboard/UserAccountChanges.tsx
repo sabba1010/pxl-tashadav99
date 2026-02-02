@@ -54,7 +54,7 @@ export default function UserAccountChanges() {
       const response = await axios.get<{ success: boolean; changes: AccountChange[] }>(
         `${BASE_URL}/api/user/all-changes/admin/list?limit=500`
       );
-      
+
       if (response.data.success) {
         setAllChanges(response.data.changes);
         setFilteredChanges(response.data.changes);
@@ -120,7 +120,7 @@ export default function UserAccountChanges() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-50 p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">

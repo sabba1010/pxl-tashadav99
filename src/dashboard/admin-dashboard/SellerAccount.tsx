@@ -275,7 +275,7 @@ const SellerAccount: React.FC = () => {
   };
 
   return (
-    <Box sx={{ p: 4, bgcolor: "#F8FAFC", minHeight: "100vh" }}>
+    <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: "#F8FAFC", minHeight: "100vh" }}>
       {/* Header */}
       <Paper
         elevation={0}

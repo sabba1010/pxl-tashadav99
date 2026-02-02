@@ -20,6 +20,7 @@ import {
     DialogActions,
     Typography,
 } from "@mui/material";
+import Box from "@mui/material/Box";
 import { Cancel, Visibility } from "@mui/icons-material";
 import { toast } from "sonner";
 
@@ -108,7 +109,8 @@ const AdminOrders: React.FC = () => {
     };
 
     return (
-        <div className="p-8">
+        // ✅ Responsive Padding
+        <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: "#F8FAFC", minHeight: "100vh" }}>
             <div className="flex justify-between items-center mb-6">
                 <div>
                     <h1 className="text-2xl font-bold text-[#1B2559]">Order Management</h1>
@@ -223,7 +225,7 @@ const AdminOrders: React.FC = () => {
                     </Button>
                 </DialogActions>
             </Dialog>
-        </div>
+        </Box>
     );
 };
 
