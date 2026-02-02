@@ -25,7 +25,7 @@ const MyReport: React.FC = () => {
         queryFn: async () => {
             if (!user?.email) return [];
             // Sending current user email as a query parameter
-            const res = await axios.get<Report[]>(`https://tasha-vps-backend-2.onrender.com/my-reports?email=${user?.email}`);
+            const res = await axios.get<Report[]>(`http://localhost:3200/my-reports?email=${user?.email}`);
             return res.data;
         },
         enabled: !!user?.email 
@@ -33,7 +33,7 @@ const MyReport: React.FC = () => {
 
     const handleMarkSold = async (id: string) => {
         try {
-            const res = await axios.patch<any>(`https://tasha-vps-backend-2.onrender.com/report/mark-sold/${id}`);
+            const res = await axios.patch<any>(`http://localhost:3200/report/mark-sold/${id}`);
             if (res.data.success) {
                 Swal.fire("Success!", "Report marked as Sold", "success");
                 refetch();

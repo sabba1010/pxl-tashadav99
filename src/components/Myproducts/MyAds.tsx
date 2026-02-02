@@ -68,7 +68,7 @@ const MyAds: React.FC = () => {
     setLoading(true);
     try {
       const res = await axios.get<Ad[]>(
-        "https://tasha-vps-backend-2.onrender.com/product/all-sells"
+        "http://localhost:3200/product/all-sells"
       );
 
       const userAds = res.data.filter(
@@ -160,7 +160,7 @@ const MyAds: React.FC = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await axios.delete(`https://tasha-vps-backend-2.onrender.com/product/delete/${id}`);
+          await axios.delete(`http://localhost:3200/product/delete/${id}`);
           setItems((prev) => prev.filter((it) => it._id !== id));
           toast.success("Ad deleted successfully");
         } catch (err) {
@@ -213,7 +213,7 @@ const MyAds: React.FC = () => {
       };
 
       await axios.patch(
-        `https://tasha-vps-backend-2.onrender.com/product/update/${editingAd._id}`,
+        `http://localhost:3200/product/update/${editingAd._id}`,
         updateData
       );
 
