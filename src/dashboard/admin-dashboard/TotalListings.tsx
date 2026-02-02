@@ -54,6 +54,7 @@ interface Listing {
   previewLink?: string;
   createdAt?: string;
   updatedAt?: string;
+  categoryIcon?: string; // Added for product icon
 }
 
 interface User {
@@ -304,8 +305,14 @@ const TotalListings: React.FC = () => {
               <TableRow key={row._id} hover sx={{ '&:hover': { bgcolor: "#F8FAFC" } }}>
                 <TableCell>
                   <Box display="flex" alignItems="center" gap={2}>
-                    <Avatar variant="rounded" sx={{ bgcolor: "#EFF6FF", color: "#3B82F6" }}>
-                      <Description fontSize="small" />
+                    <Avatar
+                      variant="rounded"
+                      src={row.categoryIcon}
+                      alt={row.name}
+                      sx={{ width: 40, height: 40 }} // Adjusted size for better visibility
+                    >
+                      {/* Fallback to generic icon if no categoryIcon */}
+                      {!row.categoryIcon && <Description fontSize="small" />}
                     </Avatar>
                     <Box>
                       <Typography variant="body2" fontWeight={600} color="#1E293B">
