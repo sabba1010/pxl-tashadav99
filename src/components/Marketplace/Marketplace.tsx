@@ -78,7 +78,7 @@ interface Item {
 
 type SubcatState = Record<string, string[]>;
 
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:3200";
+const API_URL = process.env.REACT_APP_API_URL || "https://tasha-vps-backend-2.onrender.com";
 
 const CATEGORY_MAP: Record<string, string[]> = {
   "Social Media": [
@@ -463,8 +463,8 @@ const ItemCard: React.FC<{
         />
       </div>
       <div className="flex-1 min-w-0">
-        <h3 className="font-bold text-sm text-[#0A1A3A] truncate" title={item.title}>
-          {truncateTitle(item.title, 35)}
+        <h3 className="font-bold text-sm text-[#0A1A3A] truncate w-full" title={item.title}>
+          {truncateTitle(item.title, 25)}
         </h3>
         <p className="text-xs text-gray-600 mt-1 line-clamp-2">
           {item.desc || "Premium account • Instant delivery"}
@@ -539,8 +539,8 @@ const ProductModal: React.FC<{
           <div className="flex justify-center mb-4">
             <RenderIcon icon={item.icon} size={72} realTime={item.realTime} />
           </div>
-          <h2 className="text-2xl font-bold text-center text-[#0A1A3A] mb-1 break-words" title={item.title}>
-            {truncateTitle(item.title, 50)}
+          <h2 className="text-2xl font-bold text-center text-[#0A1A3A] mb-1 break-words max-w-sm mx-auto line-clamp-3" title={item.title}>
+            {item.title}
           </h2>
           <div className="text-3xl font-extrabold text-center text-green-600 mb-6">
             ${item.price.toFixed(2)}
@@ -985,7 +985,7 @@ const Marketplace: React.FC = () => {
                               ) : null}
                             </div>
                             <div className="flex-1 min-w-0">
-                              <h4 className="font-bold text-sm truncate">{item.title}</h4>
+                              <h4 className="font-bold text-sm truncate w-full" title={item.title}>{truncateTitle(item.title, 22)}</h4>
                               <p className="text-xs text-gray-500 line-clamp-1">{item.desc}</p>
                               <p className="text-sm font-bold text-[#33ac6f] mt-1">${item.price.toFixed(2)}</p>
                             </div>
