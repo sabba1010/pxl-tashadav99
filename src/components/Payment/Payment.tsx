@@ -42,10 +42,13 @@ const Payment: React.FC = () => {
       try {
         const res = await axios.get<{
           success: boolean;
-          settings: { ngnToUsdRate?: number };
+          settings: {
+            ngnToUsdRate?: number;
+            depositRate?: number;
+          };
         }>("http://localhost:3200/api/settings");
         if (res.data.success) {
-          setExchangeRate(res.data.settings.ngnToUsdRate || 1500);
+          setExchangeRate(res.data.settings.depositRate || res.data.settings.ngnToUsdRate || 1500);
         }
       } catch (err) {
         console.error("Failed to fetch exchange rate", err);

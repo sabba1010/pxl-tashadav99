@@ -8,15 +8,18 @@ const AdminSettings: React.FC = () => {
   const [fee, setFee] = useState<number | "">("");
   const [buyerDepositRate, setBuyerDepositRate] = useState<number | "">("");
   const [sellerWithdrawalRate, setSellerWithdrawalRate] = useState<number | "">("");
-  const [ngnRate, setNgnRate] = useState<number | "">("");
+  const [depositRate, setDepositRate] = useState<number | "">("");
+  const [withdrawRate, setWithdrawRate] = useState<number | "">("");
   const [feeLoading, setFeeLoading] = useState(false);
   const [buyerLoading, setBuyerLoading] = useState(false);
   const [sellerLoading, setSellerLoading] = useState(false);
-  const [ngnLoading, setNgnLoading] = useState(false);
+  const [depositLoading, setDepositLoading] = useState(false);
+  const [withdrawLoading, setWithdrawLoading] = useState(false);
   const [feeMessage, setFeeMessage] = useState<Msg>(null);
   const [buyerMessage, setBuyerMessage] = useState<Msg>(null);
   const [sellerMessage, setSellerMessage] = useState<Msg>(null);
-  const [ngnMessage, setNgnMessage] = useState<Msg>(null);
+  const [depositMessage, setDepositMessage] = useState<Msg>(null);
+  const [withdrawMessage, setWithdrawMessage] = useState<Msg>(null);
 
   useEffect(() => {
     const load = async () => {
@@ -28,7 +31,8 @@ const AdminSettings: React.FC = () => {
         setFee(s.registrationFee ?? 15);
         setBuyerDepositRate(s.buyerDepositRate ?? 0);
         setSellerWithdrawalRate(s.sellerWithdrawalRate ?? 0);
-        setNgnRate(s.ngnToUsdRate ?? 1500);
+        setDepositRate(s.depositRate ?? s.ngnToUsdRate ?? 1500);
+        setWithdrawRate(s.withdrawRate ?? 1400);
       } catch (err) {
         console.error(err);
       }
@@ -126,33 +130,63 @@ const AdminSettings: React.FC = () => {
     }
   };
 
-  const handleSaveNgnRate = async (e?: React.FormEvent) => {
+  const handleSaveDepositRate = async (e?: React.FormEvent) => {
     e?.preventDefault();
-    setNgnMessage(null);
-    if (ngnRate === "" || isNaN(Number(ngnRate)) || Number(ngnRate) <= 0) {
-      setNgnMessage({ text: "Exchange rate must be greater than 0", type: "error" });
+    setDepositMessage(null);
+    if (depositRate === "" || isNaN(Number(depositRate)) || Number(depositRate) <= 0) {
+      setDepositMessage({ text: "Deposit rate must be greater than 0", type: "error" });
       return;
     }
-    setNgnLoading(true);
+    setDepositLoading(true);
     try {
       const res = await fetch(`${API_URL}/api/settings`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ngnToUsdRate: Number(ngnRate) }),
+        body: JSON.stringify({ depositRate: Number(depositRate) }),
       });
       const data = await res.json();
       if (data.success) {
-        setNgnMessage({ text: `Exchange rate saved`, type: "success" });
+        setDepositMessage({ text: `Deposit rate saved`, type: "success" });
         const s = data.settings || {};
-        setNgnRate(s.ngnToUsdRate ?? Number(ngnRate));
+        setDepositRate(s.depositRate ?? Number(depositRate));
       } else {
-        setNgnMessage({ text: data.message || "Save failed", type: "error" });
+        setDepositMessage({ text: data.message || "Save failed", type: "error" });
       }
     } catch (err) {
       console.error(err);
-      setNgnMessage({ text: "Network error. Try again.", type: "error" });
+      setDepositMessage({ text: "Network error. Try again.", type: "error" });
     } finally {
-      setNgnLoading(false);
+      setDepositLoading(false);
+    }
+  };
+
+  const handleSaveWithdrawRate = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    setWithdrawMessage(null);
+    if (withdrawRate === "" || isNaN(Number(withdrawRate)) || Number(withdrawRate) <= 0) {
+      setWithdrawMessage({ text: "Withdrawal rate must be greater than 0", type: "error" });
+      return;
+    }
+    setWithdrawLoading(true);
+    try {
+      const res = await fetch(`${API_URL}/api/settings`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ withdrawRate: Number(withdrawRate) }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setWithdrawMessage({ text: `Withdrawal rate saved`, type: "success" });
+        const s = data.settings || {};
+        setWithdrawRate(s.withdrawRate ?? Number(withdrawRate));
+      } else {
+        setWithdrawMessage({ text: data.message || "Save failed", type: "error" });
+      }
+    } catch (err) {
+      console.error(err);
+      setWithdrawMessage({ text: "Network error. Try again.", type: "error" });
+    } finally {
+      setWithdrawLoading(false);
     }
   };
 
@@ -166,23 +200,29 @@ const AdminSettings: React.FC = () => {
           </div>
 
           <div className="p-6 space-y-6">
-            <form onSubmit={handleSaveFee} className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+            <div className="bg-gradient-to-r from-green-50 to-emerald-50 -mx-6 -mt-6 px-8 py-4 border-b border-gray-100">
+              <h3 className="text-xl font-bold text-gray-900">Exchange Rates (USD ⇄ NGN)</h3>
+              <p className="text-xs text-gray-600">Control currency conversion for deposits and withdrawals</p>
+            </div>
+
+            <form onSubmit={handleSaveDepositRate} className="rounded-lg border border-gray-200 bg-gray-50 p-4">
               <div>
-                <label htmlFor="ngnRate" className="block text-sm font-medium text-gray-700">
-                  NGN to 1 USD Exchange Rate
+                <label htmlFor="depositRate" className="block text-sm font-bold text-gray-700">
+                  Deposit Rate (1 USD = ₦X)
                 </label>
-                <div className="relative mt-2">
+                <p className="text-xs text-gray-500 mb-2">Used when users deposit NGN to receive USD balance</p>
+                <div className="relative">
                   <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">₦</span>
                   <input
-                    id="ngnRate"
+                    id="depositRate"
                     type="number"
                     step="0.01"
                     min="1"
-                    value={ngnRate as any}
-                    onChange={(e) => setNgnRate(e.target.value === "" ? "" : Number(e.target.value))}
+                    value={depositRate as any}
+                    onChange={(e) => setDepositRate(e.target.value === "" ? "" : Number(e.target.value))}
                     placeholder="1500.00"
                     className="block w-full rounded-xl border border-gray-200 bg-white px-10 py-3 text-base text-gray-800 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
-                    disabled={ngnLoading}
+                    disabled={depositLoading}
                   />
                 </div>
               </div>
@@ -190,21 +230,66 @@ const AdminSettings: React.FC = () => {
               <div className="mt-4 flex items-center gap-4">
                 <button
                   type="submit"
-                  disabled={ngnLoading}
+                  disabled={depositLoading}
                   className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-md hover:from-green-700 hover:to-emerald-700 disabled:opacity-60"
                 >
-                  {ngnLoading ? (
+                  {depositLoading ? (
                     <svg className="h-4 w-4 animate-spin text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8h8a8 8 0 01-16 0z" />
                     </svg>
                   ) : null}
-                  <span>{ngnLoading ? "Saving..." : "Save Rate"}</span>
+                  <span>{depositLoading ? "Saving..." : "Save Deposit Rate"}</span>
                 </button>
 
-                {ngnMessage && (
-                  <p className={`text-sm font-medium ${ngnMessage.type === "success" ? "text-green-700" : "text-red-700"}`}>
-                    {ngnMessage.text}
+                {depositMessage && (
+                  <p className={`text-xs font-medium ${depositMessage.type === "success" ? "text-green-700" : "text-red-700"}`}>
+                    {depositMessage.text}
+                  </p>
+                )}
+              </div>
+            </form>
+
+            <form onSubmit={handleSaveWithdrawRate} className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+              <div>
+                <label htmlFor="withdrawRate" className="block text-sm font-bold text-gray-700">
+                  Withdrawal Rate (1 USD = ₦Y)
+                </label>
+                <p className="text-xs text-gray-500 mb-2">Used when sellers withdraw USD to NGN</p>
+                <div className="relative">
+                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">₦</span>
+                  <input
+                    id="withdrawRate"
+                    type="number"
+                    step="0.01"
+                    min="1"
+                    value={withdrawRate as any}
+                    onChange={(e) => setWithdrawRate(e.target.value === "" ? "" : Number(e.target.value))}
+                    placeholder="1400.00"
+                    className="block w-full rounded-xl border border-gray-200 bg-white px-10 py-3 text-base text-gray-800 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+                    disabled={withdrawLoading}
+                  />
+                </div>
+              </div>
+
+              <div className="mt-4 flex items-center gap-4">
+                <button
+                  type="submit"
+                  disabled={withdrawLoading}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-md hover:from-blue-700 hover:to-indigo-700 disabled:opacity-60"
+                >
+                  {withdrawLoading ? (
+                    <svg className="h-4 w-4 animate-spin text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8h8a8 8 0 01-16 0z" />
+                    </svg>
+                  ) : null}
+                  <span>{withdrawLoading ? "Saving..." : "Save Withdrawal Rate"}</span>
+                </button>
+
+                {withdrawMessage && (
+                  <p className={`text-xs font-medium ${withdrawMessage.type === "success" ? "text-green-700" : "text-red-700"}`}>
+                    {withdrawMessage.text}
                   </p>
                 )}
               </div>
