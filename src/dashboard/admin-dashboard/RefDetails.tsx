@@ -185,7 +185,7 @@ const RefDetails = () => {
       </div>
 
       {/* TABLE SECTION */}
-      <div className="max-w-6xl mx-auto bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="  bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left min-w-[900px]"> {/* min-w দিয়ে খুব ছোট হতে দেওয়া হয়নি */}
             <thead className="bg-gray-50 border-b border-gray-100 text-[11px] uppercase text-gray-500 font-bold tracking-wide">
