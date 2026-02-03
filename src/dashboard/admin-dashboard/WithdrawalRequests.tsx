@@ -285,7 +285,16 @@ const WithdrawalRequests: React.FC = () => {
                   <TableCell>{new Date(req.createdAt).toLocaleDateString()}</TableCell>
                   <TableCell>{req.email}</TableCell>
                   <TableCell>{req.paymentMethod}</TableCell>
-                  <TableCell>{req.amount} {req.currency}</TableCell>
+                  <TableCell>
+                    <div className="flex flex-col">
+                      <span className="font-bold">{req.amount} {req.currency}</span>
+                      {(req as any).amountNGN && (
+                        <span className="text-xs text-gray-500 font-medium">
+                          ≈ ₦{(req as any).amountNGN.toLocaleString()}
+                        </span>
+                      )}
+                    </div>
+                  </TableCell>
                   <TableCell>
                     <Box sx={{
                       px: 2,

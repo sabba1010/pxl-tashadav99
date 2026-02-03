@@ -180,9 +180,14 @@ const Payment: React.FC = () => {
             />
 
             {amount && !isNaN(Number(amount)) && (
-              <p className="text-sm text-yellow-400 mb-4 font-mono font-medium">
-                ≈ ₦{(Number(amount) * exchangeRate).toLocaleString()}
-              </p>
+              <div className="mb-4 bg-slate-800 p-3 rounded-lg border border-slate-700">
+                <p className="text-xs text-slate-400 mb-1">Estimated Conversion (Rate: ₦{exchangeRate}/$1)</p>
+                <div className="flex justify-between items-center">
+                  <span className="font-bold text-lg text-white">${Number(amount).toLocaleString()} USD</span>
+                  <span className="text-slate-500">→</span>
+                  <span className="font-bold text-lg text-yellow-400">₦{(Number(amount) * exchangeRate).toLocaleString()} NGN</span>
+                </div>
+              </div>
             )}
 
             <div className="flex gap-2 mb-4">

@@ -158,7 +158,7 @@ const RefDetails = () => {
   return (
     <div className="p-4 md:p-8 bg-[#f8fafc] min-h-screen font-sans text-gray-800">
       {/* HEADER SECTION */}
-      <div className="max-w-6xl mx-auto bg-white p-5 sm:p-6 rounded-xl shadow-sm mb-6 flex flex-wrap justify-between items-center gap-4 border border-gray-100">
+      <div className=" mx-auto bg-white p-5 sm:p-6 rounded-xl shadow-sm mb-6 flex flex-wrap justify-between items-center gap-4 border border-gray-100">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Admin Referral Control ({filtered.length})</h1>
           <p className="text-xs text-gray-500 mt-1 italic">Approved referrals pay $5 to the inviter.</p>

@@ -46,6 +46,24 @@ const WithdrawForm: React.FC = () => {
     bankName: "",
   });
 
+  const [withdrawRate, setWithdrawRate] = useState(1400);
+
+  // Fetch withdraw rate
+  useEffect(() => {
+    const fetchRate = async () => {
+      try {
+        const res = await fetch("http://localhost:3200/api/settings");
+        const data = await res.json();
+        if (data.success) {
+          setWithdrawRate(data.settings.withdrawRate || 1400);
+        }
+      } catch (err) {
+        console.error("Failed to fetch withdraw rate", err);
+      }
+    };
+    fetchRate();
+  }, []);
+
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{
     text: string;
@@ -191,11 +209,12 @@ const WithdrawForm: React.FC = () => {
       const requestBody = {
         userId: data._id,
         paymentMethod,
-        amount: amountNum,
-        currency: formData.currency,
+        amount: Number(amountNum), // Ensure number
+        currency: "USD", // Force USD as per requirement
         accountNumber: formData.accountNumber,
         bankCode: formData.bankCode,
         fullName: formData.fullName,
+        accountName: formData.fullName, // Add accountName alias for clarity
         phoneNumber: formData.phoneNumber || null,
         email: formData.email || null,
         note: formData.note || null,
@@ -211,7 +230,21 @@ const WithdrawForm: React.FC = () => {
         }
       );
 
-      const withdrawData = await withdrawResponse.json();
+      let withdrawData;
+      try {
+        const text = await withdrawResponse.text();
+        try {
+          withdrawData = JSON.parse(text);
+        } catch (e) {
+          console.error("Failed to parse backend response:", text);
+          throw new Error("Server returned an invalid response (not JSON)");
+        }
+      } catch (err: any) {
+        toast.error(err.message || "Network error");
+        setMessage({ text: err.message, type: "error" });
+        setLoading(false);
+        return;
+      }
 
       if (withdrawResponse.ok) {
         // Visual Balance Update
@@ -281,8 +314,8 @@ const WithdrawForm: React.FC = () => {
       {message.text && (
         <div
           className={`mb-8 p-6 rounded-2xl text-center font-bold text-lg shadow-md ${message.type === "success"
-              ? "bg-green-50 text-green-700 border-2 border-green-200"
-              : "bg-red-50 text-red-700 border-2 border-red-200"
+            ? "bg-green-50 text-green-700 border-2 border-green-200"
+            : "bg-red-50 text-red-700 border-2 border-red-200"
             }`}
         >
           {message.text}
@@ -324,19 +357,29 @@ const WithdrawForm: React.FC = () => {
               min="5"
               step="0.01"
             />
+            {formData.amount && !isNaN(Number(formData.amount)) && (
+              <div className="mt-2 bg-blue-50 p-2 rounded-lg border border-blue-100">
+                <p className="text-xs text-blue-800 font-semibold mb-1">
+                  You Receive (Rate: ₦{withdrawRate}/$1)
+                </p>
+                <div className="flex justify-between items-center">
+                  <span className="font-bold text-gray-700">${Number(formData.amount).toLocaleString()}</span>
+                  <span className="text-gray-400">→</span>
+                  <span className="font-bold text-xl text-green-600">
+                    ₦{(Number(formData.amount) * withdrawRate).toLocaleString()}
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
           <div>
             <label className="block text-xl font-bold text-[#0A1D37] mb-3">
               Currency
             </label>
-            <select
-              name="currency"
-              value={formData.currency}
-              onChange={handleChange}
-              className="w-full px-6 py-5 border-2 border-gray-200 rounded-xl focus:border-[#D4A017] focus:ring-4 focus:ring-[#D4A017]/20 text-lg transition"
-            >
-              <option value="USD">USD – US Dollar</option>
-            </select>
+            <div className="w-full px-6 py-5 border-2 border-gray-200 bg-gray-100 rounded-xl text-lg text-gray-500 font-bold">
+              USD – US Dollar
+            </div>
+            {/* Hidden input to maintain form data compatibility if needed, or just rely on default handling */}
           </div>
         </div>
 
@@ -482,8 +525,8 @@ const WithdrawForm: React.FC = () => {
           type="submit"
           disabled={loading}
           className={`w-full py-6 text-white text-2xl font-black rounded-2xl shadow-2xl transition-all transform hover:scale-[1.02] active:scale-98 ${loading
-              ? "bg-gray-500 cursor-not-allowed"
-              : "bg-gradient-to-r from-[#0A1D37] to-[#1a3a63] hover:from-[#D4A017] hover:to-[#f0b90b] hover:text-[#0A1D37]"
+            ? "bg-gray-500 cursor-not-allowed"
+            : "bg-gradient-to-r from-[#0A1D37] to-[#1a3a63] hover:from-[#D4A017] hover:to-[#f0b90b] hover:text-[#0A1D37]"
             }`}
         >
           {loading ? "Processing Payout..." : "WITHDRAW NOW (INSTANT - 0% FEE)"}

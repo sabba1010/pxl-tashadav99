@@ -18,28 +18,28 @@ interface Notification {
 const playNotificationSound = () => {
   try {
     const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-    
+
     // Create multiple oscillators for a pleasant bell-like sound
     const osc1 = audioContext.createOscillator();
     const osc2 = audioContext.createOscillator();
     const gainNode = audioContext.createGain();
-    
+
     osc1.connect(gainNode);
     osc2.connect(gainNode);
     gainNode.connect(audioContext.destination);
-    
+
     // Bell-like frequencies
     osc1.frequency.value = 800;
     osc2.frequency.value = 1200;
     osc1.type = 'sine';
     osc2.type = 'sine';
-    
+
     gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
     gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.6);
-    
+
     osc1.start(audioContext.currentTime);
     osc2.start(audioContext.currentTime);
-    
+
     osc1.stop(audioContext.currentTime + 0.6);
     osc2.stop(audioContext.currentTime + 0.6);
   } catch (error) {
@@ -68,8 +68,14 @@ export const useNotificationAlert = (options: NotificationAlertOptions = {}) => 
         },
       });
 
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        // Silently fail if not JSON (likely HTML error page)
+        return;
+      }
+
       if (!response.ok) {
-        console.error("Failed to fetch notifications");
+        // console.error("Failed to fetch notifications"); // optional: quiet logging
         return;
       }
 
