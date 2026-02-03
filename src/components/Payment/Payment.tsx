@@ -180,12 +180,30 @@ const Payment: React.FC = () => {
             />
 
             {amount && !isNaN(Number(amount)) && (
-              <div className="mb-4 bg-slate-800 p-3 rounded-lg border border-slate-700">
-                <p className="text-xs text-slate-400 mb-1">Estimated Conversion (Rate: ₦{exchangeRate}/$1)</p>
-                <div className="flex justify-between items-center">
-                  <span className="font-bold text-lg text-white">${Number(amount).toLocaleString()} USD</span>
-                  <span className="text-slate-500">→</span>
-                  <span className="font-bold text-lg text-yellow-400">₦{(Number(amount) * exchangeRate).toLocaleString()} NGN</span>
+              <div className="mb-6 bg-slate-800/50 backdrop-blur-md p-5 rounded-2xl border border-yellow-500/20 shadow-xl">
+                <p className="text-sm text-slate-300 font-bold mb-3 flex items-center gap-2">
+                  <span className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></span>
+                  Deposit Calculation
+                </p>
+                <div className="space-y-3">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-400">Wallet Credit (USD):</span>
+                    <span className="font-bold text-white">${Number(amount).toLocaleString()} USD</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-400">Deposit Rate:</span>
+                    <span className="font-bold text-slate-300">₦{exchangeRate.toLocaleString()} / $1</span>
+                  </div>
+                  <div className="flex justify-between text-sm border-t border-slate-700 pt-2">
+                    <span className="text-slate-400">Additional Fees:</span>
+                    <span className="font-bold text-green-400">₦0.00</span>
+                  </div>
+                  <div className="flex justify-between items-center bg-yellow-500/5 p-3 rounded-xl mt-2 border border-yellow-500/10">
+                    <span className="text-yellow-500 font-bold">Total NGN to Pay:</span>
+                    <span className="text-2xl font-black text-yellow-400">
+                      ₦{(Number(amount) * exchangeRate).toLocaleString()}
+                    </span>
+                  </div>
                 </div>
               </div>
             )}

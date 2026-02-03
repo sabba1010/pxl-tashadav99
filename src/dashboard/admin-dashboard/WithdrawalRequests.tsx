@@ -71,8 +71,11 @@ const WithdrawalModal: React.FC<WithdrawalModalProps> = ({
       <DialogContent dividers>
         <Stack direction="row" spacing={2} mb={3}>
           <Box sx={{ flex: 1, p: 2, bgcolor: "#EEF2FF", border: "1px solid #C7D2FE", borderRadius: 2, textAlign: 'center' }}>
-            <Typography variant="caption" fontWeight={700} color="#4338CA">REQUESTED AMOUNT</Typography>
-            <Typography variant="h5" fontWeight={800} color="#3730A3">{request.amount} {request.currency}</Typography>
+            <Typography variant="caption" fontWeight={700} color="#4338CA">PAYOUT AMOUNT (NGN)</Typography>
+            <Typography variant="h5" fontWeight={800} color="#3730A3">
+              ₦{((request as any).amountNGN || Math.round(Number(request.amount) * 1400)).toLocaleString()}
+            </Typography>
+            <Typography variant="caption" sx={{ opacity: 0.7 }}>(${request.amount} USD)</Typography>
           </Box>
           <Box sx={{ flex: 1, p: 2, bgcolor: "#ECFDF5", border: "1px solid #A7F3D0", borderRadius: 2, textAlign: 'center' }}>
             <Typography variant="caption" fontWeight={700} color="#047857">SELLER BALANCE</Typography>
@@ -98,7 +101,7 @@ const WithdrawalModal: React.FC<WithdrawalModalProps> = ({
             }}
           >
             <MenuItem value="pending">Pending</MenuItem>
-            <MenuItem value="approved">Approve & Pay</MenuItem>
+            <MenuItem value="approved">Approve (Manual Pay Done)</MenuItem>
             <MenuItem value="declined">Decline</MenuItem>
           </Select>
         </FormControl>
@@ -148,7 +151,11 @@ const DetailsModal: React.FC<{ request: WithdrawalRequest | null; onClose: () =>
             <Typography sx={{ fontSize: 12, fontWeight: 700, color: "#64748B", mb: 1.5 }}>BANK ACCOUNT DETAILS</Typography>
             <Typography sx={{ fontSize: 13 }}><strong>Method:</strong> {request.paymentMethod}</Typography>
             <Typography sx={{ fontSize: 13 }}><strong>Account:</strong> {request.accountNumber}</Typography>
+            <Typography sx={{ fontSize: 13 }}><strong>Bank Name:</strong> {request.bankName || "N/A"}</Typography>
             <Typography sx={{ fontSize: 13 }}><strong>Bank Code:</strong> {request.bankCode}</Typography>
+            <Typography sx={{ fontSize: 13, mt: 1, color: "#047857", fontWeight: 700 }}>
+              <strong>NGN Payout:</strong> ₦{((request as any).amountNGN || Math.round(Number(request.amount) * 1400)).toLocaleString()}
+            </Typography>
           </Box>
         </Box>
       </DialogContent>

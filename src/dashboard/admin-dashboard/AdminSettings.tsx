@@ -263,6 +263,34 @@ const AdminSettings: React.FC = () => {
               </div>
             </form>
 
+            {/* Profit Strategy Visualization */}
+            <div className="rounded-xl bg-indigo-900 p-5 text-white shadow-lg border border-indigo-400/30">
+              <h4 className="flex items-center gap-2 font-bold text-indigo-100 mb-4">
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-indigo-500 text-[10px]">i</span>
+                Your Profit Logic
+              </h4>
+              <div className="space-y-3">
+                <div className="flex justify-between text-sm">
+                  <span className="text-indigo-200">Deposit Rate (User Pays):</span>
+                  <span className="font-mono">₦{depositRate} / $1</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-indigo-200">Withdrawal Rate (You Pay):</span>
+                  <span className="font-mono">₦{withdrawRate} / $1</span>
+                </div>
+                <div className="my-2 border-t border-indigo-700/50 pt-2 flex justify-between">
+                  <span className="font-bold text-green-400">Your Profit (Spread):</span>
+                  <span className="font-black text-green-400">
+                    ₦{(Number(depositRate || 0) - Number(withdrawRate || 0)).toLocaleString()} per $1
+                  </span>
+                </div>
+                <p className="text-[10px] text-indigo-300 leading-relaxed">
+                  Profit is generated automatically from the spread between deposit and withdrawal rates.
+                  No additional percentage fees are charged to users.
+                </p>
+              </div>
+            </div>
+
             <form onSubmit={handleSaveFee} className="rounded-lg border border-gray-200 bg-gray-50 p-4">
               <div>
                 <label htmlFor="fee" className="block text-sm font-medium text-gray-700">

@@ -358,16 +358,30 @@ const WithdrawForm: React.FC = () => {
               step="0.01"
             />
             {formData.amount && !isNaN(Number(formData.amount)) && (
-              <div className="mt-2 bg-blue-50 p-2 rounded-lg border border-blue-100">
-                <p className="text-xs text-blue-800 font-semibold mb-1">
-                  You Receive (Rate: ₦{withdrawRate}/$1)
+              <div className="mt-4 bg-white/50 backdrop-blur-sm p-5 rounded-2xl border border-[#D4A017]/20 shadow-inner">
+                <p className="text-sm text-[#0A1D37] font-bold mb-3 flex items-center gap-2">
+                  <span className="w-2 h-2 bg-[#D4A017] rounded-full animate-pulse"></span>
+                  Calculation Summary
                 </p>
-                <div className="flex justify-between items-center">
-                  <span className="font-bold text-gray-700">${Number(formData.amount).toLocaleString()}</span>
-                  <span className="text-gray-400">→</span>
-                  <span className="font-bold text-xl text-green-600">
-                    ₦{(Number(formData.amount) * withdrawRate).toLocaleString()}
-                  </span>
+                <div className="space-y-3">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-500">Withdrawal Amount:</span>
+                    <span className="font-bold text-gray-800">${Number(formData.amount).toLocaleString()} USD</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-500">Processing Fee:</span>
+                    <span className="font-bold text-green-600">$0.00 (0%)</span>
+                  </div>
+                  <div className="flex justify-between text-sm border-t border-gray-100 pt-2">
+                    <span className="text-gray-500">Exchange Rate:</span>
+                    <span className="font-bold text-gray-800">₦{withdrawRate.toLocaleString()} / $1</span>
+                  </div>
+                  <div className="flex justify-between items-center bg-[#0A1D37]/5 p-3 rounded-xl mt-2">
+                    <span className="text-[#0A1D37] font-bold">You Receive:</span>
+                    <span className="text-2xl font-black text-[#D4A017]">
+                      ₦{(Number(formData.amount) * withdrawRate).toLocaleString()}
+                    </span>
+                  </div>
                 </div>
               </div>
             )}
@@ -529,8 +543,11 @@ const WithdrawForm: React.FC = () => {
             : "bg-gradient-to-r from-[#0A1D37] to-[#1a3a63] hover:from-[#D4A017] hover:to-[#f0b90b] hover:text-[#0A1D37]"
             }`}
         >
-          {loading ? "Processing Payout..." : "WITHDRAW NOW (INSTANT - 0% FEE)"}
+          {loading ? "Submitting Request..." : "SUBMIT WITHDRAWAL REQUEST"}
         </button>
+        <p className="text-center text-sm text-gray-500 mt-4">
+          All withdrawals are reviewed and processed manually by the administrator within 1-24 hours.
+        </p>
       </form>
     </div>
   );
