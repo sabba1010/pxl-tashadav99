@@ -417,7 +417,7 @@ export default function Navbar() {
 
       {/* Mobile Bottom Nav */}
       <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 lg:hidden">
-        <div className="flex items-end justify-between h-20 px-4">
+        <div className="flex items-end justify-between h-20 px-4 overflow-x-auto">
           <NavLink to="/marketplace" className="flex flex-col items-center justify-center flex-1 pb-5" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}><ShoppingBag /><span className="text-xs">Marketplace</span></NavLink>
           <NavLink to="/purchases" className="flex flex-col items-center justify-center flex-1 pb-5" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}><ShoppingCart /><span className="text-xs">Purchases</span></NavLink>
           <button onClick={handleSellProduct} className="flex flex-col items-center justify-center flex-1 pb-5 bg-transparent border-0" style={{ color: CHARCOAL, cursor: "pointer" }}><FaBreadSliceIcon className="w-5 h-5 mb-1" /><span className="text-xs">Sell</span></button>
@@ -426,6 +426,9 @@ export default function Navbar() {
           )}
           {loginUser && (
             <NavLink to="/wallet" className="flex flex-col items-center justify-center flex-1 pb-5" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}><WalletMinimal /><span className="text-xs">Wallet</span></NavLink>
+          )}
+          {(loginUser?.role === "seller") && (
+            <NavLink to="/seller-chat" className="flex flex-col items-center justify-center flex-1 pb-5" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" /></svg><span className="text-xs">Support</span></NavLink>
           )}
         </div>
       </nav>
