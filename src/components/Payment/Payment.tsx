@@ -176,8 +176,14 @@ const Payment: React.FC = () => {
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               placeholder="Enter amount"
-              className="w-full p-3 mb-4 bg-slate-800 rounded"
+              className="w-full p-3 mb-2 bg-slate-800 rounded"
             />
+
+            {amount && !isNaN(Number(amount)) && (
+              <p className="text-sm text-yellow-400 mb-4 font-mono font-medium">
+                ≈ ₦{(Number(amount) * exchangeRate).toLocaleString()}
+              </p>
+            )}
 
             <div className="flex gap-2 mb-4">
               {quickAmounts.map((q) => (

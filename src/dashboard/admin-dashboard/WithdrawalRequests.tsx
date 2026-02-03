@@ -243,9 +243,9 @@ const WithdrawalRequests: React.FC = () => {
     <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: "#F8FAFC", minHeight: "100vh" }}>
       <Paper sx={{ p: 3, mb: 4, borderRadius: 3 }}>
         <Box display="flex" justifyContent="space-between" alignItems="center">
-          <Typography fontWeight={800}>Withdrawal Requests ({filteredRequests.length})</Typography>
+          <Typography fontWeight={800}>Withdrawal History ({filteredRequests.length})</Typography>
           <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
-            <Tooltip title="Refresh requests">
+            <Tooltip title="Refresh list">
               <IconButton onClick={() => { setCurrentPage(1); refetch(); }} sx={{ width: 44, height: 44, background: "linear-gradient(135deg,#33ac6f,#2a8e5b)", color: "#fff", borderRadius: "12px" }}>
                 {loading ? <CircularProgress size={18} sx={{ color: '#fff' }} /> : <Refresh fontSize="small" />}
               </IconButton>
@@ -287,7 +287,18 @@ const WithdrawalRequests: React.FC = () => {
                   <TableCell>{req.paymentMethod}</TableCell>
                   <TableCell>{req.amount} {req.currency}</TableCell>
                   <TableCell>
-                    <Box sx={{ px: 2, py: 0.6, borderRadius: 2, fontSize: 13, fontWeight: 600, display: 'inline-block', bgcolor: req.status === "pending" ? "#FEF9C3" : req.status === "success" ? "#DCFCE7" : "#FEE2E2", color: req.status === "pending" ? "#92400E" : "#166534" }}>{req.status}</Box>
+                    <Box sx={{
+                      px: 2,
+                      py: 0.6,
+                      borderRadius: 2,
+                      fontSize: 13,
+                      fontWeight: 600,
+                      display: 'inline-block',
+                      bgcolor: (req.status === "pending" || req.status === "processing") ? "#FEF9C3" : (req.status === "success" || req.status === "approved" || req.status === "completed") ? "#DCFCE7" : "#FEE2E2",
+                      color: (req.status === "pending" || req.status === "processing") ? "#92400E" : (req.status === "success" || req.status === "approved" || req.status === "completed") ? "#166534" : "#991B1B"
+                    }}>
+                      {req.status}
+                    </Box>
                   </TableCell>
                   <TableCell>{req.sellerReportsCount}</TableCell>
                   <TableCell>{req.unfinishedOrdersCount}</TableCell>
@@ -340,8 +351,20 @@ const WithdrawalRequests: React.FC = () => {
             headers: { "Content-Type": "application/json" },
             body: status === "declined" ? JSON.stringify({ reason }) : null
           });
-          if (res.ok) { refetch(); setSelectedRequest(null); }
-        } finally { setActionLoading(false); }
+
+          if (res.ok) {
+            refetch();
+            setSelectedRequest(null);
+          } else {
+            const errorData = await res.json();
+            alert(errorData.message + (errorData.error ? ": " + errorData.error : ""));
+          }
+        } catch (err) {
+          console.error(err);
+          alert("Network error. Payout might have failed.");
+        } finally {
+          setActionLoading(false);
+        }
       }} />}
 
       {detailsRequest && <DetailsModal request={detailsRequest} onClose={() => setDetailsRequest(null)} />}

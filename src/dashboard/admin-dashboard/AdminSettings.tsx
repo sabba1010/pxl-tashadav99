@@ -7,17 +7,14 @@ type Msg = { text: string; type?: "success" | "error" | "info" } | null;
 const AdminSettings: React.FC = () => {
   const [fee, setFee] = useState<number | "">("");
   const [buyerDepositRate, setBuyerDepositRate] = useState<number | "">("");
-  const [sellerWithdrawalRate, setSellerWithdrawalRate] = useState<number | "">("");
   const [depositRate, setDepositRate] = useState<number | "">("");
   const [withdrawRate, setWithdrawRate] = useState<number | "">("");
   const [feeLoading, setFeeLoading] = useState(false);
   const [buyerLoading, setBuyerLoading] = useState(false);
-  const [sellerLoading, setSellerLoading] = useState(false);
   const [depositLoading, setDepositLoading] = useState(false);
   const [withdrawLoading, setWithdrawLoading] = useState(false);
   const [feeMessage, setFeeMessage] = useState<Msg>(null);
   const [buyerMessage, setBuyerMessage] = useState<Msg>(null);
-  const [sellerMessage, setSellerMessage] = useState<Msg>(null);
   const [depositMessage, setDepositMessage] = useState<Msg>(null);
   const [withdrawMessage, setWithdrawMessage] = useState<Msg>(null);
 
@@ -30,7 +27,6 @@ const AdminSettings: React.FC = () => {
         const s = data?.settings || {};
         setFee(s.registrationFee ?? 15);
         setBuyerDepositRate(s.buyerDepositRate ?? 0);
-        setSellerWithdrawalRate(s.sellerWithdrawalRate ?? 0);
         setDepositRate(s.depositRate ?? s.ngnToUsdRate ?? 1500);
         setWithdrawRate(s.withdrawRate ?? 1400);
       } catch (err) {
@@ -100,35 +96,7 @@ const AdminSettings: React.FC = () => {
     }
   };
 
-  const handleSaveSeller = async (e?: React.FormEvent) => {
-    e?.preventDefault();
-    setSellerMessage(null);
-    if (sellerWithdrawalRate === "" || isNaN(Number(sellerWithdrawalRate)) || Number(sellerWithdrawalRate) < 0 || Number(sellerWithdrawalRate) > 100) {
-      setSellerMessage({ text: "Seller withdrawal rate must be between 0 and 100", type: "error" });
-      return;
-    }
-    setSellerLoading(true);
-    try {
-      const res = await fetch(`${API_URL}/api/settings`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sellerWithdrawalRate: Number(sellerWithdrawalRate) }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setSellerMessage({ text: `Seller withdrawal rate saved`, type: "success" });
-        const s = data.settings || {};
-        setSellerWithdrawalRate(s.sellerWithdrawalRate ?? Number(sellerWithdrawalRate));
-      } else {
-        setSellerMessage({ text: data.message || "Save failed", type: "error" });
-      }
-    } catch (err) {
-      console.error(err);
-      setSellerMessage({ text: "Network error. Try again.", type: "error" });
-    } finally {
-      setSellerLoading(false);
-    }
-  };
+
 
   const handleSaveDepositRate = async (e?: React.FormEvent) => {
     e?.preventDefault();

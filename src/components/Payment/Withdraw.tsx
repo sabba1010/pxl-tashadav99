@@ -57,11 +57,11 @@ const WithdrawForm: React.FC = () => {
   useEffect(() => {
     const fetchSavedBankAccount = async () => {
       if (!data?._id) return;
-      
+
       try {
         const response = await fetch(`http://localhost:3200/api/user/get-bank-account/${data._id}`);
         const result = await response.json();
-        
+
         if (result.success && result.bankDetails) {
           setSavedBankAccount(result.bankDetails);
         }
@@ -280,11 +280,10 @@ const WithdrawForm: React.FC = () => {
 
       {message.text && (
         <div
-          className={`mb-8 p-6 rounded-2xl text-center font-bold text-lg shadow-md ${
-            message.type === "success"
+          className={`mb-8 p-6 rounded-2xl text-center font-bold text-lg shadow-md ${message.type === "success"
               ? "bg-green-50 text-green-700 border-2 border-green-200"
               : "bg-red-50 text-red-700 border-2 border-red-200"
-          }`}
+            }`}
         >
           {message.text}
         </div>
@@ -425,7 +424,7 @@ const WithdrawForm: React.FC = () => {
                 className="w-full px-6 py-4 border-2 border-gray-300 rounded-xl focus:border-[#D4A017] transition"
                 required={paymentMethod === "localbank"}
               />
-              
+
               <button
                 type="button"
                 onClick={handleSaveBankAccount}
@@ -473,7 +472,7 @@ const WithdrawForm: React.FC = () => {
             value={formData.note}
             onChange={handleChange}
             rows={4}
-            placeholder="Any message for admin..."
+            placeholder="Optional note for your records..."
             className="w-full px-6 py-5 border-2 border-gray-200 rounded-xl focus:border-[#D4A017] focus:ring-4 focus:ring-[#D4A017]/20 resize-none transition"
           />
         </div>
@@ -482,13 +481,12 @@ const WithdrawForm: React.FC = () => {
         <button
           type="submit"
           disabled={loading}
-          className={`w-full py-6 text-white text-2xl font-black rounded-2xl shadow-2xl transition-all transform hover:scale-[1.02] active:scale-98 ${
-            loading
+          className={`w-full py-6 text-white text-2xl font-black rounded-2xl shadow-2xl transition-all transform hover:scale-[1.02] active:scale-98 ${loading
               ? "bg-gray-500 cursor-not-allowed"
               : "bg-gradient-to-r from-[#0A1D37] to-[#1a3a63] hover:from-[#D4A017] hover:to-[#f0b90b] hover:text-[#0A1D37]"
-          }`}
+            }`}
         >
-          {loading ? "Processing..." : "SUBMIT WITHDRAWAL REQUEST"}
+          {loading ? "Processing Payout..." : "WITHDRAW NOW (INSTANT - 0% FEE)"}
         </button>
       </form>
     </div>
