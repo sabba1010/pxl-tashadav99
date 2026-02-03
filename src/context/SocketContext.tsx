@@ -36,7 +36,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const userId = Cookies.get("userEmail") || localStorage.getItem("userEmail"); // Adjust based on actual auth implementation
 
     useEffect(() => {
-        const newSocket = io("http://localhost:3200"); // Adjust URL for production
+        const newSocket = io("https://tasha-vps-backend-2.onrender.com"); // Adjust URL for production
         setSocket(newSocket);
 
         newSocket.on('connect', () => {
@@ -81,7 +81,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     const fetchInitialCounts = async (uid: string) => {
         try {
-            const res = await axios.get<Record<string, number>>(`http://localhost:3200/chat/unread/counts/${uid}`);
+            const res = await axios.get<Record<string, number>>(`https://tasha-vps-backend-2.onrender.com/chat/unread/counts/${uid}`);
             const counts = res.data; // Now correctly inferred as Record<string, number>
             const countMap = new Map<string, number>();
             Object.keys(counts).forEach(key => {
@@ -103,7 +103,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
         if (socket && userId) {
             // Also call API
-            axios.post(`http://localhost:3200/chat/mark-read`, { userId, orderId })
+            axios.post(`https://tasha-vps-backend-2.onrender.com/chat/mark-read`, { userId, orderId })
                 .catch(err => console.error(err));
         }
     };

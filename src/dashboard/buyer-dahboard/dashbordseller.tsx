@@ -97,10 +97,10 @@
 //       setLoading(true);
 //       try {
 //         const [prodRes, purchaseRes, ratingsRes, referralRes] = await Promise.all([
-//           axios.get<any[]>("http://localhost:3200/product/all-sells"),
-//           axios.get<any[]>("http://localhost:3200/purchase/getall", { params: { email: user.email, role: 'seller' } }),
-//           axios.get<any>(`http://localhost:3200/rating/seller/${user.email}`),
-//           axios.get<any>("http://localhost:3200/referral/stats", { params: { email: user.email } }),
+//           axios.get<any[]>("https://tasha-vps-backend-2.onrender.com/product/all-sells"),
+//           axios.get<any[]>("https://tasha-vps-backend-2.onrender.com/purchase/getall", { params: { email: user.email, role: 'seller' } }),
+//           axios.get<any>(`https://tasha-vps-backend-2.onrender.com/rating/seller/${user.email}`),
+//           axios.get<any>("https://tasha-vps-backend-2.onrender.com/referral/stats", { params: { email: user.email } }),
 //         ]);
 
 //         const myProducts = (prodRes.data || []).filter((p: any) => p.userEmail === user.email);
@@ -250,7 +250,7 @@
 //   useEffect(() => {
 //     const fetchReports = async () => {
 //       try {
-//         const res = await axios.get("http://localhost:3200/purchase/report/getall");
+//         const res = await axios.get("https://tasha-vps-backend-2.onrender.com/purchase/report/getall");
         
 //         if (res.data && Array.isArray(res.data)) {
 //           // Filter reports for this user if needed (by email or role as seller)
@@ -1126,10 +1126,10 @@ const DashboardSeller: React.FC = () => {
       setLoading(true);
       try {
         const [prodRes, purchaseRes, ratingsRes, referralRes] = await Promise.all([
-          axios.get<any[]>("http://localhost:3200/product/all-sells"),
-          axios.get<any[]>("http://localhost:3200/purchase/getall", { params: { email: user.email, role: 'seller' } }),
-          axios.get<any>(`http://localhost:3200/rating/seller/${user.email}`),
-          axios.get<any>("http://localhost:3200/referral/stats", { params: { email: user.email } }),
+          axios.get<any[]>("https://tasha-vps-backend-2.onrender.com/product/all-sells"),
+          axios.get<any[]>("https://tasha-vps-backend-2.onrender.com/purchase/getall", { params: { email: user.email, role: 'seller' } }),
+          axios.get<any>(`https://tasha-vps-backend-2.onrender.com/rating/seller/${user.email}`),
+          axios.get<any>("https://tasha-vps-backend-2.onrender.com/referral/stats", { params: { email: user.email } }),
         ]);
 
         const myProducts = (prodRes.data || []).filter((p: any) => p.userEmail === user.email);
@@ -1251,7 +1251,7 @@ const DashboardSeller: React.FC = () => {
   useEffect(() => {
     const fetchReports = async () => {
       try {
-        const res = await axios.get("http://localhost:3200/purchase/report/getall");
+        const res = await axios.get("https://tasha-vps-backend-2.onrender.com/purchase/report/getall");
         if (res.data && Array.isArray(res.data)) {
           const userReports = res.data.filter((report: any) =>
             report.sellerEmail === user?.email || report.reportedToEmail === user?.email

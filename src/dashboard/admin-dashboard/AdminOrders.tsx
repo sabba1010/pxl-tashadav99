@@ -26,7 +26,7 @@ import ChatWindow from "../../components/Chat/ChatWindow";
 import { useAuthHook } from "../../hook/useAuthHook";
 import { toast } from "sonner";
 
-const BASE_URL = "http://localhost:3200";
+const BASE_URL = "https://tasha-vps-backend-2.onrender.com";
 
 interface Order {
     _id: string;
