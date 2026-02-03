@@ -15,7 +15,7 @@ type Ad = {
   userEmail?: string;
 };
 
-const API = "https://tasha-vps-backend-2.onrender.com";
+const API = "http://localhost:3200";
 
 const ActiveListings: React.FC = () => {
   const { user } = useAuth();

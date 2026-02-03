@@ -38,7 +38,7 @@ const Post: React.FC = () => {
 
     try {
       const res = await axios.post(
-        "https://tasha-vps-backend-2.onrender.com/api/notification/notify",
+        "http://localhost:3200/api/notification/notify",
         formData
       );
 
