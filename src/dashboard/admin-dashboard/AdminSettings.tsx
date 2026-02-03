@@ -168,7 +168,53 @@ const AdminSettings: React.FC = () => {
           </div>
 
           <div className="p-6 space-y-6">
-            <div className="bg-gradient-to-r from-green-50 to-emerald-50 -mx-6 -mt-6 px-8 py-4 border-b border-gray-100">
+            <form onSubmit={handleSaveFee} className="rounded-xl border-2 border-indigo-100 bg-indigo-50/30 p-5 shadow-sm">
+              <div className="flex flex-col gap-1 mb-4">
+                <label htmlFor="fee" className="text-sm font-extrabold text-indigo-900 flex items-center gap-2">
+                  Registration / Activation Fee (USD)
+                </label>
+                <p className="text-xs text-indigo-600 font-medium">This is the one-time fee new sellers must pay to activate their account.</p>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <div className="relative flex-1 max-w-[200px]">
+                  <span className="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-500 font-bold">$</span>
+                  <input
+                    id="fee"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={fee as any}
+                    onChange={(e) => setFee(e.target.value === "" ? "" : Number(e.target.value))}
+                    placeholder="15.00"
+                    className="block w-full rounded-xl border-2 border-indigo-100 bg-white px-10 py-3 text-lg font-bold text-gray-900 shadow-inner focus:border-indigo-500 focus:ring-0 transition-colors"
+                    disabled={feeLoading}
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={feeLoading}
+                  className="h-[52px] inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-6 py-2 text-sm font-bold text-white shadow-lg hover:bg-indigo-700 active:scale-95 disabled:opacity-60 transition-all font-inter"
+                >
+                  {feeLoading ? (
+                    <svg className="h-4 w-4 animate-spin text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8h8a8 8 0 01-16 0z" />
+                    </svg>
+                  ) : null}
+                  <span>{feeLoading ? "Saving..." : "Save Fee"}</span>
+                </button>
+              </div>
+
+              {feeMessage && (
+                <div className={`mt-3 px-3 py-1.5 rounded-lg text-xs font-bold inline-block ${feeMessage.type === "success" ? "bg-green-100 text-green-700 border border-green-200" : "bg-red-100 text-red-700 border border-red-200"}`}>
+                  {feeMessage.text}
+                </div>
+              )}
+            </form>
+
+            <div className="bg-gradient-to-r from-green-50 to-emerald-50 -mx-6 px-8 py-4 border-y border-gray-100">
               <h3 className="text-xl font-bold text-gray-900">Exchange Rates (USD ⇄ NGN)</h3>
               <p className="text-xs text-gray-600">Control currency conversion for deposits and withdrawals</p>
             </div>
@@ -291,49 +337,6 @@ const AdminSettings: React.FC = () => {
               </div>
             </div>
 
-            <form onSubmit={handleSaveFee} className="rounded-lg border border-gray-200 bg-gray-50 p-4">
-              <div>
-                <label htmlFor="fee" className="block text-sm font-medium text-gray-700">
-                  Registration / Activation Fee
-                </label>
-                <div className="relative mt-2">
-                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">$</span>
-                  <input
-                    id="fee"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    value={fee as any}
-                    onChange={(e) => setFee(e.target.value === "" ? "" : Number(e.target.value))}
-                    placeholder="15.00"
-                    className="block w-full rounded-xl border border-gray-200 bg-white px-10 py-3 text-base text-gray-800 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
-                    disabled={feeLoading}
-                  />
-                </div>
-              </div>
-
-              <div className="mt-4 flex items-center gap-4">
-                <button
-                  type="submit"
-                  disabled={feeLoading}
-                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-md hover:from-indigo-700 hover:to-blue-700 disabled:opacity-60"
-                >
-                  {feeLoading ? (
-                    <svg className="h-4 w-4 animate-spin text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8h8a8 8 0 01-16 0z" />
-                    </svg>
-                  ) : null}
-                  <span>{feeLoading ? "Saving..." : "Save Changes"}</span>
-                </button>
-
-                {feeMessage && (
-                  <p className={`text-sm font-medium ${feeMessage.type === "success" ? "text-green-700" : "text-red-700"}`}>
-                    {feeMessage.text}
-                  </p>
-                )}
-              </div>
-            </form>
             {/* 
 
     <div className="grid grid-cols-1 gap-4">
