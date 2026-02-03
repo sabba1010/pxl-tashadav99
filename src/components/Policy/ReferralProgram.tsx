@@ -12,7 +12,7 @@
 
 // const ReferralProgram: React.FC = () => {
 //   const { data } = useAuthHook();
-//   const referralLink = `https://dashing-zuccutto-cb094a.netlify.app/register?ref=${data?.referralCode}`;
+//   const referralLink = `http://localhost:3000/register?ref=${data?.referralCode}`;
 
 //   const [copied, setCopied] = React.useState(false);
 
@@ -151,7 +151,7 @@ import { useAuthHook } from "../../hook/useAuthHook";
 
 const ReferralProgram: React.FC = () => {
   const { data } = useAuthHook();
-  const referralLink = `https://dashing-zuccutto-cb094a.netlify.app/register?ref=${data?.referralCode}`;
+  const referralLink = `http://localhost:3000/register?ref=${data?.referralCode}`;
 
   const [copied, setCopied] = React.useState(false);
 
@@ -184,7 +184,7 @@ const ReferralProgram: React.FC = () => {
           </h1>
 
           <p className="text-xl sm:text-2xl text-gray-600 max-w-3xl mx-auto leading-relaxed font-light">
-            Share your unique link → Friend signs up & completes first $50+ trade →  
+            Share your unique link → Friend signs up & completes first $50+ trade →
             <span className="font-medium text-gray-800"> both instantly receive $5</span> in wallet credit.
           </p>
         </div>
@@ -229,11 +229,10 @@ const ReferralProgram: React.FC = () => {
 
             <button
               onClick={handleCopy}
-              className={`mt-8 w-full sm:w-auto mx-auto px-10 py-5 rounded-2xl font-bold text-lg transition-all duration-300 flex items-center justify-center gap-3 shadow-lg ${
-                copied
+              className={`mt-8 w-full sm:w-auto mx-auto px-10 py-5 rounded-2xl font-bold text-lg transition-all duration-300 flex items-center justify-center gap-3 shadow-lg ${copied
                   ? "bg-green-600 hover:bg-green-700 scale-105"
                   : "bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 hover:scale-105"
-              } text-white`}
+                } text-white`}
             >
               {copied ? (
                 <>

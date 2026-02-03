@@ -8,12 +8,15 @@ const AdminSettings: React.FC = () => {
   const [fee, setFee] = useState<number | "">("");
   const [buyerDepositRate, setBuyerDepositRate] = useState<number | "">("");
   const [sellerWithdrawalRate, setSellerWithdrawalRate] = useState<number | "">("");
+  const [ngnRate, setNgnRate] = useState<number | "">("");
   const [feeLoading, setFeeLoading] = useState(false);
   const [buyerLoading, setBuyerLoading] = useState(false);
   const [sellerLoading, setSellerLoading] = useState(false);
+  const [ngnLoading, setNgnLoading] = useState(false);
   const [feeMessage, setFeeMessage] = useState<Msg>(null);
   const [buyerMessage, setBuyerMessage] = useState<Msg>(null);
   const [sellerMessage, setSellerMessage] = useState<Msg>(null);
+  const [ngnMessage, setNgnMessage] = useState<Msg>(null);
 
   useEffect(() => {
     const load = async () => {
@@ -25,6 +28,7 @@ const AdminSettings: React.FC = () => {
         setFee(s.registrationFee ?? 15);
         setBuyerDepositRate(s.buyerDepositRate ?? 0);
         setSellerWithdrawalRate(s.sellerWithdrawalRate ?? 0);
+        setNgnRate(s.ngnToUsdRate ?? 1500);
       } catch (err) {
         console.error(err);
       }
@@ -122,6 +126,36 @@ const AdminSettings: React.FC = () => {
     }
   };
 
+  const handleSaveNgnRate = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    setNgnMessage(null);
+    if (ngnRate === "" || isNaN(Number(ngnRate)) || Number(ngnRate) <= 0) {
+      setNgnMessage({ text: "Exchange rate must be greater than 0", type: "error" });
+      return;
+    }
+    setNgnLoading(true);
+    try {
+      const res = await fetch(`${API_URL}/api/settings`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ngnToUsdRate: Number(ngnRate) }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setNgnMessage({ text: `Exchange rate saved`, type: "success" });
+        const s = data.settings || {};
+        setNgnRate(s.ngnToUsdRate ?? Number(ngnRate));
+      } else {
+        setNgnMessage({ text: data.message || "Save failed", type: "error" });
+      }
+    } catch (err) {
+      console.error(err);
+      setNgnMessage({ text: "Network error. Try again.", type: "error" });
+    } finally {
+      setNgnLoading(false);
+    }
+  };
+
   return (
     <div className="w-full p-4 md:p-8">
       <div className="mx-auto max-w-md">
@@ -132,6 +166,50 @@ const AdminSettings: React.FC = () => {
           </div>
 
           <div className="p-6 space-y-6">
+            <form onSubmit={handleSaveFee} className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+              <div>
+                <label htmlFor="ngnRate" className="block text-sm font-medium text-gray-700">
+                  NGN to 1 USD Exchange Rate
+                </label>
+                <div className="relative mt-2">
+                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">₦</span>
+                  <input
+                    id="ngnRate"
+                    type="number"
+                    step="0.01"
+                    min="1"
+                    value={ngnRate as any}
+                    onChange={(e) => setNgnRate(e.target.value === "" ? "" : Number(e.target.value))}
+                    placeholder="1500.00"
+                    className="block w-full rounded-xl border border-gray-200 bg-white px-10 py-3 text-base text-gray-800 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+                    disabled={ngnLoading}
+                  />
+                </div>
+              </div>
+
+              <div className="mt-4 flex items-center gap-4">
+                <button
+                  type="submit"
+                  disabled={ngnLoading}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-md hover:from-green-700 hover:to-emerald-700 disabled:opacity-60"
+                >
+                  {ngnLoading ? (
+                    <svg className="h-4 w-4 animate-spin text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8h8a8 8 0 01-16 0z" />
+                    </svg>
+                  ) : null}
+                  <span>{ngnLoading ? "Saving..." : "Save Rate"}</span>
+                </button>
+
+                {ngnMessage && (
+                  <p className={`text-sm font-medium ${ngnMessage.type === "success" ? "text-green-700" : "text-red-700"}`}>
+                    {ngnMessage.text}
+                  </p>
+                )}
+              </div>
+            </form>
+
             <form onSubmit={handleSaveFee} className="rounded-lg border border-gray-200 bg-gray-50 p-4">
               <div>
                 <label htmlFor="fee" className="block text-sm font-medium text-gray-700">
