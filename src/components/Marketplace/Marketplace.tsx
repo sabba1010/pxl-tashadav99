@@ -317,7 +317,8 @@ const Stars: React.FC<{ value: number }> = ({ value }) => (
 const CategorySelector: React.FC<{
   selectedSubcats: SubcatState;
   setSelectedSubcats: React.Dispatch<React.SetStateAction<SubcatState>>;
-}> = ({ selectedSubcats, setSelectedSubcats }) => {
+  onFilterChange?: () => void;
+}> = ({ selectedSubcats, setSelectedSubcats, onFilterChange }) => {
   const [openMain, setOpenMain] = useState<Record<string, boolean>>({});
   const wrapperRef = useRef<HTMLDivElement>(null);
 
@@ -342,8 +343,12 @@ const CategorySelector: React.FC<{
         : [...currentList, sub];
       if (newList.length === 0) {
         const { [main]: _, ...rest } = prev;
+        // Trigger filter update after state changes
+        setTimeout(() => onFilterChange?.(), 0);
         return rest;
       }
+      // Trigger filter update after state changes
+      setTimeout(() => onFilterChange?.(), 0);
       return { ...prev, [main]: newList };
     });
   };
@@ -355,7 +360,10 @@ const CategorySelector: React.FC<{
           Account Category
         </span>
         <button
-          onClick={() => setSelectedSubcats({})}
+          onClick={() => {
+            setSelectedSubcats({});
+            onFilterChange?.();
+          }}
           className="text-xs text-[#0A1A3A] hover:underline"
         >
           Clear
@@ -929,6 +937,7 @@ const Marketplace: React.FC = () => {
                 className="pl-10 pr-4 py-2 border rounded-lg w-64 focus:outline-none focus:ring-2 focus:ring-[#33ac6f]"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                autoComplete="off"
               />
               <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             </div>
@@ -976,7 +985,10 @@ const Marketplace: React.FC = () => {
                     {filteredItems.map((item) => {
                       const IconComponent = typeof item.icon !== "string" ? (item.icon as React.ComponentType<any>) : null;
                       return (
-                        <div key={item.id} className="bg-[#F8FAFB] p-3 rounded-lg border cursor-pointer hover:shadow-md transition" onClick={() => setMobileSearchOpen(false)}>
+                        <div key={item.id} className="bg-[#F8FAFB] p-3 rounded-lg border cursor-pointer hover:shadow-md transition" onClick={() => {
+                          setSelectedItem(item);
+                          setMobileSearchOpen(false);
+                        }}>
                           <div className="flex gap-3">
                             <div className="flex-shrink-0 w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center">
                               {typeof item.icon === "string" ? (
@@ -1157,6 +1169,7 @@ const Marketplace: React.FC = () => {
           <CategorySelector
             selectedSubcats={selectedSubcats}
             setSelectedSubcats={setSelectedSubcats}
+            onFilterChange={() => setDrawerOpen(false)}
           />
           <div className="mt-8">
             <label className="font-semibold block mb-2">Max Price: ${priceRange}</label>
