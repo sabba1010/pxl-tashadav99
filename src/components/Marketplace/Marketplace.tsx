@@ -470,7 +470,7 @@ const ItemCard: React.FC<{
           {item.desc || "Premium account • Instant delivery"}
         </p>
         <div className="text-xs text-gray-400 mt-2">
-          Verified Seller •{" "}
+          <span className="font-medium text-[#0A1A3A]">{item.seller || "Verified Seller"}</span> •{" "}
           <span className="text-green-600">{item.delivery}</span>
         </div>
       </div>
@@ -556,7 +556,7 @@ const ProductModal: React.FC<{
 
             <div className="flex justify-between mt-2">
               <span>
-                Seller: <span className="font-medium">Verified Seller</span>
+                Seller: <span className="font-medium text-green-600">{item.seller || "Verified Seller"}</span>
               </span>
               <span>
                 Category: <span className="font-medium">{item.category}</span>
@@ -663,7 +663,7 @@ const Marketplace: React.FC = () => {
             title: p.name,
             desc: p.description,
             price: Number(p.price) || 0,
-            seller: p.userEmail,
+            seller: p.username || p.userEmail,
             delivery: p.deliveryType === 'manual' ? (p.deliveryTime || "Manual") : "Instant",
             deliveryType: p.deliveryType,
             deliveryTime: p.deliveryTime,
