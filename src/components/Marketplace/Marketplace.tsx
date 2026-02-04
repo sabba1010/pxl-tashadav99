@@ -879,7 +879,7 @@ const Marketplace: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F7F5F4] pb-10">
+    <div className="min-h-screen bg-[#F7F5F4] pb-16 md:pb-10">
       {showBanner && (
         <div className="bg-[#33ac6f] text-white px-4 py-3 flex justify-between items-center text-sm font-medium">
           <span>Black Friday is live! All prices discounted.</span>
@@ -889,8 +889,8 @@ const Marketplace: React.FC = () => {
         </div>
       )}
 
-      <div className="max-w-screen-2xl mx-auto px-4 py-6">
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+      <div className="max-w-screen-2xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
+        <div className="flex flex-wrap items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
           <div className="flex items-center gap-3">
             <button
               onClick={() => setDrawerOpen(true)}
@@ -1044,7 +1044,7 @@ const Marketplace: React.FC = () => {
               </div>
             ) : (
               <div
-                className={`grid gap-4 ${viewMode === "grid"
+                className={`grid gap-3 sm:gap-4 ${viewMode === "grid"
                   ? "grid-cols-1 sm:grid-cols-2 xl:grid-cols-3"
                   : "grid-cols-1"
                   }`}
