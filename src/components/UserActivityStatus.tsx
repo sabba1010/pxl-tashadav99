@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import axios from 'axios';
 import { useSocket } from '../context/SocketContext';
 
 interface UserActivityStatusProps {
@@ -6,19 +7,41 @@ interface UserActivityStatusProps {
     showText?: boolean;
 }
 
+interface StatusResponse {
+    online: boolean;
+    lastSeen: string;
+}
+
 const UserActivityStatus: React.FC<UserActivityStatusProps> = ({ userId, showText = true }) => {
-    const { onlineUsers } = useSocket();
+    const { onlineUsers, socket } = useSocket();
 
     const userStatus = onlineUsers.get(userId);
-    const isOnline = userStatus?.status === 'online';
-    const lastSeen = userStatus?.lastSeen;
+    const [fetchedStatus, setFetchedStatus] = React.useState<{ status: string, lastSeen: string } | null>(null);
+
+    React.useEffect(() => {
+        if (!userStatus && userId) {
+            axios.get<StatusResponse>(`http://localhost:3200/chat/status/${userId}`)
+                .then(res => {
+                    const data = res.data;
+                    setFetchedStatus({
+                        status: data.online ? 'online' : 'offline',
+                        lastSeen: data.lastSeen
+                    });
+                })
+                .catch(err => console.error("Failed to fetch user status", err));
+        }
+    }, [userId, userStatus]);
+
+    const finalStatus = userStatus || fetchedStatus;
+    const isOnline = finalStatus?.status === 'online';
+    const lastSeen = finalStatus?.lastSeen;
 
     const statusText = useMemo(() => {
         if (isOnline) return "Active now";
         if (!lastSeen) return "Offline";
 
         const date = new Date(lastSeen);
-        if (isNaN(date.getTime())) return "Offline";
+        if (isNaN(date.getTime()) || date.getTime() === 0) return "Offline";
 
         const now = new Date();
         const diffMs = now.getTime() - date.getTime();

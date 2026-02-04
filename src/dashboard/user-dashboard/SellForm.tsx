@@ -138,6 +138,18 @@ const SellForm: React.FC = () => {
     fetchPlatforms();
   }, []);
 
+  // Sync userEmail when user loads
+  useEffect(() => {
+    if (user?.email) {
+      setFormData((prev) => ({
+        ...prev,
+        userEmail: user.email,
+        userRole: user.role || "",
+        userAccountName: user.name || "",
+      }));
+    }
+  }, [user?.email, user?.role, user?.name]);
+
   // Fetch User's Sales Credit
   useEffect(() => {
     const fetchSalesCredit = async () => {
@@ -705,7 +717,7 @@ const SellForm: React.FC = () => {
                         mb: 3,
                       }}
                     >
-                      {["5 mins", "10 mins", "15 mins", "30 mins"].map((time) => (
+                      {["1 hour", "3 hours", "6 hours", "12 hours", "24 hours"].map((time) => (
                         <Button
                           key={time}
                           onClick={() => {
@@ -766,7 +778,7 @@ const SellForm: React.FC = () => {
                     {selectedDeliveryTime === "custom" && (
                       <TextField
                         fullWidth
-                        placeholder="e.g., 45 minutes, 2 hours, 1 day"
+                        placeholder="e.g., 2 hours, 12 hours, 48 hours"
                         value={customDeliveryTime}
                         onChange={(e) => {
                           setCustomDeliveryTime(e.target.value);
