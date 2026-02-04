@@ -11,6 +11,8 @@ type UserType = {
   _id: string;
   email: string;
   phone?: string;
+  role?: string;
+  createdAt?: string;
   referralCode?: string;
   referredBy?: string;
   referralStatus?: ReferralStatus;
@@ -45,9 +47,11 @@ const RefDetails = () => {
 
   const getReferrerInfo = (code?: string) => {
     const ref = allUsers.find((u) => u.referralCode === code);
+    const count = allUsers.filter((u) => u.referredBy === code).length;
     return {
       email: ref?.email || "N/A",
-      phone: ref?.phone || ""
+      phone: ref?.phone || "",
+      referralCount: count
     };
   };
 
@@ -222,8 +226,9 @@ const RefDetails = () => {
                         >
                           <MessageCircle size={13} /> {inviter.phone || "N/A"}
                         </button>
-                        <div className="mt-1">
-                          <span className="text-[10px] text-blue-500 font-mono font-bold bg-blue-50 px-1.5 rounded uppercase">CODE: {user.referredBy}</span>
+                        <div className="mt-1 flex flex-wrap gap-1">
+                          <span className="text-[10px] text-blue-500 font-mono font-bold bg-blue-50 px-1.5 py-0.5 rounded uppercase border border-blue-100">CODE: {user.referredBy}</span>
+                          <span className="text-[10px] text-purple-600 font-bold bg-purple-50 px-1.5 py-0.5 rounded border border-purple-100">REFS: {inviter.referralCount}</span>
                         </div>
                       </div>
                     </td>
@@ -245,6 +250,17 @@ const RefDetails = () => {
                         >
                           <MessageCircle size={13} /> {user.phone || "N/A"}
                         </button>
+                        <div className="mt-1 flex gap-1.5 items-center">
+                          <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${user.role === 'seller'
+                              ? 'bg-orange-50 text-orange-600 border-orange-100'
+                              : 'bg-teal-50 text-teal-600 border-teal-100'
+                            }`}>
+                            {user.role?.toUpperCase() || "BUYER"}
+                          </span>
+                          <span className="text-[10px] text-gray-400 font-medium">
+                            Joined: {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "N/A"}
+                          </span>
+                        </div>
                       </div>
                     </td>
 

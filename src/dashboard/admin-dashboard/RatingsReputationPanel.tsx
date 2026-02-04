@@ -41,8 +41,12 @@ interface Seller {
   email: string;
   rating: number;
   reviewsCount: number;
-  disputedCount: number;
-  status: "verified" | "warning" | "normal";
+  reportsCount: number;
+  disputesCount: number;
+  cancelledOrders: number;
+  completionRate: number;
+  reputationScore: number;
+  status: "verified" | "warning" | "normal" | "at_risk";
   recentReviews: Review[];
 }
 
@@ -61,56 +65,31 @@ const RatingsReputationPanel: React.FC = () => {
   const fetchAdminData = async () => {
     setLoading(true);
     try {
-      // TypeScript error সমাধান করতে generic type <{ ratings: BackendRating[] }> যোগ করা হয়েছে
-      const response = await axios.get<{ ratings: BackendRating[] }>("http://localhost:3200/rating/all/all");
-      const allRatings = response.data.ratings || [];
-
-      const groupedSellers: { [key: string]: Seller } = {};
-
-      allRatings.forEach((r) => {
-        const email = r.sellerEmail;
-        if (!groupedSellers[email]) {
-          groupedSellers[email] = {
-            id: email,
-            name: email.split("@")[0],
-            email: email,
-            rating: 0,
-            reviewsCount: 0,
-            disputedCount: 0,
-            status: "normal",
-            recentReviews: [],
-          };
-        }
-
-        const s = groupedSellers[email];
-        s.reviewsCount += 1;
-        s.rating += r.rating;
-
-        // ১ বা ২ স্টার রেটিংকে ডিসপিউট/অ্যাট রিস্ক হিসেবে গণ্য করা হচ্ছে
-        if (r.rating <= 2) {
-          s.disputedCount += 1;
-        }
-
-        s.recentReviews.push({
-          id: r._id,
-          buyer: r.buyerEmail,
-          rating: r.rating,
-          comment: r.message,
-          productName: r.productName,
-          date: new Date(r.createdAt).toLocaleDateString(),
-        });
-      });
-
-      const finalSellers = Object.values(groupedSellers).map(s => {
-        const avg = s.rating / s.reviewsCount;
-        return {
-          ...s,
-          rating: Number(avg.toFixed(1)),
-          status: avg >= 4.5 ? "verified" : (avg < 3 || s.disputedCount > 2) ? "warning" : "normal"
-        };
-      });
-
-      setSellers(finalSellers as Seller[]);
+      const response = await axios.get<{ success: boolean, data: any[] }>("http://localhost:3200/reputation/summary");
+      if (response.data.success) {
+        const mappedSellers: Seller[] = response.data.data.map(item => ({
+          id: item.sellerEmail,
+          name: item.sellerName,
+          email: item.sellerEmail,
+          rating: item.avgRating,
+          reviewsCount: item.totalReviews,
+          reportsCount: item.reportsCount,
+          disputesCount: item.disputesCount,
+          cancelledOrders: item.cancelledOrders,
+          completionRate: item.completionRate,
+          reputationScore: item.reputationScore,
+          status: item.status,
+          recentReviews: item.recentReviews.map((r: any) => ({
+            id: r._id,
+            buyer: r.buyerEmail,
+            rating: r.rating,
+            comment: r.message,
+            productName: r.productName,
+            date: new Date(r.createdAt).toLocaleDateString(),
+          }))
+        }));
+        setSellers(mappedSellers);
+      }
       setLastUpdated(new Date());
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -153,8 +132,8 @@ const RatingsReputationPanel: React.FC = () => {
     return sellers.filter(s => {
       const matchesSearch = s.email.toLowerCase().includes(q) || s.name.toLowerCase().includes(q);
       if (!matchesSearch) return false;
-      if (filter === "disputed") return s.disputedCount > 0;
-      if (filter === "top") return s.rating >= 4.5;
+      if (filter === "disputed") return s.reportsCount > 0 || s.disputesCount > 0;
+      if (filter === "top") return s.reputationScore >= 90;
       return true;
     });
   }, [searchTerm, filter, sellers]);
@@ -232,8 +211,10 @@ const RatingsReputationPanel: React.FC = () => {
             <TableRow>
               <TableCell sx={{ fontWeight: 700 }}>Seller Account</TableCell>
               <TableCell sx={{ fontWeight: 700 }}>Avg Rating</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Total Reviews</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Poor Reviews</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>Completion</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>Reports / Disputes</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>Unfinished</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>Reputation Score</TableCell>
               <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
               <TableCell sx={{ fontWeight: 700 }}>Management</TableCell>
             </TableRow>
@@ -248,19 +229,42 @@ const RatingsReputationPanel: React.FC = () => {
                     <Typography fontWeight={700}>{s.rating}</Typography>
                   </Box>
                 </TableCell>
-                <TableCell>{s.reviewsCount}</TableCell>
                 <TableCell>
-                  <Typography color={s.disputedCount > 0 ? "error.main" : "success.main"} fontWeight={700}>
-                    {s.disputedCount}
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Typography fontWeight={700}>{s.completionRate}%</Typography>
+                  </Box>
+                </TableCell>
+                <TableCell>
+                  <Box sx={{ display: 'flex', gap: 1 }}>
+                    <Typography color="error.main" fontWeight={700} title="Reports">{s.reportsCount}</Typography>
+                    <Typography color="text.secondary">/</Typography>
+                    <Typography color="error.dark" fontStyle="italic" fontWeight={800} title="Disputes/Refunds">{s.disputesCount}</Typography>
+                  </Box>
+                </TableCell>
+                <TableCell>
+                  <Typography color={s.cancelledOrders > 0 ? "error.main" : "text.secondary"}>
+                    {s.cancelledOrders}
                   </Typography>
+                </TableCell>
+                <TableCell>
+                  <Box sx={{ width: '100%', display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <Box sx={{ flexGrow: 1, height: 8, bgcolor: '#E2E8F0', borderRadius: 4, overflow: 'hidden' }}>
+                      <Box sx={{
+                        width: `${s.reputationScore}%`,
+                        height: '100%',
+                        bgcolor: s.reputationScore > 80 ? '#10B981' : s.reputationScore > 50 ? '#3B82F6' : s.reputationScore > 30 ? '#F59E0B' : '#EF4444'
+                      }} />
+                    </Box>
+                    <Typography fontWeight={900} color="#1E293B">{s.reputationScore}</Typography>
+                  </Box>
                 </TableCell>
                 <TableCell>
                   <Box sx={{
                     px: 1.5, py: 0.5, borderRadius: 5, fontSize: 11, fontWeight: 800,
-                    bgcolor: s.status === "verified" ? "#DCFCE7" : s.status === "warning" ? "#FEE2E2" : "#F1F5F9",
-                    color: s.status === "verified" ? "#166534" : s.status === "warning" ? "#991B1B" : "#475569"
+                    bgcolor: s.status === "verified" ? "#DCFCE7" : s.status === "warning" ? "#FEF3C7" : s.status === "at_risk" ? "#FEE2E2" : "#F1F5F9",
+                    color: s.status === "verified" ? "#166534" : s.status === "warning" ? "#92400E" : s.status === "at_risk" ? "#991B1B" : "#475569"
                   }}>
-                    {s.status.toUpperCase()}
+                    {s.status.toUpperCase().replace('_', ' ')}
                   </Box>
                 </TableCell>
                 <TableCell>
@@ -311,7 +315,7 @@ const RatingsReputationPanel: React.FC = () => {
           <Button onClick={() => setSelectedSeller(null)}>Close</Button>
         </DialogActions>
       </Dialog>
-    </Box>
+    </Box >
   );
 };
 
