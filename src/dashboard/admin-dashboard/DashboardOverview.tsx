@@ -26,7 +26,9 @@ interface AdminMetrics {
   activeListings: number;
   pendingListings: number;
   totalSystemBalance: number;
-  platformProfitUSD: number;
+  lifetimeEarnings: number;
+  availableAdminBalance: number;
+  adminSalesBalance: number; // 🟢 New: 100% Volume
   pendingDepositRequests: number;
   pendingWithdrawalRequests: number;
   totalBuyerDeposits: number;
@@ -99,16 +101,16 @@ const DashboardOverview: React.FC = () => {
       axios.get(`${BASE_URL}/withdraw/getall`).catch(() => ({ data: [] })),
     ]);
 
-    const users = Array.isArray(uRes.data) ? uRes.data : [];
-    const products = Array.isArray(prRes.data) ? prRes.data : [];
-    const purchases = Array.isArray(puRes.data) ? puRes.data : [];
-    const payments = Array.isArray(payRes.data) ? payRes.data : [];
-    const withdraws = Array.isArray(wRes.data) ? wRes.data : [];
+    const users = (Array.isArray(uRes.data) ? uRes.data : []) as any[];
+    const products = (Array.isArray(prRes.data) ? prRes.data : []) as any[];
+    const purchases = (Array.isArray(puRes.data) ? puRes.data : []) as any[];
+    const payments = (Array.isArray(payRes.data) ? payRes.data : []) as any[];
+    const withdraws = (Array.isArray(wRes.data) ? wRes.data : []) as any[];
 
     const usersMap = new Map(users.map((u: any) => [u._id.toString(), u]));
 
     // Calculate platform profit from completed purchases
-    const calculatedProfit = purchases.reduce((acc: number, p: any) => {
+    const lifetimeEarnings = purchases.reduce((acc: number, p: any) => {
       const isCompleted = ["completed", "success"].includes(p.status?.toLowerCase());
       if (isCompleted) {
         const fee = Number(p.adminFee) || (Number(p.totalAmount || p.price || 0) * 0.20);
@@ -116,6 +118,19 @@ const DashboardOverview: React.FC = () => {
       }
       return acc;
     }, 0);
+
+    // Calculate total sales volume (100% of completed)
+    const adminSalesBalance = purchases.reduce((acc: number, p: any) => {
+      const isCompleted = ["completed", "success"].includes(p.status?.toLowerCase());
+      if (isCompleted) {
+        return acc + (Number(p.totalAmount || p.price || 0));
+      }
+      return acc;
+    }, 0);
+
+    // Get actual admin balance from DB
+    const adminUser = users.find((u: any) => u.email === "admin@gmail.com");
+    const availableAdminBalance = adminUser ? Number(adminUser.balance) : 0;
 
     // Total buyer deposits (successful/credited payments)
     const totalBuyerDeposits = payments.reduce((acc: number, p: any) => {
@@ -134,15 +149,15 @@ const DashboardOverview: React.FC = () => {
       const statusLower = w.status?.toLowerCase() || "";
       if (["approved", "success", "completed"].includes(statusLower)) {
         const amount = Number(w.amount || 0);
-        const sellerId = w.sellerId?.toString();
+        const uid = (w.userId || w.sellerId)?.toString();
 
-        if (!sellerId) {
-          // If no sellerId → likely admin withdrawal
+        if (!uid) {
+          // If no UID → likely admin withdrawal
           totalAdminWithdrawn += amount;
           return;
         }
 
-        const user = usersMap.get(sellerId);
+        const user = usersMap.get(uid);
         if (user) {
           if (user.role === "admin") {
             totalAdminWithdrawn += amount;
@@ -150,7 +165,7 @@ const DashboardOverview: React.FC = () => {
             totalSellerWithdrawn += amount;
           }
         } else {
-          // If sellerId exists but user not found → assume seller
+          // If UID exists but user not found → assume seller
           totalSellerWithdrawn += amount;
         }
       }
@@ -164,7 +179,9 @@ const DashboardOverview: React.FC = () => {
       activeListings: products.filter((p: any) => p.status === "active").length,
       pendingListings: products.filter((p: any) => p.status === "pending").length,
       totalSystemBalance: purchases.reduce((s: number, p: any) => s + (Number(p.totalAmount || p.price) || 0), 0),
-      platformProfitUSD: calculatedProfit,
+      lifetimeEarnings,
+      availableAdminBalance,
+      adminSalesBalance,
       pendingDepositRequests: payments.filter((p: any) => {
         const status = p.status?.toLowerCase() || "";
         return status !== "successful" && status !== "completed" && !p.credited;
@@ -192,7 +209,9 @@ const DashboardOverview: React.FC = () => {
     activeListings: 0,
     pendingListings: 0,
     totalSystemBalance: 0,
-    platformProfitUSD: 0,
+    lifetimeEarnings: 0,
+    availableAdminBalance: 0,
+    adminSalesBalance: 0,
     pendingDepositRequests: 0,
     pendingWithdrawalRequests: 0,
     totalBuyerDeposits: 0,
@@ -225,29 +244,37 @@ const DashboardOverview: React.FC = () => {
       </div>
 
       {/* Main Financial Hub */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <MetricCard
+          title="Available Platform Balance"
+          value={`$${displayMetrics.availableAdminBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+          variant="success"
+          subtitle="Current available funds"
+          icon={<AccountBalanceWallet sx={{ color: "#10B981", fontSize: 32 }} />}
+          isLoading={loading}
+        />
+        <MetricCard
+          title="Admin Sales Balance"
+          value={`$${displayMetrics.adminSalesBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+          variant="info"
+          subtitle="Total 100% sales volume"
+          icon={<MonetizationOn sx={{ color: "#2563EB", fontSize: 32 }} />}
+          isLoading={loading}
+        />
+        <MetricCard
+          title="Lifetime Platform Profit"
+          value={`$${displayMetrics.lifetimeEarnings.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+          variant="profit"
+          subtitle="Total 20% commission earned"
+          icon={<TrendingUp sx={{ color: "#B45309", fontSize: 32 }} />}
+          isLoading={loading}
+        />
         <MetricCard
           title="Total Wallet Balance"
           value={`$${displayMetrics.totalUserBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
           variant="balance"
           subtitle="Total funds held by users"
-          icon={<MonetizationOn sx={{ color: "#059669", fontSize: 38 }} />}
-          isLoading={loading}
-        />
-        <MetricCard
-          title="Net Platform Profit"
-          value={`$${displayMetrics.platformProfitUSD.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-          variant="profit"
-          subtitle="Automatic 20% commission on sales"
-          icon={<TrendingUp sx={{ color: "#B45309", fontSize: 38 }} />}
-          isLoading={loading}
-        />
-        <MetricCard
-          title="System Turnover"
-          value={`$${displayMetrics.totalSystemBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-          variant="info"
-          subtitle="Total transaction volume"
-          icon={<AccountBalanceWallet sx={{ color: "#2563EB", fontSize: 38 }} />}
+          icon={<AccountBalanceWallet sx={{ color: "#059669", fontSize: 32 }} />}
           isLoading={loading}
         />
       </div>
@@ -283,7 +310,7 @@ const DashboardOverview: React.FC = () => {
         <div className="h-[2px] flex-1 bg-slate-200 rounded-full" />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <MetricCard
           title="Total Buyer Deposits"
           value={`$${displayMetrics.totalBuyerDeposits.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
@@ -294,13 +321,12 @@ const DashboardOverview: React.FC = () => {
         />
         <MetricCard
           title="Total Seller Withdrawals"
-          value={`$${displayMetrics.totalAdminWithdrawn.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+          value={`$${displayMetrics.totalSellerWithdrawn.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
           variant="warning"
-          subtitle="From platform profit"
-          icon={<AccountBalanceWallet sx={{ color: "#B45309", fontSize: 38 }} />}
+          subtitle="Total funds withdrawn by sellers"
+          icon={<Storefront sx={{ color: "#B45309", fontSize: 38 }} />}
           isLoading={loading}
         />
-
       </div>
     </div>
   );
