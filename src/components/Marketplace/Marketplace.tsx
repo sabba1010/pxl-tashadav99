@@ -463,8 +463,8 @@ const ItemCard: React.FC<{
         />
       </div>
       <div className="flex-1 min-w-0">
-        <h3 className="font-bold text-sm text-[#0A1A3A] truncate w-full" title={item.title}>
-          {truncateTitle(item.title, 25)}
+        <h3 className="font-bold text-sm text-[#0A1A3A] w-full break-words" title={item.title}>
+          {item.title}
         </h3>
         <p className="text-xs text-gray-600 mt-1 line-clamp-2">
           {item.desc || "Premium account • Instant delivery"}
@@ -985,7 +985,7 @@ const Marketplace: React.FC = () => {
                               ) : null}
                             </div>
                             <div className="flex-1 min-w-0">
-                              <h4 className="font-bold text-sm truncate w-full" title={item.title}>{truncateTitle(item.title, 22)}</h4>
+                              <h4 className="font-bold text-sm w-full break-words" title={item.title}>{item.title}</h4>
                               <p className="text-xs text-gray-500 line-clamp-1">{item.desc}</p>
                               <p className="text-sm font-bold text-[#33ac6f] mt-1">${item.price.toFixed(2)}</p>
                             </div>
