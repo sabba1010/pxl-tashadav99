@@ -443,6 +443,7 @@ const MyPurchase: React.FC = () => {
   const fetchPurchases = async () => {
     if (!buyerId) return;
     try {
+      window.scrollTo(0, 0);
       setIsLoading(true);
       const res = await axios.get<RawPurchaseItem[]>(`${PURCHASE_API}/getall?email=${buyerId}&role=buyer`);
 
@@ -657,9 +658,9 @@ const MyPurchase: React.FC = () => {
   }, [paginated, buyerId, fetchedOrders, lastReadIds]);
 
   return (
-    <div className="min-h-screen bg-[#F3EFEE] pt-16 pb-20 px-4 sm:px-6 font-sans">
+    <div className="min-h-screen bg-[#F3EFEE] pt-16 pb-24 px-3 sm:px-4 md:px-6 font-sans">
       <div className="max-w-screen-xl mx-auto">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
           <h1 className="text-2xl sm:text-3xl font-bold text-[#0A1A3A]">My Purchase</h1>
           <button
             onClick={fetchPurchases}
@@ -686,7 +687,7 @@ const MyPurchase: React.FC = () => {
             ))}
           </div>
 
-          <div className="p-4 sm:p-6 space-y-4">
+          <div className="p-3 sm:p-4 md:p-6 space-y-3 sm:space-y-4">
             {isLoading ? (
               <p className="text-center py-10 text-gray-400">Loading...</p>
             ) : filtered.length === 0 ? (
@@ -700,7 +701,7 @@ const MyPurchase: React.FC = () => {
               paginated.map((p) => (
                 <div
                   key={p.id}
-                  className="bg-[#F8FAFB] border rounded-xl p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:shadow-md transition"
+                  className="bg-[#F8FAFB] border rounded-xl p-3 sm:p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 hover:shadow-md transition"
                 >
                   <div className="flex gap-4 items-start">
                     <RenderIcon icon={p.icon} size={40} />

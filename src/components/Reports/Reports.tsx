@@ -90,62 +90,62 @@ const Reports: React.FC = () => {
     <div className="min-h-screen bg-[#FBFBFB] pb-20 font-sans">
       {/* Header */}
       <div className="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-40">
-        <div className="max-w-[1440px] mx-auto px-6 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-4">
-            <button onClick={() => navigate(-1)} className="p-2 hover:bg-gray-100 rounded-lg transition-all"><ArrowLeft size={20} /></button>
-            <div>
-              <h1 className="text-2xl font-black tracking-tighter uppercase italic">My <span className="text-[#d4a643]">Reports</span></h1>
-              <p className="text-xs text-gray-500 mt-1 uppercase font-bold tracking-widest">{activeTab === 'received' ? 'Reports Against Me' : 'Reports Filed By Me'}</p>
+        <div className="max-w-[1440px] mx-auto px-3 sm:px-6 py-3 sm:py-4 flex justify-between items-center">
+          <div className="flex items-center gap-2 sm:gap-4">
+            <button onClick={() => navigate(-1)} className="p-2 hover:bg-gray-100 rounded-lg transition-all flex-shrink-0"><ArrowLeft size={18} /></button>
+            <div className="min-w-0">
+              <h1 className="text-lg sm:text-2xl font-black tracking-tighter uppercase italic">My <span className="text-[#d4a643]">Reports</span></h1>
+              <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 uppercase font-bold tracking-widest">{activeTab === 'received' ? 'Against Me' : 'Filed By Me'}</p>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-[1440px] mx-auto px-6 pt-10">
+      <div className="max-w-[1440px] mx-auto px-3 sm:px-6 pt-6 sm:pt-10">
         
         {/* --- MAIN TAB SWITCHER --- */}
-        <div className="flex gap-4 mb-8">
+        <div className="flex gap-2 sm:gap-4 mb-6 sm:mb-8">
           <button
             onClick={() => { setActiveTab('received'); setCurrentPage(1); }}
-            className={`flex-1 flex items-center justify-center gap-3 py-4 rounded-[2rem] font-black transition-all border-b-4 ${
+            className={`flex-1 flex items-center justify-center gap-2 sm:gap-3 py-3 sm:py-4 px-2 sm:px-4 rounded-xl sm:rounded-[2rem] font-black text-xs sm:text-base transition-all border-b-4 ${
               activeTab === 'received' 
-              ? 'bg-red-600 text-white border-red-800 shadow-lg scale-[1.02]' 
+              ? 'bg-red-600 text-white border-red-800 shadow-lg' 
               : 'bg-white text-gray-500 border-gray-200 hover:bg-gray-50'
             }`}
           >
-            <ShieldAlert size={18} /> REPORTS AGAINST ME
+            <ShieldAlert size={16} className="hidden sm:block" /> <span className="line-clamp-1">AGAINST ME</span>
           </button>
           <button
             onClick={() => { setActiveTab('submitted'); setCurrentPage(1); }}
-            className={`flex-1 flex items-center justify-center gap-3 py-4 rounded-[2rem] font-black transition-all border-b-4 ${
+            className={`flex-1 flex items-center justify-center gap-2 sm:gap-3 py-3 sm:py-4 px-2 sm:px-4 rounded-xl sm:rounded-[2rem] font-black text-xs sm:text-base transition-all border-b-4 ${
               activeTab === 'submitted' 
-              ? 'bg-blue-600 text-white border-blue-800 shadow-lg scale-[1.02]' 
+              ? 'bg-blue-600 text-white border-blue-800 shadow-lg' 
               : 'bg-white text-gray-500 border-gray-200 hover:bg-gray-50'
             }`}
           >
-            <Send size={18} /> REPORTS FILED BY ME
+            <Send size={16} className="hidden sm:block" /> <span className="line-clamp-1">FILED BY ME</span>
           </button>
         </div>
 
         {/* Filter Bar */}
-        <div className="bg-white rounded-[2rem] border border-gray-100 shadow-sm p-6 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="relative col-span-1 md:col-span-2">
-              <Search size={16} className="absolute left-4 top-3.5 text-gray-400" />
+        <div className="bg-white rounded-xl sm:rounded-[2rem] border border-gray-100 shadow-sm p-3 sm:p-6 mb-6 sm:mb-8">
+          <div className="grid grid-cols-1 gap-3 sm:gap-4">
+            <div className="relative col-span-1">
+              <Search size={14} className="absolute left-3 top-3 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search by product name, ID or reason..."
+                placeholder="Search product, ID, reason..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:border-[#d4a643]"
+                className="w-full pl-9 pr-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-[#d4a643]"
               />
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-1.5 sm:gap-2 overflow-x-auto">
               {['all', 'pending', 'solved', 'refunded'].map(status => (
                 <button
                   key={status}
                   onClick={() => setFilterStatus(status as any)}
-                  className={`flex-1 px-2 py-2 rounded-lg text-[10px] font-black uppercase transition-all ${filterStatus === status ? 'bg-[#d4a643] text-white shadow-md' : 'bg-gray-100 text-gray-600'}`}
+                  className={`px-2 sm:px-3 py-2 rounded-lg text-[9px] sm:text-[10px] font-black uppercase transition-all flex-shrink-0 ${filterStatus === status ? 'bg-[#d4a643] text-white shadow-md' : 'bg-gray-100 text-gray-600'}`}
                 >
                   {status}
                 </button>
@@ -162,34 +162,36 @@ const Reports: React.FC = () => {
             {paginatedReports.map((report) => {
               const badge = getStatusBadge(report.status);
               return (
-                <div key={report._id} className={`p-6 rounded-[2rem] border-l-8 ${activeTab === 'received' ? 'border-red-500' : 'border-blue-500'} bg-white shadow-sm hover:shadow-xl transition-all`}>
-                  <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-3">
-                        <span className="text-[10px] font-black bg-gray-900 text-white px-3 py-1 rounded-full uppercase">Order #{report.orderId}</span>
-                        <span className="text-[10px] text-gray-400 font-bold uppercase">📅 {new Date(report.createdAt || report.date).toLocaleDateString()}</span>
+                <div key={report._id} className={`p-3 sm:p-6 rounded-lg sm:rounded-[2rem] border-l-8 ${activeTab === 'received' ? 'border-red-500' : 'border-blue-500'} bg-white shadow-sm hover:shadow-xl transition-all`}>
+                  <div className="flex flex-col gap-3 sm:gap-4">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-[9px] sm:text-[10px] font-black bg-gray-900 text-white px-2 sm:px-3 py-1 rounded-full uppercase">#{report.orderId}</span>
+                        <span className="text-[9px] sm:text-[10px] text-gray-400 font-bold uppercase">📅 {new Date(report.createdAt || report.date).toLocaleDateString()}</span>
                       </div>
-
-                      {/* ✅ PRODUCT NAME DISPLAY */}
-                      <div className="flex items-center gap-2 mb-1">
-                        <Package size={16} className="text-[#d4a643]" />
-                        <h2 className="text-lg font-black text-gray-900 uppercase tracking-tighter italic">
-                          {report.productName || "Unknown Product"}
-                        </h2>
+                      <div className={`flex items-center gap-1.5 px-3 sm:px-5 py-1.5 sm:py-2.5 rounded-lg sm:rounded-2xl text-[9px] sm:text-xs font-black uppercase flex-shrink-0 ${badge.text} ${badge.bg} border-2 ${badge.border}`}>
+                        {badge.icon} <span className="hidden sm:inline">{report.status}</span>
                       </div>
+                    </div>
 
-                      <h3 className="text-sm font-black text-[#d4a643] uppercase italic mb-2">Reason: {report.reason}</h3>
-                      
-                      <p className="text-[10px] text-gray-400 font-bold uppercase mb-3">
-                        {activeTab === 'received' ? `Reported By: ${report.reporterEmail}` : `Target Seller: ${report.sellerEmail}`}
+                    {/* Product Name */}
+                    <div className="flex items-start gap-2">
+                      <Package size={14} className="text-[#d4a643] flex-shrink-0 mt-0.5" />
+                      <h2 className="text-sm sm:text-lg font-black text-gray-900 uppercase tracking-tighter italic line-clamp-2">
+                        {report.productName || "Unknown Product"}
+                      </h2>
+                    </div>
+
+                    {/* Reason */}
+                    <div>
+                      <h3 className="text-xs sm:text-sm font-black text-[#d4a643] uppercase italic mb-1">Reason: {report.reason}</h3>
+                      <p className="text-[9px] sm:text-[10px] text-gray-400 font-bold uppercase line-clamp-1">
+                        {activeTab === 'received' ? `Reported By: ${report.reporterEmail}` : `Target: ${report.sellerEmail}`}
                       </p>
+                    </div>
 
-                      <p className="text-sm text-gray-600 bg-gray-50 p-4 rounded-xl border border-gray-100 italic font-medium">"{report.message}"</p>
-                    </div>
-                    
-                    <div className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl text-xs font-black uppercase ${badge.text} ${badge.bg} border-2 ${badge.border}`}>
-                      {badge.icon} {report.status}
-                    </div>
+                    {/* Message */}
+                    <p className="text-xs sm:text-sm text-gray-600 bg-gray-50 p-2.5 sm:p-4 rounded-lg sm:rounded-xl border border-gray-100 italic font-medium line-clamp-3">"{report.message}"</p>
                   </div>
                 </div>
               );

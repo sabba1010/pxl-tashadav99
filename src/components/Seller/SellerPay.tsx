@@ -59,13 +59,22 @@ const SellerPay = () => {
 
   // --- SAFE LOGOUT ---
   const handleSafeLogout = () => {
+    // Clear page before logout to prevent flashing
+    document.body.style.opacity = '0';
+    document.body.style.transition = 'opacity 0.2s ease-out';
+    
     if (logoutFunc) logoutFunc();
     else {
       localStorage.removeItem("token");
       localStorage.removeItem("user");
       localStorage.clear();
+      sessionStorage.clear();
     }
-    navigate("/login");
+    
+    // Redirect with slight delay and use window.location for immediate effect
+    setTimeout(() => {
+      window.location.href = "/login";
+    }, 100);
   };
 
   // --- DIRECT PAYMENT LOGIC ---

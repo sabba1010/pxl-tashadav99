@@ -161,8 +161,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         axios.post(`${CHAT_API}/status`, { userId: user.email, status: 'offline' }).catch(() => {});
       }
     } catch (e) {}
+    
+    // Clear all authentication data
     Cookies.remove("aAcctEmpire_2XLD");
+    localStorage.clear();
+    sessionStorage.clear();
+    
+    // Clear user state immediately
     setUser(null);
+    
+    // Clear any cached data from window object
+    if (window.sessionStorage) window.sessionStorage.clear();
+    if (window.localStorage) window.localStorage.clear();
   };
 
   // Periodically check backend for status changes (auto-logout if blocked)

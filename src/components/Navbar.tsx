@@ -81,9 +81,17 @@ export default function Navbar() {
   const CLEAN_WHITE = "#FFFFFF";
 
   const handelLougt = () => {
+    // Clear page before logout to prevent flashing
+    document.body.style.opacity = '0';
+    document.body.style.transition = 'opacity 0.2s ease-out';
+    
     user.logout();
     toast.success("Logged out successfully");
-    navigate("/login");
+    
+    // Redirect immediately and replace history to prevent back button
+    setTimeout(() => {
+      window.location.href = "/login";
+    }, 100);
   };
 
   const handleSellProduct = () => {

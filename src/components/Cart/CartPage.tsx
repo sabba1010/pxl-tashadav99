@@ -38,6 +38,7 @@ const CartPage: React.FC = () => {
   // Fetch cart items from backend
   const fetchCartData = async () => {
     if (!user?.email) return;
+    window.scrollTo(0, 0);
     setLoading(true);
 
     try {
@@ -217,9 +218,8 @@ const CartPage: React.FC = () => {
                       <h3 className="font-bold text-lg leading-tight group-hover:text-[#D4A017] transition-colors line-clamp-1">
                         {item.name}
                       </h3>
-                      {/* UPDATE: ইমেইল হাইড করা হয়েছে */}
                       <p className="text-[10px] text-gray-400 font-medium truncate">
-                        Verified Seller
+                        {item.sellerEmail || "Verified Seller"}
                       </p>
                     </div>
                   </div>
@@ -233,9 +233,8 @@ const CartPage: React.FC = () => {
                     <h3 className="hidden sm:block font-bold text-lg md:text-xl group-hover:text-[#D4A017] transition-colors">
                       {item.name}
                     </h3>
-                    {/* UPDATE: ইমেইল হাইড করা হয়েছে */}
                     <p className="hidden sm:block text-xs text-gray-400 font-medium">
-                      Verified Seller
+                      {item.sellerEmail || "Verified Seller"}
                     </p>
                   </div>
 

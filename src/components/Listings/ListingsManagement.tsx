@@ -49,6 +49,7 @@ const ListingsManagement: React.FC = () => {
     }
 
     try {
+      window.scrollTo(0, 0);
       setLoading(true);
       const res = await axios.get<ProductResponse>(
         `http://localhost:3200/product/user-products/${user.email}`

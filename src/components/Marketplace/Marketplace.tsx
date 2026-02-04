@@ -317,7 +317,8 @@ const Stars: React.FC<{ value: number }> = ({ value }) => (
 const CategorySelector: React.FC<{
   selectedSubcats: SubcatState;
   setSelectedSubcats: React.Dispatch<React.SetStateAction<SubcatState>>;
-}> = ({ selectedSubcats, setSelectedSubcats }) => {
+  onFilterChange?: () => void;
+}> = ({ selectedSubcats, setSelectedSubcats, onFilterChange }) => {
   const [openMain, setOpenMain] = useState<Record<string, boolean>>({});
   const wrapperRef = useRef<HTMLDivElement>(null);
 
@@ -342,8 +343,12 @@ const CategorySelector: React.FC<{
         : [...currentList, sub];
       if (newList.length === 0) {
         const { [main]: _, ...rest } = prev;
+        // Trigger filter update after state changes
+        setTimeout(() => onFilterChange?.(), 0);
         return rest;
       }
+      // Trigger filter update after state changes
+      setTimeout(() => onFilterChange?.(), 0);
       return { ...prev, [main]: newList };
     });
   };
@@ -355,7 +360,10 @@ const CategorySelector: React.FC<{
           Account Category
         </span>
         <button
-          onClick={() => setSelectedSubcats({})}
+          onClick={() => {
+            setSelectedSubcats({});
+            onFilterChange?.();
+          }}
           className="text-xs text-[#0A1A3A] hover:underline"
         >
           Clear
@@ -463,14 +471,14 @@ const ItemCard: React.FC<{
         />
       </div>
       <div className="flex-1 min-w-0">
-        <h3 className="font-bold text-sm text-[#0A1A3A] truncate w-full" title={item.title}>
-          {truncateTitle(item.title, 25)}
+        <h3 className="font-bold text-sm text-[#0A1A3A] w-full break-words" title={item.title}>
+          {item.title}
         </h3>
         <p className="text-xs text-gray-600 mt-1 line-clamp-2">
           {item.desc || "Premium account • Instant delivery"}
         </p>
         <div className="text-xs text-gray-400 mt-2">
-          Verified Seller •{" "}
+          <span className="font-medium text-[#0A1A3A]">{item.seller || "Verified Seller"}</span> •{" "}
           <span className="text-green-600">{item.delivery}</span>
         </div>
       </div>
@@ -556,7 +564,7 @@ const ProductModal: React.FC<{
 
             <div className="flex justify-between mt-2">
               <span>
-                Seller: <span className="font-medium">Verified Seller</span>
+                Seller: <span className="font-medium text-green-600">{item.seller || "Verified Seller"}</span>
               </span>
               <span>
                 Category: <span className="font-medium">{item.category}</span>
@@ -653,6 +661,7 @@ const Marketplace: React.FC = () => {
   useEffect(() => {
     const fetchItems = async () => {
       try {
+        window.scrollTo(0, 0);
         const res = await fetch(`${API_URL}/product/all-sells`);
         if (!res.ok) throw new Error("Failed to fetch");
         const data = await res.json();
@@ -663,7 +672,7 @@ const Marketplace: React.FC = () => {
             title: p.name,
             desc: p.description,
             price: Number(p.price) || 0,
-            seller: p.userEmail,
+            seller: p.username || p.userEmail,
             delivery: p.deliveryType === 'manual' ? (p.deliveryTime || "Manual") : "Instant",
             deliveryType: p.deliveryType,
             deliveryTime: p.deliveryTime,
@@ -879,7 +888,7 @@ const Marketplace: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F7F5F4] pb-10">
+    <div className="min-h-screen bg-[#F7F5F4] pb-16 md:pb-10">
       {showBanner && (
         <div className="bg-[#33ac6f] text-white px-4 py-3 flex justify-between items-center text-sm font-medium">
           <span>Black Friday is live! All prices discounted.</span>
@@ -889,8 +898,8 @@ const Marketplace: React.FC = () => {
         </div>
       )}
 
-      <div className="max-w-screen-2xl mx-auto px-4 py-6">
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+      <div className="max-w-screen-2xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
+        <div className="flex flex-wrap items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
           <div className="flex items-center gap-3">
             <button
               onClick={() => setDrawerOpen(true)}
@@ -928,6 +937,7 @@ const Marketplace: React.FC = () => {
                 className="pl-10 pr-4 py-2 border rounded-lg w-64 focus:outline-none focus:ring-2 focus:ring-[#33ac6f]"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                autoComplete="off"
               />
               <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             </div>
@@ -975,7 +985,10 @@ const Marketplace: React.FC = () => {
                     {filteredItems.map((item) => {
                       const IconComponent = typeof item.icon !== "string" ? (item.icon as React.ComponentType<any>) : null;
                       return (
-                        <div key={item.id} className="bg-[#F8FAFB] p-3 rounded-lg border cursor-pointer hover:shadow-md transition" onClick={() => setMobileSearchOpen(false)}>
+                        <div key={item.id} className="bg-[#F8FAFB] p-3 rounded-lg border cursor-pointer hover:shadow-md transition" onClick={() => {
+                          setSelectedItem(item);
+                          setMobileSearchOpen(false);
+                        }}>
                           <div className="flex gap-3">
                             <div className="flex-shrink-0 w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center">
                               {typeof item.icon === "string" ? (
@@ -985,7 +998,7 @@ const Marketplace: React.FC = () => {
                               ) : null}
                             </div>
                             <div className="flex-1 min-w-0">
-                              <h4 className="font-bold text-sm truncate w-full" title={item.title}>{truncateTitle(item.title, 22)}</h4>
+                              <h4 className="font-bold text-sm w-full break-words" title={item.title}>{item.title}</h4>
                               <p className="text-xs text-gray-500 line-clamp-1">{item.desc}</p>
                               <p className="text-sm font-bold text-[#33ac6f] mt-1">${item.price.toFixed(2)}</p>
                             </div>
@@ -1044,7 +1057,7 @@ const Marketplace: React.FC = () => {
               </div>
             ) : (
               <div
-                className={`grid gap-4 ${viewMode === "grid"
+                className={`grid gap-3 sm:gap-4 ${viewMode === "grid"
                   ? "grid-cols-1 sm:grid-cols-2 xl:grid-cols-3"
                   : "grid-cols-1"
                   }`}
@@ -1156,6 +1169,7 @@ const Marketplace: React.FC = () => {
           <CategorySelector
             selectedSubcats={selectedSubcats}
             setSelectedSubcats={setSelectedSubcats}
+            onFilterChange={() => setDrawerOpen(false)}
           />
           <div className="mt-8">
             <label className="font-semibold block mb-2">Max Price: ${priceRange}</label>
