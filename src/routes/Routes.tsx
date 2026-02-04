@@ -66,7 +66,7 @@ import DashboardSeller from "../dashboard/buyer-dahboard/dashbordseller";
 import AccountSettings from "../components/Accountsettings";
 import SentNotification from "../dashboard/admin-dashboard/SentNotification";
 import SellerAdminChat from "../components/Seller/SellerAdminChat";
-
+import SellerStore from "../components/Marketplace/SellerStore";
 
 const Routes = createBrowserRouter([
   {
@@ -263,6 +263,10 @@ const Routes = createBrowserRouter([
       {
         path: "/account-settings",
         element: <AccountSettings />,
+      },
+      {
+        path: "/store/:email",
+        element: <SellerStore />,
       },
       {
         path: "*",

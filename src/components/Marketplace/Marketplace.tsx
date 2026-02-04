@@ -68,6 +68,7 @@ interface Item {
   desc?: string;
   price: number;
   seller: string;
+  sellerEmail: string;
   delivery: string;
   icon: string | IconType;
   category: string;
@@ -254,29 +255,31 @@ const RenderIcon = ({
   realTime?: boolean;
 }) => {
   const badgeSize = Math.max(34, size + 6);
+  const actualIcon = typeof icon === 'string' && SUBICON_MAP[icon] ? SUBICON_MAP[icon] : icon;
 
   let bg = VIBRANT_GRADIENTS[0];
-  if (typeof icon !== "string") {
-    const color = ICON_COLOR_MAP.get(icon);
+  if (typeof actualIcon !== "string") {
+    const color = ICON_COLOR_MAP.get(actualIcon as any);
     if (color) bg = color;
     else
       bg =
         VIBRANT_GRADIENTS[
-          Math.abs(hashCode(icon.toString())) % VIBRANT_GRADIENTS.length
+          Math.abs(hashCode(actualIcon?.toString() || "")) % VIBRANT_GRADIENTS.length
         ];
-  } else if (!icon.startsWith("http")) {
-    bg = VIBRANT_GRADIENTS[Math.abs(hashCode(icon)) % VIBRANT_GRADIENTS.length];
+  } else if (typeof actualIcon === 'string' && !actualIcon.startsWith("http")) {
+    bg = VIBRANT_GRADIENTS[Math.abs(hashCode(actualIcon)) % VIBRANT_GRADIENTS.length];
   }
-  const IconComponent =
-    typeof icon !== "string" ? (icon as React.ElementType) : null;
 
-  if (typeof icon === "string" && icon.startsWith("http")) {
+  const IconComponent =
+    typeof actualIcon !== "string" ? (actualIcon as React.ElementType) : null;
+
+  if (typeof actualIcon === "string" && actualIcon.startsWith("http")) {
     return (
       <div
         style={{ width: size + 12, height: size + 12 }}
         className="rounded-full overflow-hidden shadow-md"
       >
-        <img src={icon} alt="" className="w-full h-full object-cover" />
+        <img src={actualIcon} alt="" className="w-full h-full object-cover" />
       </div>
     );
   }
@@ -286,8 +289,8 @@ const RenderIcon = ({
       style={{ width: badgeSize, height: badgeSize, background: bg }}
       className="relative rounded-full flex items-center justify-center shadow-md text-white font-bold"
     >
-      {typeof icon === "string" ? (
-        <span style={{ fontSize: Math.round(size * 0.6) }}>{icon}</span>
+      {typeof actualIcon === "string" ? (
+        <span style={{ fontSize: Math.round(size * 0.6) }}>{actualIcon[0]?.toUpperCase()}</span>
       ) : (
         IconComponent && <IconComponent size={Math.round(size * 0.65)} />
       )}
@@ -478,7 +481,9 @@ const ItemCard: React.FC<{
           {item.desc || "Premium account • Instant delivery"}
         </p>
         <div className="text-xs text-gray-400 mt-2">
-          <span className="font-medium text-[#0A1A3A]">{item.seller || "Verified Seller"}</span> •{" "}
+          <Link to={`/store/${item.sellerEmail}`} className="font-medium text-[#0A1A3A] hover:text-green-600 hover:underline transition-all">
+            {item.seller || "Verified Seller"}
+          </Link> •{" "}
           <span className="text-green-600">{item.delivery}</span>
         </div>
       </div>
@@ -564,7 +569,7 @@ const ProductModal: React.FC<{
 
             <div className="flex justify-between mt-2">
               <span>
-                Seller: <span className="font-medium text-green-600">{item.seller || "Verified Seller"}</span>
+                Seller: <Link to={`/store/${item.sellerEmail}`} className="font-medium text-green-600 hover:underline">{item.seller || "Verified Seller"}</Link>
               </span>
               <span>
                 Category: <span className="font-medium">{item.category}</span>
@@ -673,12 +678,13 @@ const Marketplace: React.FC = () => {
             desc: p.description,
             price: Number(p.price) || 0,
             seller: p.username || p.userEmail,
+            sellerEmail: p.userEmail,
             delivery: p.deliveryType === 'manual' ? (p.deliveryTime || "Manual") : "Instant",
             deliveryType: p.deliveryType,
             deliveryTime: p.deliveryTime,
-            icon: p.categoryIcon || FaBullhorn,
-            category: "Social Media", // fallback — you may want to improve this
-            subcategory: p.category,   // <--- assuming backend sends correct subcategory here
+            icon: p.categoryIcon || p.category || (p.subcategory ? p.subcategory : "Bullhorn"),
+            category: p.category || "General",
+            subcategory: p.subcategory || p.category,
             realTime: true,
             previewLink: p.previewLink,
           }));
