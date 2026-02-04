@@ -404,17 +404,14 @@ const MyPurchase: React.FC = () => {
     return () => clearInterval(timer);
   }, []);
 
+  // ✅ Poll for updates ensuring UI syncs with backend auto-confirm
   useEffect(() => {
-    if (purchases.length === 0) return;
-    purchases.forEach((p) => {
-      if (p.status !== 'Pending') return;
-      const expiresAt = new Date(p.rawDate).getTime() + getDeliveryTimeInMs(p);
-      if (Date.now() >= expiresAt && !autoCompletedRef.current.has(p.id)) {
-        autoCompletedRef.current.add(p.id);
-        handleUpdateStatus('completed', p.sellerEmail, p.id);
-      }
-    });
-  }, [purchases, now]);
+    if (!buyerId) return;
+    const interval = setInterval(() => {
+      fetchPurchases();
+    }, 15000);
+    return () => clearInterval(interval);
+  }, [buyerId]);
 
   const getDeliveryTimeInMs = (p: Purchase) => {
     if (p.deliveryType === 'manual' && p.deliveryTime) {
@@ -511,7 +508,7 @@ const MyPurchase: React.FC = () => {
     if (!id) return;
 
     try {
-      await axios.patch(`${PURCHASE_API}/update-status/${id}`, { status, sellerEmail });
+      await axios.patch(`${PURCHASE_API}/update-status/${id}`, { status, sellerEmail, role: "buyer" });
       toast.success(`Order ${status} successfully!`);
       setSelected(null);
       fetchPurchases();
@@ -911,6 +908,7 @@ const MyPurchase: React.FC = () => {
                 </div>
               )}
 
+              {/* Buyer Confirmation Button */}
               {selected.status === "Pending" && (
                 <button
                   onClick={() => handleUpdateStatus("completed", selected.sellerEmail)}

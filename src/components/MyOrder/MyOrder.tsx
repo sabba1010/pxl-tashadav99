@@ -332,19 +332,14 @@ const MyOrder: React.FC = () => {
 
 
 
+  // ✅ Poll for order updates every 15 seconds to sync with backend changes
   useEffect(() => {
-    if (orders.length === 0) return;
-    orders.forEach((o) => {
-      if (o.status !== 'Pending') return;
-      if (o.deliveryType === 'manual') return; // No auto-complete for manual
-      const timeoutMs = o.deliveryMs ?? 14400000;
-      const expiresAt = new Date(o.rawDate).getTime() + timeoutMs;
-      if (Date.now() >= expiresAt && !autoCompletedRef.current.has(o.id)) {
-        autoCompletedRef.current.add(o.id);
-        handleUpdateStatus('completed', o.id);
-      }
-    });
-  }, [orders, now]);
+    if (!sellerId) return;
+    const interval = setInterval(() => {
+      fetchOrders(); // Reload orders to check only
+    }, 15000);
+    return () => clearInterval(interval);
+  }, [sellerId]);
 
   const getRemainingTime = (rawDate: string, deliveryMs?: number, deliveryType?: string) => {
     const timeoutMs = deliveryMs ?? 14400000;
@@ -484,7 +479,7 @@ const MyOrder: React.FC = () => {
     if (!id) return;
     setIsUpdating(true);
     try {
-      await axios.patch(`${PURCHASE_API}/update-status/${id}`, { status, sellerEmail: sellerId });
+      await axios.patch(`${PURCHASE_API}/update-status/${id}`, { status, sellerEmail: sellerId, role: "seller" });
       toast.success(`Order ${status} successfully!`);
       setSelected(null);
       fetchOrders();
@@ -841,7 +836,8 @@ const MyOrder: React.FC = () => {
                 </button>
               </div>
             )}
-            {selected.status === "Pending" && selected.deliveryType === 'manual' && (
+            {/* Seller Confirmation Button */}
+            {selected.status === "Pending" && (
               <div className="mt-4">
                 <button
                   disabled={isUpdating || reports.some(r => r.orderId === selected.id)}

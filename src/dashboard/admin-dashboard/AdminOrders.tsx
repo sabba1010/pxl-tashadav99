@@ -21,7 +21,7 @@ import {
     Typography,
 } from "@mui/material";
 import Box from "@mui/material/Box";
-import { Cancel, Visibility, Chat } from "@mui/icons-material";
+import { Cancel, Visibility, Chat, CheckCircle } from "@mui/icons-material";
 import ChatWindow from "../../components/Chat/ChatWindow";
 import { useAuthHook } from "../../hook/useAuthHook";
 import { toast } from "sonner";
@@ -55,6 +55,7 @@ const AdminOrders: React.FC = () => {
     const queryClient = useQueryClient();
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
     const [openCancelDialog, setOpenCancelDialog] = useState(false);
+    const [openCompleteDialog, setOpenCompleteDialog] = useState(false);
     const [openChatDialog, setOpenChatDialog] = useState(false);
     const [activeChatOrder, setActiveChatOrder] = useState<Order | null>(null);
 
@@ -87,6 +88,25 @@ const AdminOrders: React.FC = () => {
         },
     });
 
+    // Mutation to complete order
+    const completeMutation = useMutation({
+        mutationFn: async (order: Order) => {
+            return axios.patch(`${BASE_URL}/purchase/update-status/${order._id}`, {
+                status: "completed",
+                sellerEmail: order.sellerEmail,
+                role: "admin",
+            });
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["adminAllOrders"] });
+            toast.success("Order marked as completed");
+            setOpenCompleteDialog(false);
+        },
+        onError: (error: any) => {
+            toast.error(error.response?.data?.message || "Failed to complete order");
+        },
+    });
+
     const handleCancelClick = (order: Order) => {
         setSelectedOrder(order);
         setOpenCancelDialog(true);
@@ -95,6 +115,17 @@ const AdminOrders: React.FC = () => {
     const confirmCancel = () => {
         if (selectedOrder) {
             cancelMutation.mutate(selectedOrder._id);
+        }
+    };
+
+    const handleCompleteClick = (order: Order) => {
+        setSelectedOrder(order);
+        setOpenCompleteDialog(true);
+    };
+
+    const confirmComplete = () => {
+        if (selectedOrder) {
+            completeMutation.mutate(selectedOrder);
         }
     };
 
@@ -177,16 +208,29 @@ const AdminOrders: React.FC = () => {
                                     <TableCell align="right">
                                         {/* Only allow cancelling non-terminal states if desired, or just show button always but handle backend error */}
                                         {["pending", "ongoing"].includes(order.status.toLowerCase()) && (
-                                            <Tooltip title="Cancel Order">
-                                                <IconButton
-                                                    color="error"
-                                                    onClick={() => handleCancelClick(order)}
-                                                    size="small"
-                                                    className="bg-red-50 hover:bg-red-100"
-                                                >
-                                                    <Cancel fontSize="small" />
-                                                </IconButton>
-                                            </Tooltip>
+                                            <>
+                                                <Tooltip title="Complete Order">
+                                                    <IconButton
+                                                        color="success"
+                                                        onClick={() => handleCompleteClick(order)}
+                                                        size="small"
+                                                        className="bg-green-50 hover:bg-green-100 mr-2"
+                                                    >
+                                                        <CheckCircle fontSize="small" />
+                                                    </IconButton>
+                                                </Tooltip>
+
+                                                <Tooltip title="Cancel Order">
+                                                    <IconButton
+                                                        color="error"
+                                                        onClick={() => handleCancelClick(order)}
+                                                        size="small"
+                                                        className="bg-red-50 hover:bg-red-100"
+                                                    >
+                                                        <Cancel fontSize="small" />
+                                                    </IconButton>
+                                                </Tooltip>
+                                            </>
                                         )}
 
                                         <Tooltip title="View Chat">
@@ -214,10 +258,8 @@ const AdminOrders: React.FC = () => {
             <Dialog
                 open={openCancelDialog}
                 onClose={() => setOpenCancelDialog(false)}
-                aria-labelledby="alert-dialog-title"
-                aria-describedby="alert-dialog-description"
             >
-                <DialogTitle id="alert-dialog-title" className="text-red-600 font-bold">
+                <DialogTitle className="text-red-600 font-bold">
                     {"Confirm Order Cancellation?"}
                 </DialogTitle>
                 <DialogContent>
@@ -241,6 +283,38 @@ const AdminOrders: React.FC = () => {
                         className="shadow-md"
                     >
                         {cancelMutation.isPending ? "Cancelling..." : "Yes, Cancel Order"}
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            {/* Complete Confirmation Dialog */}
+            <Dialog
+                open={openCompleteDialog}
+                onClose={() => setOpenCompleteDialog(false)}
+            >
+                <DialogTitle className="text-green-600 font-bold">
+                    {"Confirm Order Completion?"}
+                </DialogTitle>
+                <DialogContent>
+                    <Typography>
+                        Are you sure you want to mark <strong>{selectedOrder?.productName}</strong> as completed?
+                        <br />
+                        <br />
+                        This will transfer funds to the seller and mark the transaction as finished.
+                    </Typography>
+                </DialogContent>
+                <DialogActions className="p-4">
+                    <Button onClick={() => setOpenCompleteDialog(false)} className="text-gray-500 hover:bg-gray-100">
+                        Cancel
+                    </Button>
+                    <Button
+                        onClick={confirmComplete}
+                        variant="contained"
+                        color="success"
+                        disabled={completeMutation.isPending}
+                        className="shadow-md"
+                    >
+                        {completeMutation.isPending ? "Processing..." : "Mark as Completed"}
                     </Button>
                 </DialogActions>
             </Dialog>
