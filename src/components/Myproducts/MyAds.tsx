@@ -65,6 +65,7 @@ const MyAds: React.FC = () => {
   const itemsPerPage = 10;
 
   const fetchAds = async () => {
+    window.scrollTo(0, 0);
     setLoading(true);
     try {
       const res = await axios.get<Ad[]>(

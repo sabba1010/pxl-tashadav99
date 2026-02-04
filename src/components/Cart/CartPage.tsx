@@ -38,6 +38,7 @@ const CartPage: React.FC = () => {
   // Fetch cart items from backend
   const fetchCartData = async () => {
     if (!user?.email) return;
+    window.scrollTo(0, 0);
     setLoading(true);
 
     try {

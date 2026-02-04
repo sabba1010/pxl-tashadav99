@@ -23,6 +23,7 @@ const ActiveListings: React.FC = () => {
   const [items, setItems] = useState<Ad[]>([]);
 
   const fetchAds = async () => {
+    window.scrollTo(0, 0);
     setLoading(true);
     try {
       const res = await axios.get<Ad[]>(`${API}/product/all-sells`);

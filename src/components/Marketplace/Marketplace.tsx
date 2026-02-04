@@ -653,6 +653,7 @@ const Marketplace: React.FC = () => {
   useEffect(() => {
     const fetchItems = async () => {
       try {
+        window.scrollTo(0, 0);
         const res = await fetch(`${API_URL}/product/all-sells`);
         if (!res.ok) throw new Error("Failed to fetch");
         const data = await res.json();

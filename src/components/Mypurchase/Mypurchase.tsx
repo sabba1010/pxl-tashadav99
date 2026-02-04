@@ -443,6 +443,7 @@ const MyPurchase: React.FC = () => {
   const fetchPurchases = async () => {
     if (!buyerId) return;
     try {
+      window.scrollTo(0, 0);
       setIsLoading(true);
       const res = await axios.get<RawPurchaseItem[]>(`${PURCHASE_API}/getall?email=${buyerId}&role=buyer`);
 
