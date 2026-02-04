@@ -15,6 +15,7 @@ import {
   ShoppingCart,
   WalletMinimal,
 } from "lucide-react";
+import AnnouncementBar from "./AnnouncementBar";
 
 const FaBreadSliceIcon = FaBreadSlice as unknown as React.ComponentType<any>;
 const FaTrashIcon = FaTrash as unknown as React.ComponentType<any>;
@@ -179,6 +180,7 @@ export default function Navbar() {
 
   return (
     <>
+      <AnnouncementBar />
       <header
         className="sticky top-0 z-40 w-full bg-white border-b border-gray-200 shadow-sm py-2"
         style={{ backgroundColor: CLEAN_WHITE }}
@@ -287,8 +289,8 @@ export default function Navbar() {
                           <div
                             key={n._id}
                             className={`p-3 hover:bg-gray-50 transition-colors ${n.read
-                                ? "bg-white"
-                                : "bg-blue-50 border-l-4 border-blue-600"
+                              ? "bg-white"
+                              : "bg-blue-50 border-l-4 border-blue-600"
                               }`}
                           >
                             <div className="flex items-start justify-between gap-3">
@@ -391,7 +393,7 @@ export default function Navbar() {
                         <NavLink to="/seller-dashboard" onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 md:px-6 py-2.5 md:py-3 hover:bg-gray-50 transition"><span className="text-xs md:text-sm font-medium">My Dashboard</span></NavLink>
                       )}
                       {(loginUser?.role === "seller" || loginUser?.role === "admin") && (
-                         <NavLink to="/referral" onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 md:px-6 py-2.5 md:py-3 hover:bg-gray-50 transition"><span className="text-xs md:text-sm font-medium">Referral</span></NavLink>
+                        <NavLink to="/referral" onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 md:px-6 py-2.5 md:py-3 hover:bg-gray-50 transition"><span className="text-xs md:text-sm font-medium">Referral</span></NavLink>
                       )}
                       {/* <NavLink to="/referral" onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 md:px-6 py-2.5 md:py-3 hover:bg-gray-50 transition"><span className="text-xs md:text-sm font-medium">Referral</span></NavLink> */}
                       <NavLink to="/plans" onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 md:px-6 py-2.5 md:py-3 hover:bg-gray-50 transition"><span className="text-xs md:text-sm font-medium">Plans</span></NavLink>
