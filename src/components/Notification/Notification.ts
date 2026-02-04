@@ -101,12 +101,53 @@ export async function sendNotification(payload: NotificationPayload) {
 /**
  * ৩. সব নোটিফিকেশন ফেচ করার ফাংশন
  */
-export async function getAllNotifications(userId?: string) {
-  const url = `${API_BASE}/api/notification/getall${
-    userId ? "?userId=" + encodeURIComponent(userId) : ""
-  }`;
+export async function getAllNotifications(userId?: string, role?: string) {
+  const params = new URLSearchParams();
+  if (userId) params.append("userId", userId);
+  if (role) params.append("role", role);
+
+  const url = `${API_BASE}/api/notification/getall${params.toString() ? "?" + params.toString() : ""
+    }`;
   try {
     const res = await fetchWithTimeout(url, {
+      headers: {
+        "Content-Type": "application/json",
+        ...getAuthHeaders(),
+      },
+    });
+    return await handleRes(res);
+  } catch (err) {
+    throw err;
+  }
+}
+
+/**
+ * ৩.১ সব নোটিফিকেশন ক্লিয়ার করার ফাংশন
+ */
+export async function clearNotifications(userId: string, role: string) {
+  const url = `${API_BASE}/api/notification/clear-all/${userId}?role=${role}`;
+  try {
+    const res = await fetchWithTimeout(url, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        ...getAuthHeaders(),
+      },
+    });
+    return await handleRes(res);
+  } catch (err) {
+    throw err;
+  }
+}
+
+/**
+ * ৪. নোটিফিকেশন ডিলিট করার ফাংশন
+ */
+export async function deleteNotification(id: string) {
+  const url = `${API_BASE}/api/notification/${id}`;
+  try {
+    const res = await fetchWithTimeout(url, {
+      method: "DELETE",
       headers: {
         "Content-Type": "application/json",
         ...getAuthHeaders(),

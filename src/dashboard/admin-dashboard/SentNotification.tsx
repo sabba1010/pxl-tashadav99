@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { createAnnouncement, AnnouncementPayload } from '../../components/Notification/Notification';
+import { createAnnouncement, AnnouncementPayload, deleteNotification } from '../../components/Notification/Notification';
 import { toast } from 'react-hot-toast';
 import { useQuery } from "@tanstack/react-query";
+import { FaTrash } from 'react-icons/fa';
 
 // TypeScript এর এরর ফিক্স করার জন্য এখানে টাইপটি এক্সটেন্ড করা হয়েছে
 interface UpdatedAnnouncementPayload extends AnnouncementPayload {
@@ -17,6 +18,7 @@ interface Notification {
     timestamp?: string;
     createdAt?: string;
 }
+const FaTrashIcon = FaTrash as any;
 
 const SentNotification = () => {
     const [formData, setFormData] = useState<UpdatedAnnouncementPayload>({
@@ -73,6 +75,17 @@ const SentNotification = () => {
         queryFn: fetchNotificationsData,
         refetchInterval: 5000,
     });
+
+    const handleDelete = async (id: string) => {
+        if (!window.confirm('Are you sure you want to delete this notification?')) return;
+        try {
+            await deleteNotification(id);
+            toast.success('Notification deleted');
+            refetch();
+        } catch (err: any) {
+            toast.error(err.message || 'Failed to delete');
+        }
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -246,9 +259,26 @@ const SentNotification = () => {
                                     border: '1px solid #e5e7eb',
                                     borderRadius: '6px',
                                     backgroundColor: '#f9fafb',
-                                    borderLeft: '4px solid #4F46E5'
+                                    borderLeft: '4px solid #4F46E5',
+                                    position: 'relative'
                                 }}
                             >
+                                <button
+                                    onClick={() => handleDelete(notif._id || notif.id || '')}
+                                    style={{
+                                        position: 'absolute',
+                                        top: '10px',
+                                        right: '10px',
+                                        color: '#ef4444',
+                                        border: 'none',
+                                        background: 'none',
+                                        cursor: 'pointer',
+                                        padding: '5px'
+                                    }}
+                                    title="Delete notification"
+                                >
+                                    <FaTrashIcon />
+                                </button>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
                                     <div style={{ flex: 1 }}>
                                         <p style={{ fontWeight: 'bold', margin: '0 0 4px 0', fontSize: '1rem' }}>

@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import axios from "axios";
 
 import { useAuth } from "../context/AuthContext";
-import { getAllNotifications } from "../components/Notification/Notification";
+import { getAllNotifications, clearNotifications } from "../components/Notification/Notification";
 import headerlogo from "../assets/headerlogo.png";
 import { useAuthHook } from "../hook/useAuthHook";
 import {
@@ -29,12 +29,16 @@ type NItem = {
   title: string;
   message?: string;
   description?: string;
-  link?: string; // এটি যোগ করুন
+  link?: string;
   read?: boolean;
+  readBy?: string[]; // ✅ ADD
+  deletedBy?: string[]; // ✅ ADD
   createdAt?: string;
   userEmail?: string;
   target?: string;
-  senderId?: string;   // ✅ ADD
+  senderId?: string;
+  productId?: string; // ✅ ADD
+  productTitle?: string; // ✅ ADD
   data?: any;
 };
 
@@ -84,10 +88,10 @@ export default function Navbar() {
     // Clear page before logout to prevent flashing
     document.body.style.opacity = '0';
     document.body.style.transition = 'opacity 0.2s ease-out';
-    
+
     user.logout();
     toast.success("Logged out successfully");
-    
+
     // Redirect immediately and replace history to prevent back button
     setTimeout(() => {
       window.location.href = "/login";
@@ -109,32 +113,11 @@ export default function Navbar() {
     try {
       if (!notifications.length && !notifOpen) setLoadingNotifs(true);
 
-      const res = await getAllNotifications();
-      const userRole = loginUserData.data?.role; // ইউজারের রোল সংগ্রহ করা হলো
+      const userRole = loginUserData.data?.role;
+      // রেজাল্ট ব্যাকএন্ড থেকেই ফিল্টার হয়ে আসবে
+      const res = await getAllNotifications(currentUserEmail, userRole);
 
-      const myNotifs = Array.isArray(res)
-        ? res.filter((n: NItem) => {
-          // ১. সরাসরি ইউজারের ইমেইলে পাঠানো নোটিফিকেশন
-          const isDirect = n.userEmail === currentUserEmail;
-
-          // ২. সবার জন্য পাঠানো (Target: all)
-          const isAll = n.target === "all";
-
-          // ৩. রোল ভিত্তিক (Target: buyers অথবা sellers)
-          // আপনার ডাটাবেসে "buyers" বা "sellers" থাকলে ইউজারের "buyer" বা "seller" রোলের সাথে ম্যাচ করবে
-          const isRoleMatch = userRole && n.target === `${userRole}s`;
-
-          return isDirect || isAll || isRoleMatch;
-        })
-        : [];
-
-      const sortedNotifs = myNotifs.sort(
-        (a, b) =>
-          new Date(b.createdAt || 0).getTime() -
-          new Date(a.createdAt || 0).getTime()
-      );
-
-      setNotifications(sortedNotifs);
+      setNotifications(Array.isArray(res) ? res : []);
     } catch (err) {
       console.error("Failed to fetch notifications:", err);
     } finally {
@@ -147,16 +130,22 @@ export default function Navbar() {
     const isOpening = !notifOpen;
     setNotifOpen(isOpening);
 
-    // যখন প্যানেল ওপেন হবে এবং যদি কোনো আনরিড নোটিফিকেশন থাকে
     if (isOpening && unreadCount > 0) {
+      const userRole = loginUserData.data?.role;
 
-      // ১. সাথে সাথে ফ্রন্টএন্ডে সবগুলোকে 'read: true' করে দিন (যাতে লাল নম্বর সাথে সাথে উধাও হয়)
-      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+      // ১. ফ্রন্টএন্ডে সাথে সাথে আপডেট
+      setNotifications(prev => prev.map(n => {
+        if (n.userEmail === currentUserEmail) return { ...n, read: true };
+        return { ...n, readBy: [...(n.readBy || []), currentUserEmail as string] };
+      }));
 
-      // ২. ব্যাকএন্ডে আপডেট পাঠান যাতে রিলোড দিলেও ডাটাবেজ থেকে এগুলো 'read' হিসেবেই আসে
+      // ২. ব্যাকএন্ডে সিঙ্ক
       if (currentUserEmail) {
         try {
-          await axios.post(`${API_URL}/mark-read`, { email: currentUserEmail });
+          await axios.post(`${API_URL}/mark-read`, {
+            email: currentUserEmail,
+            role: userRole
+          });
         } catch (error) {
           console.error("Failed to sync read status with server", error);
         }
@@ -169,10 +158,12 @@ export default function Navbar() {
     if (!currentUserEmail) return;
     if (!window.confirm("Are you sure?")) return;
     try {
-      await axios.delete(`${API_URL}/clear-all/${currentUserEmail}`);
+      const userRole = loginUserData.data?.role;
+      await clearNotifications(currentUserEmail, userRole || "");
       setNotifications([]);
       toast.success("All notifications cleared!");
     } catch (error) {
+      console.error("Failed to clear notifications", error);
       toast.error("Failed to clear notifications");
     }
   };
@@ -184,7 +175,10 @@ export default function Navbar() {
     return () => clearInterval(id);
   }, [currentUserEmail, fetchNotifications]);
 
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  const unreadCount = notifications.filter((n) => {
+    if (n.userEmail === currentUserEmail) return !n.read;
+    return !n.readBy?.includes(currentUserEmail || "");
+  }).length;
 
   return (
     <>
@@ -292,11 +286,12 @@ export default function Navbar() {
 
                       {notifications.map((n) => {
                         const senderName = n.senderId?.split("@")[0];
+                        const isRead = n.userEmail === currentUserEmail ? n.read : n.readBy?.includes(currentUserEmail || "");
 
                         return (
                           <div
                             key={n._id}
-                            className={`p-3 hover:bg-gray-50 transition-colors ${n.read
+                            className={`p-3 hover:bg-gray-50 transition-colors ${isRead
                               ? "bg-white"
                               : "bg-blue-50 border-l-4 border-blue-600"
                               }`}
@@ -304,8 +299,14 @@ export default function Navbar() {
                             <div className="flex items-start justify-between gap-3">
                               <div className="flex-1">
                                 <div className="text-sm font-bold text-black">
-                                  New message from {senderName}
+                                  {senderName ? `New message from ${senderName}` : n.title}
                                 </div>
+
+                                {n.productTitle && (
+                                  <div className="text-[11px] text-blue-700 font-bold mt-0.5">
+                                    Regarding: {n.productTitle}
+                                  </div>
+                                )}
 
                                 <div className="text-xs text-gray-800 font-medium mt-1 line-clamp-2 leading-relaxed">
                                   {n.message || n.description || "No description"}
@@ -333,7 +334,7 @@ export default function Navbar() {
                                 </div>
                               </div>
 
-                              {!n.read && (
+                              {!isRead && (
                                 <div className="ml-2 w-2.5 h-2.5 rounded-full bg-blue-600 mt-1 shadow-sm" />
                               )}
                             </div>
