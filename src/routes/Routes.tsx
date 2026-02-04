@@ -153,7 +153,11 @@ const Routes = createBrowserRouter([
       },
       {
         path: "/orders",
-        element: <MyOrder />,
+        element: (
+          <SellerPrivateRoute>
+            <MyOrder />
+          </SellerPrivateRoute>
+        ),
       },
       {
         path: "/myproducts",

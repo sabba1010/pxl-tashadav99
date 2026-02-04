@@ -27,12 +27,17 @@ const SellerPrivateRoute: FC<PrivateRouteProps> = ({ children }) => {
     return <Loading />;
   }
 
+  // completely logged out - redirect to login
+  if (!user) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
   // authorized
   if (isAuthorized) {
     return <>{children}</>;
   }
 
-  // not authorized
+  // logged in but not seller/admin - redirect to seller-pay
   return (
     <Navigate
       to="/seller-pay"

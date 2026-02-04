@@ -85,17 +85,30 @@ export default function Navbar() {
   const CLEAN_WHITE = "#FFFFFF";
 
   const handelLougt = () => {
-    // Clear page before logout to prevent flashing
+    // Immediately fade entire page to prevent any content visibility
+    document.documentElement.style.opacity = '0';
+    document.documentElement.style.transition = 'opacity 0.1s ease-out';
     document.body.style.opacity = '0';
-    document.body.style.transition = 'opacity 0.2s ease-out';
-
+    document.body.style.transition = 'opacity 0.1s ease-out';
+    document.body.style.overflow = 'hidden';
+    
+    // Clear all DOM content
+    const root = document.getElementById('root');
+    if (root) {
+      root.innerHTML = '';
+      root.style.opacity = '0';
+      root.style.backgroundColor = '#fff';
+    }
+    
+    // Call logout to clear all auth data
     user.logout();
-    toast.success("Logged out successfully");
-
-    // Redirect immediately and replace history to prevent back button
+    
+    // Don't show toast since page is clearing
+    // Redirect immediately with hard reload to ensure clean session
     setTimeout(() => {
-      window.location.href = "/login";
-    }, 100);
+      window.location.href = "/login?session=cleared";
+      window.location.reload();
+    }, 150);
   };
 
   const handleSellProduct = () => {

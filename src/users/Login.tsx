@@ -1,6 +1,6 @@
 import axios from "axios";
 import Cookies from "js-cookie";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Eye, EyeOff, Lock, LogIn, Mail, Sparkles } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -14,6 +14,22 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
   const { user } = useAuth();
+
+  // Clear any residual page content on login page load
+  useEffect(() => {
+    // Reset page state
+    document.documentElement.style.opacity = '1';
+    document.body.style.opacity = '1';
+    document.body.style.overflow = 'auto';
+    document.body.style.backgroundColor = '#111827';
+    
+    // Reset root element
+    const root = document.getElementById('root');
+    if (root) {
+      root.style.opacity = '1';
+      root.style.backgroundColor = 'transparent';
+    }
+  }, []);
 
   if (user) {
     toast.info("You are already logged in");
