@@ -414,7 +414,7 @@ const MyPurchase: React.FC = () => {
   }, [buyerId]);
 
   const getDeliveryTimeInMs = (p: Purchase) => {
-    if (p.deliveryType === 'manual' && p.deliveryTime) {
+    if (p.deliveryTime) {
       const match = p.deliveryTime.match(/(\d+)\s*(mins?|minutes?|h|hours?|d|days?)/i);
       if (match) {
         const num = parseInt(match[1]);

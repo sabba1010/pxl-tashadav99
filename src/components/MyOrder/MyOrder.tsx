@@ -261,13 +261,13 @@ const getStatusDisplay = (online: boolean, lastSeen?: string | null): string => 
 
 const parseDeliveryTime = (str?: string): number | undefined => {
   if (!str) return undefined;
-  const match = str.match(/(\d+)\s*(min(?:s)?|hour(?:s)?|day(?:s)?)/i);
+  const match = str.match(/(\d+)\s*(mins?|minutes?|h|hours?|d|days?)/i);
   if (!match) return undefined;
   const num = parseInt(match[1]);
   const unit = match[2].toLowerCase();
-  if (unit.startsWith('min')) return num * 60 * 1000;
-  if (unit.startsWith('hour')) return num * 3600 * 1000;
-  if (unit.startsWith('day')) return num * 86400 * 1000;
+  if (unit.startsWith('min')) return num * 60000;
+  if (unit.startsWith('h')) return num * 3600000;
+  if (unit.startsWith('d')) return num * 86400000;
   return undefined;
 };
 
