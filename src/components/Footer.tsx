@@ -108,12 +108,12 @@ export default function Footer({ theme = "dark" }: Props) {
               <li className="flex items-start gap-3">
                 <Phone className="w-5 h-5 text-[#33ac6f] mt-0.5 flex-shrink-0" />
                 <a
-                  href="https://wa.me/1234567890"
+                  href="https://wa.me/800 111 2222"
                   target="_blank"
                   rel="noopener noreferrer"
                   className={`hover:text-[#33ac6f] ${isDark ? "text-gray-300" : "text-gray-600"}`}
                 >
-                  +1234567890
+                  +800 111 2222
                 </a>
               </li>
               <li className="flex items-start gap-3">
