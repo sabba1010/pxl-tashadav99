@@ -82,7 +82,10 @@ const MyAds: React.FC = () => {
       );
 
       setItems(userAds);
-      toast.success("Listings reloaded!");
+      // Only show success toast on larger screens to avoid cluttering mobile view
+      if (window.innerWidth >= 640) {
+        toast.success("Listings reloaded!");
+      }
     } catch (err) {
       console.error(err);
       toast.error("Failed to load ads");
@@ -327,8 +330,8 @@ const MyAds: React.FC = () => {
                 key={t}
                 onClick={() => setActiveTab(t)}
                 className={`pb-2 text-xs sm:text-sm whitespace-nowrap transition-all border-b-2 ${activeTab === t
-                    ? "text-[#d4a643] border-[#d4a643] font-bold"
-                    : "text-gray-500 border-transparent"
+                  ? "text-[#d4a643] border-[#d4a643] font-bold"
+                  : "text-gray-500 border-transparent"
                   }`}
               >
                 <span className="flex items-center gap-1.5 sm:gap-2">
