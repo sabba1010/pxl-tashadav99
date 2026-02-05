@@ -194,9 +194,9 @@ const MyAds: React.FC = () => {
     if (!editingAd) return;
 
     // Validate required fields
-    if (!editFormData.username?.trim() || !editFormData.accountPass?.trim() || 
-        !editFormData.email?.trim() || !editFormData.password?.trim() ||
-        !editFormData.previewLink?.trim()) {
+    if (!editFormData.username?.trim() || !editFormData.accountPass?.trim() ||
+      !editFormData.email?.trim() || !editFormData.password?.trim() ||
+      !editFormData.previewLink?.trim()) {
       toast.error("Please fill in all required fields");
       return;
     }
@@ -273,7 +273,7 @@ const MyAds: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#F3EFEE] pt-12 pb-24 sm:pt-20">
       <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+
         {/* Header Section */}
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8 sm:mb-10">
           <div>
@@ -295,7 +295,7 @@ const MyAds: React.FC = () => {
               <svg className={`w-4 h-4 sm:w-5 sm:h-5 transition-transform ${loading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
-              <span className="hidden sm:inline">Reload</span>
+              <span>Reload</span>
             </button>
 
             <Link
@@ -306,7 +306,7 @@ const MyAds: React.FC = () => {
               <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <span className="hidden sm:inline">Sold Listings</span>
+              <span>Sold Listings</span>
             </Link>
 
             <Link
@@ -326,11 +326,10 @@ const MyAds: React.FC = () => {
               <button
                 key={t}
                 onClick={() => setActiveTab(t)}
-                className={`pb-2 text-xs sm:text-sm whitespace-nowrap transition-all border-b-2 ${
-                  activeTab === t
+                className={`pb-2 text-xs sm:text-sm whitespace-nowrap transition-all border-b-2 ${activeTab === t
                     ? "text-[#d4a643] border-[#d4a643] font-bold"
                     : "text-gray-500 border-transparent"
-                }`}
+                  }`}
               >
                 <span className="flex items-center gap-1.5 sm:gap-2">
                   {t}
@@ -428,7 +427,7 @@ const MyAds: React.FC = () => {
                     </div>
 
                     {/* Reject Reason */}
-                      {(statusOf(item.status) === "denied" ||
+                    {(statusOf(item.status) === "denied" ||
                       statusOf(item.status) === "reject") &&
                       item.rejectReason && (
                         <div className="w-full flex-shrink-0 mt-3 p-2.5 bg-rose-50 border border-rose-100 rounded-lg flex items-start gap-2 text-[10px] sm:text-xs">
