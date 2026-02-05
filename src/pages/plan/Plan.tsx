@@ -21,29 +21,33 @@ const SellerPlans: React.FC = () => {
           {/* Default Seller - $0 Purchase Logic */}
           <div className="rounded-3xl p-10 bg-white border border-gray-200 shadow-sm hover:shadow-lg transition-all">
             <h2 className="text-2xl font-bold text-[#111111]">
-              Default Seller
+              Default / Free Seller Plan
             </h2>
-            <p className="text-4xl font-semibold mt-2 text-[#0A1A3A]">Free</p>
+            {/* <p className="text-4xl font-semibold mt-2 text-[#0A1A3A]">Free</p>
             <p className="mt-3 text-[#444444]">
               <strong>All sellers start with 0 credits.</strong> Purchase this free plan to receive your 10 listing credits.
-            </p>
+            </p> */}
             <ul className="mt-6 space-y-3">
               <li className="flex items-start gap-3">
                 <span className="text-[#1BC47D] text-xl">✔</span>
-                <span className="text-[#111111] font-bold">Receive 10 Listing Credits</span>
+                <span className="text-[#111111] font-bold">Automatic for all new sellers</span>
               </li>
               <li className="flex items-start gap-3">
                 <span className="text-[#1BC47D] text-xl">✔</span>
-                <span className="text-[#111111]">Basic listing tools</span>
+                <span className="text-[#111111]"> 10 listings per day</span>
               </li>
               <li className="flex items-start gap-3">
                 <span className="text-[#1BC47D] text-xl">✔</span>
-                <span className="text-[#111111]">Standard visibility</span>
+                <span className="text-[#111111]">Manual listings allowed</span>
               </li>
-              <li className="flex items-start gap-3">
+               <li className="flex items-start gap-3">
+                <span className="text-[#1BC47D] text-xl">✔</span>
+                <span className="text-[#111111]"> Basic visibility and sales history</span>
+              </li>
+              {/* <li className="flex items-start gap-3">
                 <span className="text-red-500 text-xl">⚠️</span>
                 <span className="text-[#444444]">Limited category access</span>
-              </li>
+              </li> */}
             </ul>
             <div className="mt-8">
               {/* যদি ইউজার অলরেডি এই প্ল্যানটি নিয়ে থাকে */}
@@ -66,7 +70,7 @@ const SellerPlans: React.FC = () => {
 
           {/* Basic Seller */}
           <div className="rounded-3xl p-10 bg-white border border-gray-200 shadow-sm hover:shadow-lg transition-all">
-            <h2 className="text-2xl font-bold text-[#111111]">Basic Seller</h2>
+            <h2 className="text-2xl font-bold text-[#111111]">Standard / Starter Seller Plan</h2>
             <p className="text-4xl font-semibold mt-2 text-[#0A1A3A]">$9.99/mo</p>
             <p className="mt-3 text-[#444444]">For active sellers wanting more exposure.</p>
             <ul className="mt-6 space-y-3">
@@ -81,6 +85,22 @@ const SellerPlans: React.FC = () => {
               <li className="flex items-start gap-3">
                 <span className="text-[#1BC47D] text-xl">✔</span>
                 <span className="text-[#111111]">Priority placement</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="text-[#1BC47D] text-xl">✔</span>
+                <span className="text-[#111111]">Higher daily listing limit</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="text-[#1BC47D] text-xl">✔</span>
+                <span className="text-[#111111]">Better marketplace visibility</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="text-[#1BC47D] text-xl">✔</span>
+                <span className="text-[#111111]">Faster listing approval</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="text-[#1BC47D] text-xl">✔</span>
+                <span className="text-[#111111]">Basic analytics and scheduling</span>
               </li>
             </ul>
             <div className="mt-8">

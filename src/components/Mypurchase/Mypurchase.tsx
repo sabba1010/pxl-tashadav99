@@ -404,14 +404,7 @@ const MyPurchase: React.FC = () => {
     return () => clearInterval(timer);
   }, []);
 
-  // ✅ Poll for updates ensuring UI syncs with backend auto-confirm
-  useEffect(() => {
-    if (!buyerId) return;
-    const interval = setInterval(() => {
-      fetchPurchases();
-    }, 15000);
-    return () => clearInterval(interval);
-  }, [buyerId]);
+  // Auto-reload disabled per user request
 
   const getDeliveryTimeInMs = (p: Purchase) => {
     if (p.deliveryTime) {

@@ -332,14 +332,7 @@ const MyOrder: React.FC = () => {
 
 
 
-  // ✅ Poll for order updates every 15 seconds to sync with backend changes
-  useEffect(() => {
-    if (!sellerId) return;
-    const interval = setInterval(() => {
-      fetchOrders(); // Reload orders to check only
-    }, 15000);
-    return () => clearInterval(interval);
-  }, [sellerId]);
+  // Auto-reload disabled per user request
 
   const getRemainingTime = (rawDate: string, deliveryMs?: number, deliveryType?: string) => {
     const timeoutMs = deliveryMs ?? 14400000;
