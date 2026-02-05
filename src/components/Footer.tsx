@@ -8,7 +8,8 @@ import {
   Facebook,
   Youtube,
   Twitter,
-  Instagram
+  Instagram,
+  Music2
 } from "lucide-react";
 
 type Props = {
@@ -28,6 +29,7 @@ export default function Footer({ theme = "dark" }: Props) {
     { Icon: Youtube, url: "https://youtube.com/yourchannel", label: "YouTube" },
     { Icon: Twitter, url: "https://twitter.com/yourhandle", label: "Twitter" },
     { Icon: Instagram, url: "https://instagram.com/yourprofile", label: "Instagram" },
+    { Icon: Music2, url: "https://tiktok.com/@yourprofile", label: "TikTok" },
   ];
 
   return (
@@ -145,9 +147,9 @@ export default function Footer({ theme = "dark" }: Props) {
         </div>
 
         {/* Bottom Bar */}
-        <div className={`mt-12 pt-8 border-t ${isDark ? "border-gray-800" : "border-gray-200"} flex flex-col sm:flex-row justify-between items-center gap-4 text-xs ${isDark ? "text-white" : "text-[#33ac6f]"}`}>
-          <p>© {currentYear} AcctEmpire. All rights reserved.</p>
-          <div className="flex items-center gap-6">
+        <div className={`sm:mt-12 sm:pt-8 mt-8 mb-12 pb-8 border-t ${isDark ? "border-gray-800" : "border-gray-200"} flex flex-col sm:flex-row justify-between items-center gap-4 sm:gap-4 text-xs sm:text-sm ${isDark ? "text-gray-300" : "text-gray-700"}`}>
+          <p className="text-center sm:text-left">© {currentYear} AcctEmpire. All rights reserved.</p>
+          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
             <NavLink to="/terms" className={linkHoverClass}>
               Terms of Service
             </NavLink>
