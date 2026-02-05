@@ -82,7 +82,10 @@ const MyAds: React.FC = () => {
       );
 
       setItems(userAds);
-      toast.success("Listings reloaded!");
+      // Only show success toast on larger screens to avoid cluttering mobile view
+      if (window.innerWidth >= 640) {
+        toast.success("Listings reloaded!");
+      }
     } catch (err) {
       console.error(err);
       toast.error("Failed to load ads");
@@ -295,7 +298,7 @@ const MyAds: React.FC = () => {
               <svg className={`w-4 h-4 sm:w-5 sm:h-5 transition-transform ${loading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
-              <span>Reload</span>
+              <span className="hidden sm:inline">Reload</span>
             </button>
 
             <Link
@@ -327,8 +330,8 @@ const MyAds: React.FC = () => {
                 key={t}
                 onClick={() => setActiveTab(t)}
                 className={`pb-2 text-xs sm:text-sm whitespace-nowrap transition-all border-b-2 ${activeTab === t
-                    ? "text-[#d4a643] border-[#d4a643] font-bold"
-                    : "text-gray-500 border-transparent"
+                  ? "text-[#d4a643] border-[#d4a643] font-bold"
+                  : "text-gray-500 border-transparent"
                   }`}
               >
                 <span className="flex items-center gap-1.5 sm:gap-2">
