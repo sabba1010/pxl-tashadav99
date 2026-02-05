@@ -1,14 +1,14 @@
 // src/components/Footer.tsx
 import { NavLink } from "react-router-dom";
 import headerlogo from "../assets/headerlogo.png";
-import { 
-  Mail, 
-  Phone, 
-  MapPin, 
-  Facebook, 
-  Youtube, 
+import {
+  Mail,
+  Phone,
+  MapPin,
+  Facebook,
+  Youtube,
   Twitter,
-  Instagram 
+  Instagram
 } from "lucide-react";
 
 type Props = {
@@ -45,7 +45,7 @@ export default function Footer({ theme = "dark" }: Props) {
             <p className="text-sm leading-relaxed max-w-xs">
               Buy and sell verified social media and digital accounts securely — fast delivery, escrow protection, and dedicated support.
             </p>
-            
+
             {/* Social Icons */}
             <div className="flex space-x-4 pt-4">
               {socialLinks.map(({ Icon, url, label }) => (
@@ -96,8 +96,8 @@ export default function Footer({ theme = "dark" }: Props) {
             <ul className="mt-6 space-y-4 text-sm">
               <li className="flex items-start gap-3">
                 <Mail className="w-5 h-5 text-[#33ac6f] mt-0.5 flex-shrink-0" />
-                <a 
-                  href="mailto:support@acctempire.com" 
+                <a
+                  href="mailto:support@acctempire.com"
                   className={`hover:text-[#33ac6f] ${isDark ? "text-gray-300" : "text-gray-600"}`}
                 >
                   tajudeentoyeeb095@gmail.com
@@ -105,8 +105,8 @@ export default function Footer({ theme = "dark" }: Props) {
               </li>
               <li className="flex items-start gap-3">
                 <Phone className="w-5 h-5 text-[#33ac6f] mt-0.5 flex-shrink-0" />
-                <a 
-                  href="tel:+8801234567890" 
+                <a
+                  href="tel:+8801234567890"
                   className={`hover:text-[#33ac6f] ${isDark ? "text-gray-300" : "text-gray-600"}`}
                 >
                   +1234567890
@@ -148,15 +148,15 @@ export default function Footer({ theme = "dark" }: Props) {
         <div className={`mt-12 pt-8 border-t ${isDark ? "border-gray-800" : "border-gray-200"} flex flex-col sm:flex-row justify-between items-center gap-4 text-xs ${isDark ? "text-gray-500" : "text-gray-600"}`}>
           <p>© {currentYear} AcctEmpire. All rights reserved.</p>
           <div className="flex items-center gap-6">
-            <a href="/terms" className={linkHoverClass} target="_blank" rel="noopener noreferrer">
+            <NavLink to="/terms" className={linkHoverClass}>
               Terms of Service
-            </a>
+            </NavLink>
             <NavLink to="/privacy" className={linkHoverClass}>
               Privacy Policy
             </NavLink>
-            <a href="/cookies" className={linkHoverClass} target="_blank" rel="noopener noreferrer">
+            <NavLink to="/cookie-policy" className={linkHoverClass}>
               Cookie Policy
-            </a>
+            </NavLink>
           </div>
         </div>
       </div>

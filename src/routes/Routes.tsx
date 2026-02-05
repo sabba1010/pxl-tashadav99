@@ -36,6 +36,7 @@ import Plan from "../pages/plan/Plan";
 import PrivacyPolicy from "../components/Policy/PrivacyPolicy";
 import ReferralProgram from "../components/Policy/ReferralProgram";
 import RefundPolicy from "../components/Policy/RefundPolicy";
+import TermsOfService from "../components/Policy/TermsOfService";
 import RatingsReputationPanel from "../dashboard/admin-dashboard/RatingsReputationPanel";
 import WhyChooseUs from "../pages/why/WhyChooseUs";
 import AdminSettings from "../dashboard/admin-dashboard/AdminSettings";
@@ -254,7 +255,7 @@ const Routes = createBrowserRouter([
       },
       {
         path: "/terms",
-        element: <NotFound />,
+        element: <TermsOfService />,
       },
       {
         path: "/cookie-policy",
