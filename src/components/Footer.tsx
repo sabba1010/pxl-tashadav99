@@ -66,7 +66,7 @@ export default function Footer({ theme = "dark" }: Props) {
           </div>
 
           {/* Quick Links */}
-          <div>
+          {/* <div>
             <h3 className={sectionTitleClass}>Quick Links</h3>
             <ul className="mt-6 space-y-3 text-sm">
               {[
@@ -88,7 +88,7 @@ export default function Footer({ theme = "dark" }: Props) {
                 </li>
               ))}
             </ul>
-          </div>
+          </div> */}
 
           {/* Contact Info */}
           <div>
