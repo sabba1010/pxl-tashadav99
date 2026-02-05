@@ -145,7 +145,7 @@ export default function Footer({ theme = "dark" }: Props) {
         </div>
 
         {/* Bottom Bar */}
-        <div className={`mt-12 pt-8 border-t ${isDark ? "border-gray-800" : "border-gray-200"} flex flex-col sm:flex-row justify-between items-center gap-4 text-xs ${isDark ? "text-gray-500" : "text-gray-600"}`}>
+        <div className={`mt-12 pt-8 border-t ${isDark ? "border-gray-800" : "border-gray-200"} flex flex-col sm:flex-row justify-between items-center gap-4 text-xs ${isDark ? "text-white" : "text-[#33ac6f]"}`}>
           <p>© {currentYear} AcctEmpire. All rights reserved.</p>
           <div className="flex items-center gap-6">
             <NavLink to="/terms" className={linkHoverClass}>
