@@ -178,7 +178,7 @@ const RenderIcon = ({
     );
 };
 
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:3200";
+const API_URL = process.env.REACT_APP_API_URL || "https://tasha-vps-backend-2.onrender.com";
 
 interface SellerReputation {
     sellerEmail: string;
@@ -234,49 +234,55 @@ const ItemCard: React.FC<{
     isAdded,
 }) => {
         return (
-            <div className="bg-white rounded-xl shadow-sm border hover:shadow-md transition p-4 flex flex-col text-center h-full">
-                <div className="flex justify-center mb-3">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition p-2 flex items-center gap-3 h-full relative group">
+                {/* Left: Icon */}
+                <div className="flex-shrink-0">
                     <RenderIcon
                         icon={item.icon}
-                        size={44}
+                        size={36}
                         realTime={item.realTime}
                     />
                 </div>
-                <div className="flex-1 min-w-0">
-                    <h3 className="font-bold text-sm text-[#0A1A3A] w-full break-words" title={item.title}>
+
+                {/* Middle: Info */}
+                <div className="flex-1 min-w-0 text-left">
+                    <h3 className="font-bold text-sm text-[#0A1A3A] truncate w-full leading-tight" title={item.title}>
                         {item.title}
                     </h3>
-                    <p className="text-xs text-gray-600 mt-1 line-clamp-2 h-8">
+                    <p className="text-[10px] text-gray-400 mt-0.5 line-clamp-1 leading-tight">
                         {item.desc || "Premium account • Instant delivery"}
                     </p>
-                    <div className="text-xs text-gray-400 mt-2">
-                        <span className="text-green-600 font-medium">{item.delivery}</span>
+                    <div className="flex items-center gap-1.5 mt-1 text-[9px] font-medium text-gray-400">
+                        <span className="text-gray-500 truncate max-w-[80px]">{item.seller}</span>
+                        <span>•</span>
+                        <span className="text-green-600 font-bold bg-green-50 px-1 py-0.5 rounded-sm uppercase tracking-tighter">{item.delivery}</span>
                     </div>
                 </div>
-                <div className="mt-4 flex flex-col items-center w-full">
-                    <div className="text-base font-bold text-[#0A1A3A] mb-2">
+
+                {/* Right: Price & Actions */}
+                <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                    <div className="text-sm font-black text-[#0A1A3A]">
                         ${item.price.toFixed(2)}
                     </div>
-                    <div className="flex items-center gap-2 w-full justify-center">
+                    <div className="flex items-center gap-1">
                         <button
                             onClick={() => onAddToCart(item)}
                             disabled={isAdded}
-                            className={`p-1.5 border rounded-md transition-all duration-200 flex items-center justify-center flex-1
-                ${isAdded
-                                    ? "bg-green-100 text-green-600 border-green-200 cursor-default"
-                                    : "hover:bg-gray-50 text-gray-600"
+                            className={`w-7 h-7 rounded-md flex items-center justify-center transition border
+                                ${isAdded
+                                    ? "bg-green-100 text-green-600 border-green-200"
+                                    : "bg-white text-gray-500 border-gray-200 hover:border-gray-300 hover:text-[#0A1A3A]"
                                 }`}
-                            title={isAdded ? "Already in cart" : "Add to Cart"}
+                            title={isAdded ? "In Cart" : "Add to Cart"}
                         >
-                            {isAdded ? <><CheckIcon size={14} className="mr-1" /> Cart</> : <><ShoppingCartIcon size={14} className="mr-1" /> +Cart</>}
+                            {isAdded ? <CheckIcon size={10} /> : <ShoppingCartIcon size={12} />}
                         </button>
-
                         <button
                             onClick={() => onView(item)}
-                            className="p-1.5 border rounded-md hover:bg-gray-50 text-gray-600 flex items-center justify-center flex-1"
+                            className="w-7 h-7 rounded-md flex items-center justify-center transition border border-gray-200 text-gray-500 hover:border-gray-300 hover:text-[#0A1A3A] bg-white"
                             title="View Details"
                         >
-                            <EyeIcon size={14} className="mr-1" /> View
+                            <EyeIcon size={12} />
                         </button>
                     </div>
                 </div>
