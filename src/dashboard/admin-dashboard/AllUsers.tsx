@@ -190,14 +190,14 @@ const AllUsers: React.FC = () => {
                         </Avatar>
                         <Box>
                           <Typography variant="body2" fontWeight={600}>{u.name}</Typography>
-                          <Typography variant="caption" color="textSecondary">{u.email}</Typography>
+                          <Typography component="a" href={`mailto:${u.email}`} variant="caption" color="textSecondary">{u.email}</Typography>
                         </Box>
                       </Box>
                     </TableCell>
 
                     <TableCell>
                       <Typography variant="body2" sx={{ color: "#475569", display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                        <Phone sx={{ fontSize: 14, color: "#64748b" }} /> {u.phone || "N/A"}
+                        <Phone sx={{ fontSize: 14, color: "#64748b" }} /> {u.phone ? <Typography component="a" href={`https://wa.me/${u.phone}`}>{u.phone}</Typography> : "N/A"}
                       </Typography>
                     </TableCell>
 
