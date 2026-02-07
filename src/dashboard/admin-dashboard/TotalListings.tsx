@@ -108,17 +108,18 @@ const TotalListings: React.FC = () => {
 
   /* ── Helpers ── */
   const getDisplayName = (email: string) => {
+    if (!email) return "Unknown User";
     const user = users.find((u) => u.email === email);
     return user?.userAccountName || email.split("@")[0];
   };
 
   const sellersFromListings = useMemo(() => {
-    const uniqueEmails = Array.from(new Set(listings.map((l) => l.userEmail)));
+    const uniqueEmails = Array.from(new Set(listings.map((l) => l.userEmail).filter(Boolean)));
     const sellerOptions = uniqueEmails.map((email) => {
       const user = users.find((u) => u.email === email);
       return {
         email,
-        displayName: user?.userAccountName || email.split("@")[0],
+        displayName: user?.userAccountName || (email ? email.split("@")[0] : "Unknown"),
       };
     });
     return sellerOptions.sort((a, b) =>

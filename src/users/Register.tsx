@@ -315,6 +315,7 @@ const Register = () => {
       phone,
       password,
       countryCode: selectedCountry.code,
+      dialCode: selectedCountry.dial_code,
       role: "buyer",
       accountCreationDate: new Date(),
       referralCode: Math.random().toString(36).substring(2, 10).toUpperCase(),
