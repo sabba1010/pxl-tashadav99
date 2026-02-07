@@ -1,12 +1,13 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect, useRef } from "react";
 import {
   Box, Paper, InputBase, IconButton, Pagination, Typography,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-  CircularProgress, Avatar, Modal, Tabs, Tab, Select, MenuItem, FormControl, Chip
+  CircularProgress, Avatar, Modal, Tabs, Tab, Select, MenuItem, FormControl, Chip, TextField
 } from "@mui/material";
-import { Refresh, Visibility, Close, FiberManualRecord, CheckCircle, Cancel, ShoppingBag, CalendarMonth, Phone } from "@mui/icons-material";
+import { Refresh, Visibility, Close, FiberManualRecord, CheckCircle, Cancel, ShoppingBag, CalendarMonth, Phone, Chat, Send } from "@mui/icons-material";
+import { toast } from "sonner";
 
 /* ====================== TYPES ====================== */
 interface User {
@@ -20,8 +21,17 @@ interface User {
   accountCreationDate?: string;
 }
 
+interface IMessage {
+  _id?: string;
+  senderEmail: string;
+  receiverEmail: string;
+  message: string;
+  createdAt?: string;
+}
+
 const ITEMS_PER_PAGE = 10;
 const BASE_URL = "http://localhost:3200";
+const ADMIN_CHAT_API = `${BASE_URL}/api/adminchat`;
 
 const AllUsers: React.FC = () => {
   const queryClient = useQueryClient();
@@ -32,6 +42,13 @@ const AllUsers: React.FC = () => {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [historyData, setHistoryData] = useState<{ purchases: any[], payments: any[] }>({ purchases: [], payments: [] });
   const [isHistoryLoading, setIsHistoryLoading] = useState(false);
+
+  // Chat States
+  const [chatOpen, setChatOpen] = useState(false);
+  const [typedMessage, setTypedMessage] = useState("");
+  const [messages, setMessages] = useState<IMessage[]>([]);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const shouldScrollRef = useRef(true);
 
   // 1. Fetch All Users
   const { data: users = [], isLoading: isUsersLoading } = useQuery<User[]>({
@@ -133,6 +150,57 @@ const AllUsers: React.FC = () => {
       console.error(err);
     } finally {
       setIsHistoryLoading(false);
+    }
+  };
+
+  /* ====================== CHAT LOGIC ====================== */
+  const handleScroll = () => {
+    if (scrollRef.current) {
+      const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
+      const isAtBottom = scrollHeight - scrollTop - clientHeight < 50;
+      shouldScrollRef.current = isAtBottom;
+    }
+  };
+
+  const fetchChat = async () => {
+    if (!selectedUser) return;
+    try {
+      const res = await axios.get<IMessage[]>(`${ADMIN_CHAT_API}/history/${selectedUser.email}`);
+      setMessages(res.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    if (shouldScrollRef.current && scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages]);
+
+  useEffect(() => {
+    if (chatOpen && selectedUser) {
+      fetchChat();
+      const interval = setInterval(fetchChat, 4000);
+      return () => clearInterval(interval);
+    }
+  }, [chatOpen, selectedUser?.email]);
+
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!typedMessage.trim() || !selectedUser) return;
+    const msgText = typedMessage;
+    setTypedMessage("");
+    shouldScrollRef.current = true;
+    try {
+      await axios.post(`${ADMIN_CHAT_API}/send`, {
+        senderEmail: "admin@gmail.com",
+        receiverEmail: selectedUser.email,
+        message: msgText,
+      });
+      fetchChat();
+    } catch (err) {
+      toast.error("Failed to send");
     }
   };
 
@@ -242,9 +310,21 @@ const AllUsers: React.FC = () => {
                     </TableCell>
 
                     <TableCell>
-                      <IconButton onClick={() => handleOpenHistory(u)} color="primary">
-                        <Visibility />
-                      </IconButton>
+                      <Box sx={{ display: 'flex', gap: 1 }}>
+                        <IconButton onClick={() => handleOpenHistory(u)} color="primary">
+                          <Visibility />
+                        </IconButton>
+                        <IconButton
+                          onClick={() => {
+                            setSelectedUser(u);
+                            setChatOpen(true);
+                            shouldScrollRef.current = true;
+                          }}
+                          sx={{ color: "#6366F1" }}
+                        >
+                          <Chat fontSize="small" />
+                        </IconButton>
+                      </Box>
                     </TableCell>
                   </TableRow>
                 );
@@ -332,6 +412,93 @@ const AllUsers: React.FC = () => {
               </Table>
             </TableContainer>
           )}
+        </Box>
+      </Modal>
+
+      {/* Chat Modal */}
+      <Modal
+        open={chatOpen}
+        onClose={() => setChatOpen(false)}
+        sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}
+      >
+        <Box
+          sx={{
+            bgcolor: "white",
+            width: 450,
+            height: 600,
+            borderRadius: "24px",
+            display: "flex",
+            flexDirection: "column",
+            overflow: "hidden",
+            outline: "none",
+          }}
+        >
+          <Box
+            sx={{
+              p: 2.5,
+              background: "linear-gradient(to right, #059669, #0891b2)",
+              color: "white",
+              display: "flex",
+              alignItems: "center",
+              gap: 2,
+            }}
+          >
+            <Avatar sx={{ bgcolor: "rgba(255,255,255,0.2)" }}>
+              {selectedUser?.name?.[0]?.toUpperCase()}
+            </Avatar>
+            <Typography variant="subtitle1" fontWeight={700} sx={{ flex: 1 }}>
+              {selectedUser?.name || "Buyer"}
+            </Typography>
+            <IconButton onClick={() => setChatOpen(false)} sx={{ color: "white" }}>
+              <Close />
+            </IconButton>
+          </Box>
+          <Box
+            ref={scrollRef}
+            onScroll={handleScroll}
+            sx={{
+              flex: 1,
+              p: 2.5,
+              overflowY: "auto",
+              background: "#f3f4f6",
+              display: "flex",
+              flexDirection: "column",
+              gap: 2,
+            }}
+          >
+            {messages.map((msg, i) => (
+              <Box
+                key={i}
+                sx={{
+                  alignSelf: msg.senderEmail === "admin@gmail.com" ? "flex-end" : "flex-start",
+                  maxWidth: "80%",
+                  p: 1.5,
+                  borderRadius: 2,
+                  bgcolor: msg.senderEmail === "admin@gmail.com" ? "#0d9488" : "white",
+                  color: msg.senderEmail === "admin@gmail.com" ? "white" : "black",
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                }}
+              >
+                <Typography variant="body2">{msg.message}</Typography>
+              </Box>
+            ))}
+          </Box>
+          <Box
+            component="form"
+            onSubmit={handleSendMessage}
+            sx={{ p: 2, display: "flex", gap: 1, borderTop: "1px solid #ddd" }}
+          >
+            <TextField
+              fullWidth
+              size="small"
+              value={typedMessage}
+              onChange={(e) => setTypedMessage(e.target.value)}
+              placeholder="Type a message..."
+            />
+            <IconButton type="submit" sx={{ color: "#0d9488" }}>
+              <Send />
+            </IconButton>
+          </Box>
         </Box>
       </Modal>
     </Box>
