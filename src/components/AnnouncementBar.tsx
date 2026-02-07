@@ -76,30 +76,43 @@ export default function AnnouncementBar() {
     if (!isVisible || !currentAnnouncement) return null;
 
     return (
-        <div className="relative isolate flex items-center gap-x-6 overflow-hidden bg-gray-50 px-6 py-2.5 sm:px-3.5 sm:before:flex-1"
+        <div className="relative isolate flex items-center w-full overflow-hidden px-4 py-3 md:px-6 md:py-2.5"
             style={{ background: 'linear-gradient(90deg, #0A1A3A 0%, #1a3a6e 50%, #D4A643 100%)' }}>
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-                <p className="text-sm leading-6 text-white flex items-center gap-2">
-                    <Megaphone className="h-4 w-4 text-[#D4A643]" />
-                    <strong className="font-semibold">{currentAnnouncement.title}</strong>
-                    <svg viewBox="0 0 2 2" className="mx-2 inline h-0.5 w-0.5 fill-current" aria-hidden="true">
-                        <circle cx={1} cy={1} r={1} />
-                    </svg>
-                    {currentAnnouncement.message || currentAnnouncement.description}
-                </p>
+
+            {/* Content Container */}
+            <div className="w-full flex flex-row items-center justify-between gap-x-4 pr-8 md:pr-10">
+                <div className="flex flex-row items-center gap-x-2 text-sm leading-6 text-white">
+                    <span className="flex items-center gap-2 font-bold text-[#D4A643]">
+                        <Megaphone className="h-4 w-4" />
+                        {currentAnnouncement.title}
+                    </span>
+
+                    <span className="hidden md:inline text-white/40">•</span>
+
+                    <span className="opacity-90 text-xs md:text-sm">
+                        {currentAnnouncement.message || currentAnnouncement.description}
+                    </span>
+                </div>
+
                 {currentAnnouncement.link && (
                     <a
                         href={currentAnnouncement.link}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex-none rounded-full bg-white/10 px-3.5 py-1 text-sm font-semibold text-white shadow-sm hover:bg-white/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white flex items-center gap-1 transition-all"
+                        className="w-fit rounded-full bg-white/10 px-4 py-1 text-xs font-semibold text-white shadow-sm ring-1 ring-inset ring-white/20 hover:bg-white/20 transition-all flex items-center gap-2 ml-auto"
                     >
                         Learn more <ArrowRight className="h-3 w-3" />
                     </a>
                 )}
             </div>
-            <div className="flex flex-1 justify-end">
-                <button type="button" onClick={handleDismiss} className="-m-3 p-3 focus-visible:outline-offset-[-4px] text-white/70 hover:text-white transition-colors">
+
+            {/* Close Button */}
+            <div className="absolute right-2 top-2 md:relative md:right-auto md:top-auto md:flex-shrink-0">
+                <button
+                    type="button"
+                    onClick={handleDismiss}
+                    className="p-2 text-white/60 hover:text-white transition-colors rounded-full hover:bg-white/10"
+                >
                     <span className="sr-only">Dismiss</span>
                     <X className="h-5 w-5" aria-hidden="true" />
                 </button>

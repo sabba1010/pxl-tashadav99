@@ -9,11 +9,23 @@ import { useAuth } from "../context/AuthContext";
 import { getAllNotifications, clearNotifications } from "../components/Notification/Notification";
 import headerlogo from "../assets/headerlogo.png";
 import { useAuthHook } from "../hook/useAuthHook";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   ListCheck,
   ShoppingBag,
   ShoppingCart,
   WalletMinimal,
+  Bell,
+  BellOff,
+  Trash2,
+  RefreshCw,
+  Info,
+  MessageSquare,
+  ChevronRight,
+  LayoutDashboard,
+  Settings,
+  LogOut,
+  Plus
 } from "lucide-react";
 import AnnouncementBar from "./AnnouncementBar";
 
@@ -91,7 +103,7 @@ export default function Navbar() {
     document.body.style.opacity = '0';
     document.body.style.transition = 'opacity 0.1s ease-out';
     document.body.style.overflow = 'hidden';
-    
+
     // Clear all DOM content
     const root = document.getElementById('root');
     if (root) {
@@ -99,10 +111,10 @@ export default function Navbar() {
       root.style.opacity = '0';
       root.style.backgroundColor = '#fff';
     }
-    
+
     // Call logout to clear all auth data
     user.logout();
-    
+
     // Don't show toast since page is clearing
     // Redirect immediately with hard reload to ensure clean session
     setTimeout(() => {
@@ -197,15 +209,14 @@ export default function Navbar() {
     <>
       <AnnouncementBar />
       <header
-        className="sticky top-0 z-40 w-full bg-white border-b border-gray-200 shadow-sm py-2"
-        style={{ backgroundColor: CLEAN_WHITE }}
+        className="sticky top-0 z-40 w-full bg-white/80 backdrop-blur-md border-b border-gray-100 shadow-sm py-2 transition-all duration-300"
       >
         <nav className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-14 md:h-16">
             <div className="flex items-center">
               <button
                 onClick={() => setMobileMenuOpen((s) => !s)}
-                className="hidden p-2 rounded-md hover:bg-gray-100 transition"
+                className="hidden p-2 rounded-md hover:bg-gray-100 transition lg:hidden"
               >
                 {mobileMenuOpen ? (
                   <svg className="w-6 h-6" fill="none" stroke={EMPIRE_BLUE} viewBox="0 0 24 24">
@@ -225,238 +236,295 @@ export default function Navbar() {
                 <img
                   src={headerlogo}
                   alt="AcctEmpire"
-                  className="h-16 sm:h-18 md:h-20 lg:h-24 w-auto object-contain"
-                /* h-16 (64px) for mobile - "a little big"
-                   h-24 (96px) for desktop - "large/medium"
-                */
+                  className="h-16 sm:h-18 md:h-20 lg:h-24 w-auto object-contain transition-transform hover:scale-105 duration-300"
                 />
               </NavLink>
             </div>
 
             <div className="hidden lg:flex items-center gap-8">
-              <NavLink to="/marketplace" className="font-medium" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}>Marketplace</NavLink>
-              <NavLink to="/purchases" className="font-medium" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}>Mypurchase</NavLink>
-              {(loginUserData.data?.role === "seller" || loginUserData.data?.role === "admin") && (
-                <NavLink to="/orders" className="font-medium" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}>Orders</NavLink>
-              )}
-              {loginUser && (
-                <NavLink to="/wallet" className="font-medium" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}>Wallet</NavLink>
-              )}
-              {(loginUser?.role === "seller" || loginUser?.role === "admin") && (
-                <NavLink to="/myproducts" className="font-medium" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}>My Ads</NavLink>
-              )}
-              {(loginUser?.role === "seller" || loginUser?.role === "admin") && (
-                <NavLink to="/seller-guide" className="font-medium" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}>Seller Guide</NavLink>
-              )}
-              {(loginUser?.role === "buyer" || loginUser?.role === "admin") && (
-                <NavLink to="/buyer-guide" className="font-medium" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}>Buyer Guide</NavLink>
-              )}
-              <button onClick={handleSellProduct} className="px-6 py-2.5 rounded-lg font-medium text-white shadow-sm" style={{ backgroundColor: ROYAL_GOLD }}>Sell Product</button>
+              {[
+                { to: "/marketplace", label: "Marketplace" },
+                { to: "/purchases", label: "Mypurchase" },
+                ...(loginUserData.data?.role === "seller" || loginUserData.data?.role === "admin" ? [{ to: "/orders", label: "Orders" }] : []),
+                ...(loginUser ? [{ to: "/wallet", label: "Wallet" }] : []),
+                ...(loginUser?.role === "seller" || loginUser?.role === "admin" ? [{ to: "/myproducts", label: "My Ads" }, { to: "/seller-guide", label: "Seller Guide" }] : []),
+                ...(loginUser?.role === "buyer" || loginUser?.role === "admin" ? [{ to: "/buyer-guide", label: "Buyer Guide" }] : [])
+              ].map((link) => (
+                <NavLink
+                  key={link.to}
+                  to={link.to}
+                  className={({ isActive }) =>
+                    `font-medium text-sm tracking-wide transition-colors duration-200 hover:text-[#D4A643] ${isActive ? "text-[#D4A643]" : "text-[#111111]"}`
+                  }
+                >
+                  {link.label}
+                </NavLink>
+              ))}
+
+              <button onClick={handleSellProduct} className="px-6 py-2.5 rounded-full font-semibold text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 bg-gradient-to-r from-[#D4A643] to-[#b88c30]">
+                Sell Product
+              </button>
             </div>
 
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-3">
               {/* Notifications Dropdown */}
               <div className="relative" ref={notifRef}>
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={handleShowNotifications}
-                  className="p-2 rounded-md hover:bg-gray-100 transition relative"
+                  className={`p-2.5 rounded-full transition-all duration-200 relative ${notifOpen ? "bg-blue-50 text-blue-600" : "hover:bg-gray-100 text-gray-700"}`}
                 >
-                  <svg className="w-6 h-6" fill="none" stroke={EMPIRE_BLUE} viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-                    />
-                  </svg>
+                  <Bell className={`w-6 h-6 ${notifOpen ? "fill-current" : ""}`} />
+
+                  <AnimatePresence>
+                    {unreadCount > 0 && (
+                      <motion.span
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        exit={{ scale: 0 }}
+                        className="absolute top-0 right-0 inline-flex items-center justify-center w-5 h-5 text-[10px] font-bold text-white bg-red-500 rounded-full border-2 border-white shadow-sm"
+                      >
+                        {unreadCount}
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
 
                   {unreadCount > 0 && (
-                    <span className="absolute -top-1 -right-1 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-600 rounded-full shadow-sm border border-white">
-                      {unreadCount}
-                    </span>
+                    <span className="absolute top-0 right-0 w-5 h-5 rounded-full bg-red-400 animate-ping opacity-75"></span>
                   )}
-                </button>
+                </motion.button>
 
-                {notifOpen && (
-                  <div
-                    className="fixed top-14 left-4 right-4 md:absolute md:top-full md:left-auto md:right-0 md:mt-2 md:w-96 bg-white border rounded-xl shadow-2xl z-50 overflow-hidden"
-                    style={{ backgroundColor: CLEAN_WHITE }}
-                  >
-                    <div className="px-4 py-3 border-b flex items-center justify-between">
-                      <div className="font-bold text-gray-900">Notifications</div>
-                      <div className="text-xs font-semibold text-gray-600">
-                        {loadingNotifs ? "Loading..." : `${notifications.length} total`}
-                      </div>
-                    </div>
-
-                    <div className="max-h-[60vh] md:max-h-80 overflow-y-auto divide-y">
-                      {notifications.length === 0 && !loadingNotifs && (
-                        <div className="p-4 text-center text-sm text-gray-500">
-                          No notifications found for <br />
-                          <span className="font-semibold">{currentUserEmail}</span>
+                <AnimatePresence>
+                  {notifOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      transition={{ duration: 0.2 }}
+                      className="fixed top-16 left-4 right-4 md:absolute md:top-full md:left-auto md:right-[-80px] md:mt-4 md:w-[420px] bg-white/95 backdrop-blur-xl border border-gray-100/50 rounded-2xl shadow-2xl z-50 overflow-hidden ring-1 ring-black/5"
+                    >
+                      {/* Header */}
+                      <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between bg-white/50">
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-bold text-gray-900 text-lg">Notifications</h3>
+                          <span className="bg-blue-100 text-blue-700 py-0.5 px-2 rounded-full text-xs font-bold">
+                            {unreadCount} New
+                          </span>
                         </div>
-                      )}
-
-                      {notifications.map((n) => {
-                        const senderName = n.senderId?.split("@")[0];
-                        const isRead = n.userEmail === currentUserEmail ? n.read : n.readBy?.includes(currentUserEmail || "");
-
-                        return (
-                          <div
-                            key={n._id}
-                            className={`p-3 hover:bg-gray-50 transition-colors ${isRead
-                              ? "bg-white"
-                              : "bg-blue-50 border-l-4 border-blue-600"
-                              }`}
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => fetchNotifications()}
+                            className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-500 hover:text-blue-600 transition-colors"
+                            title="Refresh"
                           >
-                            <div className="flex items-start justify-between gap-3">
-                              <div className="flex-1">
-                                <div className="text-sm font-bold text-black">
-                                  {senderName ? `New message from ${senderName}` : n.title}
-                                </div>
+                            <RefreshCw size={16} className={loadingNotifs ? "animate-spin" : ""} />
+                          </button>
+                          {notifications.length > 0 && (
+                            <button
+                              onClick={clearAllNotifications}
+                              className="p-1.5 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-600 transition-colors"
+                              title="Clear All"
+                            >
+                              <Trash2 size={18} />
+                            </button>
+                          )}
+                        </div>
+                      </div>
 
-                                {n.productTitle && (
-                                  <div className="text-[11px] text-blue-700 font-bold mt-0.5">
-                                    Regarding: {n.productTitle}
-                                  </div>
-                                )}
-
-                                <div className="text-xs text-gray-800 font-medium mt-1 line-clamp-2 leading-relaxed">
-                                  {n.message || n.description || "No description"}
-                                </div>
-
-                                {n.link && (
-                                  <a
-                                    href={n.link}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-[10px] text-blue-600 font-bold mt-2 inline-flex items-center gap-1 hover:underline bg-blue-50 px-2 py-1 rounded"
-                                  >
-                                    Action Link:{" "}
-                                    {n.link.length > 30
-                                      ? n.link.substring(0, 30) + "..."
-                                      : n.link}
-                                  </a>
-                                )}
-
-                                <div className="text-[10px] text-gray-600 font-semibold mt-1">
-                                  {n.createdAt
-                                    ? new Date(n.createdAt).toLocaleString()
-                                    : ""}
-
-                                </div>
+                      {/* List */}
+                      <div className="max-h-[65vh] md:max-h-[500px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
+                        <AnimatePresence mode="popLayout">
+                          {notifications.length === 0 && !loadingNotifs ? (
+                            <motion.div
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              className="flex flex-col items-center justify-center py-16 text-center"
+                            >
+                              <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
+                                <BellOff className="w-8 h-8 text-gray-300" />
                               </div>
+                              <p className="text-gray-500 font-medium">No notifications yet</p>
+                              <p className="text-xs text-gray-400 mt-1">We'll notify you when something arrives</p>
+                            </motion.div>
+                          ) : (
+                            notifications.map((n) => {
+                              const isRead = n.userEmail === currentUserEmail ? n.read : n.readBy?.includes(currentUserEmail || "");
+                              const timeAgo = n.createdAt ? new Date(n.createdAt).toLocaleString() : ""; // Simplified for now
 
-                              {!isRead && (
-                                <div className="ml-2 w-2.5 h-2.5 rounded-full bg-blue-600 mt-1 shadow-sm" />
-                              )}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
+                              return (
+                                <motion.div
+                                  layout
+                                  key={n._id}
+                                  initial={{ opacity: 0, x: -20 }}
+                                  animate={{ opacity: 1, x: 0 }}
+                                  exit={{ opacity: 0, x: 20 }}
+                                  className={`group relative p-4 transition-all duration-200 hover:bg-gray-50 border-b border-gray-50 last:border-0 ${!isRead ? "bg-blue-50/30" : ""}`}
+                                >
+                                  {!isRead && (
+                                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500 rounded-r-full" />
+                                  )}
 
-                    <div className="px-4 py-3 border-t bg-gray-50 flex justify-between items-center">
-                      <button
-                        onClick={clearAllNotifications}
-                        className="text-xs text-red-600 hover:text-red-800 hover:underline font-bold flex items-center gap-1"
-                        disabled={notifications.length === 0}
-                      >
-                        <FaTrashIcon /> Clear All
-                      </button>
+                                  <div className="flex gap-4">
+                                    <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${!isRead ? "bg-blue-100 text-blue-600" : "bg-gray-100 text-gray-500"}`}>
+                                      {n.type === 'report' ? <Info size={18} /> :
+                                        n.productTitle ? <ShoppingBag size={18} /> :
+                                          <MessageSquare size={18} />}
+                                    </div>
 
-                      <button
-                        onClick={() => fetchNotifications()}
-                        className="text-xs text-blue-700 hover:underline font-bold"
-                      >
-                        Refresh List
-                      </button>
-                    </div>
-                  </div>
-                )}
+                                    <div className="flex-1 min-w-0">
+                                      <div className="flex justify-between items-start mb-1">
+                                        <h4 className={`text-sm ${!isRead ? "font-bold text-gray-900" : "font-semibold text-gray-700"}`}>
+                                          {n.senderId?.split("@")[0] || n.title}
+                                        </h4>
+                                        <span className="text-[10px] text-gray-400 whitespace-nowrap ml-2">{timeAgo}</span>
+                                      </div>
+
+                                      {n.productTitle && (
+                                        <p className="text-xs font-medium text-blue-600 mb-1 flex items-center gap-1">
+                                          <ShoppingBag size={10} /> {n.productTitle}
+                                        </p>
+                                      )}
+
+                                      <p className="text-xs text-gray-600 leading-relaxed line-clamp-2">
+                                        {n.message || n.description || "No content"}
+                                      </p>
+
+                                      {n.link && (
+                                        <a
+                                          href={n.link}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="inline-flex items-center gap-1 mt-2 text-[10px] font-bold text-blue-600 hover:text-blue-800 bg-blue-50 px-2 py-1 rounded-md transition-colors"
+                                        >
+                                          View Details <ChevronRight size={10} />
+                                        </a>
+                                      )}
+                                    </div>
+                                  </div>
+                                </motion.div>
+                              );
+                            })
+                          )}
+                        </AnimatePresence>
+                      </div>
+
+                      {/* Footer */}
+                      <div className="p-3 bg-gray-50 border-t border-gray-100 text-center">
+                        <button
+                          onClick={() => {
+                            fetchNotifications();
+                            toast.success("Notifications updated");
+                          }}
+                          className="text-xs font-semibold text-gray-500 hover:text-gray-900 transition-colors"
+                        >
+                          View all activity
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
 
 
               {/* Avatar Dropdown */}
               <div className="relative" ref={dropdownRef}>
                 {user.user ? (
-                  <button onClick={() => setOpen((o) => !o)} className="flex items-center p-1 rounded-full hover:bg-gray-100 transition">
-                    <div className="h-9 w-9 rounded-full flex items-center justify-center text-white font-bold text-sm" style={{ background: `linear-gradient(90deg, ${EMPIRE_BLUE} 0%, ${ROYAL_GOLD} 100%)` }}>
+                  <motion.button
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setOpen((o) => !o)}
+                    className="flex items-center gap-2 p-1 pl-2 pr-1 rounded-full hover:bg-gray-50 border border-transparent hover:border-gray-200 transition-all duration-200"
+                  >
+                    <div className="text-right hidden md:block">
+                      <div className="text-xs font-bold text-gray-900 leading-tight">{loginUser?.name}</div>
+                      <div className="text-[10px] text-gray-500">{loginUser?.role}</div>
+                    </div>
+                    <div className="h-10 w-10 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md ring-2 ring-white" style={{ background: `linear-gradient(135deg, ${EMPIRE_BLUE} 0%, ${ROYAL_GOLD} 100%)` }}>
                       {loginUser?.name ? loginUser.name[0].toUpperCase() : "A"}
                     </div>
-                  </button>
+                  </motion.button>
                 ) : (
-                  <div className="flex gap-1.5 md:gap-4 md:ml-6">
-                    <Link to="/login"><Button variant="contained" sx={{ px: { xs: 1.5, md: 4 }, py: { xs: 0.3, md: "auto" }, borderRadius: "6px", textTransform: "none", fontWeight: 600, backgroundColor: ROYAL_GOLD, fontSize: { xs: "0.65rem", md: "1rem" }, height: { xs: "28px", md: "auto" } }}>Login</Button></Link>
-                    <Link to="/register"><Button variant="outlined" sx={{ px: { xs: 1.5, md: 4 }, py: { xs: 0.3, md: "auto" }, borderRadius: "6px", textTransform: "none", fontWeight: 600, borderWidth: "2px", fontSize: { xs: "0.65rem", md: "1rem" }, height: { xs: "28px", md: "auto" } }}>Register</Button></Link>
+                  <div className="flex gap-3 md:ml-6">
+                    <Link to="/login"><Button variant="text" sx={{ color: "#333", fontWeight: 600, textTransform: "none" }}>Log in</Button></Link>
+                    <Link to="/register"><Button variant="contained" sx={{ backgroundColor: "#111", color: "white", borderRadius: "99px", px: 3, textTransform: "none", fontWeight: 600, "&:hover": { backgroundColor: "#333" } }}>Sign up</Button></Link>
                   </div>
                 )}
 
-                {open && (
-                  <div className="fixed left-4 right-4 top-20 md:absolute md:right-0 md:top-full md:left-auto md:mt-2 md:w-80 rounded-xl shadow-2xl border border-gray-200 overflow-hidden z-50 max-h-[70vh] flex flex-col" style={{ backgroundColor: CLEAN_WHITE }}>
-                    <div className="px-4 md:px-6 py-3 md:py-5 border-b flex-shrink-0" style={{ backgroundColor: "#F9FAFB" }}>
-                      <div className="font-bold text-base md:text-lg" style={{ color: EMPIRE_BLUE }}>{loginUser?.name}</div>
-                      <div className="text-xs md:text-sm text-gray-500 truncate">{loginUser?.email}</div>
-                    </div>
-                    <div className="px-4 md:px-6 py-3 md:py-4 border-b flex-shrink-0">
-                      <div className="rounded-xl p-3 md:p-5 text-white relative overflow-hidden" style={{ background: `linear-gradient(135deg, ${EMPIRE_BLUE} 0%, #1a3a6e 100%)` }}>
+                <AnimatePresence>
+                  {open && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      transition={{ duration: 0.2 }}
+                      className="fixed right-4 top-20 md:absolute md:right-0 md:top-full md:left-auto md:mt-4 md:w-80 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-50 ring-1 ring-black/5"
+                    >
+                      <div className="p-6 bg-gradient-to-br from-gray-900 to-gray-800 text-white relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-10 -mt-10 blur-2xl"></div>
                         <div className="relative z-10">
-                          <div className="text-xs md:text-sm opacity-90">Your Balance</div>
-                          <div className="text-2xl md:text-3xl font-bold mt-1 md:mt-2">${loginUserData.data?.balance?.toFixed(2) || "0.00"}</div>
-                        </div>
-                        <NavLink to="/wallet" onClick={() => setOpen(false)} className="absolute bottom-2 md:bottom-4 right-2 md:right-4 text-xs md:text-sm underline opacity-90">View Wallet →</NavLink>
-                      </div>
-                    </div>
-                    <div className="overflow-y-auto flex-1 py-2">
-                      {loginUser?.role === "admin" && (
-                        <NavLink to="/admin-dashboard" onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 md:px-6 py-2.5 md:py-3 hover:bg-gray-50 transition"><span className="text-xs md:text-sm font-medium">My Account Dashboard</span></NavLink>
-                      )}
-                      {loginUser?.role === "seller" && (
-                        <NavLink to="/seller-dashboard" onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 md:px-6 py-2.5 md:py-3 hover:bg-gray-50 transition"><span className="text-xs md:text-sm font-medium">My Dashboard</span></NavLink>
-                      )}
-                      {(loginUser?.role === "seller" || loginUser?.role === "admin") && (
-                        <NavLink to="/referral" onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 md:px-6 py-2.5 md:py-3 hover:bg-gray-50 transition"><span className="text-xs md:text-sm font-medium">Referral</span></NavLink>
-                      )}
-                      {/* <NavLink to="/referral" onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 md:px-6 py-2.5 md:py-3 hover:bg-gray-50 transition"><span className="text-xs md:text-sm font-medium">Referral</span></NavLink> */}
-                      <NavLink to="/plans" onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 md:px-6 py-2.5 md:py-3 hover:bg-gray-50 transition"><span className="text-xs md:text-sm font-medium">Plans</span></NavLink>
-                      {(loginUser?.role === "seller" || loginUser?.role === "admin") && (
-                        <NavLink to="/seller-guide" onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 md:px-6 py-2.5 md:py-3 hover:bg-gray-50 transition"><span className="text-xs md:text-sm font-medium">Seller Guide</span></NavLink>
-                      )}
-                      {(loginUser?.role === "buyer" || loginUser?.role === "admin") && (
-                        <NavLink to="/buyer-guide" onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 md:px-6 py-2.5 md:py-3 hover:bg-gray-50 transition"><span className="text-xs md:text-sm font-medium">Buyer Guide</span></NavLink>
-                      )}
-                      <NavLink to="/purchases" onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 md:px-6 py-2.5 md:py-3 hover:bg-gray-50 transition"><span className="text-xs md:text-sm font-medium">My Purchases</span></NavLink>
-                      <NavLink to="/account-settings" onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 md:px-6 py-2.5 md:py-3 hover:bg-gray-50 transition"><span className="text-xs md:text-sm font-medium">Account Settings</span></NavLink>
-                      <NavLink to="/reports" onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 md:px-6 py-2.5 md:py-3 hover:bg-gray-50 transition"><span className="text-xs md:text-sm font-medium">Reports</span></NavLink>
-                      {(loginUser?.role === "seller" || loginUser?.role === "buyer") && (
-                        <NavLink to="/seller-chat" onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 md:px-6 py-2.5 md:py-3 hover:bg-gray-50 transition"><span className="text-xs md:text-sm font-medium">Admin Support</span></NavLink>
-                      )}
-                    </div>
+                          <div className="text-lg font-bold">{loginUser?.name}</div>
+                          <div className="text-sm text-gray-300 mb-4">{loginUser?.email}</div>
 
-                    <button onClick={handelLougt} className="w-full flex items-center gap-3 px-4 md:px-6 py-2.5 md:py-3 hover:bg-yellow-50 transition text-left flex-shrink-0 border-t" style={{ color: "#B45309" }}><span className="text-xs md:text-sm font-medium">Log out</span></button>
-                  </div>
-                )}
+                          <div className="bg-white/10 backdrop-blur-md rounded-xl p-3 border border-white/10">
+                            <div className="text-xs text-gray-300 uppercase tracking-wider mb-1">Wallet Balance</div>
+                            <div className="text-2xl font-bold text-[#D4A643]">${loginUserData.data?.balance?.toFixed(2) || "0.00"}</div>
+                            <NavLink to="/wallet" onClick={() => setOpen(false)} className="text-[10px] text-white/80 hover:text-white underline mt-1 inline-block">Manage Wallet &rarr;</NavLink>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="py-2">
+                        {[
+                          ...(loginUser?.role === "admin" ? [{ to: "/admin-dashboard", label: "Admin Dashboard", icon: <LayoutDashboard size={16} /> }] : []),
+                          ...(loginUser?.role === "seller" ? [{ to: "/seller-dashboard", label: "Seller Dashboard", icon: <LayoutDashboard size={16} /> }] : []),
+                          { to: "/purchases", label: "My Purchases", icon: <ShoppingBag size={16} /> },
+                          { to: "/account-settings", label: "Settings", icon: <Settings size={16} /> },
+                        ].map((item) => (
+                          <NavLink
+                            key={item.label}
+                            to={item.to}
+                            onClick={() => setOpen(false)}
+                            className="flex items-center gap-3 px-6 py-3 hover:bg-gray-50 text-gray-700 text-sm font-medium transition-colors"
+                          >
+                            {item.icon} {item.label}
+                          </NavLink>
+                        ))}
+
+                        <div className="h-px bg-gray-100 my-2 mx-6"></div>
+
+                        <button onClick={handelLougt} className="w-full flex items-center gap-3 px-6 py-3 text-red-600 hover:bg-red-50 text-sm font-medium transition-colors text-left">
+                          <LogOut size={16} /> Sign out
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </div>
           </div>
         </nav>
       </header>
 
-      {/* Mobile Bottom Nav */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 lg:hidden">
-        <div className="flex items-end justify-between h-20 px-4 overflow-x-auto">
-          <NavLink to="/marketplace" className="flex flex-col items-center justify-center flex-1 pb-5" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}><ShoppingBag /><span className="text-xs">Marketplace</span></NavLink>
-          <NavLink to="/purchases" className="flex flex-col items-center justify-center flex-1 pb-5" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}><ShoppingCart /><span className="text-xs">Purchases</span></NavLink>
-          <button onClick={handleSellProduct} className="flex flex-col items-center justify-center flex-1 pb-5 bg-transparent border-0" style={{ color: CHARCOAL, cursor: "pointer" }}><FaBreadSliceIcon className="w-5 h-5 mb-1" /><span className="text-xs">Sell</span></button>
-          {(loginUser?.role === "seller" || loginUser?.role === "admin") && (
-            <NavLink to="/orders" className="flex flex-col items-center justify-center flex-1 pb-5" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}><ListCheck /><span className="text-xs">Orders</span></NavLink>
-          )}
-          {loginUser && (
-            <NavLink to="/wallet" className="flex flex-col items-center justify-center flex-1 pb-5" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}><WalletMinimal /><span className="text-xs">Wallet</span></NavLink>
-          )}
-          {(loginUser?.role === "seller") && (
-            <NavLink to="/seller-chat" className="flex flex-col items-center justify-center flex-1 pb-5" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" /></svg><span className="text-xs">Support</span></NavLink>
-          )}
+      {/* Mobile Bottom Nav - Kept Simple for Performance */}
+      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-lg border-t border-gray-200 lg:hidden pb-safe">
+        <div className="flex items-end justify-between h-16 px-6">
+          <NavLink to="/marketplace" className={({ isActive }) => `flex flex-col items-center justify-center flex-1 h-full gap-1 ${isActive ? "text-[#D4A643]" : "text-gray-400"}`}>
+            <ShoppingBag size={20} />
+          </NavLink>
+          <NavLink to="/purchases" className={({ isActive }) => `flex flex-col items-center justify-center flex-1 h-full gap-1 ${isActive ? "text-[#D4A643]" : "text-gray-400"}`}>
+            <ShoppingCart size={20} />
+          </NavLink>
+          <div className="relative -top-5">
+            <button onClick={handleSellProduct} className="flex flex-col items-center justify-center w-14 h-14 rounded-full bg-[#D4A643] text-white shadow-lg shadow-orange-200">
+              <Plus size={24} />
+            </button>
+          </div>
+          <NavLink to="/orders" className={({ isActive }) => `flex flex-col items-center justify-center flex-1 h-full gap-1 ${isActive ? "text-[#D4A643]" : "text-gray-400"}`}>
+            <ListCheck size={20} />
+          </NavLink>
+          <NavLink to="/wallet" className={({ isActive }) => `flex flex-col items-center justify-center flex-1 h-full gap-1 ${isActive ? "text-[#D4A643]" : "text-gray-400"}`}>
+            <WalletMinimal size={20} />
+          </NavLink>
         </div>
       </nav>
     </>
