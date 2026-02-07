@@ -472,7 +472,7 @@ const MyOrder: React.FC = () => {
     if (!id) return;
     setIsUpdating(true);
     try {
-      await axios.patch(`${PURCHASE_API}/update-status/${id}`, { status, sellerEmail: sellerId, role: "seller" });
+      await axios.patch(`${PURCHASE_API}/update-status/${id}`, { status, email: sellerId, role: "seller" });
       toast.success(`Order ${status} successfully!`);
       setSelected(null);
       fetchOrders();

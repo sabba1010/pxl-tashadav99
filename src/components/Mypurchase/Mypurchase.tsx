@@ -501,7 +501,7 @@ const MyPurchase: React.FC = () => {
     if (!id) return;
 
     try {
-      await axios.patch(`${PURCHASE_API}/update-status/${id}`, { status, sellerEmail, role: "buyer" });
+      await axios.patch(`${PURCHASE_API}/update-status/${id}`, { status, email: buyerId, role: "buyer" });
       toast.success(`Order ${status} successfully!`);
       setSelected(null);
       fetchPurchases();

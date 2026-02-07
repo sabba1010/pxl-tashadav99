@@ -28,7 +28,8 @@ interface AdminMetrics {
   totalSystemBalance: number;
   lifetimeEarnings: number;
   availableAdminBalance: number;
-  adminSalesBalance: number; // 🟢 New: 100% Volume
+  adminSalesBalance: number;
+  currentSystemTurnover: number; // 🟢 New
   pendingDepositRequests: number;
   pendingWithdrawalRequests: number;
   totalBuyerDeposits: number;
@@ -93,12 +94,13 @@ const DashboardOverview: React.FC = () => {
    * - 'metrics' state is derived directly from the 'data' query result.
    */
   const fetchDashboardData = async (): Promise<AdminMetrics> => {
-    const [uRes, prRes, puRes, payRes, wRes] = await Promise.all([
+    const [uRes, prRes, puRes, payRes, wRes, finRes] = await Promise.all([
       axios.get(`${BASE_URL}/api/user/getall`).catch(() => ({ data: [] })),
       axios.get(`${BASE_URL}/product/all-sells`).catch(() => ({ data: [] })),
       axios.get(`${BASE_URL}/purchase/getall`).catch(() => ({ data: [] })),
       axios.get(`${BASE_URL}/api/payments`).catch(() => ({ data: [] })),
       axios.get(`${BASE_URL}/withdraw/getall`).catch(() => ({ data: [] })),
+      axios.get(`${BASE_URL}/api/admin/financial-metrics`).catch(() => ({ data: { metrics: {} } })),
     ]);
 
     const users = (Array.isArray(uRes.data) ? uRes.data : []) as any[];
@@ -106,31 +108,9 @@ const DashboardOverview: React.FC = () => {
     const purchases = (Array.isArray(puRes.data) ? puRes.data : []) as any[];
     const payments = (Array.isArray(payRes.data) ? payRes.data : []) as any[];
     const withdraws = (Array.isArray(wRes.data) ? wRes.data : []) as any[];
+    const finMetrics = (finRes.data?.metrics || {}) as any;
 
     const usersMap = new Map(users.map((u: any) => [u._id.toString(), u]));
-
-    // Calculate platform profit from completed purchases
-    const lifetimeEarnings = purchases.reduce((acc: number, p: any) => {
-      const isCompleted = ["completed", "success"].includes(p.status?.toLowerCase());
-      if (isCompleted) {
-        const fee = Number(p.adminFee) || (Number(p.totalAmount || p.price || 0) * 0.20);
-        return acc + fee;
-      }
-      return acc;
-    }, 0);
-
-    // Calculate total sales volume (100% of completed)
-    const adminSalesBalance = purchases.reduce((acc: number, p: any) => {
-      const isCompleted = ["completed", "success"].includes(p.status?.toLowerCase());
-      if (isCompleted) {
-        return acc + (Number(p.totalAmount || p.price || 0));
-      }
-      return acc;
-    }, 0);
-
-    // Get actual admin balance from DB
-    const adminUser = users.find((u: any) => u.email === "admin@gmail.com");
-    const availableAdminBalance = adminUser ? Number(adminUser.balance) : 0;
 
     // Total buyer deposits (successful/credited payments)
     const totalBuyerDeposits = payments.reduce((acc: number, p: any) => {
@@ -175,13 +155,14 @@ const DashboardOverview: React.FC = () => {
       totalUsers: users.length,
       totalBuyers: users.filter((u: any) => u.role === "buyer").length,
       totalSellers: users.filter((u: any) => u.role === "seller").length,
-      totalUserBalance: users.reduce((sum: number, u: any) => sum + (Number(u.balance) || 0), 0),
+      totalUserBalance: finMetrics.totalWalletBalanceHeldByUsers || 0,
       activeListings: products.filter((p: any) => p.status === "active").length,
       pendingListings: products.filter((p: any) => p.status === "pending").length,
       totalSystemBalance: purchases.reduce((s: number, p: any) => s + (Number(p.totalAmount || p.price) || 0), 0),
-      lifetimeEarnings,
-      availableAdminBalance,
-      adminSalesBalance,
+      lifetimeEarnings: finMetrics.lifetimePlatformProfit || 0,
+      availableAdminBalance: finMetrics.currentWalletPlatformProfit || 0,
+      adminSalesBalance: finMetrics.adminSalesBalance || 0,
+      currentSystemTurnover: finMetrics.currentSystemTurnover || 0,
       pendingDepositRequests: payments.filter((p: any) => {
         const status = p.status?.toLowerCase() || "";
         return status !== "successful" && status !== "completed" && !p.credited;
@@ -212,6 +193,7 @@ const DashboardOverview: React.FC = () => {
     lifetimeEarnings: 0,
     availableAdminBalance: 0,
     adminSalesBalance: 0,
+    currentSystemTurnover: 0,
     pendingDepositRequests: 0,
     pendingWithdrawalRequests: 0,
     totalBuyerDeposits: 0,
@@ -244,12 +226,20 @@ const DashboardOverview: React.FC = () => {
       </div>
 
       {/* Main Financial Hub */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
         <MetricCard
-          title="Available Platform Balance"
+          title="System Turnover"
+          value={`$${displayMetrics.currentSystemTurnover.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+          variant="info"
+          subtitle="Total volume of completed sales"
+          icon={<TrendingUp sx={{ color: "#2563EB", fontSize: 32 }} />}
+          isLoading={loading}
+        />
+        <MetricCard
+          title="Available Platform Profit"
           value={`$${displayMetrics.availableAdminBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
           variant="success"
-          subtitle="Current available funds"
+          subtitle="Current wallet platform profit"
           icon={<AccountBalanceWallet sx={{ color: "#10B981", fontSize: 32 }} />}
           isLoading={loading}
         />
@@ -257,7 +247,7 @@ const DashboardOverview: React.FC = () => {
           title="Admin Sales Balance"
           value={`$${displayMetrics.adminSalesBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
           variant="info"
-          subtitle="Total 100% sales volume"
+          subtitle="Revenue from admin's own products"
           icon={<MonetizationOn sx={{ color: "#2563EB", fontSize: 32 }} />}
           isLoading={loading}
         />
@@ -270,10 +260,10 @@ const DashboardOverview: React.FC = () => {
           isLoading={loading}
         />
         <MetricCard
-          title="Total Wallet Balance"
+          title="Total User Balance"
           value={`$${displayMetrics.totalUserBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
           variant="balance"
-          subtitle="Total funds held by users"
+          subtitle="Total wallet balance held by users"
           icon={<AccountBalanceWallet sx={{ color: "#059669", fontSize: 32 }} />}
           isLoading={loading}
         />

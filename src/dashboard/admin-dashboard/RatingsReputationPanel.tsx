@@ -290,7 +290,10 @@ const RatingsReputationPanel: React.FC = () => {
           <IconButton onClick={() => setSelectedSeller(null)}><X /></IconButton>
         </DialogTitle>
         <DialogContent sx={{ mt: 2 }}>
-          {selectedSeller?.recentReviews.map((r) => (
+          {selectedSeller?.recentReviews
+            .slice()
+            .reverse()
+            .map((r) => (
             <Paper key={r.id} variant="outlined" sx={{ p: 2, mb: 2, borderRadius: 2, position: 'relative' }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                 <Typography fontWeight={700} color="#334155">{r.buyer}</Typography>
