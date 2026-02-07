@@ -187,9 +187,9 @@ const Routes = createBrowserRouter([
       {
         path: "/seller-chat",
         element: (
-          <SellerPrivateRoute>
+          <PrivateRoute>
             <SellerAdminChat />
-          </SellerPrivateRoute>
+          </PrivateRoute>
         ),
       },
 
