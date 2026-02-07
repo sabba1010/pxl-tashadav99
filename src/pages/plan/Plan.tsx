@@ -9,17 +9,20 @@ const SellerPlans: React.FC = () => {
   const userId = `${data?._id}`;
 
   return (
-    <div className="py-16 bg-[#F5F5F5]">
-      <div className="max-w-7xl mx-auto px-8">
-        <h1 className="text-4xl font-bold text-center mb-12 text-[#0A1A3A]">
-          Seller Subscription Plans
-        </h1>
+    <div className="py-20 bg-gradient-to-b from-gray-50 to-gray-100">
+      <div className="max-w-7xl mx-auto px-6 md:px-8">
+        <div className="text-center mb-16">
+          <h1 className="text-5xl md:text-6xl font-bold text-center mb-4 text-[#0A1A3A] tracking-tight">
+            Seller Subscription Plans
+          </h1>
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">Choose the perfect plan to grow your business</p>
+        </div>
 
         {/* ===== Row 1: 3 Cards ===== */}
-        <div className="grid md:grid-cols-3 gap-12 mb-14">
+        <div className="grid md:grid-cols-3 gap-8 mb-16">
 
           {/* Default Seller - $0 Purchase Logic */}
-          <div className="rounded-3xl p-10 bg-white border border-gray-200 shadow-sm hover:shadow-lg transition-all">
+          <div className="rounded-2xl p-8 bg-white border-2 border-gray-200 shadow-md hover:shadow-xl hover:border-gray-300 transition-all duration-300 hover:-translate-y-1">
             <h2 className="text-2xl font-bold text-[#111111]">
               Default / Free Seller Plan
             </h2>
@@ -69,7 +72,7 @@ const SellerPlans: React.FC = () => {
           </div>
 
           {/* Basic Seller */}
-          <div className="rounded-3xl p-10 bg-white border border-gray-200 shadow-sm hover:shadow-lg transition-all">
+          <div className="rounded-2xl p-8 bg-white border-2 border-gray-200 shadow-md hover:shadow-xl hover:border-[#1BC47D] transition-all duration-300 hover:-translate-y-1">
             <h2 className="text-2xl font-bold text-[#111111]">Standard / Starter Seller Plan</h2>
             <p className="text-4xl font-semibold mt-2 text-[#0A1A3A]">$9.99/mo</p>
             <p className="mt-3 text-[#444444]">For active sellers wanting more exposure.</p>
@@ -122,8 +125,8 @@ const SellerPlans: React.FC = () => {
           </div>
 
           {/* Business Seller */}
-          <div className="rounded-3xl p-10 bg-white border border-gray-200 shadow-sm hover:shadow-lg transition-all">
-            <h2 className="text-2xl font-bold text-[#111111]">Business Seller</h2>
+          <div className="rounded-2xl p-8 bg-white border-2 border-gray-200 shadow-md hover:shadow-xl hover:border-[#1BC47D] transition-all duration-300 hover:-translate-y-1">
+            <h2 className="text-2xl font-bold text-[#111111]">Premium / Pro Seller Plan</h2>
             <p className="text-4xl font-semibold mt-2 text-[#0A1A3A]">$15.99/mo</p>
             <p className="mt-3 text-[#444444]">Best for growing sellers.</p>
             <ul className="mt-6 space-y-3">
@@ -138,6 +141,26 @@ const SellerPlans: React.FC = () => {
               <li className="flex items-start gap-3">
                 <span className="text-[#1BC47D] text-xl">✔</span>
                 <span className="text-[#111111]">Priority support</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="text-[#1BC47D] text-xl">✔</span>
+                <span className="text-[#111111]">High or unlimited listings</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="text-[#1BC47D] text-xl">✔</span>
+                <span className="text-[#111111]">Featured placement and badge</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="text-[#1BC47D] text-xl">✔</span>
+                <span className="text-[#111111]">Advanced analytics and reports</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="text-[#1BC47D] text-xl">✔</span>
+                <span className="text-[#111111]">Faster withdrawals after admin review</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="text-[#1BC47D] text-xl">✔</span>
+                <span className="text-[#111111]">Priority dispute handling</span>
               </li>
             </ul>
             <div className="mt-8">
@@ -162,11 +185,11 @@ const SellerPlans: React.FC = () => {
         {/* ===== Row 2: Premium (Centered) ===== */}
         <div className="flex justify-center">
           <div className="w-full md:w-1/3">
-            <div className="relative rounded-3xl p-10 bg-white border-2 border-[#0A1A3A] shadow-xl scale-105 transition-all">
-              <div className="absolute top-0 right-0 bg-[#D4A643] text-[#111111] text-sm px-3 py-1 rounded-bl-xl rounded-tr-3xl">
+            <div className="relative rounded-2xl p-8 bg-gradient-to-br from-white to-gray-50 border-2 border-[#D4A643] shadow-2xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
+              <div className="absolute top-0 right-0 bg-gradient-to-r from-[#D4A643] to-[#E6B84D] text-[#111111] text-xs font-bold px-4 py-2 rounded-bl-2xl rounded-tr-2xl shadow-md">
                 Most Popular
               </div>
-              <h2 className="text-2xl font-bold text-[#111111]">Premium Seller</h2>
+              <h2 className="text-2xl font-bold text-[#111111]">Elite / Verified Seller Plan</h2>
               <p className="text-4xl font-semibold mt-2 text-[#0A1A3A]">$19.99/mo</p>
               <p className="mt-3 text-[#444444]">Maximum exposure & fastest support.</p>
               <ul className="mt-6 space-y-3">
@@ -182,6 +205,22 @@ const SellerPlans: React.FC = () => {
                   <span className="text-[#1BC47D] text-xl">✔</span>
                   <span className="text-[#111111]">Top-tier visibility</span>
                 </li>
+                <li className="flex items-start gap-3">
+                <span className="text-[#1BC47D] text-xl">✔</span>
+                <span className="text-[#111111]">Maximum visibility and ranking</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="text-[#1BC47D] text-xl">✔</span>
+                <span className="text-[#111111]">Verified seller badge</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="text-[#1BC47D] text-xl">✔</span>
+                <span className="text-[#111111]">Auto-priority listing approval</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="text-[#1BC47D] text-xl">✔</span>
+                <span className="text-[#111111]">Dedicated admin support</span>
+              </li>
               </ul>
               <div className="mt-8">
                 {activePlan === "premium" ? (
