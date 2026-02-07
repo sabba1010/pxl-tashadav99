@@ -68,22 +68,22 @@ const ReportTransaction: React.FC = () => {
         {/* CTA Buttons - Now Mobile-Friendly & Beautiful */}
         <div className="mt-16 text-center space-y-4 md:space-y-0 md:flex md:justify-center md:gap-8">
           {/* Primary Button */}
-          <Link
+          {/* <Link
             to="/report"
             className="inline-flex items-center justify-center gap-3 w-full md:w-auto px-8 py-5 text-lg md:text-xl font-bold text-white bg-gradient-to-r from-teal-500 to-cyan-500 rounded-2xl shadow-lg hover:shadow-xl hover:shadow-teal-500/40 hover:scale-105 active:scale-95 transition-all duration-300"
           >
             <AlertCircle className="w-6 h-6 md:w-7 md:h-7" />
             Open Report Form
             <ArrowRight className="w-6 h-6 ml-2" />
-          </Link>
+          </Link> */}
 
           {/* Secondary Button */}
           <Link
-            to={isLoggedIn ? "/contact-us" : "/login"}
+            to={isLoggedIn ? "/seller-chat" : "/login"}
             className="inline-flex items-center justify-center gap-3 w-full md:w-auto px-8 py-5 text-lg md:text-xl font-medium text-gray-800 bg-gray-100 border-2 border-gray-300 rounded-2xl hover:bg-gray-200 hover:border-gray-400 active:scale-95 transition-all duration-300"
           >
             <Mail className="w-6 h-6 md:w-7 md:h-7" />
-            Email Support Team
+             Support Team
           </Link>
         </div>
 
