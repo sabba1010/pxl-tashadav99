@@ -895,14 +895,14 @@ const Marketplace: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#F7F5F4] pb-16 md:pb-10">
-      {showBanner && (
+      {/* {showBanner && (
         <div className="bg-[#33ac6f] text-white px-4 py-3 flex justify-between items-center text-sm font-medium">
           <span>Black Friday is live! All prices discounted.</span>
           <button onClick={() => setShowBanner(false)}>
             <TimesIcon />
           </button>
         </div>
-      )}
+      )} */}
 
       <div className="max-w-screen-2xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
         <div className="flex flex-wrap items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">

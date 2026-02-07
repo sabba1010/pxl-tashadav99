@@ -240,7 +240,7 @@ export default function Navbar() {
                 <img
                   src={headerlogo}
                   alt="AcctEmpire"
-                  className="h-10 sm:h-12 md:h-14 lg:h-16 w-auto object-contain"
+                  className="h-14 sm:h-16 md:h-20 lg:h-24 w-auto object-contain transition-all duration-300"
                 />
               </NavLink>
             </div>
@@ -421,7 +421,7 @@ export default function Navbar() {
                     <motion.div
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
-                      className="h-10 w-10 md:h-11 md:w-11 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-md ring-2 ring-white"
+                      className="h-9 w-9 md:h-10 md:w-10 rounded-full flex items-center justify-center text-white font-bold text-base shadow-md ring-2 ring-white"
                       style={{ background: `linear-gradient(135deg, ${EMPIRE_BLUE} 0%, ${ROYAL_GOLD} 100%)` }}
                     >
                       {loginUser?.name ? loginUser.name[0].toUpperCase() : "A"}
