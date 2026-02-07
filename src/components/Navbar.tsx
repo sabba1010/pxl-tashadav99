@@ -4,6 +4,7 @@ import { FaBreadSlice, FaTrash } from "react-icons/fa";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import axios from "axios";
+import { motion, AnimatePresence } from "framer-motion";
 
 import { useAuth } from "../context/AuthContext";
 import { getAllNotifications, clearNotifications } from "../components/Notification/Notification";
@@ -14,11 +15,26 @@ import {
   ShoppingBag,
   ShoppingCart,
   WalletMinimal,
+  Bell,
+  BellOff,
+  Trash2,
+  RefreshCw,
+  Info,
+  MessageSquare,
+  ChevronRight,
+  LayoutDashboard,
+  Settings,
+  LogOut,
+  Plus,
+  Users,
+  FileText,
+  BookOpen,
+  Headphones,
+  CreditCard
 } from "lucide-react";
 import AnnouncementBar from "./AnnouncementBar";
 
 const FaBreadSliceIcon = FaBreadSlice as unknown as React.ComponentType<any>;
-const FaTrashIcon = FaTrash as unknown as React.ComponentType<any>;
 
 // API URL
 const API_URL = "http://localhost:3200/api/notification";
@@ -31,14 +47,14 @@ type NItem = {
   description?: string;
   link?: string;
   read?: boolean;
-  readBy?: string[]; // ✅ ADD
-  deletedBy?: string[]; // ✅ ADD
+  readBy?: string[];
+  deletedBy?: string[];
   createdAt?: string;
   userEmail?: string;
   target?: string;
   senderId?: string;
-  productId?: string; // ✅ ADD
-  productTitle?: string; // ✅ ADD
+  productId?: string;
+  productTitle?: string;
   data?: any;
 };
 
@@ -127,7 +143,6 @@ export default function Navbar() {
       if (!notifications.length && !notifOpen) setLoadingNotifs(true);
 
       const userRole = loginUserData.data?.role;
-      // রেজাল্ট ব্যাকএন্ড থেকেই ফিল্টার হয়ে আসবে
       const res = await getAllNotifications(currentUserEmail, userRole);
 
       setNotifications(Array.isArray(res) ? res : []);
@@ -146,13 +161,13 @@ export default function Navbar() {
     if (isOpening && unreadCount > 0) {
       const userRole = loginUserData.data?.role;
 
-      // ১. ফ্রন্টএন্ডে সাথে সাথে আপডেট
+      // 1. Frontend update
       setNotifications(prev => prev.map(n => {
         if (n.userEmail === currentUserEmail) return { ...n, read: true };
         return { ...n, readBy: [...(n.readBy || []), currentUserEmail as string] };
       }));
 
-      // ২. ব্যাকএন্ডে সিঙ্ক
+      // 2. Backend sync
       if (currentUserEmail) {
         try {
           await axios.post(`${API_URL}/mark-read`, {
@@ -197,15 +212,15 @@ export default function Navbar() {
     <>
       <AnnouncementBar />
       <header
-        className="sticky top-0 z-40 w-full bg-white border-b border-gray-200 shadow-sm py-2"
-        style={{ backgroundColor: CLEAN_WHITE }}
+        className="sticky top-0 z-40 w-full bg-white/80 backdrop-blur-md border-b border-gray-200/60 shadow-sm py-2"
+        style={{}}
       >
         <nav className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-14 md:h-16">
             <div className="flex items-center">
               <button
                 onClick={() => setMobileMenuOpen((s) => !s)}
-                className="hidden p-2 rounded-md hover:bg-gray-100 transition"
+                className="lg:hidden p-2 rounded-md hover:bg-gray-100 transition mr-2"
               >
                 {mobileMenuOpen ? (
                   <svg className="w-6 h-6" fill="none" stroke={EMPIRE_BLUE} viewBox="0 0 24 24">
@@ -220,222 +235,337 @@ export default function Navbar() {
 
               <NavLink
                 to="/"
-                className="flex items-center gap-3 pr-4 ml-0 md:ml-[40px] lg:ml-[90px]"
+                className="flex items-center gap-3 pr-4 ml-0 md:ml-[20px] lg:ml-[40px]"
               >
                 <img
                   src={headerlogo}
                   alt="AcctEmpire"
-                  className="h-16 sm:h-18 md:h-20 lg:h-24 w-auto object-contain"
-                /* h-16 (64px) for mobile - "a little big"
-                   h-24 (96px) for desktop - "large/medium"
-                */
+                  className="h-10 sm:h-12 md:h-14 lg:h-16 w-auto object-contain"
                 />
               </NavLink>
             </div>
 
-            <div className="hidden lg:flex items-center gap-8">
-              <NavLink to="/marketplace" className="font-medium" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}>Marketplace</NavLink>
-              <NavLink to="/purchases" className="font-medium" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}>Mypurchase</NavLink>
+            <div className="hidden lg:flex items-center gap-6 xl:gap-8">
+              <NavLink to="/marketplace" className="font-medium text-sm xl:text-base hover:text-[#D4A643] transition-colors" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}>Marketplace</NavLink>
+              <NavLink to="/purchases" className="font-medium text-sm xl:text-base hover:text-[#D4A643] transition-colors" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}>My Purchases</NavLink>
               {(loginUserData.data?.role === "seller" || loginUserData.data?.role === "admin") && (
-                <NavLink to="/orders" className="font-medium" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}>Orders</NavLink>
+                <NavLink to="/orders" className="font-medium text-sm xl:text-base hover:text-[#D4A643] transition-colors" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}>Orders</NavLink>
               )}
               {loginUser && (
-                <NavLink to="/wallet" className="font-medium" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}>Wallet</NavLink>
+                <NavLink to="/wallet" className="font-medium text-sm xl:text-base hover:text-[#D4A643] transition-colors" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}>Wallet</NavLink>
               )}
               {(loginUser?.role === "seller" || loginUser?.role === "admin") && (
-                <NavLink to="/myproducts" className="font-medium" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}>My Ads</NavLink>
+                <NavLink to="/myproducts" className="font-medium text-sm xl:text-base hover:text-[#D4A643] transition-colors" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}>My Ads</NavLink>
               )}
               {(loginUser?.role === "seller" || loginUser?.role === "admin") && (
-                <NavLink to="/seller-guide" className="font-medium" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}>Seller Guide</NavLink>
+                <NavLink to="/seller-guide" className="font-medium text-sm xl:text-base hover:text-[#D4A643] transition-colors" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}>Seller Guide</NavLink>
               )}
               {(loginUser?.role === "buyer" || loginUser?.role === "admin") && (
-                <NavLink to="/buyer-guide" className="font-medium" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}>Buyer Guide</NavLink>
+                <NavLink to="/buyer-guide" className="font-medium text-sm xl:text-base hover:text-[#D4A643] transition-colors" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}>Buyer Guide</NavLink>
               )}
-              <button onClick={handleSellProduct} className="px-6 py-2.5 rounded-lg font-medium text-white shadow-sm" style={{ backgroundColor: ROYAL_GOLD }}>Sell Product</button>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleSellProduct}
+                className="px-5 py-2.5 rounded-xl font-semibold text-white shadow-lg shadow-yellow-500/20 text-sm"
+                style={{ backgroundColor: ROYAL_GOLD }}
+              >
+                Sell Product
+              </motion.button>
             </div>
 
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-3">
               {/* Notifications Dropdown */}
               <div className="relative" ref={notifRef}>
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.1, backgroundColor: "#f3f4f6" }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={handleShowNotifications}
-                  className="p-2 rounded-md hover:bg-gray-100 transition relative"
+                  className="p-2.5 rounded-full transition relative text-gray-700"
                 >
-                  <svg className="w-6 h-6" fill="none" stroke={EMPIRE_BLUE} viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-                    />
-                  </svg>
+                  <Bell className="w-6 h-6" strokeWidth={1.8} />
+                  <AnimatePresence>
+                    {unreadCount > 0 && (
+                      <motion.span
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        exit={{ scale: 0 }}
+                        className="absolute top-1.5 right-1.5 flex h-3 w-3"
+                      >
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500 border-2 border-white"></span>
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                </motion.button>
 
-                  {unreadCount > 0 && (
-                    <span className="absolute -top-1 -right-1 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-600 rounded-full shadow-sm border border-white">
-                      {unreadCount}
-                    </span>
-                  )}
-                </button>
-
-                {notifOpen && (
-                  <div
-                    className="fixed top-14 left-4 right-4 md:absolute md:top-full md:left-auto md:right-0 md:mt-2 md:w-96 bg-white border rounded-xl shadow-2xl z-50 overflow-hidden"
-                    style={{ backgroundColor: CLEAN_WHITE }}
-                  >
-                    <div className="px-4 py-3 border-b flex items-center justify-between">
-                      <div className="font-bold text-gray-900">Notifications</div>
-                      <div className="text-xs font-semibold text-gray-600">
-                        {loadingNotifs ? "Loading..." : `${notifications.length} total`}
-                      </div>
-                    </div>
-
-                    <div className="max-h-[60vh] md:max-h-80 overflow-y-auto divide-y">
-                      {notifications.length === 0 && !loadingNotifs && (
-                        <div className="p-4 text-center text-sm text-gray-500">
-                          No notifications found for <br />
-                          <span className="font-semibold">{currentUserEmail}</span>
+                <AnimatePresence>
+                  {notifOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      transition={{ duration: 0.2 }}
+                      className="fixed top-20 right-4 left-4 md:absolute md:top-full md:left-auto md:right-0 md:mt-3 md:w-[420px] bg-white/95 backdrop-blur-xl border border-white/20 rounded-2xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] z-50 overflow-hidden ring-1 ring-black/5"
+                    >
+                      <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+                        <div>
+                          <h3 className="font-bold text-gray-900 text-lg">Notifications</h3>
+                          <p className="text-xs text-gray-500 font-medium mt-0.5">You have {unreadCount} unread messages</p>
                         </div>
-                      )}
-
-                      {notifications.map((n) => {
-                        const senderName = n.senderId?.split("@")[0];
-                        const isRead = n.userEmail === currentUserEmail ? n.read : n.readBy?.includes(currentUserEmail || "");
-
-                        return (
-                          <div
-                            key={n._id}
-                            className={`p-3 hover:bg-gray-50 transition-colors ${isRead
-                              ? "bg-white"
-                              : "bg-blue-50 border-l-4 border-blue-600"
-                              }`}
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => fetchNotifications()}
+                            className="p-2 hover:bg-gray-200/50 rounded-full transition text-gray-500 hover:text-blue-600"
+                            title="Refresh"
                           >
-                            <div className="flex items-start justify-between gap-3">
-                              <div className="flex-1">
-                                <div className="text-sm font-bold text-black">
-                                  {senderName ? `New message from ${senderName}` : n.title}
-                                </div>
+                            <RefreshCw size={16} />
+                          </button>
+                          {notifications.length > 0 && (
+                            <button
+                              onClick={clearAllNotifications}
+                              className="p-2 hover:bg-red-50 rounded-full transition text-gray-400 hover:text-red-500"
+                              title="Clear all"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          )}
+                        </div>
+                      </div>
 
-                                {n.productTitle && (
-                                  <div className="text-[11px] text-blue-700 font-bold mt-0.5">
-                                    Regarding: {n.productTitle}
-                                  </div>
-                                )}
-
-                                <div className="text-xs text-gray-800 font-medium mt-1 line-clamp-2 leading-relaxed">
-                                  {n.message || n.description || "No description"}
-                                </div>
-
-                                {n.link && (
-                                  <a
-                                    href={n.link}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-[10px] text-blue-600 font-bold mt-2 inline-flex items-center gap-1 hover:underline bg-blue-50 px-2 py-1 rounded"
-                                  >
-                                    Action Link:{" "}
-                                    {n.link.length > 30
-                                      ? n.link.substring(0, 30) + "..."
-                                      : n.link}
-                                  </a>
-                                )}
-
-                                <div className="text-[10px] text-gray-600 font-semibold mt-1">
-                                  {n.createdAt
-                                    ? new Date(n.createdAt).toLocaleString()
-                                    : ""}
-
-                                </div>
-                              </div>
-
-                              {!isRead && (
-                                <div className="ml-2 w-2.5 h-2.5 rounded-full bg-blue-600 mt-1 shadow-sm" />
-                              )}
+                      <div className="max-h-[60vh] md:max-h-[450px] overflow-y-auto no-scrollbar">
+                        {notifications.length === 0 && !loadingNotifs ? (
+                          <div className="flex flex-col items-center justify-center py-16 text-center px-6">
+                            <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
+                              <BellOff className="text-gray-300" size={32} />
                             </div>
+                            <p className="text-gray-900 font-semibold">No notifications yet</p>
+                            <p className="text-sm text-gray-500 mt-1 max-w-[200px]">When you get notifications, they'll show up here.</p>
                           </div>
-                        );
-                      })}
-                    </div>
+                        ) : (
+                          <div className="p-2 space-y-2">
+                            {notifications.map((n) => {
+                              const senderName = n.senderId?.split("@")[0];
+                              const isRead = n.userEmail === currentUserEmail ? n.read : n.readBy?.includes(currentUserEmail || "");
 
-                    <div className="px-4 py-3 border-t bg-gray-50 flex justify-between items-center">
-                      <button
-                        onClick={clearAllNotifications}
-                        className="text-xs text-red-600 hover:text-red-800 hover:underline font-bold flex items-center gap-1"
-                        disabled={notifications.length === 0}
-                      >
-                        <FaTrashIcon /> Clear All
-                      </button>
+                              return (
+                                <motion.div
+                                  layout
+                                  initial={{ opacity: 0, x: -20 }}
+                                  animate={{ opacity: 1, x: 0 }}
+                                  key={n._id}
+                                  className={`group p-4 rounded-xl transition-all relative overflow-hidden border ${isRead
+                                    ? "bg-white border-transparent hover:bg-gray-50"
+                                    : "bg-blue-50/50 border-blue-100 hover:bg-blue-50"
+                                    }`}
+                                >
+                                  {!isRead && (
+                                    <div className="absolute top-4 right-4 w-2 h-2 bg-blue-500 rounded-full ring-4 ring-blue-500/20"></div>
+                                  )}
 
-                      <button
-                        onClick={() => fetchNotifications()}
-                        className="text-xs text-blue-700 hover:underline font-bold"
-                      >
-                        Refresh List
-                      </button>
-                    </div>
-                  </div>
-                )}
+                                  <div className="flex gap-3.5">
+                                    <div className={`mt-1 flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${isRead ? 'bg-gray-100 text-gray-500' : 'bg-blue-100 text-blue-600'
+                                      }`}>
+                                      <Info size={18} />
+                                    </div>
+
+                                    <div className="flex-1 pr-4">
+                                      <div className="flex justify-between items-start mb-1">
+                                        <h4 className={`text-sm font-bold ${isRead ? 'text-gray-700' : 'text-gray-900'}`}>
+                                          {senderName ? `New message from ${senderName}` : n.title}
+                                        </h4>
+                                      </div>
+
+                                      {n.productTitle && (
+                                        <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-gray-100 text-xs font-medium text-gray-600 mb-2">
+                                          <span className="w-1 h-1 rounded-full bg-gray-400"></span>
+                                          {n.productTitle}
+                                        </div>
+                                      )}
+
+                                      <p className="text-xs text-gray-600 leading-relaxed line-clamp-2">
+                                        {n.message || n.description || "No description available"}
+                                      </p>
+
+                                      {n.link && (
+                                        <a
+                                          href={n.link}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:text-blue-700 hover:underline"
+                                        >
+                                          View Details <ChevronRight size={12} />
+                                        </a>
+                                      )}
+
+                                      <div className="mt-2 flex items-center gap-2 text-[10px] text-gray-400 font-medium">
+                                        <span>{n.createdAt ? new Date(n.createdAt).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : "Just now"}</span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </motion.div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
-
 
               {/* Avatar Dropdown */}
               <div className="relative" ref={dropdownRef}>
                 {user.user ? (
-                  <button onClick={() => setOpen((o) => !o)} className="flex items-center p-1 rounded-full hover:bg-gray-100 transition">
-                    <div className="h-9 w-9 rounded-full flex items-center justify-center text-white font-bold text-sm" style={{ background: `linear-gradient(90deg, ${EMPIRE_BLUE} 0%, ${ROYAL_GOLD} 100%)` }}>
+                  <div onClick={() => setOpen((o) => !o)} className="cursor-pointer">
+                    <motion.div
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="h-10 w-10 md:h-11 md:w-11 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-md ring-2 ring-white"
+                      style={{ background: `linear-gradient(135deg, ${EMPIRE_BLUE} 0%, ${ROYAL_GOLD} 100%)` }}
+                    >
                       {loginUser?.name ? loginUser.name[0].toUpperCase() : "A"}
-                    </div>
-                  </button>
+                    </motion.div>
+                  </div>
                 ) : (
-                  <div className="flex gap-1.5 md:gap-4 md:ml-6">
-                    <Link to="/login"><Button variant="contained" sx={{ px: { xs: 1.5, md: 4 }, py: { xs: 0.3, md: "auto" }, borderRadius: "6px", textTransform: "none", fontWeight: 600, backgroundColor: ROYAL_GOLD, fontSize: { xs: "0.65rem", md: "1rem" }, height: { xs: "28px", md: "auto" } }}>Login</Button></Link>
-                    <Link to="/register"><Button variant="outlined" sx={{ px: { xs: 1.5, md: 4 }, py: { xs: 0.3, md: "auto" }, borderRadius: "6px", textTransform: "none", fontWeight: 600, borderWidth: "2px", fontSize: { xs: "0.65rem", md: "1rem" }, height: { xs: "28px", md: "auto" } }}>Register</Button></Link>
+                  <div className="flex gap-2.5 md:gap-4 md:ml-6">
+                    <Link to="/login">
+                      <Button
+                        variant="contained"
+                        sx={{
+                          px: { xs: 2.5, md: 4 },
+                          py: 1,
+                          borderRadius: "12px",
+                          textTransform: "none",
+                          fontWeight: 700,
+                          backgroundColor: ROYAL_GOLD,
+                          boxShadow: "0 4px 14px 0 rgba(212, 166, 67, 0.39)",
+                          '&:hover': { backgroundColor: "#c59a3e", boxShadow: "0 6px 20px rgba(212, 166, 67, 0.23)" }
+                        }}
+                      >
+                        Login
+                      </Button>
+                    </Link>
+                    <Link to="/register">
+                      <Button
+                        variant="outlined"
+                        sx={{
+                          px: { xs: 2.5, md: 4 },
+                          py: 1,
+                          borderRadius: "12px",
+                          textTransform: "none",
+                          fontWeight: 700,
+                          borderWidth: "2px",
+                          borderColor: "#E5E7EB",
+                          color: EMPIRE_BLUE,
+                          '&:hover': { borderColor: EMPIRE_BLUE, backgroundColor: "transparent" }
+                        }}
+                      >
+                        Register
+                      </Button>
+                    </Link>
                   </div>
                 )}
 
-                {open && (
-                  <div className="fixed left-4 right-4 top-20 md:absolute md:right-0 md:top-full md:left-auto md:mt-2 md:w-80 rounded-xl shadow-2xl border border-gray-200 overflow-hidden z-50 max-h-[70vh] flex flex-col" style={{ backgroundColor: CLEAN_WHITE }}>
-                    <div className="px-4 md:px-6 py-3 md:py-5 border-b flex-shrink-0" style={{ backgroundColor: "#F9FAFB" }}>
-                      <div className="font-bold text-base md:text-lg" style={{ color: EMPIRE_BLUE }}>{loginUser?.name}</div>
-                      <div className="text-xs md:text-sm text-gray-500 truncate">{loginUser?.email}</div>
-                    </div>
-                    <div className="px-4 md:px-6 py-3 md:py-4 border-b flex-shrink-0">
-                      <div className="rounded-xl p-3 md:p-5 text-white relative overflow-hidden" style={{ background: `linear-gradient(135deg, ${EMPIRE_BLUE} 0%, #1a3a6e 100%)` }}>
-                        <div className="relative z-10">
-                          <div className="text-xs md:text-sm opacity-90">Your Balance</div>
-                          <div className="text-2xl md:text-3xl font-bold mt-1 md:mt-2">${loginUserData.data?.balance?.toFixed(2) || "0.00"}</div>
+                <AnimatePresence>
+                  {open && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      transition={{ duration: 0.2 }}
+                      className="fixed left-4 right-4 top-20 md:absolute md:right-0 md:top-full md:left-auto md:mt-3 md:w-80 bg-white/95 backdrop-blur-xl border border-white/20 rounded-2xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] overflow-hidden z-50 ring-1 ring-black/5"
+                    >
+                      <div className="p-5 border-b border-gray-100 bg-gray-50/50">
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="h-12 w-12 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg" style={{ background: `linear-gradient(135deg, ${EMPIRE_BLUE} 0%, ${ROYAL_GOLD} 100%)` }}>
+                            {loginUser?.name ? loginUser.name[0].toUpperCase() : "A"}
+                          </div>
+                          <div>
+                            <div className="font-bold text-lg text-gray-900 leading-tight">{loginUser?.name}</div>
+                            <div className="text-xs text-gray-500 font-medium truncate max-w-[180px]">{loginUser?.email}</div>
+                          </div>
                         </div>
-                        <NavLink to="/wallet" onClick={() => setOpen(false)} className="absolute bottom-2 md:bottom-4 right-2 md:right-4 text-xs md:text-sm underline opacity-90">View Wallet →</NavLink>
-                      </div>
-                    </div>
-                    <div className="overflow-y-auto flex-1 py-2">
-                      {loginUser?.role === "admin" && (
-                        <NavLink to="/admin-dashboard" onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 md:px-6 py-2.5 md:py-3 hover:bg-gray-50 transition"><span className="text-xs md:text-sm font-medium">My Account Dashboard</span></NavLink>
-                      )}
-                      {loginUser?.role === "seller" && (
-                        <NavLink to="/seller-dashboard" onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 md:px-6 py-2.5 md:py-3 hover:bg-gray-50 transition"><span className="text-xs md:text-sm font-medium">My Dashboard</span></NavLink>
-                      )}
-                      {(loginUser?.role === "seller" || loginUser?.role === "admin") && (
-                        <NavLink to="/referral" onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 md:px-6 py-2.5 md:py-3 hover:bg-gray-50 transition"><span className="text-xs md:text-sm font-medium">Referral</span></NavLink>
-                      )}
-                      {/* <NavLink to="/referral" onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 md:px-6 py-2.5 md:py-3 hover:bg-gray-50 transition"><span className="text-xs md:text-sm font-medium">Referral</span></NavLink> */}
-                      <NavLink to="/plans" onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 md:px-6 py-2.5 md:py-3 hover:bg-gray-50 transition"><span className="text-xs md:text-sm font-medium">Plans</span></NavLink>
-                      {(loginUser?.role === "seller" || loginUser?.role === "admin") && (
-                        <NavLink to="/seller-guide" onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 md:px-6 py-2.5 md:py-3 hover:bg-gray-50 transition"><span className="text-xs md:text-sm font-medium">Seller Guide</span></NavLink>
-                      )}
-                      {(loginUser?.role === "buyer" || loginUser?.role === "admin") && (
-                        <NavLink to="/buyer-guide" onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 md:px-6 py-2.5 md:py-3 hover:bg-gray-50 transition"><span className="text-xs md:text-sm font-medium">Buyer Guide</span></NavLink>
-                      )}
-                      <NavLink to="/purchases" onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 md:px-6 py-2.5 md:py-3 hover:bg-gray-50 transition"><span className="text-xs md:text-sm font-medium">My Purchases</span></NavLink>
-                      <NavLink to="/account-settings" onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 md:px-6 py-2.5 md:py-3 hover:bg-gray-50 transition"><span className="text-xs md:text-sm font-medium">Account Settings</span></NavLink>
-                      <NavLink to="/reports" onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 md:px-6 py-2.5 md:py-3 hover:bg-gray-50 transition"><span className="text-xs md:text-sm font-medium">Reports</span></NavLink>
-                      {(loginUser?.role === "seller" || loginUser?.role === "buyer") && (
-                        <NavLink to="/seller-chat" onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 md:px-6 py-2.5 md:py-3 hover:bg-gray-50 transition"><span className="text-xs md:text-sm font-medium">Admin Support</span></NavLink>
-                      )}
-                    </div>
 
-                    <button onClick={handelLougt} className="w-full flex items-center gap-3 px-4 md:px-6 py-2.5 md:py-3 hover:bg-yellow-50 transition text-left flex-shrink-0 border-t" style={{ color: "#B45309" }}><span className="text-xs md:text-sm font-medium">Log out</span></button>
-                  </div>
-                )}
+                        <div className="rounded-xl p-4 text-white relative overflow-hidden shadow-lg group" style={{ background: `linear-gradient(135deg, ${EMPIRE_BLUE} 0%, #1a3a6e 100%)` }}>
+                          <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20"></div>
+                          <div className="relative z-10">
+                            <div className="text-xs font-medium text-blue-200 uppercase tracking-wider mb-1">Total Balance</div>
+                            <div className="text-3xl font-bold tracking-tight">${loginUserData.data?.balance?.toFixed(2) || "0.00"}</div>
+                          </div>
+                          <Link to="/wallet" onClick={() => setOpen(false)} className="absolute bottom-3 right-3 p-1.5 bg-white/10 hover:bg-white/20 rounded-lg transition backdrop-blur-sm">
+                            <ChevronRight size={16} className="text-white" />
+                          </Link>
+                        </div>
+                      </div>
+
+                      <div className="p-2 space-y-1">
+                        {loginUser?.role === "admin" && (
+                          <Link to="/admin-dashboard" onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 transition text-gray-700 hover:text-gray-900">
+                            <LayoutDashboard size={18} className="text-gray-400" />
+                            <span className="text-sm font-semibold">Admin Dashboard</span>
+                          </Link>
+                        )}
+                        {loginUser?.role === "seller" && (
+                          <Link to="/seller-dashboard" onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 transition text-gray-700 hover:text-gray-900">
+                            <LayoutDashboard size={18} className="text-gray-400" />
+                            <span className="text-sm font-semibold">Seller Dashboard</span>
+                          </Link>
+                        )}
+                        {(loginUser?.role === "seller" || loginUser?.role === "admin") && (
+                          <Link to="/referral" onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 transition text-gray-700 hover:text-gray-900">
+                            <Users size={18} className="text-gray-400" />
+                            <span className="text-sm font-semibold">Referral</span>
+                          </Link>
+                        )}
+                        <Link to="/plans" onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 transition text-gray-700 hover:text-gray-900">
+                          <CreditCard size={18} className="text-gray-400" />
+                          <span className="text-sm font-semibold">Plans</span>
+                        </Link>
+                        {(loginUser?.role === "seller" || loginUser?.role === "admin") && (
+                          <Link to="/seller-guide" onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 transition text-gray-700 hover:text-gray-900">
+                            <BookOpen size={18} className="text-gray-400" />
+                            <span className="text-sm font-semibold">Seller Guide</span>
+                          </Link>
+                        )}
+                        {(loginUser?.role === "buyer" || loginUser?.role === "admin") && (
+                          <Link to="/buyer-guide" onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 transition text-gray-700 hover:text-gray-900">
+                            <BookOpen size={18} className="text-gray-400" />
+                            <span className="text-sm font-semibold">Buyer Guide</span>
+                          </Link>
+                        )}
+                        <Link to="/purchases" onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 transition text-gray-700 hover:text-gray-900">
+                          <ShoppingBag size={18} className="text-gray-400" />
+                          <span className="text-sm font-semibold">My Purchases</span>
+                        </Link>
+                        <Link to="/account-settings" onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 transition text-gray-700 hover:text-gray-900">
+                          <Settings size={18} className="text-gray-400" />
+                          <span className="text-sm font-semibold">Account Settings</span>
+                        </Link>
+                        <Link to="/reports" onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 transition text-gray-700 hover:text-gray-900">
+                          <FileText size={18} className="text-gray-400" />
+                          <span className="text-sm font-semibold">Reports</span>
+                        </Link>
+                        {(loginUser?.role === "seller" || loginUser?.role === "buyer") && (
+                          <Link to="/seller-chat" onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 transition text-gray-700 hover:text-gray-900">
+                            <Headphones size={18} className="text-gray-400" />
+                            <div className="flex-1">
+                              <span className="text-sm font-semibold">Admin Support</span>
+                              <p className="text-[10px] text-gray-400">Chat with support</p>
+                            </div>
+                          </Link>
+                        )}
+                      </div>
+
+                      <div className="p-2 border-t border-gray-100 bg-gray-50/50">
+                        <button onClick={handelLougt} className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-red-600 hover:bg-red-50 transition font-semibold text-sm">
+                          <LogOut size={16} />
+                          Log out
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </div>
           </div>
@@ -443,20 +573,80 @@ export default function Navbar() {
       </header>
 
       {/* Mobile Bottom Nav */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 lg:hidden">
-        <div className="flex items-end justify-between h-20 px-4 overflow-x-auto">
-          <NavLink to="/marketplace" className="flex flex-col items-center justify-center flex-1 pb-5" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}><ShoppingBag /><span className="text-xs">Marketplace</span></NavLink>
-          <NavLink to="/purchases" className="flex flex-col items-center justify-center flex-1 pb-5" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}><ShoppingCart /><span className="text-xs">Purchases</span></NavLink>
-          <button onClick={handleSellProduct} className="flex flex-col items-center justify-center flex-1 pb-5 bg-transparent border-0" style={{ color: CHARCOAL, cursor: "pointer" }}><FaBreadSliceIcon className="w-5 h-5 mb-1" /><span className="text-xs">Sell</span></button>
+      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-lg border-t border-gray-200 lg:hidden pb-safe">
+        <div className="flex items-end justify-between h-[84px] px-2 pb-5">
+
+          <NavLink to="/marketplace" className="flex flex-col items-center justify-center flex-1 h-full gap-1 pt-3" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : "#9CA3AF" })}>
+            {({ isActive }) => (
+              <>
+                <motion.div whileTap={{ scale: 0.8 }} animate={{ scale: isActive ? 1.1 : 1 }}>
+                  <ShoppingBag size={22} strokeWidth={isActive ? 2.5 : 2} />
+                </motion.div>
+                <span className="text-[10px] font-medium">Market</span>
+              </>
+            )}
+          </NavLink>
+
+          <NavLink to="/purchases" className="flex flex-col items-center justify-center flex-1 h-full gap-1 pt-3" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : "#9CA3AF" })}>
+            {({ isActive }) => (
+              <>
+                <motion.div whileTap={{ scale: 0.8 }} animate={{ scale: isActive ? 1.1 : 1 }}>
+                  <ShoppingCart size={22} strokeWidth={isActive ? 2.5 : 2} />
+                </motion.div>
+                <span className="text-[10px] font-medium">Purchases</span>
+              </>
+            )}
+          </NavLink>
+
+          <button
+            onClick={handleSellProduct}
+            className="flex flex-col items-center justify-end flex-1 h-full -mt-8"
+          >
+            <div className="h-14 w-14 rounded-full flex items-center justify-center shadow-lg shadow-yellow-500/30 text-white mb-1 transition-transform active:scale-95" style={{ backgroundColor: ROYAL_GOLD }}>
+              <Plus size={28} strokeWidth={3} />
+            </div>
+            <span className="text-[10px] font-medium text-gray-500">Sell</span>
+          </button>
+
           {(loginUser?.role === "seller" || loginUser?.role === "admin") && (
-            <NavLink to="/orders" className="flex flex-col items-center justify-center flex-1 pb-5" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}><ListCheck /><span className="text-xs">Orders</span></NavLink>
+            <NavLink to="/orders" className="flex flex-col items-center justify-center flex-1 h-full gap-1 pt-3" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : "#9CA3AF" })}>
+              {({ isActive }) => (
+                <>
+                  <motion.div whileTap={{ scale: 0.8 }} animate={{ scale: isActive ? 1.1 : 1 }}>
+                    <ListCheck size={22} strokeWidth={isActive ? 2.5 : 2} />
+                  </motion.div>
+                  <span className="text-[10px] font-medium">Orders</span>
+                </>
+              )}
+            </NavLink>
           )}
+
           {loginUser && (
-            <NavLink to="/wallet" className="flex flex-col items-center justify-center flex-1 pb-5" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}><WalletMinimal /><span className="text-xs">Wallet</span></NavLink>
+            <NavLink to="/wallet" className="flex flex-col items-center justify-center flex-1 h-full gap-1 pt-3" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : "#9CA3AF" })}>
+              {({ isActive }) => (
+                <>
+                  <motion.div whileTap={{ scale: 0.8 }} animate={{ scale: isActive ? 1.1 : 1 }}>
+                    <WalletMinimal size={22} strokeWidth={isActive ? 2.5 : 2} />
+                  </motion.div>
+                  <span className="text-[10px] font-medium">Wallet</span>
+                </>
+              )}
+            </NavLink>
           )}
+
           {(loginUser?.role === "seller" || loginUser?.role === "buyer") && (
-            <NavLink to="/seller-chat" className="flex flex-col items-center justify-center flex-1 pb-5" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : CHARCOAL })}><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" /></svg><span className="text-xs">Support</span></NavLink>
+            <NavLink to="/seller-chat" className="flex flex-col items-center justify-center flex-1 h-full gap-1 pt-3" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : "#9CA3AF" })}>
+              {({ isActive }) => (
+                <>
+                  <motion.div whileTap={{ scale: 0.8 }} animate={{ scale: isActive ? 1.1 : 1 }}>
+                    <Headphones size={22} strokeWidth={isActive ? 2.5 : 2} />
+                  </motion.div>
+                  <span className="text-[10px] font-medium">Support</span>
+                </>
+              )}
+            </NavLink>
           )}
+
         </div>
       </nav>
     </>

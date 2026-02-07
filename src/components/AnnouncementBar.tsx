@@ -27,7 +27,6 @@ export default function AnnouncementBar() {
         try {
             const res = await getAllNotifications();
             if (Array.isArray(res)) {
-                // Filter for announcements that target this user or "all"
                 const announcements = res.filter((n: NItem) => {
                     if (n.type !== "announcement") return false;
 
@@ -39,12 +38,10 @@ export default function AnnouncementBar() {
                 });
 
                 if (announcements.length > 0) {
-                    // Get the most recent one
                     const latest = announcements.sort((a, b) =>
                         new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
                     )[0];
 
-                    // Check if user has dismissed this specific announcement
                     const dismissedId = localStorage.getItem(`dismissed_announcement_${latest._id}`);
                     if (!dismissedId) {
                         setCurrentAnnouncement(latest);
@@ -61,7 +58,6 @@ export default function AnnouncementBar() {
 
     useEffect(() => {
         fetchAnnouncements();
-        // Poll for new announcements every 30 seconds
         const interval = setInterval(fetchAnnouncements, 30000);
         return () => clearInterval(interval);
     }, [fetchAnnouncements]);
@@ -76,45 +72,51 @@ export default function AnnouncementBar() {
     if (!isVisible || !currentAnnouncement) return null;
 
     return (
-        <div className="relative isolate flex items-center w-full overflow-hidden px-4 py-3 md:px-6 md:py-2.5"
-            style={{ background: 'linear-gradient(90deg, #0A1A3A 0%, #1a3a6e 50%, #D4A643 100%)' }}>
+        <div 
+            className="relative isolate w-full overflow-hidden px-3 py-2 sm:px-4 sm:py-2.5"
+            style={{ background: 'linear-gradient(90deg, #0A1A3A 0%, #1a3a6e 50%, #D4A643 100%)' }}
+        >
+            <div className="max-w-7xl mx-auto flex items-center justify-center relative">
+                {/* All content very close & centered */}
+                <div className="flex flex-row flex-wrap items-center justify-center gap-x-2 sm:gap-x-4 gap-y-1.5 text-white">
+                    {/* Icon + Title */}
+                    <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+                        <Megaphone className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-[#D4A643]" />
+                        <span className="font-bold text-[#D4A643] text-xs sm:text-sm whitespace-nowrap">
+                            {currentAnnouncement.title}
+                        </span>
+                    </div>
 
-            {/* Content Container */}
-            <div className="w-full flex flex-row items-center justify-between gap-x-4 pr-8 md:pr-10">
-                <div className="flex flex-row items-center gap-x-2 text-sm leading-6 text-white">
-                    <span className="flex items-center gap-2 font-bold text-[#D4A643]">
-                        <Megaphone className="h-4 w-4" />
-                        {currentAnnouncement.title}
-                    </span>
+                    {/* Separator */}
+                    <span className="text-white/40 text-xs sm:text-sm">•</span>
 
-                    <span className="hidden md:inline text-white/40">•</span>
-
-                    <span className="opacity-90 text-xs md:text-sm">
+                    {/* Message - centered on mobile, left on desktop */}
+                    <span className="text-xs sm:text-sm opacity-90 text-center sm:text-left flex-grow max-w-[60%] sm:max-w-none">
                         {currentAnnouncement.message || currentAnnouncement.description}
                     </span>
+
+                    {/* Learn More Button */}
+                    {currentAnnouncement.link && (
+                        <a
+                            href={currentAnnouncement.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 sm:gap-1.5 rounded-full bg-white/10 px-3 py-1 text-xs sm:text-sm font-semibold text-white shadow-sm ring-1 ring-inset ring-white/20 hover:bg-white/20 transition-all flex-shrink-0"
+                        >
+                            Learn more
+                            <ArrowRight className="h-3 w-3" />
+                        </a>
+                    )}
                 </div>
 
-                {currentAnnouncement.link && (
-                    <a
-                        href={currentAnnouncement.link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="w-fit rounded-full bg-white/10 px-4 py-1 text-xs font-semibold text-white shadow-sm ring-1 ring-inset ring-white/20 hover:bg-white/20 transition-all flex items-center gap-2 ml-auto"
-                    >
-                        Learn more <ArrowRight className="h-3 w-3" />
-                    </a>
-                )}
-            </div>
-
-            {/* Close Button */}
-            <div className="absolute right-2 top-2 md:relative md:right-auto md:top-auto md:flex-shrink-0">
+                {/* Close Button - very close to content */}
                 <button
                     type="button"
                     onClick={handleDismiss}
-                    className="p-2 text-white/60 hover:text-white transition-colors rounded-full hover:bg-white/10"
+                    className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 p-1.5 sm:p-2 text-white/70 hover:text-white transition-colors rounded-full hover:bg-white/10"
                 >
                     <span className="sr-only">Dismiss</span>
-                    <X className="h-5 w-5" aria-hidden="true" />
+                    <X className="h-4 w-4 sm:h-5 sm:w-5" />
                 </button>
             </div>
         </div>
