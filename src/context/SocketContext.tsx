@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 import axios from 'axios';
-import Cookies from 'js-cookie';
+import { useAuth } from './AuthContext';
 
 interface SocketContextType {
     socket: Socket | null;
@@ -27,20 +27,15 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const [onlineUsers, setOnlineUsers] = useState<Map<string, any>>(new Map());
     const [unreadCounts, setUnreadCounts] = useState<Map<string, number>>(new Map());
 
-    // User ID should ideally come from Auth Context or Cookies
-    // For now getting from cookies or local storage as per existing app patterns
-    // Assuming 'userId' or 'user_email' is stored.
-    // Inspecting typical auth patterns... 
-    // Let's rely on the component using this to have auth, but we need to identify the user to the socket.
-    // We'll try to read from cookies.
-    const userId = Cookies.get("userEmail") || localStorage.getItem("userEmail"); // Adjust based on actual auth implementation
+    const { user } = useAuth();
+    const userId = user?.email;
 
     useEffect(() => {
         const newSocket = io("http://localhost:3200"); // Adjust URL for production
         setSocket(newSocket);
 
         newSocket.on('connect', () => {
-            console.log("Socket Connected");
+            console.log("Socket Connected", newSocket.id);
             setIsConnected(true);
             if (userId) {
                 newSocket.emit('user_connected', userId);

@@ -54,13 +54,18 @@ const UserActivityStatus: React.FC<UserActivityStatusProps> = ({ userId, showTex
                         if (!lastSeen) return "Offline";
                         const date = new Date(lastSeen);
                         if (isNaN(date.getTime()) || date.getTime() === 0) return "Offline";
+
                         const now = new Date();
                         const diffMs = now.getTime() - date.getTime();
                         const diffMin = Math.floor(diffMs / 60000);
-                        if (diffMin < 1) return "Just now";
-                        if (diffMin < 60) return `${diffMin}m ago`;
-                        if (diffMin < 1440) return `${Math.floor(diffMin / 60)}h ago`;
-                        return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+
+                        if (diffMin < 1) return "Last seen just now";
+                        if (diffMin < 60) return `Last seen ${diffMin} ${diffMin === 1 ? 'minute' : 'minutes'} ago`;
+
+                        const diffHours = Math.floor(diffMin / 60);
+                        if (diffHours < 24) return `Last seen ${diffHours} ${diffHours === 1 ? 'hour' : 'hours'} ago`;
+
+                        return `Last seen on ${date.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
                     })()}
                 </span>
             )}

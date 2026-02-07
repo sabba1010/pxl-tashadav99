@@ -135,20 +135,9 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
     useEffect(() => {
         fetchChat();
 
-        // Presence management (simplified for now as per existing logic)
-        const setPresence = async (status: 'online' | 'offline') => {
-            if (!currentUserEmail || readOnly) return;
-            try {
-                await axios.post(`${CHAT_API}/status`, { userId: currentUserEmail, status });
-            } catch (err) { }
-        };
-
-        setPresence('online');
-
-        const interval = setInterval(fetchChat, 4000); // Polling fallback
+        const interval = setInterval(fetchChat, 10000); // Polling fallback (lower frequency)
 
         return () => {
-            setPresence('offline');
             clearInterval(interval);
         };
     }, [orderId, buyerEmail, sellerEmail, currentUserEmail, readOnly]);
