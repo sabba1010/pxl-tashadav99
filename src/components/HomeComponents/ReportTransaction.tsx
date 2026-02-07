@@ -79,7 +79,7 @@ const ReportTransaction: React.FC = () => {
 
           {/* Secondary Button */}
           <Link
-            to={isLoggedIn ? "/contact-us" : "/login"}
+            to={isLoggedIn ? "/seller-chat" : "/login"}
             className="inline-flex items-center justify-center gap-3 w-full md:w-auto px-8 py-5 text-lg md:text-xl font-medium text-gray-800 bg-gray-100 border-2 border-gray-300 rounded-2xl hover:bg-gray-200 hover:border-gray-400 active:scale-95 transition-all duration-300"
           >
             <Mail className="w-6 h-6 md:w-7 md:h-7" />
