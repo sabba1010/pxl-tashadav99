@@ -231,10 +231,10 @@ const DashboardOverview: React.FC = () => {
       {/* Main Financial Hub */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
         <MetricCard
-          title="Admin Wallet Balance"
+          title="Admin Total Balance"
           value={`$${displayMetrics.adminWalletBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
           variant="balance"
-          subtitle="Total system turnover (admin wallet)"
+          subtitle="Total System Turnover"
           icon={<AccountBalanceWallet sx={{ color: "#059669", fontSize: 32 }} />}
           isLoading={loading}
         />

@@ -21,8 +21,10 @@ const ShieldIcon = FaShieldAlt as React.ElementType;
 interface CartItem {
   _id: string;
   name: string;
+  description?: string;
+  category?: string;
   price: number;
-  sellerEmail: string; // লজিকের জন্য থাকছে, কিন্তু ডিসপ্লে হবে না
+  sellerEmail: string;
   UserEmail: string;
 }
 
@@ -102,9 +104,8 @@ const CartPage: React.FC = () => {
           await sendNotification({
             type: "buy",
             title: "Cart Checkout Successful",
-            message: `You successfully purchased ${
-              cartItems.length
-            } items for $${total.toFixed(2)}.`,
+            message: `You successfully purchased ${cartItems.length
+              } items for $${total.toFixed(2)}.`,
             data: {
               totalAmount: total,
               itemCount: cartItems.length,
@@ -212,30 +213,30 @@ const CartPage: React.FC = () => {
                     <div className="w-16 h-16 md:w-20 md:h-20 flex-shrink-0 bg-gradient-to-br from-[#0A1D37] to-[#1a3a63] rounded-xl md:rounded-2xl flex items-center justify-center text-white text-xl md:text-2xl font-bold shadow-lg">
                       {item.name[0]}
                     </div>
-
-                    {/* Mobile Title logic */}
-                    <div className="flex-1 sm:hidden">
-                      <h3 className="font-bold text-lg leading-tight group-hover:text-[#D4A017] transition-colors line-clamp-1">
-                        {item.name}
-                      </h3>
-                      <p className="text-[10px] text-gray-400 font-medium truncate">
-                        {item.sellerEmail || "Verified Seller"}
-                      </p>
-                    </div>
                   </div>
 
                   <div className="flex-1 w-full">
-                    <div className="hidden sm:flex items-center gap-2 mb-1">
+                    <div className="flex items-center gap-2 mb-1">
                       <span className="px-2 py-0.5 bg-green-50 text-green-600 text-[10px] font-bold uppercase rounded">
                         Instant Delivery
                       </span>
+                      {item.category && (
+                        <span className="px-2 py-0.5 bg-blue-50 text-blue-600 text-[10px] font-bold uppercase rounded">
+                          {item.category}
+                        </span>
+                      )}
                     </div>
-                    <h3 className="hidden sm:block font-bold text-lg md:text-xl group-hover:text-[#D4A017] transition-colors">
+                    <h3 className="font-bold text-lg md:text-xl group-hover:text-[#D4A017] transition-colors">
                       {item.name}
                     </h3>
-                    <p className="hidden sm:block text-xs text-gray-400 font-medium">
-                      {item.sellerEmail || "Verified Seller"}
+                    <p className="text-xs text-gray-400 font-medium mb-2">
+                      Seller: {item.sellerEmail}
                     </p>
+                    {item.description && (
+                      <p className="text-xs text-gray-500 line-clamp-2 mt-1 italic italic-gray-400">
+                        {item.description}
+                      </p>
+                    )}
                   </div>
 
                   {/* Price & Action Section: Row on Mobile, Column on Desktop */}

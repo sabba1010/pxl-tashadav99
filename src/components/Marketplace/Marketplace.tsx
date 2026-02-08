@@ -773,6 +773,8 @@ const Marketplace: React.FC = () => {
           body: JSON.stringify({
             productId: item.id,
             name: item.title,
+            description: item.desc || "",
+            category: item.category || "",
             price: item.price,
             image: typeof item.icon === "string" ? item.icon : "",
             sellerEmail: item.sellerEmail,
