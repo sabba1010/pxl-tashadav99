@@ -476,8 +476,9 @@ const MyOrder: React.FC = () => {
       toast.success(`Order ${status} successfully!`);
       setSelected(null);
       fetchOrders();
-    } catch (err) {
-      toast.error("Failed to update status");
+    } catch (err: any) {
+      const errMsg = err.response?.data?.message || "Failed to update status";
+      toast.error(errMsg);
     } finally {
       setIsUpdating(false);
     }

@@ -179,6 +179,7 @@ const MyPurchase: React.FC = () => {
   const [selected, setSelected] = useState<Purchase | null>(null);
   const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isUpdating, setIsUpdating] = useState(false);
   const [now, setNow] = useState(Date.now());
   const autoCompletedRef = useRef<Set<string>>(new Set());
 
@@ -433,7 +434,6 @@ const MyPurchase: React.FC = () => {
   const fetchPurchases = async () => {
     if (!buyerId) return;
     try {
-      window.scrollTo(0, 0);
       setIsLoading(true);
       const res = await axios.get<RawPurchaseItem[]>(`${PURCHASE_API}/getall?email=${buyerId}&role=buyer`);
 
@@ -500,13 +500,18 @@ const MyPurchase: React.FC = () => {
     const id = orderId || selected?.id;
     if (!id) return;
 
+    if (isUpdating) return;
+    setIsUpdating(true);
     try {
       await axios.patch(`${PURCHASE_API}/update-status/${id}`, { status, email: buyerId, role: "buyer" });
       toast.success(`Order ${status} successfully!`);
       setSelected(null);
       fetchPurchases();
-    } catch (err) {
-      toast.error("Failed to update status");
+    } catch (err: any) {
+      const errMsg = err.response?.data?.message || "Failed to update status";
+      toast.error(errMsg);
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -905,9 +910,22 @@ const MyPurchase: React.FC = () => {
               {selected.status === "Pending" && (
                 <button
                   onClick={() => handleUpdateStatus("completed", selected.sellerEmail)}
-                  className="w-full bg-[#33ac6f] text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition active:scale-95 shadow-lg"
+                  disabled={isUpdating}
+                  className={`w-full bg-[#33ac6f] text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition active:scale-95 shadow-lg ${isUpdating ? "opacity-70 cursor-not-allowed" : ""}`}
                 >
-                  <FaCheckCircleIcon /> Confirm & Complete Order
+                  {isUpdating ? (
+                    <>
+                      <svg className="animate-spin h-5 w-5 mr-3 text-white" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Updating...
+                    </>
+                  ) : (
+                    <>
+                      <FaCheckCircleIcon /> Confirm & Complete Order
+                    </>
+                  )}
                 </button>
               )}
 
