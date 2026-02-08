@@ -195,7 +195,20 @@ const TotalListings: React.FC = () => {
 
   /* ── Render Status Chip ── */
   const renderStatus = (status: string) => {
-    const s = status?.toLowerCase();
+    // Handle undefined/null status
+    if (!status) {
+      return (
+        <Chip
+          label="UNKNOWN"
+          size="small"
+          color="default"
+          variant="outlined"
+          sx={{ fontWeight: 700, fontSize: "11px" }}
+        />
+      );
+    }
+
+    const s = status.toLowerCase();
     let color: "default" | "primary" | "secondary" | "error" | "info" | "success" | "warning" = "default";
 
     if (s === "active") color = "success";
