@@ -19,7 +19,6 @@ const playNotificationSound = () => {
   try {
     const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
 
-    // Create multiple oscillators for a pleasant bell-like sound
     const osc1 = audioContext.createOscillator();
     const osc2 = audioContext.createOscillator();
     const gainNode = audioContext.createGain();
@@ -28,7 +27,6 @@ const playNotificationSound = () => {
     osc2.connect(gainNode);
     gainNode.connect(audioContext.destination);
 
-    // Bell-like frequencies
     osc1.frequency.value = 800;
     osc2.frequency.value = 1200;
     osc1.type = 'sine';
@@ -70,12 +68,10 @@ export const useNotificationAlert = (options: NotificationAlertOptions = {}) => 
 
       const contentType = response.headers.get("content-type");
       if (!contentType || !contentType.includes("application/json")) {
-        // Silently fail if not JSON (likely HTML error page)
         return;
       }
 
       if (!response.ok) {
-        // console.error("Failed to fetch notifications"); // optional: quiet logging
         return;
       }
 
@@ -86,10 +82,6 @@ export const useNotificationAlert = (options: NotificationAlertOptions = {}) => 
         const notificationId = latestNotification._id || latestNotification.id;
         const currentTime = Date.now();
 
-        console.log("Fetched notifications:", notifications.length);
-        console.log("Latest notification ID:", notificationId);
-        console.log("Last notification ID ref:", lastNotificationIdRef.current);
-
         if (
           notificationId &&
           (lastNotificationIdRef.current !== notificationId ||
@@ -98,31 +90,41 @@ export const useNotificationAlert = (options: NotificationAlertOptions = {}) => 
           lastNotificationIdRef.current = notificationId;
           lastNotificationTimeRef.current = currentTime;
 
+          // 🔥 আরও বড় সাইজ — মোবাইলের জন্য খুবই readable
           const content: ReactNode = (
-            <div>
-              <p className="font-semibold">{latestNotification.title}</p>
-              <p className="text-sm">{latestNotification.message}</p>
+            <div className="flex flex-col gap-6 py-3">
+              <p className="text-5xl font-extrabold tracking-tight leading-none text-white">
+                {latestNotification.title}
+              </p>
+              <p className="text-3xl font-medium leading-relaxed text-white/95">
+                {latestNotification.message}
+              </p>
             </div>
           );
 
-          console.log("Triggering toast for:", latestNotification.title);
-
-          // Play notification sound
+          // Play sound
           playNotificationSound();
 
-          // Show toast alert
+          // Toast styling — মোবাইলে বড় এবং clear দেখাবে
           toast.success(content, {
-            duration: 5000,
+            duration: 8000,              // আরও বেশি সময় দেখাবে
             position: "top-right",
-            icon: "🔔",
+            icon: <span className="text-6xl">🔔</span>,
+            style: {
+              border: "3px solid #f59e0b",
+              background: "linear-gradient(135deg, #1e293b 0%, #111827 100%)",
+              color: "#ffffff",
+              padding: "28px 32px",       // আরও বড় padding
+              borderRadius: "24px",
+              boxShadow: "0 30px 40px -10px rgba(0, 0, 0, 0.6)",
+              maxWidth: "92vw",           // মোবাইলে প্রায় পুরো স্ক্রিন জুড়ে
+              minWidth: "320px",
+              fontFamily: "Inter, system-ui, sans-serif",
+            },
           });
 
-          console.log("Notification shown:", latestNotification);
-        } else {
-          console.log("Notification already shown or too recent");
+          console.log("Bigger notification shown:", latestNotification);
         }
-      } else {
-        console.log("No notifications found");
       }
     } catch (error) {
       console.error("Error fetching notifications:", error);
@@ -130,8 +132,6 @@ export const useNotificationAlert = (options: NotificationAlertOptions = {}) => 
   }, [API_BASE, userEmail]);
 
   useEffect(() => {
-    console.log("Starting notification polling with interval:", pollInterval);
-
     fetchNotifications();
 
     intervalRef.current = setInterval(() => {
@@ -141,7 +141,6 @@ export const useNotificationAlert = (options: NotificationAlertOptions = {}) => 
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
-        console.log("Stopped notification polling");
       }
     };
   }, [fetchNotifications, pollInterval]);
