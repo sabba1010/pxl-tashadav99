@@ -227,8 +227,8 @@ const SellForm: React.FC = () => {
     // Price validation - must be appropriate
     if (!formData.price || Number(formData.price) <= 0) {
       newErrors.price = "Valid price is required";
-    } else if (Number(formData.price) < 5) {
-      newErrors.price = "Price too low - minimum $5. Set a competitive price based on account value";
+    } else if (Number(formData.price) < 2) {
+      newErrors.price = "Price too low - minimum $2. Set a competitive price based on account value";
     } else if (Number(formData.price) > 1000) {
       newErrors.price = "Price too high - keep it realistic (max $1,000)";
     }

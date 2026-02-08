@@ -1,4 +1,5 @@
 import React, { useState, ChangeEvent, FormEvent, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   FaCreditCard,
   FaMoneyBillWave,
@@ -30,6 +31,7 @@ interface WithdrawFormData {
 const WithdrawForm: React.FC = () => {
   const { user, setUser } = useAuth();
   const { data } = useAuthHook();
+  const navigate = useNavigate();
 
   const [paymentMethod, setPaymentMethod] = useState<"kora" | "flutterwave" | "localbank">(
     "kora"
@@ -292,6 +294,11 @@ const WithdrawForm: React.FC = () => {
           note: "",
           bankName: "",
         });
+
+        // Redirect to wallet page after 2 seconds
+        setTimeout(() => {
+          navigate("/wallet");
+        }, 2000);
       } else {
         const errorMsg = withdrawData.message || "Request failed";
         toast.error(errorMsg);
