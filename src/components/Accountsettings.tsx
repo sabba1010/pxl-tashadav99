@@ -788,7 +788,7 @@
 //       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 md:p-8">
 //         <h2 className="text-xl font-semibold text-gray-900 mb-1">Notifications</h2>
 //         <p className="text-sm text-gray-500 mb-6">
-//           Get notified on activities within Acctbazaar
+//           Get notified on activities within Acctempire
 //         </p>
 //         <div className="flex items-center justify-center py-12">
 //           <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-orange-500"></div>
@@ -803,7 +803,7 @@
 //         <div>
 //           <h2 className="text-xl font-semibold text-gray-900 mb-1">Notifications</h2>
 //           <p className="text-sm text-gray-500">
-//             Get notified on activities within Acctbazaar
+//             Get notified on activities within Acctempire
 //           </p>
 //         </div>
 //         <button
@@ -1359,7 +1359,7 @@
 //       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 md:p-8">
 //         <h2 className="text-xl font-semibold text-gray-900 mb-1">Notifications</h2>
 //         <p className="text-sm text-gray-500 mb-6">
-//           Get notified on activities within Acctbazaar
+//           Get notified on activities within Acctempire
 //         </p>
 //         <div className="flex items-center justify-center py-12">
 //           <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-orange-500"></div>
@@ -1374,7 +1374,7 @@
 //         <div>
 //           <h2 className="text-xl font-semibold text-gray-900 mb-1">Notifications</h2>
 //           <p className="text-sm text-gray-500">
-//             Get notified on activities within Acctbazaar
+//             Get notified on activities within Acctempire
 //           </p>
 //         </div>
 //         <button
@@ -2140,7 +2140,7 @@ const NotificationsSection = () => {
       <div className="bg-white rounded-lg sm:rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 md:p-8">
         <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-1">Notifications</h2>
         <p className="text-xs sm:text-sm text-gray-500 mb-4 sm:mb-6">
-          Get notified on activities within Acctbazaar
+          Get notified on activities within Acctempire
         </p>
         <div className="flex items-center justify-center py-12">
           <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-orange-500"></div>
@@ -2155,7 +2155,7 @@ const NotificationsSection = () => {
         <div>
           <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-1">Notifications</h2>
           <p className="text-xs sm:text-sm text-gray-500">
-            Get notified on activities within Acctbazaar
+            Get notified on activities within Acctempire
           </p>
         </div>
         <button
