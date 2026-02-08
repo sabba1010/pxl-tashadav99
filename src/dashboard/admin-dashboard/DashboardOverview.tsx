@@ -29,7 +29,8 @@ interface AdminMetrics {
   lifetimeEarnings: number;
   availableAdminBalance: number;
   adminSalesBalance: number;
-  currentSystemTurnover: number; // 🟢 New
+  adminWalletBalance: number; // 🔥 Admin wallet = system turnover
+  currentSystemTurnover: number;
   pendingDepositRequests: number;
   pendingWithdrawalRequests: number;
   totalBuyerDeposits: number;
@@ -162,6 +163,7 @@ const DashboardOverview: React.FC = () => {
       lifetimeEarnings: finMetrics.lifetimePlatformProfit || 0,
       availableAdminBalance: finMetrics.currentWalletPlatformProfit || 0,
       adminSalesBalance: finMetrics.adminSalesBalance || 0,
+      adminWalletBalance: finMetrics.adminWalletBalance || 0,
       currentSystemTurnover: finMetrics.currentSystemTurnover || 0,
       pendingDepositRequests: payments.filter((p: any) => {
         const status = p.status?.toLowerCase() || "";
@@ -193,6 +195,7 @@ const DashboardOverview: React.FC = () => {
     lifetimeEarnings: 0,
     availableAdminBalance: 0,
     adminSalesBalance: 0,
+    adminWalletBalance: 0,
     currentSystemTurnover: 0,
     pendingDepositRequests: 0,
     pendingWithdrawalRequests: 0,
@@ -228,6 +231,14 @@ const DashboardOverview: React.FC = () => {
       {/* Main Financial Hub */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
         <MetricCard
+          title="Admin Wallet Balance"
+          value={`$${displayMetrics.adminWalletBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+          variant="balance"
+          subtitle="Total system turnover (admin wallet)"
+          icon={<AccountBalanceWallet sx={{ color: "#059669", fontSize: 32 }} />}
+          isLoading={loading}
+        />
+        <MetricCard
           title="System Turnover"
           value={`$${displayMetrics.currentSystemTurnover.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
           variant="info"
@@ -257,14 +268,6 @@ const DashboardOverview: React.FC = () => {
           variant="profit"
           subtitle="Total 20% commission earned"
           icon={<TrendingUp sx={{ color: "#B45309", fontSize: 32 }} />}
-          isLoading={loading}
-        />
-        <MetricCard
-          title="Total User Balance"
-          value={`$${displayMetrics.totalUserBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-          variant="balance"
-          subtitle="Total wallet balance held by users"
-          icon={<AccountBalanceWallet sx={{ color: "#059669", fontSize: 32 }} />}
           isLoading={loading}
         />
       </div>
