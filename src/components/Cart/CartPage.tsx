@@ -4,6 +4,10 @@ import {
   FaArrowLeft,
   FaShoppingCart,
   FaShieldAlt,
+  FaEye,
+  FaTimes,
+  FaStar,
+  FaExternalLinkAlt,
 } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
@@ -11,28 +15,164 @@ import { toast } from "sonner";
 import { useAuthHook } from "../../hook/useAuthHook";
 // Notification Import
 import { sendNotification } from "../../components/Notification/Notification";
+import { IconType } from "react-icons";
 
 // TS2786 FIX
 const ArrowLeftIcon = FaArrowLeft as React.ElementType;
 const ShoppingCartIcon = FaShoppingCart as React.ElementType;
 const TrashIcon = FaTrash as React.ElementType;
 const ShieldIcon = FaShieldAlt as React.ElementType;
+const EyeIcon = FaEye as React.ElementType;
+const TimesIcon = FaTimes as React.ElementType;
+const ExternalLinkIcon = FaExternalLinkAlt as React.ElementType;
+const StarIcon = FaStar as React.ElementType;
 
 interface CartItem {
   _id: string;
+  productId: string;
   name: string;
   description?: string;
   category?: string;
   price: number;
+  image?: string;
   sellerEmail: string;
   UserEmail: string;
+  realTime?: boolean;
+  previewLink?: string;
 }
 
 const API_URL = "http://localhost:3200";
 
+const RenderIcon = ({
+  icon,
+  size,
+  realTime,
+}: {
+  icon: string | IconType | undefined;
+  size: number;
+  realTime?: boolean;
+}) => {
+  const isStringIcon = typeof icon === "string";
+
+  return (
+    <div
+      className="relative flex items-center justify-center bg-gradient-to-br from-[#0A1D37] to-[#1a3a63] rounded-xl shadow-lg text-white font-bold"
+      style={{ width: size, height: size, fontSize: size / 2.5 }}
+    >
+      {isStringIcon && icon ? (
+        <img
+          src={icon}
+          alt="icon"
+          className="w-full h-full object-cover rounded-xl"
+        />
+      ) : (
+        <span>?</span>
+      )}
+      {realTime && (
+        <span className="absolute -top-1 -right-1 flex h-3 w-3">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+          <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500 border border-white"></span>
+        </span>
+      )}
+    </div>
+  );
+};
+
+const Stars: React.FC<{ value: number }> = ({ value }) => (
+  <div className="flex gap-0.5">
+    {[...Array(5)].map((_, i) => (
+      <StarIcon
+        key={i}
+        size={12}
+        className={i < value ? "text-yellow-400 fill-current" : "text-gray-300"}
+      />
+    ))}
+  </div>
+);
+
+const ProductModal: React.FC<{
+  item: CartItem;
+  onClose: () => void;
+}> = ({ item, onClose }) => {
+  return (
+    <>
+      <div
+        className="fixed inset-0 bg-black/60 z-50 backdrop-blur-sm"
+        onClick={onClose}
+      />
+      <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg bg-white rounded-2xl shadow-2xl z-[60] overflow-hidden max-h-[90vh] flex flex-col">
+        <div className="p-4 border-b flex justify-between items-center bg-gray-50">
+          <h2 className="font-bold text-gray-800">Item Details</h2>
+          <button
+            onClick={onClose}
+            className="p-1 hover:bg-gray-200 rounded-full"
+          >
+            <TimesIcon />
+          </button>
+        </div>
+
+        <div className="p-6 overflow-y-auto">
+          <div className="flex justify-center mb-4">
+            <RenderIcon icon={item.image} size={72} realTime={item.realTime} />
+          </div>
+          <h2 className="text-2xl font-bold text-center text-[#0A1D37] mb-1 break-words max-w-sm mx-auto line-clamp-3">
+            {item.name}
+          </h2>
+          <div className="text-3xl font-extrabold text-center text-green-600 mb-6">
+            ${Number(item.price).toFixed(2)}
+          </div>
+
+          <div className="space-y-4 text-sm bg-gray-50 p-4 rounded-lg">
+            <div>
+              <span className="font-semibold text-gray-700">Description:</span>
+              <p className="text-gray-600 mt-1 whitespace-pre-wrap">
+                {item.description || "No description provided."}
+              </p>
+            </div>
+
+            <div className="flex justify-between mt-2">
+              <span>
+                Seller: <Link to={`/store/${item.sellerEmail}`} className="font-medium text-green-600 hover:underline">{item.sellerEmail}</Link>
+              </span>
+              <span>
+                Category: <span className="font-medium">{item.category}</span>
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2 text-yellow-500">
+              <Stars value={5} />{" "}
+              <span className="text-gray-400 text-xs">(Verified)</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-4 border-t bg-gray-50">
+          {item.previewLink && (
+            <a
+              href={item.previewLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full py-3 rounded-xl font-bold text-white bg-blue-600 hover:bg-blue-700 transition flex items-center justify-center gap-2 shadow-sm"
+            >
+              <ExternalLinkIcon size={16} /> Preview Product
+            </a>
+          )}
+          <button
+            onClick={onClose}
+            className="w-full mt-3 py-3 border border-gray-300 rounded-xl font-semibold hover:bg-gray-100 transition"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </>
+  );
+};
+
 const CartPage: React.FC = () => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedItem, setSelectedItem] = useState<CartItem | null>(null);
   const { user } = useAuth();
   const navigate = useNavigate();
   const { refetch } = useAuthHook();
@@ -210,9 +350,7 @@ const CartPage: React.FC = () => {
                 >
                   {/* Image & Title Wrapper for better mobile alignment */}
                   <div className="flex items-center gap-4 w-full sm:w-auto">
-                    <div className="w-16 h-16 md:w-20 md:h-20 flex-shrink-0 bg-gradient-to-br from-[#0A1D37] to-[#1a3a63] rounded-xl md:rounded-2xl flex items-center justify-center text-white text-xl md:text-2xl font-bold shadow-lg">
-                      {item.name[0]}
-                    </div>
+                    <RenderIcon icon={item.image} size={64} realTime={item.realTime} />
                   </div>
 
                   <div className="flex-1 w-full">
@@ -249,12 +387,21 @@ const CartPage: React.FC = () => {
                         ${Number(item.price).toFixed(2)}
                       </p>
                     </div>
-                    <button
-                      onClick={() => handleDelete(item._id)}
-                      className="flex items-center gap-1.5 text-red-400 hover:text-red-600 font-bold text-xs uppercase tracking-tighter"
-                    >
-                      <TrashIcon size={14} /> Remove
-                    </button>
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => setSelectedItem(item)}
+                        className="p-2 border rounded-md hover:bg-gray-50 text-gray-600 flex items-center justify-center"
+                        title="View Details"
+                      >
+                        <EyeIcon size={14} />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(item._id)}
+                        className="flex items-center gap-1.5 text-red-400 hover:text-red-600 font-bold text-xs uppercase tracking-tighter"
+                      >
+                        <TrashIcon size={14} /> Remove
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -311,6 +458,12 @@ const CartPage: React.FC = () => {
           </div>
         )}
       </div>
+      {selectedItem && (
+        <ProductModal
+          item={selectedItem}
+          onClose={() => setSelectedItem(null)}
+        />
+      )}
     </div>
   );
 };

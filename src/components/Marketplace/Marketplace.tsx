@@ -778,6 +778,8 @@ const Marketplace: React.FC = () => {
             price: item.price,
             image: typeof item.icon === "string" ? item.icon : "",
             sellerEmail: item.sellerEmail,
+            realTime: item.realTime || false,
+            previewLink: item.previewLink || "",
             addedAt: new Date(),
             UserEmail: user.user?.email,
           }),
