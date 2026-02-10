@@ -1,7 +1,7 @@
 ﻿import { Button } from "@mui/material";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { FaBreadSlice, FaTrash } from "react-icons/fa";
-import { Link, NavLink, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate, useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
@@ -30,7 +30,8 @@ import {
   FileText,
   BookOpen,
   Headphones,
-  CreditCard
+  CreditCard,
+  Tag
 } from "lucide-react";
 import AnnouncementBar from "./AnnouncementBar";
 
@@ -60,12 +61,13 @@ type NItem = {
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   const dropdownRef = useRef<HTMLDivElement>(null);
   const notifRef = useRef<HTMLDivElement | null>(null);
   const user = useAuth();
   const loginUser = user.user;
   const navigate = useNavigate();
+  const location = useLocation();
 
   const loginUserData = useAuthHook();
   const currentUserEmail =
@@ -218,20 +220,7 @@ export default function Navbar() {
         <nav className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-14 md:h-16">
             <div className="flex items-center">
-              <button
-                onClick={() => setMobileMenuOpen((s) => !s)}
-                className="lg:hidden p-2 rounded-md hover:bg-gray-100 transition mr-2"
-              >
-                {mobileMenuOpen ? (
-                  <svg className="w-6 h-6" fill="none" stroke={EMPIRE_BLUE} viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                ) : (
-                  <svg className="w-6 h-6" fill="none" stroke={EMPIRE_BLUE} viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                  </svg>
-                )}
-              </button>
+
 
               <NavLink
                 to="/"
@@ -600,12 +589,16 @@ export default function Navbar() {
 
           <button
             onClick={handleSellProduct}
-            className="flex flex-col items-center justify-end flex-1 h-full -mt-8"
+            className="flex flex-col items-center justify-center flex-1 h-full gap-1 pt-3"
+            style={{ color: location.pathname === "/myproducts" ? ROYAL_GOLD : "#9CA3AF" }}
           >
-            <div className="h-14 w-14 rounded-full flex items-center justify-center shadow-lg shadow-yellow-500/30 text-white mb-1 transition-transform active:scale-95" style={{ backgroundColor: ROYAL_GOLD }}>
-              <Plus size={28} strokeWidth={3} />
-            </div>
-            <span className="text-[10px] font-medium text-gray-500">Sell</span>
+            <motion.div
+              whileTap={{ scale: 0.8 }}
+              animate={{ scale: location.pathname === "/myproducts" ? 1.1 : 1 }}
+            >
+              <Tag size={22} strokeWidth={location.pathname === "/myproducts" ? 2.5 : 2} />
+            </motion.div>
+            <span className="text-[10px] font-medium">Sell</span>
           </button>
 
           {(loginUser?.role === "seller" || loginUser?.role === "admin") && (
