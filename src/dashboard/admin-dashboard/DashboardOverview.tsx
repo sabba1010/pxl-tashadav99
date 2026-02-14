@@ -252,8 +252,8 @@ const DashboardOverview: React.FC = () => {
           variant="success"
           subtitle="Current wallet platform profit"
           icon={<AccountBalanceWallet sx={{ color: "#10B981", fontSize: 32 }} />}
-          isLoading={loading}
-        /> */}
+          isLoading={loading} */}
+        
         <MetricCard
           title="Admin Sales Balance"
           value={`$${displayMetrics.adminSalesBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
@@ -262,14 +262,14 @@ const DashboardOverview: React.FC = () => {
           icon={<MonetizationOn sx={{ color: "#2563EB", fontSize: 32 }} />}
           isLoading={loading}
         />
-        {/* <MetricCard
+        <MetricCard
           title="Lifetime Platform Profit"
           value={`$${displayMetrics.lifetimeEarnings.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
           variant="profit"
           subtitle="Total 20% commission earned"
           icon={<TrendingUp sx={{ color: "#B45309", fontSize: 32 }} />}
           isLoading={loading}
-        /> */}
+        />
       </div>
 
       {/* User Statistics */}
