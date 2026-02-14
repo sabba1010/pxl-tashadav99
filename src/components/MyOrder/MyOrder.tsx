@@ -393,7 +393,7 @@ const MyOrder: React.FC = () => {
       const mapped: Order[] = enrichedData.map((item: any) => ({
         id: item._id,
         platform: inferPlatform(item.productName),
-        title: item.productName || "Product Deleted / Old Order",
+        title: item.productName || "Uncategorized Product",
         desc: item.productId ? `Product ID: ${item.productId}` : "No product ID",
         buyerEmail: item.buyerEmail,
         price: item.price,

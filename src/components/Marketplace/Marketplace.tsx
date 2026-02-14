@@ -69,6 +69,7 @@ interface Item {
   price: number;
   seller: string;
   sellerEmail: string;
+  storeName?: string;
   delivery: string;
   icon: string | IconType;
   category: string;
@@ -482,7 +483,7 @@ const ItemCard: React.FC<{
         </p>
         <div className="text-xs text-gray-400 mt-2">
           <Link to={`/store/${item.sellerEmail}`} className="font-medium text-[#0A1A3A] hover:text-green-600 hover:underline transition-all">
-            {item.seller || "Verified Seller"}
+            {item.storeName || item.seller || "Verified Seller"}
           </Link> •{" "}
           <span className="text-green-600">{item.delivery}</span>
         </div>
@@ -569,7 +570,7 @@ const ProductModal: React.FC<{
 
             <div className="flex justify-between mt-2">
               <span>
-                Seller: <Link to={`/store/${item.sellerEmail}`} className="font-medium text-green-600 hover:underline">{item.seller || "Verified Seller"}</Link>
+                Seller: <Link to={`/store/${item.sellerEmail}`} className="font-medium text-green-600 hover:underline">{item.storeName || item.seller || "Verified Seller"}</Link>
               </span>
               <span>
                 Category: <span className="font-medium">{item.category}</span>
@@ -667,11 +668,10 @@ const Marketplace: React.FC = () => {
     const fetchItems = async () => {
       try {
         window.scrollTo(0, 0);
-        const res = await fetch(`${API_URL}/product/all-sells`);
+        const res = await fetch(`${API_URL}/product/all-sells?status=active`);
         if (!res.ok) throw new Error("Failed to fetch");
         const data = await res.json();
         const mapped: Item[] = data
-          .filter((p: any) => (p.status === "active" || p.status === "approved") && p.isVisible !== false)
           .map((p: any) => ({
             id: p._id,
             title: p.name,
@@ -679,6 +679,7 @@ const Marketplace: React.FC = () => {
             price: Number(p.price) || 0,
             seller: p.username || p.userEmail,
             sellerEmail: p.userEmail,
+            storeName: p.storeName,
             delivery: p.deliveryType === 'manual' ? (p.deliveryTime || "Manual") : "Instant",
             deliveryType: p.deliveryType,
             deliveryTime: p.deliveryTime,

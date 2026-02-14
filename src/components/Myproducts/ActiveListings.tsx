@@ -26,8 +26,8 @@ const ActiveListings: React.FC = () => {
     window.scrollTo(0, 0);
     setLoading(true);
     try {
-      const res = await axios.get<Ad[]>(`${API}/product/all-sells`);
-      const userAds = res.data.filter((ad: any) => ad.userEmail === user?.email && ad.isVisible !== false);
+      const res = await axios.get<Ad[]>(`${API}/product/all-sells?userEmail=${user?.email}`);
+      const userAds = res.data.filter((ad: any) => ad.isVisible !== false);
       setItems(userAds);
     } catch (err) {
       console.error(err);
@@ -97,7 +97,7 @@ const ActiveListings: React.FC = () => {
           {sold.length === 0 ? (
             <div className="bg-white rounded-3xl p-8 text-center border border-dashed border-gray-200">
               <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <svg className="w-7 h-7 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h4l3 8 4-16 3 8h4"/></svg>
+                <svg className="w-7 h-7 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h4l3 8 4-16 3 8h4" /></svg>
               </div>
               <h3 className="text-base font-bold text-[#0A1A3A] mb-1">No sold listings</h3>
               <p className="text-xs text-gray-400 max-w-[360px] mx-auto">Items that are marked sold will appear here. They will move to Completed when the sale is finalized.</p>
@@ -133,7 +133,7 @@ const ActiveListings: React.FC = () => {
           {completed.length === 0 ? (
             <div className="bg-white rounded-3xl p-8 text-center border border-dashed border-gray-200">
               <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <svg className="w-7 h-7 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4"/></svg>
+                <svg className="w-7 h-7 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4" /></svg>
               </div>
               <h3 className="text-base font-bold text-[#0A1A3A] mb-1">No completed sales</h3>
               <p className="text-xs text-gray-400 max-w-[360px] mx-auto">Completed sales show here after an order is fully processed and confirmed.</p>

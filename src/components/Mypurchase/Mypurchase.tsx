@@ -466,7 +466,7 @@ const MyPurchase: React.FC = () => {
       const mapped: Purchase[] = enrichedData.map((item) => ({
         id: item._id,
         platform: inferPlatform(item.productName),
-        title: item.productName || "Untitled",
+        title: item.productName || "Uncategorized Product",
         desc: item.additionalInfo || "No additional details provided.",
         sellerEmail: item.sellerEmail,
         buyerEmail: item.buyerEmail,

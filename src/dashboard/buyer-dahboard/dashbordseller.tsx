@@ -251,7 +251,7 @@
 //     const fetchReports = async () => {
 //       try {
 //         const res = await axios.get("http://localhost:3200/purchase/report/getall");
-        
+
 //         if (res.data && Array.isArray(res.data)) {
 //           // Filter reports for this user if needed (by email or role as seller)
 //           const userReports = res.data.filter((report: any) => 
@@ -574,7 +574,7 @@
 
 //                   {/* Earnings Trend Chart (Simple Bar Representation) */}
 //                  {/* 
-                 
+
 //  <div>
 //                     <h4 className="font-bold text-lg text-gray-900 mb-4">Earnings Trend (Last 30 Days)</h4>
 //                     <div className="bg-gray-50 p-6 rounded-lg border border-gray-200 min-h-64">
@@ -623,7 +623,7 @@
 //                   </div>
 //  */}
 
-         
+
 
 //                 </div>
 //               )}
@@ -962,7 +962,7 @@
 //               <h3 className="font-black text-lg text-gray-900 mb-6 uppercase tracking-tighter flex items-center gap-2">
 //                 <Bell size={18} className="text-blue-600" />Compliance & Account Notices
 //               </h3>
-              
+
 //               {notifications.length > 0 ? (
 //                 <div className="space-y-3 max-h-96 overflow-y-auto pr-3">
 //                   {notifications.map((notification, idx) => (
@@ -1186,7 +1186,7 @@ const DashboardSeller: React.FC = () => {
 
         const topProducts = completedSales
           .map((sale: any) => ({
-            name: sale.productName || 'Unknown',
+            name: sale.productName || 'Uncategorized Product',
             sales: 1,
             revenue: Number(sale.price) || 0,
             createdAt: sale.createdAt
@@ -1197,7 +1197,7 @@ const DashboardSeller: React.FC = () => {
         setBestSellingProducts(topProducts);
 
         const activities = [
-          ...sales.map(s => ({ Icon: Zap, color: 'text-blue-500', title: 'Payment Received', desc: `Sold ${s.productName || 'Account'} - $${s.price}`, time: s.createdAt })),
+          ...sales.map(s => ({ Icon: Zap, color: 'text-blue-500', title: 'Payment Received', desc: `Sold ${s.productName || 'Uncategorized Product'} - $${s.price}`, time: s.createdAt })),
           ...myProducts.filter(a => a.status === 'approved' || a.status === 'active').map(a => ({ Icon: ShieldCheck, color: 'text-emerald-500', title: 'Listing Live', desc: a.name, time: a.createdAt }))
         ]
           .sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime())
@@ -1223,11 +1223,11 @@ const DashboardSeller: React.FC = () => {
 
         const myNotifs = Array.isArray(res)
           ? res.filter((n: any) => {
-              const isDirect = n.userEmail === user?.email;
-              const isAll = n.target === "all";
-              const isRoleMatch = userRole && n.target === `${userRole}s`;
-              return isDirect || isAll || isRoleMatch;
-            })
+            const isDirect = n.userEmail === user?.email;
+            const isAll = n.target === "all";
+            const isRoleMatch = userRole && n.target === `${userRole}s`;
+            return isDirect || isAll || isRoleMatch;
+          })
           : [];
 
         const sortedNotifs = myNotifs.sort(
@@ -1396,11 +1396,10 @@ const DashboardSeller: React.FC = () => {
                         <button
                           key={page}
                           onClick={() => setRatingsPage(page)}
-                          className={`w-10 h-10 rounded-md text-sm font-semibold border transition-all ${
-                            ratingsPage === page
+                          className={`w-10 h-10 rounded-md text-sm font-semibold border transition-all ${ratingsPage === page
                               ? 'bg-[#d4a643] border-[#d4a643] text-white shadow-md'
                               : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
-                          }`}
+                            }`}
                         >
                           {page}
                         </button>
@@ -1451,9 +1450,8 @@ const DashboardSeller: React.FC = () => {
                           onClick={() => {
                             // Filter toggle - update if needed
                           }}
-                          className={`px-4 py-2 rounded-lg text-xs font-bold uppercase transition-all ${
-                            filter === 'monthly' ? 'bg-[#d4a643] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                          }`}
+                          className={`px-4 py-2 rounded-lg text-xs font-bold uppercase transition-all ${filter === 'monthly' ? 'bg-[#d4a643] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                            }`}
                         >
                           {filter}
                         </button>
@@ -1604,11 +1602,10 @@ const DashboardSeller: React.FC = () => {
                       <button
                         key={`page-${page}`}
                         onClick={() => setCurrentPage(page as number)}
-                        className={`w-10 h-10 rounded-md text-sm font-semibold border transition-all ${
-                          currentPage === page
+                        className={`w-10 h-10 rounded-md text-sm font-semibold border transition-all ${currentPage === page
                             ? "bg-[#d4a643] border-[#d4a643] text-white shadow-md"
                             : "bg-white border-gray-200 text-gray-600 hover:bg-gray-50"
-                        }`}
+                          }`}
                       >
                         {page}
                       </button>
@@ -1803,9 +1800,8 @@ const DashboardSeller: React.FC = () => {
                   {notifications.map((n, idx) => (
                     <div
                       key={n._id || idx}
-                      className={`p-4 rounded-xl border-l-4 ${
-                        n.read ? 'bg-gray-50 border-l-gray-300' : 'bg-blue-50 border-l-blue-600'
-                      }`}
+                      className={`p-4 rounded-xl border-l-4 ${n.read ? 'bg-gray-50 border-l-gray-300' : 'bg-blue-50 border-l-blue-600'
+                        }`}
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1">

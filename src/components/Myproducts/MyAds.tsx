@@ -69,15 +69,15 @@ const MyAds: React.FC = () => {
     setLoading(true);
     try {
       const res = await axios.get<Ad[]>(
-        "http://localhost:3200/product/all-sells"
+        `http://localhost:3200/product/all-sells?userEmail=${user.user?.email}`
       );
 
       const userAds = res.data.filter(
-        (ad: { userEmail: string; isVisible?: boolean; status?: string }) => {
+        (ad: { status?: string }) => {
           const st = (ad.status || "").toString().toLowerCase();
           // exclude sold/completed from My Ads — they will be shown in Sold Listings
           if (st === "sold" || st === "completed") return false;
-          return ad.userEmail === user.user?.email && ad.isVisible !== false;
+          return true;
         }
       );
 

@@ -414,9 +414,13 @@ const SellerStore: React.FC = () => {
     const { refetch } = useAuthHook();
 
     useEffect(() => {
+        // Clear previous state when seller changes to prevent ghosting
+        setReputation(null);
+        setProducts([]);
+        setLoading(true);
+
         const fetchData = async () => {
             if (!sellerEmail) return;
-            setLoading(true);
             try {
                 const [repRes, prodRes] = await Promise.all([
                     axios.get<{ success: boolean; data: SellerReputation }>(`${API_URL}/reputation/seller/${sellerEmail}`),
