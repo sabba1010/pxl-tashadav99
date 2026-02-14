@@ -589,16 +589,21 @@ export default function Navbar() {
 
           <button
             onClick={handleSellProduct}
-            className="flex flex-col items-center justify-center flex-1 h-full gap-1 pt-3"
-            style={{ color: location.pathname === "/myproducts" ? ROYAL_GOLD : "#9CA3AF" }}
+            className="flex flex-col items-center justify-center flex-1 h-full pb-1"
           >
             <motion.div
-              whileTap={{ scale: 0.8 }}
-              animate={{ scale: location.pathname === "/myproducts" ? 1.1 : 1 }}
+              whileTap={{ scale: 0.9 }}
+              className="w-10 h-10 rounded-full flex items-center justify-center shadow-lg"
+              style={{ backgroundColor: ROYAL_GOLD }}
             >
-              <Tag size={22} strokeWidth={location.pathname === "/myproducts" ? 2.5 : 2} />
+              <Plus size={24} color="#ffffff" strokeWidth={3} />
             </motion.div>
-            <span className="text-[10px] font-medium">Sell</span>
+            <span
+              className="text-[10px] font-medium mt-1"
+              style={{ color: location.pathname === "/myproducts" ? ROYAL_GOLD : "#9CA3AF" }}
+            >
+              Sell
+            </span>
           </button>
 
           {(loginUser?.role === "seller" || loginUser?.role === "admin") && (
