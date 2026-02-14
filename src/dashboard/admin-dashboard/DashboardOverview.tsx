@@ -246,14 +246,14 @@ const DashboardOverview: React.FC = () => {
           icon={<TrendingUp sx={{ color: "#2563EB", fontSize: 32 }} />}
           isLoading={loading}
         />
-        {/* <MetricCard
+        <MetricCard
           title="Available Platform Profit"
           value={`$${displayMetrics.availableAdminBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
           variant="success"
           subtitle="Current wallet platform profit"
           icon={<AccountBalanceWallet sx={{ color: "#10B981", fontSize: 32 }} />}
-          isLoading={loading} */}
-        
+          isLoading={loading}
+        />
         <MetricCard
           title="Admin Sales Balance"
           value={`$${displayMetrics.adminSalesBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
