@@ -76,6 +76,7 @@ interface Item {
   subcategory?: string;
   realTime?: boolean;
   previewLink?: string;
+  sellerName?: string;
 }
 
 type SubcatState = Record<string, string[]>;
@@ -483,7 +484,7 @@ const ItemCard: React.FC<{
         </p>
         <div className="text-xs text-gray-400 mt-2">
           <Link to={`/store/${item.sellerEmail}`} className="font-medium text-[#0A1A3A] hover:text-green-600 hover:underline transition-all">
-            {item.storeName || item.seller || "Verified Seller"}
+            {item.storeName || item.sellerName || (item.seller && item.seller.includes('@') ? item.seller.split('@')[0] : item.seller) || "Verified Seller"}
           </Link> •{" "}
           <span className="text-green-600">{item.delivery}</span>
         </div>
@@ -677,7 +678,8 @@ const Marketplace: React.FC = () => {
             title: p.name,
             desc: p.description,
             price: Number(p.price) || 0,
-            seller: p.username || p.userEmail,
+            seller: p.sellerUsername || p.username || p.userEmail,
+            sellerName: p.sellerName,
             sellerEmail: p.userEmail,
             storeName: p.storeName,
             delivery: p.deliveryType === 'manual' ? (p.deliveryTime || "Manual") : "Instant",

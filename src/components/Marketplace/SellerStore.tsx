@@ -203,6 +203,8 @@ interface Product {
     price: number;
     seller: string;
     sellerEmail: string;
+    storeName?: string;
+    sellerName?: string;
     delivery: string;
     icon: any;
     category: string;
@@ -253,7 +255,9 @@ const ItemCard: React.FC<{
                         {item.desc || "Premium account • Instant delivery"}
                     </p>
                     <div className="flex items-center gap-1.5 mt-1 text-[9px] font-medium text-gray-400">
-                        <span className="text-gray-500 truncate max-w-[80px]">{item.seller}</span>
+                        <span className="text-gray-500 truncate max-w-[80px]">
+                            {item.storeName || item.sellerName || (item.seller && item.seller.includes('@') ? item.seller.split('@')[0] : item.seller)}
+                        </span>
                         <span>•</span>
                         <span className="text-green-600 font-bold bg-green-50 px-1 py-0.5 rounded-sm uppercase tracking-tighter">{item.delivery}</span>
                     </div>
@@ -439,8 +443,10 @@ const SellerStore: React.FC = () => {
                             title: p.name,
                             desc: p.description,
                             price: Number(p.price) || 0,
-                            seller: p.username || p.userEmail,
+                            seller: p.sellerUsername || p.username || p.userEmail,
                             sellerEmail: p.userEmail,
+                            storeName: p.storeName,
+                            sellerName: p.sellerName,
                             delivery: p.deliveryType === 'manual' ? (p.deliveryTime || "Manual") : "Instant",
                             icon: p.categoryIcon || p.category || (p.subcategory ? p.subcategory : "Bullhorn"),
                             category: p.category || "General",
