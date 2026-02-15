@@ -21,7 +21,7 @@ interface WithdrawalRequest {
   email: string;
   note: string;
   status: string;
-  createdAt: string; // ISO String from DB
+  createdAt: string; 
   updatedAt: string;
   approvedAt?: string;
   adminNote?: string;
@@ -159,13 +159,6 @@ const DetailsModal: React.FC<{ request: WithdrawalRequest | null; onClose: () =>
               <strong>NGN Payout:</strong> ₦{((request as any).amountNGN || Math.round(Number(request.amount) * 1400)).toLocaleString()}
             </Typography>
           </Box>
-          <Box>
-             <Typography sx={{ fontSize: 12, fontWeight: 700, color: "#64748B", mb: 0.5 }}>TIMESTAMPS</Typography>
-             <Typography sx={{ fontSize: 13 }}><strong>Requested:</strong> {new Date(request.createdAt).toLocaleString()}</Typography>
-             {request.approvedAt && (
-               <Typography sx={{ fontSize: 13 }}><strong>Processed:</strong> {new Date(request.approvedAt).toLocaleString()}</Typography>
-             )}
-          </Box>
         </Box>
       </DialogContent>
       <DialogActions sx={{ p: 3 }}>
@@ -243,11 +236,15 @@ const WithdrawalRequests: React.FC = () => {
     }
   };
 
-  // Sort by createdAt (Oldest First) so you process them in order
+  /* ================= SORTING: NEWEST FIRST ================= */
   const filteredRequests = useMemo(() => {
     return requests
-      .filter(r => r.email.toLowerCase().includes(searchTerm.toLowerCase()) || r.status.toLowerCase().includes(searchTerm.toLowerCase()))
-      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+      .filter(r => 
+        r.email.toLowerCase().includes(searchTerm.toLowerCase()) || 
+        r.status.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+      // Newest First (Descending order by createdAt)
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   }, [requests, searchTerm]);
 
   const paginatedRequests = filteredRequests.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
@@ -276,7 +273,7 @@ const WithdrawalRequests: React.FC = () => {
           <Table>
             <TableHead sx={{ bgcolor: "#F8FAFC" }}>
               <TableRow>
-                {["DATE & TIME", "SELLER", "METHOD", "AMOUNT", "STATUS", "REPORTS", "UNFINISHED", "ACTION"].map(h => (
+                {["REQUESTED AT", "SELLER", "METHOD", "AMOUNT", "STATUS", "REPORTS", "UNFINISHED", "ACTION"].map(h => (
                   <TableCell
                     key={h}
                     align={h === "ACTION" ? "center" : "left"}
@@ -295,7 +292,6 @@ const WithdrawalRequests: React.FC = () => {
             <TableBody>
               {paginatedRequests.map((req) => (
                 <TableRow key={req._id} hover>
-                  {/* UPDATED DATE & TIME CELL */}
                   <TableCell>
                     <Stack spacing={0.5}>
                       <Typography sx={{ fontSize: 13, fontWeight: 700, color: "#1F2937" }}>
@@ -310,7 +306,6 @@ const WithdrawalRequests: React.FC = () => {
                       </Typography>
                     </Stack>
                   </TableCell>
-
                   <TableCell>{req.email}</TableCell>
                   <TableCell>{req.paymentMethod}</TableCell>
                   <TableCell>
@@ -374,34 +369,46 @@ const WithdrawalRequests: React.FC = () => {
 
       {!loading && filteredRequests.length > 0 && (
         <Box mt={4} display="flex" justifyContent="center">
-          <Pagination count={Math.ceil(filteredRequests.length / ITEMS_PER_PAGE)} page={currentPage} onChange={(_, p) => setCurrentPage(p)} />
+          <Pagination 
+            count={Math.ceil(filteredRequests.length / ITEMS_PER_PAGE)} 
+            page={currentPage} 
+            onChange={(_, p) => setCurrentPage(p)} 
+          />
         </Box>
       )}
 
-      {selectedRequest && <WithdrawalModal request={selectedRequest} sellerBalance={sellerBalance} onClose={() => setSelectedRequest(null)} updating={actionLoading} onUpdateStatus={async (id, status, reason) => {
-        setActionLoading(true);
-        try {
-          const endpoint = status === "approved" ? "approve" : "decline";
-          const res = await fetch(`http://localhost:3200/withdraw/${endpoint}/${id}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: status === "declined" ? JSON.stringify({ reason }) : null
-          });
+      {selectedRequest && (
+        <WithdrawalModal 
+          request={selectedRequest} 
+          sellerBalance={sellerBalance} 
+          onClose={() => setSelectedRequest(null)} 
+          updating={actionLoading} 
+          onUpdateStatus={async (id, status, reason) => {
+            setActionLoading(true);
+            try {
+              const endpoint = status === "approved" ? "approve" : "decline";
+              const res = await fetch(`http://localhost:3200/withdraw/${endpoint}/${id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: status === "declined" ? JSON.stringify({ reason }) : null
+              });
 
-          if (res.ok) {
-            refetch();
-            setSelectedRequest(null);
-          } else {
-            const errorData = await res.json();
-            alert(errorData.message + (errorData.error ? ": " + errorData.error : ""));
-          }
-        } catch (err) {
-          console.error(err);
-          alert("Network error. Payout might have failed.");
-        } finally {
-          setActionLoading(false);
-        }
-      }} />}
+              if (res.ok) {
+                refetch();
+                setSelectedRequest(null);
+              } else {
+                const errorData = await res.json();
+                alert(errorData.message + (errorData.error ? ": " + errorData.error : ""));
+              }
+            } catch (err) {
+              console.error(err);
+              alert("Network error.");
+            } finally {
+              setActionLoading(false);
+            }
+          }} 
+        />
+      )}
 
       {detailsRequest && <DetailsModal request={detailsRequest} onClose={() => setDetailsRequest(null)} />}
     </Box>
@@ -409,7 +416,6 @@ const WithdrawalRequests: React.FC = () => {
 };
 
 export default WithdrawalRequests;
-
 
 // import React, { useState, useMemo, useCallback, useEffect } from "react";
 // import { useQuery } from "@tanstack/react-query";
