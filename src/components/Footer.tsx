@@ -5,11 +5,10 @@ import {
   Mail,
   Phone,
   MapPin,
-  Facebook,
   Youtube,
   Twitter,
   Instagram,
-  Music2
+  Music2 // Used for TikTok
 } from "lucide-react";
 
 type Props = {
@@ -21,15 +20,30 @@ export default function Footer({ theme = "dark" }: Props) {
   const currentYear = new Date().getFullYear();
 
   const linkHoverClass = "hover:text-[#33ac6f] transition-colors duration-300";
-  const sectionTitleClass = `text-sm font-bold uppercase tracking-wider ${isDark ? "text-[#e6c06c]" : "text-[#e6c06c]"}`;
+  const sectionTitleClass = `text-sm font-bold uppercase tracking-wider text-[#e6c06c]`;
 
-  // Replace these with your actual social media URLs
+  // Updated social links with your specific handles
   const socialLinks = [
-    { Icon: Facebook, url: "https://facebook.com/yourpage", label: "Facebook" },
-    { Icon: Youtube, url: "https://youtube.com/yourchannel", label: "YouTube" },
-    { Icon: Twitter, url: "https://twitter.com/yourhandle", label: "Twitter" },
-    { Icon: Instagram, url: "https://instagram.com/yourprofile", label: "Instagram" },
-    { Icon: Music2, url: "https://tiktok.com/@yourprofile", label: "TikTok" },
+    { 
+      Icon: Instagram, 
+      url: "https://www.instagram.com/acctempire", 
+      label: "Instagram" 
+    },
+    { 
+      Icon: Music2, 
+      url: "https://www.tiktok.com/@acctempire.com", 
+      label: "TikTok" 
+    },
+    { 
+      Icon: Twitter, 
+      url: "https://x.com/acctempire_", 
+      label: "X (Twitter)" 
+    },
+    { 
+      Icon: Youtube, 
+      url: "https://youtube.com/@acctempire", 
+      label: "YouTube" 
+    },
   ];
 
   return (
@@ -67,8 +81,8 @@ export default function Footer({ theme = "dark" }: Props) {
             </div>
           </div>
 
-          {/* Quick Links */}
-          {/* <div>
+          {/* Quick Links (Uncomment if needed) */}
+          <div>
             <h3 className={sectionTitleClass}>Quick Links</h3>
             <ul className="mt-6 space-y-3 text-sm">
               {[
@@ -77,7 +91,6 @@ export default function Footer({ theme = "dark" }: Props) {
                 { to: "/purchases", label: "My Purchases" },
                 { to: "/wallet", label: "Wallet" },
                 { to: "/referral", label: "Referral Program" },
-                { to: "/privacy", label: "Privacy Policy" },
               ].map((link) => (
                 <li key={link.to} className="group">
                   <NavLink
@@ -90,7 +103,7 @@ export default function Footer({ theme = "dark" }: Props) {
                 </li>
               ))}
             </ul>
-          </div> */}
+          </div>
 
           {/* Contact Info */}
           <div>
@@ -99,51 +112,45 @@ export default function Footer({ theme = "dark" }: Props) {
               <li className="flex items-start gap-3">
                 <Mail className="w-5 h-5 text-[#33ac6f] mt-0.5 flex-shrink-0" />
                 <a
-                  href="mailto:tajudeentoyeeb095@gmail.com"
+                  href="mailto:support@acctempire.com"
                   className={`hover:text-[#33ac6f] ${isDark ? "text-gray-300" : "text-gray-600"}`}
                 >
-                  tajudeentoyeeb095@gmail.com
+                  support@acctempire.com
                 </a>
               </li>
               <li className="flex items-start gap-3">
                 <Phone className="w-5 h-5 text-[#33ac6f] mt-0.5 flex-shrink-0" />
                 <a
-                  href="https://wa.me/800 111 2222"
+                  href="https://wa.me/2340000000000" // Replace with your actual WhatsApp number
                   target="_blank"
                   rel="noopener noreferrer"
                   className={`hover:text-[#33ac6f] ${isDark ? "text-gray-300" : "text-gray-600"}`}
                 >
-                  +800 111 2222
+                  Contact Support
                 </a>
               </li>
               <li className="flex items-start gap-3">
                 <MapPin className="w-5 h-5 text-[#33ac6f] mt-0.5 flex-shrink-0" />
                 <span className={isDark ? "text-gray-300" : "text-gray-600"}>
-                  your location here
+                  Global Operations
                 </span>
               </li>
             </ul>
           </div>
 
-          {/* Newsletter */}
+          {/* Call to Action */}
           <div>
-            <h3 className={sectionTitleClass}>Stay Updated</h3>
+            <h3 className={sectionTitleClass}>Start Trading</h3>
             <p className={`mt-4 text-sm ${isDark ? "text-gray-400" : "text-gray-600"}`}>
-              Get the latest deals and security tips straight to your inbox.
+              Join thousands of traders on the most secure account marketplace.
             </p>
-            <div className="mt-5 flex flex-col sm:flex-row gap-3">
-              {/* <input
-                type="email"
-                placeholder="Your email"
-                className={`px-4 py-3 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#33ac6f] focus:ring-offset-2 ${
-                  isDark 
-                    ? "bg-gray-800 border border-gray-700 text-white placeholder-gray-500 focus:ring-offset-gray-950" 
-                    : "bg-white border border-gray-300 text-gray-900 placeholder-gray-400"
-                }`}
-              /> */}
-              <button className="px-6 py-3 bg-[#33ac6f] hover:bg-[#2a9a5f] text-white font-medium rounded-lg transition-colors duration-200 whitespace-nowrap">
-                Buy Now
-              </button>
+            <div className="mt-5">
+              <NavLink 
+                to="/marketplace" 
+                className="inline-block px-6 py-3 bg-[#33ac6f] hover:bg-[#2a9a5f] text-white font-medium rounded-lg transition-colors duration-200 whitespace-nowrap"
+              >
+                Explore Marketplace
+              </NavLink>
             </div>
           </div>
         </div>
@@ -167,3 +174,174 @@ export default function Footer({ theme = "dark" }: Props) {
     </footer>
   );
 }
+
+
+// // src/components/Footer.tsx
+// import { NavLink } from "react-router-dom";
+// import headerlogo from "../assets/headerlogo.png";
+// import {
+//   Mail,
+//   Phone,
+//   MapPin,
+//   Facebook,
+//   Youtube,
+//   Twitter,
+//   Instagram,
+//   Music2
+// } from "lucide-react";
+
+// type Props = {
+//   theme?: "dark" | "light";
+// };
+
+// export default function Footer({ theme = "dark" }: Props) {
+//   const isDark = theme === "dark";
+//   const currentYear = new Date().getFullYear();
+
+//   const linkHoverClass = "hover:text-[#33ac6f] transition-colors duration-300";
+//   const sectionTitleClass = `text-sm font-bold uppercase tracking-wider ${isDark ? "text-[#e6c06c]" : "text-[#e6c06c]"}`;
+
+//   // Replace these with your actual social media URLs
+//   const socialLinks = [
+//     { Icon: Facebook, url: "https://facebook.com/yourpage", label: "Facebook" },
+//     { Icon: Youtube, url: "https://youtube.com/yourchannel", label: "YouTube" },
+//     { Icon: Twitter, url: "https://twitter.com/yourhandle", label: "Twitter" },
+//     { Icon: Instagram, url: "https://instagram.com/yourprofile", label: "Instagram" },
+//     { Icon: Music2, url: "https://tiktok.com/@yourprofile", label: "TikTok" },
+//   ];
+
+//   return (
+//     <footer className={`w-full ${isDark ? "bg-gray-950 text-gray-300" : "bg-gray-50 text-gray-700"} border-t ${isDark ? "border-gray-800" : "border-gray-200"}`}>
+//       {/* Main Footer */}
+//       <div className="max-w-7xl mx-auto px-6 py-12 lg:px-8">
+//         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-8">
+//           {/* Brand Column */}
+//           <div className="space-y-5">
+//             <div className="flex items-center gap-3">
+//               <NavLink to="/" aria-label="Home">
+//                 <img src={headerlogo} alt="AcctEmpire" className="h-20 md:h-24 lg:h-28 w-auto" />
+//               </NavLink>
+//             </div>
+//             <p className="text-sm leading-relaxed max-w-xs">
+//               Buy and sell verified social media and digital accounts securely — fast delivery, escrow protection, and dedicated support.
+//             </p>
+
+//             {/* Social Icons */}
+//             <div className="flex space-x-4 pt-4">
+//               {socialLinks.map(({ Icon, url, label }) => (
+//                 <a
+//                   key={label}
+//                   href={url}
+//                   target="_blank"
+//                   rel="noopener noreferrer"
+//                   aria-label={label}
+//                   className={`p-2.5 rounded-lg ${isDark ? "bg-gray-800 hover:bg-[#33ac6f]/10" : "bg-white hover:bg-[#33ac6f]/8"} 
+//                   border ${isDark ? "border-gray-700" : "border-gray-300"} 
+//                   transition-all duration-300 group`}
+//                 >
+//                   <Icon className={`w-5 h-5 ${isDark ? "text-gray-400 group-hover:text-[#33ac6f]" : "text-gray-600 group-hover:text-[#33ac6f]"} transition-colors`} />
+//                 </a>
+//               ))}
+//             </div>
+//           </div>
+
+//           {/* Quick Links */}
+//           {/* <div>
+//             <h3 className={sectionTitleClass}>Quick Links</h3>
+//             <ul className="mt-6 space-y-3 text-sm">
+//               {[
+//                 { to: "/", label: "Home" },
+//                 { to: "/marketplace", label: "Marketplace" },
+//                 { to: "/purchases", label: "My Purchases" },
+//                 { to: "/wallet", label: "Wallet" },
+//                 { to: "/referral", label: "Referral Program" },
+//                 { to: "/privacy", label: "Privacy Policy" },
+//               ].map((link) => (
+//                 <li key={link.to} className="group">
+//                   <NavLink
+//                     to={link.to}
+//                     className={`${linkHoverClass} ${isDark ? "text-gray-400" : "text-gray-600"} block`}
+//                   >
+//                     {link.label}
+//                   </NavLink>
+//                   <div className="h-px bg-gradient-to-r from-[#33ac6f]/20 to-transparent w-0 group-hover:w-full transition-all duration-500 mt-1" />
+//                 </li>
+//               ))}
+//             </ul>
+//           </div> */}
+
+//           {/* Contact Info */}
+//           <div>
+//             <h3 className={sectionTitleClass}>Get in Touch</h3>
+//             <ul className="mt-6 space-y-4 text-sm">
+//               <li className="flex items-start gap-3">
+//                 <Mail className="w-5 h-5 text-[#33ac6f] mt-0.5 flex-shrink-0" />
+//                 <a
+//                   href="mailto:tajudeentoyeeb095@gmail.com"
+//                   className={`hover:text-[#33ac6f] ${isDark ? "text-gray-300" : "text-gray-600"}`}
+//                 >
+//                   tajudeentoyeeb095@gmail.com
+//                 </a>
+//               </li>
+//               <li className="flex items-start gap-3">
+//                 <Phone className="w-5 h-5 text-[#33ac6f] mt-0.5 flex-shrink-0" />
+//                 <a
+//                   href="https://wa.me/800 111 2222"
+//                   target="_blank"
+//                   rel="noopener noreferrer"
+//                   className={`hover:text-[#33ac6f] ${isDark ? "text-gray-300" : "text-gray-600"}`}
+//                 >
+//                   +800 111 2222
+//                 </a>
+//               </li>
+//               <li className="flex items-start gap-3">
+//                 <MapPin className="w-5 h-5 text-[#33ac6f] mt-0.5 flex-shrink-0" />
+//                 <span className={isDark ? "text-gray-300" : "text-gray-600"}>
+//                   your location here
+//                 </span>
+//               </li>
+//             </ul>
+//           </div>
+
+//           {/* Newsletter */}
+//           <div>
+//             <h3 className={sectionTitleClass}>Stay Updated</h3>
+//             <p className={`mt-4 text-sm ${isDark ? "text-gray-400" : "text-gray-600"}`}>
+//               Get the latest deals and security tips straight to your inbox.
+//             </p>
+//             <div className="mt-5 flex flex-col sm:flex-row gap-3">
+//               {/* <input
+//                 type="email"
+//                 placeholder="Your email"
+//                 className={`px-4 py-3 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#33ac6f] focus:ring-offset-2 ${
+//                   isDark 
+//                     ? "bg-gray-800 border border-gray-700 text-white placeholder-gray-500 focus:ring-offset-gray-950" 
+//                     : "bg-white border border-gray-300 text-gray-900 placeholder-gray-400"
+//                 }`}
+//               /> */}
+//               <button className="px-6 py-3 bg-[#33ac6f] hover:bg-[#2a9a5f] text-white font-medium rounded-lg transition-colors duration-200 whitespace-nowrap">
+//                 Buy Now
+//               </button>
+//             </div>
+//           </div>
+//         </div>
+
+//         {/* Bottom Bar */}
+//         <div className={`sm:mt-12 sm:pt-8 mt-8 mb-12 pb-8 border-t ${isDark ? "border-gray-800" : "border-gray-200"} flex flex-col sm:flex-row justify-between items-center gap-4 sm:gap-4 text-xs sm:text-sm ${isDark ? "text-gray-300" : "text-gray-700"}`}>
+//           <p className="text-center sm:text-left">© {currentYear} AcctEmpire. All rights reserved.</p>
+//           <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
+//             <NavLink to="/terms" className={linkHoverClass}>
+//               Terms of Service
+//             </NavLink>
+//             <NavLink to="/privacy" className={linkHoverClass}>
+//               Privacy Policy
+//             </NavLink>
+//             <NavLink to="/cookie-policy" className={linkHoverClass}>
+//               Cookie Policy
+//             </NavLink>
+//           </div>
+//         </div>
+//       </div>
+//     </footer>
+//   );
+// }
