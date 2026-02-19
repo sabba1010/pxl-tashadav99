@@ -121,7 +121,7 @@ const SellForm: React.FC = () => {
     const fetchPlatforms = async () => {
       try {
         const response = await axios.get<{ data: Platform[] }>(
-          "http://localhost:3200/icon-data"
+          "https://tasha-vps-backend-2.onrender.com/icon-data"
         );
         const data = Array.isArray(response.data)
           ? response.data
@@ -160,7 +160,7 @@ const SellForm: React.FC = () => {
 
       try {
         const response = await axios.get<{ salesCredit: number }>(
-          `http://localhost:3200/product/credit?email=${encodeURIComponent(
+          `https://tasha-vps-backend-2.onrender.com/product/credit?email=${encodeURIComponent(
             user.email
           )}`
         );
@@ -330,7 +330,7 @@ const SellForm: React.FC = () => {
 
       try {
         const response = await axios.post<SellResponse>(
-          "http://localhost:3200/product/sell",
+          "https://tasha-vps-backend-2.onrender.com/product/sell",
           { products: accountsToSubmit }
         );
 
@@ -363,7 +363,7 @@ const SellForm: React.FC = () => {
 
       try {
         const response = await axios.post<SellResponse>(
-          "http://localhost:3200/product/sell",
+          "https://tasha-vps-backend-2.onrender.com/product/sell",
           { products: [formData] }
         );
 
@@ -1410,7 +1410,7 @@ export default SellForm;
 //     const fetchPlatforms = async () => {
 //       try {
 //         const response = await axios.get<{ data: Platform[] }>(
-//           "http://localhost:3200/icon-data"
+//           "https://tasha-vps-backend-2.onrender.com/icon-data"
 //         );
 //         const data = Array.isArray(response.data)
 //           ? response.data
@@ -1437,7 +1437,7 @@ export default SellForm;
 
 //       try {
 //         const response = await axios.get<{ salesCredit: number }>(
-//           `http://localhost:3200/product/credit?email=${encodeURIComponent(
+//           `https://tasha-vps-backend-2.onrender.com/product/credit?email=${encodeURIComponent(
 //             user.email
 //           )}`
 //         );
@@ -1576,7 +1576,7 @@ export default SellForm;
 
 //       try {
 //         const response = await axios.post<SellResponse>(
-//           "http://localhost:3200/product/sell",
+//           "https://tasha-vps-backend-2.onrender.com/product/sell",
 //           { products: accountsToSubmit }
 //         );
 
@@ -1609,7 +1609,7 @@ export default SellForm;
 
 //       try {
 //         const response = await axios.post<SellResponse>(
-//           "http://localhost:3200/product/sell",
+//           "https://tasha-vps-backend-2.onrender.com/product/sell",
 //           { products: [formData] }
 //         );
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-const API_URL = "http://localhost:3200";
+const API_URL = "https://tasha-vps-backend-2.onrender.com";
 
 type Msg = { text: string; type?: "success" | "error" | "info" } | null;
 

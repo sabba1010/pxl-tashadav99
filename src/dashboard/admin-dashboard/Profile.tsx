@@ -8,7 +8,7 @@ import {
   Upload, RefreshCw, Wallet, Eye, EyeOff
 } from "lucide-react";
 
-const API_BASE_URL = "http://localhost:3200/api/user";
+const API_BASE_URL = "https://tasha-vps-backend-2.onrender.com/api/user";
 
 // ────────────────────────────────────────────────
 // Types

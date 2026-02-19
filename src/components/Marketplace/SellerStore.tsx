@@ -178,7 +178,7 @@ const RenderIcon = ({
     );
 };
 
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:3200";
+const API_URL = process.env.REACT_APP_API_URL || "https://tasha-vps-backend-2.onrender.com";
 
 interface SellerReputation {
     sellerEmail: string;
