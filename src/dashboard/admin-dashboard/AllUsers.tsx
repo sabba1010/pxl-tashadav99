@@ -30,7 +30,7 @@ interface IMessage {
 }
 
 const ITEMS_PER_PAGE = 10;
-const BASE_URL = "https://tasha-vps-backend-2.onrender.com";
+const BASE_URL = "http://localhost:3200";
 const ADMIN_CHAT_API = `${BASE_URL}/api/adminchat`;
 
 const AllUsers: React.FC = () => {

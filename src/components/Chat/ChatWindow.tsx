@@ -35,7 +35,7 @@ interface ChatWindowProps {
     productTitle?: string;
 }
 
-const BASE_URL = "https://tasha-vps-backend-2.onrender.com";
+const BASE_URL = "http://localhost:3200";
 const CHAT_API = `${BASE_URL}/chat`;
 
 const formatChatTime = (dateString?: string) => {
