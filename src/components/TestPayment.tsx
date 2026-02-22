@@ -22,7 +22,7 @@ const TestPayment: React.FC<TestPaymentProps> = ({ amount }) => {
 
   // Config তৈরি করি — user না থাকলে fallback দিয়ে (hook চলবে)
   const config: FlutterwaveConfig = {
-    public_key: "FLWPUBK_TEST-2de87089e34448fe528b45106c0d7ceb-X",
+    public_key: process.env.REACT_APP_FLW_PUBLIC_KEY || "FLWPUBK-eef65c026957cd27eb12efc3e4833e9b-X",
     tx_ref: `tx-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
     amount,
     currency: "USD",
@@ -145,10 +145,9 @@ const TestPayment: React.FC<TestPaymentProps> = ({ amount }) => {
         disabled={isProcessing}
         className={`flex items-center justify-center gap-4 w-full max-w-md px-10 py-5 
           text-white text-lg font-bold rounded-xl shadow-xl transition duration-300
-          ${
-            isProcessing
-              ? "bg-gray-500 cursor-not-allowed"
-              : "bg-orange-500 hover:bg-orange-600"
+          ${isProcessing
+            ? "bg-gray-500 cursor-not-allowed"
+            : "bg-orange-500 hover:bg-orange-600"
           }`}
       >
         <CreditCard size={28} />
@@ -157,12 +156,11 @@ const TestPayment: React.FC<TestPaymentProps> = ({ amount }) => {
 
       {paymentStatus && (
         <div
-          className={`w-full max-w-md p-5 rounded-xl text-center font-bold text-lg ${
-            paymentStatus.includes("Success") ||
+          className={`w-full max-w-md p-5 rounded-xl text-center font-bold text-lg ${paymentStatus.includes("Success") ||
             paymentStatus.includes("verified")
-              ? "bg-green-100 text-green-800 border-2 border-green-400"
-              : "bg-red-100 text-red-800 border-2 border-red-400"
-          }`}
+            ? "bg-green-100 text-green-800 border-2 border-green-400"
+            : "bg-red-100 text-red-800 border-2 border-red-400"
+            }`}
         >
           {paymentStatus}
         </div>
