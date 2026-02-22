@@ -147,11 +147,11 @@ export default function Wallet(): React.ReactElement {
     }
 
     return (
-      <div className="space-y-4">
+      <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
         {items.map((t) => (
           <div
             key={t.id}
-            className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-5 rounded-2xl bg-white shadow-lg border border-gray-100 hover:shadow-xl transition-shadow duration-300"
+            className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-5 rounded-2xl bg-white shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300"
           >
             <div className="flex-1">
               <div
@@ -260,9 +260,9 @@ export default function Wallet(): React.ReactElement {
               {loginUserData.data?.role !== "admin" && (
                 <Link
                   to="/payment"
-                  className="flex items-center justify-center gap-2 bg-[#1F2A44] text-white py-4 rounded-xl font-bold hover:bg-[#151e33] transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-blue-900/10"
+                  className="flex-1 flex items-center justify-center gap-3 px-8 py-5 rounded-2xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-r from-[#D4A643] to-[#E8C87A] text-[#111111] hover:scale-105"
                 >
-                  <FaPlusIcon size={16} />
+                  <FaPlusIcon size={22} />
                   Deposit Funds
                 </Link>
               )}
