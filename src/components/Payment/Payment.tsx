@@ -246,14 +246,14 @@ const Payment: React.FC = () => {
               {loading === "flw" ? "Loading..." : "Pay with Flutterwave"}
             </button>
 
-            <button
+            {/* <button
               onClick={payWithKorapay}
               disabled={loading !== null}
               className="w-full bg-indigo-600 p-3 rounded flex justify-center gap-2"
             >
               <CreditCardIcon />
               {loading === "kora" ? "Loading..." : "Pay with Korapay"}
-            </button>
+            </button> */}
 
             <button
               onClick={() => setStep("amount")}
