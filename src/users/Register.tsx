@@ -73,7 +73,7 @@
 //     try {
 //       // <RegisterResponse> দিয়ে TypeScript এরর ফিক্স করা হয়েছে
 //       const res = await axios.post<RegisterResponse>(
-//         "https://tasha-vps-backend-2.onrender.com/api/user/register",
+//         "http://localhost:3200/api/user/register",
 //         formData
 //       );
 
@@ -327,7 +327,7 @@ const Register = () => {
 
     try {
       const res = await axios.post<RegisterResponse>(
-        "https://tasha-vps-backend-2.onrender.com/api/user/register",
+        "http://localhost:3200/api/user/register",
         formData
       );
 

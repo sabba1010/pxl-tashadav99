@@ -46,7 +46,7 @@ const Payment: React.FC = () => {
             ngnToUsdRate?: number;
             depositRate?: number;
           };
-        }>("https://tasha-vps-backend-2.onrender.com/api/settings");
+        }>("http://localhost:3200/api/settings");
         if (res.data.success) {
           setExchangeRate(res.data.settings.depositRate || res.data.settings.ngnToUsdRate || 1500);
         }
@@ -68,7 +68,7 @@ const Payment: React.FC = () => {
         toast.info("Verifying payment...");
 
         const res = await axios.get<ApiResponse>(
-          "https://tasha-vps-backend-2.onrender.com/flutterwave/verify",
+          "http://localhost:3200/flutterwave/verify",
           { params: { tx_ref } }
         );
 
@@ -110,7 +110,7 @@ const Payment: React.FC = () => {
       setLoading("flw");
 
       const res = await axios.post<ApiResponse>(
-        "https://tasha-vps-backend-2.onrender.com/flutterwave/create",
+        "http://localhost:3200/flutterwave/create",
         {
           amount: finalAmount,
           email: userEmail,
@@ -138,7 +138,7 @@ const Payment: React.FC = () => {
       setLoading("kora");
 
       const res = await axios.post<ApiResponse>(
-        "https://tasha-vps-backend-2.onrender.com/korapay/create",
+        "http://localhost:3200/korapay/create",
         {
           amount: finalAmount,
           email: userEmail,
