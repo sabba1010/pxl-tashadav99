@@ -9,6 +9,8 @@ export interface Payment {
   _id: string;
   transactionId: string;
   amount: number;
+  amountUSD?: number;
+  amountNGN?: number;
   currency: string;
   status: string;
   customerEmail: string;

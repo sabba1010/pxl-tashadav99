@@ -74,9 +74,8 @@ export default function Wallet(): React.ReactElement {
           amount: Number(wd.amount) || 0,
           status: displayStatus as Tx["status"],
           date: new Date(wd.createdAt).toISOString().split("T")[0],
-          note: `${wd.paymentMethod?.toUpperCase() || "Unknown"} • ${
-            wd.bankCode || wd.accountNumber || "N/A"
-          }`,
+          note: `${wd.paymentMethod?.toUpperCase() || "Unknown"} • ${wd.bankCode || wd.accountNumber || "N/A"
+            }`,
           reason: displayReason.trim() || undefined,
         };
       });
@@ -104,23 +103,22 @@ export default function Wallet(): React.ReactElement {
   const onlineDeposits: Tx[] = payments.map((tx) => ({
     id: tx._id,
     type: "deposit",
-    amount: Number(tx.amount) || 0,
+    amount: Number(tx.amountUSD ?? tx.amount) || 0,
     status:
       tx.status === "successful"
         ? "completed"
         : tx.status === "pending"
-        ? "pending"
-        : "rejected",
+          ? "pending"
+          : "rejected",
     date: new Date(tx.createdAt).toISOString().split("T")[0],
     note: `Tx ID: ${tx.transactionId || "N/A"}`,
   }));
 
   // Helpers
   const tabClass = (tab: "online" | "withdraw") =>
-    `pb-3 px-1 text-base font-medium transition-all duration-300 border-b-4 ${
-      activeTab === tab
-        ? "border-[#D4A643] text-[#0A1A3A]"
-        : "border-transparent text-gray-500 hover:text-[#0A1A3A]"
+    `pb-3 px-1 text-base font-medium transition-all duration-300 border-b-4 ${activeTab === tab
+      ? "border-[#D4A643] text-[#0A1A3A]"
+      : "border-transparent text-gray-500 hover:text-[#0A1A3A]"
     }`;
 
   const getStatusColor = (status: string) => {
