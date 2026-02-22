@@ -257,13 +257,15 @@ export default function Wallet(): React.ReactElement {
             </div>
 
             <div className="mt-10 flex flex-col sm:flex-row gap-6">
-              <Link
-                to="/payment"
-                className="flex-1 flex items-center justify-center gap-3 px-8 py-5 rounded-2xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-r from-[#D4A643] to-[#E8C87A] text-[#111111] hover:scale-105"
-              >
-                <FaPlusIcon size={22} />
-                Deposit Funds
-              </Link>
+              {loginUserData.data?.role !== "admin" && (
+                <Link
+                  to="/payment"
+                  className="flex items-center justify-center gap-2 bg-[#1F2A44] text-white py-4 rounded-xl font-bold hover:bg-[#151e33] transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-blue-900/10"
+                >
+                  <FaPlusIcon size={16} />
+                  Deposit Funds
+                </Link>
+              )}
 
               {loginUserData.data?.role !== "buyer" && (
                 <Link
