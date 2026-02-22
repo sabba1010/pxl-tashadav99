@@ -341,7 +341,7 @@ const WithdrawForm: React.FC = () => {
             className="w-full px-6 py-5 rounded-xl bg-white/10 border border-white/20 text-[#d4a643] text-lg focus:ring-4 focus:ring-[#D4A017] outline-none"
             required
           >
-            <option value="kora">Kora (Korapay) - Recommended</option>
+            {/* <option value="kora">Kora (Korapay) - Recommended</option> */}
             <option value="flutterwave">Flutterwave</option>
             <option value="localbank">Local Bank Account</option>
           </select>
