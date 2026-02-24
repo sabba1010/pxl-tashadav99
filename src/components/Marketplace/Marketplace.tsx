@@ -658,7 +658,7 @@ const Marketplace: React.FC = () => {
   const [processingIds, setProcessingIds] = useState<string[]>([]);
   const [cartItemIds, setCartItemIds] = useState<string[]>([]);
 
-  const itemsPerPage = 40;
+  const itemsPerPage = 60;
   const navigate = useNavigate();
   const { refetch } = useAuthHook();
   const user = useAuth();
