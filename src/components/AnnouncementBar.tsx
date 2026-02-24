@@ -72,48 +72,83 @@ export default function AnnouncementBar() {
     if (!isVisible || !currentAnnouncement) return null;
 
     return (
-        <div 
+        <div
             className="relative isolate w-full overflow-hidden px-3 py-2 sm:px-4 sm:py-2.5"
             style={{ background: 'linear-gradient(90deg, #0A1A3A 0%, #1a3a6e 50%, #D4A643 100%)' }}
         >
-            <div className="max-w-7xl mx-auto flex items-center justify-center relative">
-                {/* All content very close & centered */}
-                <div className="flex flex-row flex-wrap items-center justify-center gap-x-2 sm:gap-x-4 gap-y-1.5 text-white">
-                    {/* Icon + Title */}
-                    <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
-                        <Megaphone className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-[#D4A643]" />
-                        <span className="font-bold text-[#D4A643] text-xs sm:text-sm whitespace-nowrap">
-                            {currentAnnouncement.title}
-                        </span>
-                    </div>
-
-                    {/* Separator */}
-                    <span className="text-white/40 text-xs sm:text-sm">•</span>
-
-                    {/* Message - centered on mobile, left on desktop */}
-                    <span className="text-xs sm:text-sm opacity-90 text-center sm:text-left flex-grow max-w-[60%] sm:max-w-none">
-                        {currentAnnouncement.message || currentAnnouncement.description}
+            <style>
+                {`
+                    .scrollbar-hide::-webkit-scrollbar {
+                        display: none;
+                    }
+                    @keyframes marquee {
+                        0% { transform: translateX(0); }
+                        100% { transform: translateX(-50%); }
+                    }
+                    .animate-marquee {
+                        display: inline-flex;
+                        animation: marquee 30s linear infinite;
+                    }
+                    .animate-marquee:hover {
+                        animation-play-state: paused;
+                    }
+                `}
+            </style>
+            <div className="max-w-7xl mx-auto flex items-center relative px-6 sm:px-8 overflow-hidden h-full">
+                {/* FIXED TITLE SECTION */}
+                <div className="flex items-center gap-x-2 sm:gap-x-3 flex-shrink-0 z-10 pr-4">
+                    <Megaphone className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-[#D4A643]" />
+                    <span className="font-bold text-[#D4A643] text-xs sm:text-sm uppercase tracking-wider">
+                        {currentAnnouncement.title}:
                     </span>
-
-                    {/* Learn More Button */}
-                    {currentAnnouncement.link && (
-                        <a
-                            href={currentAnnouncement.link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 sm:gap-1.5 rounded-full bg-white/10 px-3 py-1 text-xs sm:text-sm font-semibold text-white shadow-sm ring-1 ring-inset ring-white/20 hover:bg-white/20 transition-all flex-shrink-0"
-                        >
-                            Learn more
-                            <ArrowRight className="h-3 w-3" />
-                        </a>
-                    )}
                 </div>
 
-                {/* Close Button - very close to content */}
+                {/* MARQUEE SECTION - ONLY MESSAGE SCROLLS */}
+                <div className="flex-1 overflow-hidden relative">
+                    <div className="animate-marquee whitespace-nowrap inline-flex items-center gap-x-8 sm:gap-x-16">
+                        {/* Set 1 */}
+                        <div className="inline-flex items-center gap-x-4 sm:gap-x-6">
+                            <span className="text-xs sm:text-sm text-white/90">
+                                {currentAnnouncement.message || currentAnnouncement.description}
+                            </span>
+                            {currentAnnouncement.link && (
+                                <a
+                                    href={currentAnnouncement.link}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-1 sm:gap-1.5 rounded-full bg-white/10 px-3 py-0.5 text-[10px] sm:text-xs font-semibold text-white ring-1 ring-inset ring-white/20 hover:bg-white/20 transition-all flex-shrink-0"
+                                >
+                                    Learn more
+                                    <ArrowRight className="h-3 w-3" />
+                                </a>
+                            )}
+                        </div>
+
+                        {/* Set 2 for seamless loop */}
+                        <div className="inline-flex items-center gap-x-4 sm:gap-x-6">
+                            <span className="text-xs sm:text-sm text-white/90">
+                                {currentAnnouncement.message || currentAnnouncement.description}
+                            </span>
+                            {currentAnnouncement.link && (
+                                <a
+                                    href={currentAnnouncement.link}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-1 sm:gap-1.5 rounded-full bg-white/10 px-3 py-0.5 text-[10px] sm:text-xs font-semibold text-white ring-1 ring-inset ring-white/20 hover:bg-white/20 transition-all flex-shrink-0"
+                                >
+                                    Learn more
+                                    <ArrowRight className="h-3 w-3" />
+                                </a>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Close Button - positioned absolutely to the right */}
                 <button
                     type="button"
                     onClick={handleDismiss}
-                    className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 p-1.5 sm:p-2 text-white/70 hover:text-white transition-colors rounded-full hover:bg-white/10"
+                    className="flex-shrink-0 ml-4 p-1 text-white/60 hover:text-white transition-colors rounded-full hover:bg-white/10 z-10"
                 >
                     <span className="sr-only">Dismiss</span>
                     <X className="h-4 w-4 sm:h-5 sm:w-5" />
