@@ -168,6 +168,7 @@ const Payment: React.FC = () => {
     <div className="my-24 flex justify-center">
       <div className="w-full max-w-md p-6 bg-slate-900 text-white rounded-xl">
         <h2 className="text-2xl font-bold mb-6">Deposit Funds</h2>
+        <p className="text-xs text-yellow-200 mb-4">Note: Transaction charges for bank deposits or card payments, as directed by CBN, are to be covered by the customer.</p>
 
         {step === "amount" ? (
           <>
