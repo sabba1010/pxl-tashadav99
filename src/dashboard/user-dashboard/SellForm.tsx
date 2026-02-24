@@ -717,7 +717,7 @@ const SellForm: React.FC = () => {
                         mb: 3,
                       }}
                     >
-                      {["1 hour", "3 hours", "6 hours", "12 hours", "24 hours"].map((time) => (
+                      {["1 hour", "2 hours", "4 hours", "8 hours", "24 hours"].map((time) => (
                         <Button
                           key={time}
                           onClick={() => {

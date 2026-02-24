@@ -418,7 +418,7 @@ const MyPurchase: React.FC = () => {
         if (unit.startsWith('d')) return num * 86400000;
       }
     }
-    return 14400000; // default 4h
+    return 3600000; // default 1h
   };
 
   const getRemainingTime = (p: Purchase) => {
