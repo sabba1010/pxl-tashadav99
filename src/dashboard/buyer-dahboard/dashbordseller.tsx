@@ -1115,7 +1115,7 @@ const DashboardSeller: React.FC = () => {
     totalReviews: 0
   });
 
-  const itemsPerPage = 10;
+  const itemsPerPage = 40;
   const ratingsPerPage = 5;
 
   // ─── Data Fetching ──────────────────────────────────────────────────────
