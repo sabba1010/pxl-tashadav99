@@ -128,12 +128,8 @@ const TotalListings: React.FC = () => {
   }, [listings, users]);
 
   const statusOptions = useMemo(() => {
-    const unique = new Set(
-      listings
-        .map((l) => (l.status || "").toLowerCase())
-        .filter(Boolean)
-    );
-    return ["all", ...Array.from(unique)];
+    // Only show these admin-relevant statuses (exclude "complete")
+    return ["all", "active", "pending", "reject"];
   }, [listings]);
 
   /* ── Filter & Sort ── */
@@ -143,7 +139,9 @@ const TotalListings: React.FC = () => {
         (l.name.toLowerCase().includes(search.toLowerCase()) ||
           l._id.toLowerCase().includes(search.toLowerCase())) &&
         (selectedUser === "all" || l.userEmail === selectedUser) &&
-        (selectedStatus === "all" || l.status.toLowerCase() === selectedStatus)
+        (selectedStatus === "all" || l.status.toLowerCase() === selectedStatus) &&
+        // Exclude completed listings and only include admin-visible statuses
+        ["active", "pending", "reject"].includes((l.status || "").toLowerCase())
     );
 
     // Sort by updatedAt (newest first)
