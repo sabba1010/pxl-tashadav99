@@ -62,7 +62,7 @@ const MyAds: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const itemsPerPage = 40;
 
   const fetchAds = async () => {
     window.scrollTo(0, 0);
