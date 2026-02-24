@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -22,7 +21,10 @@ import {
   Share2,
   Gift,
   Copy,
-  Bell
+  Bell,
+  Award,
+  Clock,
+  CheckCircle2
 } from 'lucide-react';
 import { getAllNotifications } from '../../components/Notification/Notification';
 
@@ -87,7 +89,10 @@ const DashboardSeller: React.FC = () => {
     pendingClearance: 0,
     successRate: 0,
     avgRating: 0,
-    totalReviews: 0
+    totalReviews: 0,
+    totalListedProducts: 0,
+    totalRefunds: 0,
+    reputationScore: 0
   });
 
   const itemsPerPage = 40;
@@ -127,8 +132,17 @@ const DashboardSeller: React.FC = () => {
           p.status === 'rejected' || p.status === 'cancelled' || p.status === 'failed'
         ).length;
 
+        const refundCount = sales.filter(p => p.status === 'refunded').length;
+
         const totalTransactions = successfulTransactions + failedTransactions;
         const successRate = totalTransactions > 0 ? (successfulTransactions / totalTransactions) * 100 : 0;
+
+        // Calculate Reputation Score (0-100)
+        // Based on: avg rating (60%), success rate (30%), review count (10%)
+        const avgRatingScore = (ratingsData.averageRating || 0) / 5 * 60;
+        const successRateScore = successRate * 0.3;
+        const reviewCountScore = Math.min((ratingsData.totalReviews || 0) / 50 * 10, 10);
+        const reputationScore = Math.min(100, Math.round(avgRatingScore + successRateScore + reviewCountScore));
 
         setAnalytics(prev => ({
           ...prev,
@@ -137,7 +151,10 @@ const DashboardSeller: React.FC = () => {
           pendingClearance: pending,
           successRate: Math.round(successRate * 10) / 10,
           avgRating: parseFloat(ratingsData.averageRating) || 0,
-          totalReviews: ratingsData.totalReviews || 0
+          totalReviews: ratingsData.totalReviews || 0,
+          totalListedProducts: myProducts.length,
+          totalRefunds: refundCount,
+          reputationScore: reputationScore
         }));
 
         setListedAccounts(myProducts);
@@ -281,9 +298,16 @@ const DashboardSeller: React.FC = () => {
       <main className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-10">
         {/* ─── Top Stats ────────────────────────────────────────────────────── */}
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6 mb-8 sm:mb-10">
-          <StatCard title="Total Earned" value={`$${analytics.totalEarned.toFixed(2)}`} Icon={TrendingUp} color="bg-emerald-500" trend="Real-time" />
+          <StatCard title="Total Listed" value={analytics.totalListedProducts} Icon={LayoutGrid} color="bg-blue-500" />
+          <StatCard title="Sold Items" value={analytics.soldCount} Icon={Zap} color="bg-emerald-500" />
+          <StatCard title="Total Refunds" value={analytics.totalRefunds} Icon={AlertTriangle} color="bg-orange-500" />
+          <StatCard title="Reputation" value={`${analytics.reputationScore}/100`} Icon={Award} color="bg-indigo-600" />
+        </div>
+        
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6 mb-8 sm:mb-10">
+          <StatCard title="Total Earned" value={`$${analytics.totalEarned.toFixed(2)}`} Icon={TrendingUp} color="bg-emerald-600" trend="Real-time" />
           <StatCard title="Total Reviews" value={analytics.totalReviews} Icon={Users} color="bg-blue-600" />
-          <StatCard title="Success Rate" value={`${analytics.successRate.toFixed(1)}%`} Icon={ShieldCheck} color="bg-indigo-600" />
+          <StatCard title="Avg Rating" value={`${analytics.avgRating}/5`} Icon={Star} color="bg-amber-500" />
           <StatCard title="Net Balance" value={`$${(userData?.balance || 0).toFixed(2)}`} Icon={Wallet} color="bg-[#d4a643]" />
         </div>
 
@@ -293,38 +317,56 @@ const DashboardSeller: React.FC = () => {
             {/* Client Ratings & Reviews */}
             <div className="bg-white p-5 sm:p-8 rounded-2xl sm:rounded-3xl border border-gray-100 shadow-sm">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 sm:gap-0">
-                <h3 className="font-black text-lg sm:text-xl text-gray-900 uppercase italic tracking-tight">Client Ratings & Reviews</h3>
-                <div className="flex items-center gap-2">
-                  <Star className="text-amber-400 fill-current" size={24} />
-                  <span className="text-3xl font-black text-gray-900">{analytics.avgRating}</span>
-                  <span className="text-sm font-bold text-gray-400">/5</span>
+                <h3 className="font-black text-lg sm:text-xl text-gray-900 uppercase italic tracking-tight">Client Ratings & Reputation</h3>
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <Star className="text-amber-400 fill-current" size={24} />
+                    <span className="text-3xl font-black text-gray-900">{analytics.avgRating}</span>
+                    <span className="text-sm font-bold text-gray-400">/5</span>
+                  </div>
+                  <div className="h-12 w-px bg-gray-200"></div>
+                  <div className="flex items-center gap-2">
+                    <Award className="text-indigo-600" size={24} />
+                    <span className="text-3xl font-black text-indigo-600">{analytics.reputationScore}</span>
+                    <span className="text-sm font-bold text-gray-400">Rep</span>
+                  </div>
                 </div>
               </div>
 
               {ratings.length > 0 ? (
                 <div className="space-y-6">
-                  {/* Rating Summary */}
-                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 pb-6 border-b border-gray-100">
-                    <div className="text-center">
-                      <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Total Reviews</p>
-                      <p className="text-2xl sm:text-3xl font-black text-gray-900 mt-2">{analytics.totalReviews}</p>
+                  {/* Reputation Score Bar */}
+                  <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-4 rounded-xl border border-indigo-100 mt-6">
+                    <div className="flex items-center justify-between mb-3">
+                      <p className="text-sm font-bold text-gray-700 flex items-center gap-2">
+                        <Award size={18} className="text-indigo-600" />
+                        Reputation Score
+                      </p>
+                      <span className="text-lg font-black text-indigo-600">{analytics.reputationScore}/100</span>
                     </div>
-                    <div className="text-center">
-                      <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Avg Rating</p>
-                      <p className="text-2xl sm:text-3xl font-black text-amber-500 mt-2">{analytics.avgRating}</p>
+                    <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                      <div
+                        className={`h-full transition-all duration-500 ${
+                          analytics.reputationScore >= 80
+                            ? 'bg-emerald-500'
+                            : analytics.reputationScore >= 60
+                            ? 'bg-blue-500'
+                            : analytics.reputationScore >= 40
+                            ? 'bg-amber-500'
+                            : 'bg-orange-500'
+                        }`}
+                        style={{ width: `${analytics.reputationScore}%` }}
+                      />
                     </div>
-                    <div className="text-center">
-                      <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">5 Star</p>
-                      <p className="text-2xl sm:text-3xl font-black text-emerald-500 mt-2">{ratings.filter(r => r.rating === 5).length}</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">4 Star</p>
-                      <p className="text-2xl sm:text-3xl font-black text-blue-500 mt-2">{ratings.filter(r => r.rating === 4).length}</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Below 4</p>
-                      <p className="text-2xl sm:text-3xl font-black text-orange-500 mt-2">{ratings.filter(r => r.rating < 4).length}</p>
-                    </div>
+                    <p className="text-xs text-gray-600 mt-2 text-center">
+                      {analytics.reputationScore >= 80
+                        ? '✓ Excellent - Keep up the great work!'
+                        : analytics.reputationScore >= 60
+                        ? '✓ Good - Work on improving ratings'
+                        : analytics.reputationScore >= 40
+                        ? '⚠ Fair - Address customer concerns'
+                        : '⚠ Low - Urgent improvement needed'}
+                    </p>
                   </div>
 
                   {/* Individual Reviews */}
