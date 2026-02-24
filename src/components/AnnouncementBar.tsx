@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef, useLayoutEffect } from "react";
 import { X, Megaphone, ArrowRight } from "lucide-react";
 import { getAllNotifications } from "./Notification/Notification";
 import { useAuthHook } from "../hook/useAuthHook";
@@ -22,6 +22,30 @@ export default function AnnouncementBar() {
     const loginUserData = useAuthHook();
     const currentUserEmail = loginUserData.data?.email || localStorage.getItem("userEmail");
     const userRole = loginUserData.data?.role;
+    const containerRef = useRef<HTMLDivElement>(null);
+    const contentRef = useRef<HTMLDivElement>(null);
+    const [isOverflowing, setIsOverflowing] = useState(false);
+
+    const checkOverflow = useCallback(() => {
+        if (containerRef.current && contentRef.current) {
+            // Measure the content's natural width (scrollWidth) against the container's available width (clientWidth)
+            const contentWidth = contentRef.current.scrollWidth;
+            const containerWidth = containerRef.current.clientWidth;
+
+            // We consider it overflowing if the content width is greater than container width
+            setIsOverflowing(contentWidth > containerWidth);
+        }
+    }, []);
+
+    useLayoutEffect(() => {
+        // Short delay to ensure browser has calculated layout
+        const timeout = setTimeout(checkOverflow, 100);
+        window.addEventListener('resize', checkOverflow);
+        return () => {
+            clearTimeout(timeout);
+            window.removeEventListener('resize', checkOverflow);
+        };
+    }, [checkOverflow, currentAnnouncement]);
 
     const fetchAnnouncements = useCallback(async () => {
         try {
@@ -92,6 +116,14 @@ export default function AnnouncementBar() {
                     .animate-marquee:hover {
                         animation-play-state: paused;
                     }
+                    .marquee-container {
+                        display: flex;
+                        justify-content: center;
+                        width: 100%;
+                    }
+                    .marquee-container.is-overflowing {
+                        justify-content: flex-start;
+                    }
                 `}
             </style>
             <div className="max-w-7xl mx-auto flex items-center relative px-6 sm:px-8 overflow-hidden h-full">
@@ -103,9 +135,15 @@ export default function AnnouncementBar() {
                     </span>
                 </div>
 
-                {/* MARQUEE SECTION - ONLY MESSAGE SCROLLS */}
-                <div className="flex-1 overflow-hidden relative">
-                    <div className="animate-marquee whitespace-nowrap inline-flex items-center gap-x-8 sm:gap-x-16">
+                {/* ADAPTIVE SECTION - ONLY SCROLLS IF OVERFLOWING */}
+                <div
+                    className={`flex-1 overflow-hidden relative marquee-container ${isOverflowing ? 'is-overflowing' : ''}`}
+                    ref={containerRef}
+                >
+                    <div
+                        className={`whitespace-nowrap inline-flex items-center ${isOverflowing ? 'animate-marquee gap-x-8 sm:gap-x-16' : 'justify-center'} min-w-full`}
+                        ref={contentRef}
+                    >
                         {/* Set 1 */}
                         <div className="inline-flex items-center gap-x-4 sm:gap-x-6">
                             <span className="text-xs sm:text-sm text-white/90">
@@ -124,23 +162,25 @@ export default function AnnouncementBar() {
                             )}
                         </div>
 
-                        {/* Set 2 for seamless loop */}
-                        <div className="inline-flex items-center gap-x-4 sm:gap-x-6">
-                            <span className="text-xs sm:text-sm text-white/90">
-                                {currentAnnouncement.message || currentAnnouncement.description}
-                            </span>
-                            {currentAnnouncement.link && (
-                                <a
-                                    href={currentAnnouncement.link}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="inline-flex items-center gap-1 sm:gap-1.5 rounded-full bg-white/10 px-3 py-0.5 text-[10px] sm:text-xs font-semibold text-white ring-1 ring-inset ring-white/20 hover:bg-white/20 transition-all flex-shrink-0"
-                                >
-                                    Learn more
-                                    <ArrowRight className="h-3 w-3" />
-                                </a>
-                            )}
-                        </div>
+                        {/* Set 2 for seamless loop - ONLY RENDER IF OVERFLOWING */}
+                        {isOverflowing && (
+                            <div className="inline-flex items-center gap-x-4 sm:gap-x-6">
+                                <span className="text-xs sm:text-sm text-white/90">
+                                    {currentAnnouncement.message || currentAnnouncement.description}
+                                </span>
+                                {currentAnnouncement.link && (
+                                    <a
+                                        href={currentAnnouncement.link}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="inline-flex items-center gap-1 sm:gap-1.5 rounded-full bg-white/10 px-3 py-0.5 text-[10px] sm:text-xs font-semibold text-white ring-1 ring-inset ring-white/20 hover:bg-white/20 transition-all flex-shrink-0"
+                                    >
+                                        Learn more
+                                        <ArrowRight className="h-3 w-3" />
+                                    </a>
+                                )}
+                            </div>
+                        )}
                     </div>
                 </div>
 
