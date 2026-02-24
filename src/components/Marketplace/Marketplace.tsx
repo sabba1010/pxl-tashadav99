@@ -571,7 +571,7 @@ const ProductModal: React.FC<{
 
             <div className="flex justify-between mt-2">
               <span>
-                Seller: <Link to={`/store/${item.sellerEmail}`} className="font-medium text-green-600 hover:underline">{item.storeName || item.seller || "Verified Seller"}</Link>
+                Seller: <Link to={`/store/${item.sellerEmail}`} className="font-medium text-green-600 hover:underline">{item.storeName || item.sellerName || item.seller || "Verified Seller"}</Link>
               </span>
               <span>
                 Category: <span className="font-medium">{item.category}</span>
@@ -678,7 +678,7 @@ const Marketplace: React.FC = () => {
             title: p.name,
             desc: p.description,
             price: Number(p.price) || 0,
-            seller: p.sellerUsername || p.username || p.userEmail,
+            seller: p.sellerUsername || p.sellerName || (p.userEmail && p.userEmail.includes('@') ? p.userEmail.split('@')[0] : p.userEmail),
             sellerName: p.sellerName,
             sellerEmail: p.userEmail,
             storeName: p.storeName,

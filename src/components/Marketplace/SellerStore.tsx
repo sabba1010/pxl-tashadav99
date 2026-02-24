@@ -443,7 +443,7 @@ const SellerStore: React.FC = () => {
                             title: p.name,
                             desc: p.description,
                             price: Number(p.price) || 0,
-                            seller: p.sellerUsername || p.username || p.userEmail,
+                            seller: p.sellerUsername || p.sellerName || (p.userEmail && p.userEmail.includes('@') ? p.userEmail.split('@')[0] : p.userEmail),
                             sellerEmail: p.userEmail,
                             storeName: p.storeName,
                             sellerName: p.sellerName,
