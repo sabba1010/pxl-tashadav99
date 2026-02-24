@@ -8,6 +8,7 @@ import { useSocket } from "../../context/SocketContext";
 import NotificationBadge from "../NotificationBadge";
 import UserActivityStatus from "../UserActivityStatus";
 import ChatWindow from "../Chat/ChatWindow";
+import { formatToWAT, formatChatTimeWAT, getRelativeTimeWAT } from "../../lib/timeUtils";
 
 import {
   FaTimes,
@@ -104,24 +105,13 @@ const inferPlatform = (name: string): PlatformType => {
 
 const formatDate = (d: string) => {
   if (!d) return "N/A";
-  return new Date(d).toLocaleString("en-US", {
-    month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit",
+  return formatToWAT(d, {
+    month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: true
   });
 };
 
 const timeAgo = (dateString?: string) => {
-  if (!dateString) return "Just now";
-  const date = new Date(dateString);
-  const now = new Date();
-  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-  if (diffInSeconds < 60) return "Just now";
-  const diffInMinutes = Math.floor(diffInSeconds / 60);
-  if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
-  const diffInHours = Math.floor(diffInMinutes / 60);
-  if (diffInHours < 24) return `${diffInHours}h ago`;
-  const diffInDays = Math.floor(diffInHours / 24);
-  if (diffInDays < 7) return `${diffInDays}d ago`;
-  return date.toLocaleDateString();
+  return getRelativeTimeWAT(dateString);
 };
 
 const maskEmail = (email: string) => {
@@ -130,22 +120,7 @@ const maskEmail = (email: string) => {
 };
 
 const formatChatTime = (dateString?: string) => {
-  if (!dateString) return "Just now";
-  try {
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) return "Just now";
-
-    const now = new Date();
-    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-
-    if (diffInSeconds >= 0 && diffInSeconds < 86400) {
-      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
-    }
-
-    return date.toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true });
-  } catch {
-    return "Just now";
-  }
+  return formatChatTimeWAT(dateString);
 };
 
 const RenderIcon = ({ icon, size = 40 }: { icon?: string; size?: number }) => {
@@ -374,19 +349,7 @@ const MyPurchase: React.FC = () => {
 
   const getStatusDisplay = (online: boolean, lastSeen?: string | null): string => {
     if (online) return "Online";
-    if (!lastSeen) return "Offline";
-
-    const date = new Date(lastSeen);
-    if (isNaN(date.getTime())) return "Offline";
-
-    const nowTime = new Date();
-    const diffMs = nowTime.getTime() - date.getTime();
-    const diffMin = Math.floor(diffMs / 60000);
-
-    if (diffMin < 1) return "Just now";
-    if (diffMin < 60) return `${diffMin}m ago`;
-    if (diffMin < 1440) return `${Math.floor(diffMin / 60)}h ago`;
-    return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    return getRelativeTimeWAT(lastSeen || undefined).replace("Last seen ", "");
   };
 
   const setPresence = async (status: 'online' | 'offline') => {

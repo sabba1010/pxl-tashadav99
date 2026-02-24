@@ -8,6 +8,7 @@ import {
     FaPaperPlane,
     FaImage,
 } from "react-icons/fa";
+import { formatChatTimeWAT } from "../../lib/timeUtils";
 
 // Icon Casting to fix TS2786
 const FaTimesIcon = FaTimes as any;
@@ -39,19 +40,7 @@ const BASE_URL = "http://localhost:3200";
 const CHAT_API = `${BASE_URL}/chat`;
 
 const formatChatTime = (dateString?: string) => {
-    if (!dateString) return "Just now";
-    try {
-        const date = new Date(dateString);
-        if (isNaN(date.getTime())) return "Just now";
-        const now = new Date();
-        const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-        if (diffInSeconds >= 0 && diffInSeconds < 86400) {
-            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
-        }
-        return date.toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true });
-    } catch {
-        return "Just now";
-    }
+    return formatChatTimeWAT(dateString);
 };
 
 const maskEmail = (email: string) => {

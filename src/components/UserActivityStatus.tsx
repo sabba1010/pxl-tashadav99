@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import axios from 'axios';
 import { useSocket } from '../context/SocketContext';
+import { getRelativeTimeWAT } from '../lib/timeUtils';
 
 interface UserActivityStatusProps {
     userId: string;
@@ -51,21 +52,7 @@ const UserActivityStatus: React.FC<UserActivityStatusProps> = ({ userId, showTex
                 <span className={`text-[10px] font-medium ${isOnline ? 'text-green-600' : 'text-gray-500'}`}>
                     {(() => {
                         if (isOnline) return "Active now";
-                        if (!lastSeen) return "Offline";
-                        const date = new Date(lastSeen);
-                        if (isNaN(date.getTime()) || date.getTime() === 0) return "Offline";
-
-                        const now = new Date();
-                        const diffMs = now.getTime() - date.getTime();
-                        const diffMin = Math.floor(diffMs / 60000);
-
-                        if (diffMin < 1) return "Last seen just now";
-                        if (diffMin < 60) return `Last seen ${diffMin} ${diffMin === 1 ? 'minute' : 'minutes'} ago`;
-
-                        const diffHours = Math.floor(diffMin / 60);
-                        if (diffHours < 24) return `Last seen ${diffHours} ${diffHours === 1 ? 'hour' : 'hours'} ago`;
-
-                        return `Last seen on ${date.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
+                        return getRelativeTimeWAT(lastSeen);
                     })()}
                 </span>
             )}

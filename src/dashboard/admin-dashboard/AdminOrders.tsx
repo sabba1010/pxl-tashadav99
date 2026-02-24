@@ -25,6 +25,7 @@ import { Cancel, Visibility, Chat, CheckCircle } from "@mui/icons-material";
 import ChatWindow from "../../components/Chat/ChatWindow";
 import { useAuthHook } from "../../hook/useAuthHook";
 import { toast } from "sonner";
+import { formatToWAT } from "../../lib/timeUtils";
 
 const BASE_URL = "http://localhost:3200";
 
@@ -42,12 +43,13 @@ interface Order {
 // ✅ 1. Native JavaScript date formatting (No moment.js)
 const formatDate = (dateString: string) => {
     if (!dateString) return "N/A";
-    return new Date(dateString).toLocaleDateString("en-US", {
+    return formatToWAT(dateString, {
         year: "numeric",
         month: "short",
         day: "numeric",
         hour: "2-digit",
         minute: "2-digit",
+        hour12: true,
     });
 };
 

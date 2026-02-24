@@ -63,7 +63,7 @@ interface User {
   role?: string;
 }
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 40;
 
 /* ─────────────────────────────────────────────────────────────
  * COMPONENT
