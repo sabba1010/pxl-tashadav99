@@ -428,7 +428,7 @@ const WithdrawForm: React.FC = () => {
                   <p className="font-semibold text-gray-800 truncate">{savedBankAccount.accountNumber}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-600">Bank Code</p>
+                  <p className="text-xs text-gray-600">Bank Name</p>
                   <p className="font-semibold text-gray-800">{savedBankAccount.bankCode}</p>
                 </div>
               </div>
@@ -449,7 +449,7 @@ const WithdrawForm: React.FC = () => {
               />
             </div>
             <div>
-              <label className="block font-medium mb-2">Bank Code *</label>
+              <label className="block font-medium mb-2">Bank Name *</label>
               <input
                 type="text"
                 name="bankCode"

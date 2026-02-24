@@ -154,7 +154,7 @@ const DetailsModal: React.FC<{ request: WithdrawalRequest | null; onClose: () =>
             <Typography sx={{ fontSize: 13 }}><strong>Method:</strong> {request.paymentMethod}</Typography>
             <Typography sx={{ fontSize: 13 }}><strong>Account:</strong> {request.accountNumber}</Typography>
             <Typography sx={{ fontSize: 13 }}><strong>Bank Name:</strong> {request.bankName || "N/A"}</Typography>
-            <Typography sx={{ fontSize: 13 }}><strong>Bank Code:</strong> {request.bankCode}</Typography>
+           
             <Typography sx={{ fontSize: 13, mt: 1, color: "#047857", fontWeight: 700 }}>
               <strong>NGN Payout:</strong> ₦{((request as any).amountNGN || Math.round(Number(request.amount) * 1400)).toLocaleString()}
             </Typography>
@@ -571,7 +571,7 @@ export default WithdrawalRequests;
 //             <Typography sx={{ fontSize: 13 }}><strong>Method:</strong> {request.paymentMethod}</Typography>
 //             <Typography sx={{ fontSize: 13 }}><strong>Account:</strong> {request.accountNumber}</Typography>
 //             <Typography sx={{ fontSize: 13 }}><strong>Bank Name:</strong> {request.bankName || "N/A"}</Typography>
-//             <Typography sx={{ fontSize: 13 }}><strong>Bank Code:</strong> {request.bankCode}</Typography>
+//             <Typography sx={{ fontSize: 13 }}><strong>Bank Name:</strong> {request.bankCode}</Typography>
 //             <Typography sx={{ fontSize: 13, mt: 1, color: "#047857", fontWeight: 700 }}>
 //               <strong>NGN Payout:</strong> ₦{((request as any).amountNGN || Math.round(Number(request.amount) * 1400)).toLocaleString()}
 //             </Typography>
