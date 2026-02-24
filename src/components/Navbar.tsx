@@ -632,7 +632,7 @@ export default function Navbar() {
             </NavLink>
           )}
 
-          {(loginUser?.role === "seller" || loginUser?.role === "buyer") && (
+          {/* {(loginUser?.role === "seller" || loginUser?.role === "buyer") && (
             <NavLink to="/seller-chat" className="flex flex-col items-center justify-center flex-1 h-full gap-1 pt-3" style={({ isActive }) => ({ color: isActive ? ROYAL_GOLD : "#9CA3AF" })}>
               {({ isActive }) => (
                 <>
@@ -643,7 +643,7 @@ export default function Navbar() {
                 </>
               )}
             </NavLink>
-          )}
+          )} */}
 
         </div>
       </nav>
