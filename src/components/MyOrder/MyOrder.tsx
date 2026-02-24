@@ -335,7 +335,7 @@ const MyOrder: React.FC = () => {
   // Auto-reload disabled per user request
 
   const getRemainingTime = (rawDate: string, deliveryMs?: number, deliveryType?: string) => {
-    const timeoutMs = deliveryMs ?? 14400000;
+    const timeoutMs = deliveryMs ?? 3600000;
     const diff = (new Date(rawDate).getTime() + timeoutMs) - now;
     if (diff <= 0) return deliveryType === 'manual' ? "Overdue" : "Confirming...";
     const h = Math.floor(diff / 3600000).toString().padStart(2, '0');
