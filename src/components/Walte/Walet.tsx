@@ -3,6 +3,7 @@ import { FaArrowUp, FaPlus } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { useAuthHook } from "../../hook/useAuthHook";
 import { useDepositByUser } from "../../hook/useDepositByUser";
+import { API_BASE_URL } from "../../config";
 
 const FaPlusIcon = FaPlus as unknown as React.ComponentType<any>;
 const FaArrowUpIcon = FaArrowUp as unknown as React.ComponentType<any>;
@@ -46,17 +47,14 @@ export default function Wallet(): React.ReactElement {
 
     try {
       setWithdrawLoading(true);
-      const response = await fetch("http://localhost:3200/withdraw/getall");
+      const userId = loginUserData?.data?._id;
+      if (!userId) throw new Error("User ID not found");
+
+      const response = await fetch(`${API_BASE_URL}/withdraw/user/${userId}`);
       if (!response.ok) throw new Error("Failed to fetch withdrawals");
       const data = await response.json();
 
-      const currentUserEmail = loginUserData.data.email;
-
-      const filteredData = data.filter(
-        (wd: any) => wd.email === currentUserEmail
-      );
-
-      const mapped: Tx[] = filteredData.map((wd: any) => {
+      const mapped: Tx[] = data.map((wd: any) => {
         let displayStatus = wd.status?.toLowerCase() || "pending";
         let displayReason = "";
 

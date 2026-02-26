@@ -30,7 +30,7 @@ const RatingModal: React.FC<RatingModalProps> = ({
   const [message, setMessage] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const BASE_URL = "http://localhost:3200";
+  const BASE_URL = "https://tasha-vps-backend-2.onrender.com";
   const RATING_API = `${BASE_URL}/rating`;
 
   const handleSubmitRating = async (e: React.FormEvent) => {

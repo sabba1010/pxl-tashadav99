@@ -65,7 +65,7 @@ const RatingsReputationPanel: React.FC = () => {
   const fetchAdminData = async () => {
     setLoading(true);
     try {
-      const response = await axios.get<{ success: boolean, data: any[] }>("http://localhost:3200/reputation/summary");
+      const response = await axios.get<{ success: boolean, data: any[] }>("https://tasha-vps-backend-2.onrender.com/reputation/summary");
       if (response.data.success) {
         const mappedSellers: Seller[] = response.data.data.map(item => ({
           id: item.sellerEmail,
@@ -118,7 +118,7 @@ const RatingsReputationPanel: React.FC = () => {
   const handleDeleteReview = async (ratingId: string) => {
     if (window.confirm("Are you sure you want to delete this review?")) {
       try {
-        await axios.delete(`http://localhost:3200/rating/delete/${ratingId}`);
+        await axios.delete(`https://tasha-vps-backend-2.onrender.com/rating/delete/${ratingId}`);
         fetchAdminData(); // লিস্ট রিফ্রেশ করা
         setSelectedSeller(null);
       } catch (err) {

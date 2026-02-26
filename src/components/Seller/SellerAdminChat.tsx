@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import io, { Socket } from 'socket.io-client';
 
 // ──────────────────────────────────────────────
-const BASE_URL = "http://localhost:3200";
+const BASE_URL = "https://tasha-vps-backend-2.onrender.com";
 const ADMIN_CHAT_API = `${BASE_URL}/api/adminchat`;
 const SOCKET_URL = BASE_URL; // Assume backend has socket.io setup at same base
 

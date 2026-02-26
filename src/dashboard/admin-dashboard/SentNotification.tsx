@@ -56,7 +56,7 @@ const SentNotification = () => {
 
     // Fetch all notifications using React Query
     const fetchNotificationsData = async (): Promise<Notification[]> => {
-        const API_BASE = process.env.REACT_APP_API_URL?.replace(/\/$/, "") ?? "http://localhost:3200";
+        const API_BASE = process.env.REACT_APP_API_URL?.replace(/\/$/, "") ?? "https://tasha-vps-backend-2.onrender.com";
         const response = await fetch(`${API_BASE}/api/notification/getall`, {
             headers: {
                 Authorization: `Bearer ${localStorage.getItem("token")}`,

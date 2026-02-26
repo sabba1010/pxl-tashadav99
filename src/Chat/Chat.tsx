@@ -16,7 +16,7 @@ const Chat: React.FC = () => {
 
     const senderId = "buyer123"; 
     const receiverId = "seller456"; 
-    const API_URL = "http://localhost:3200/chat"; 
+    const API_URL = "https://tasha-vps-backend-2.onrender.com/chat"; 
 
     const fetchChats = async () => {
         try {

@@ -9,6 +9,7 @@ import {
 import { useAuth } from "../../context/AuthContext";
 import { toast } from "sonner";
 import { useAuthHook } from "../../hook/useAuthHook";
+import { API_BASE_URL } from "../../config";
 
 // react-icons v5+ TypeScript fix
 const CreditCardIcon = FaCreditCard as React.ElementType;
@@ -54,7 +55,7 @@ const WithdrawForm: React.FC = () => {
   useEffect(() => {
     const fetchRate = async () => {
       try {
-        const res = await fetch("http://localhost:3200/api/settings");
+        const res = await fetch(`${API_BASE_URL}/api/settings`);
         const data = await res.json();
         if (data.success) {
           setWithdrawRate(data.settings.withdrawRate || 1400);
@@ -79,7 +80,7 @@ const WithdrawForm: React.FC = () => {
       if (!data?._id) return;
 
       try {
-        const response = await fetch(`http://localhost:3200/api/user/get-bank-account/${data._id}`);
+        const response = await fetch(`${API_BASE_URL}/api/user/get-bank-account/${data._id}`);
         const result = await response.json();
 
         if (result.success && result.bankDetails) {
@@ -130,7 +131,7 @@ const WithdrawForm: React.FC = () => {
     }
 
     try {
-      const response = await fetch("http://localhost:3200/api/user/save-bank-account", {
+      const response = await fetch(`${API_BASE_URL}/api/user/save-bank-account`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -224,7 +225,7 @@ const WithdrawForm: React.FC = () => {
       };
 
       const withdrawResponse = await fetch(
-        "http://localhost:3200/withdraw/post",
+        `${API_BASE_URL}/withdraw/post`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -259,7 +260,7 @@ const WithdrawForm: React.FC = () => {
         // Save bank account for local bank method
         if (paymentMethod === "localbank" && formData.bankName) {
           try {
-            await fetch("http://localhost:3200/api/user/save-bank-account", {
+            await fetch(`${API_BASE_URL}/api/user/save-bank-account`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
