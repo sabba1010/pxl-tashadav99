@@ -250,129 +250,168 @@ const WithdrawalRequests: React.FC = () => {
   const paginatedRequests = filteredRequests.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   return (
-    <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: "#F8FAFC", minHeight: "100vh" }}>
-      <Paper sx={{ p: 3, mb: 4, borderRadius: 3 }}>
-        <Box display="flex" justifyContent="space-between" alignItems="center">
-          <Typography fontWeight={800}>Withdrawal History ({filteredRequests.length})</Typography>
-          <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
+    <Box sx={{ p: { xs: 1.5, sm: 2, md: 4 }, bgcolor: "#F8FAFC", minHeight: "100vh", overflowX: "hidden" }}>
+      {/* Header Section */}
+      <Paper sx={{ p: { xs: 2, md: 3 }, mb: 4, borderRadius: { xs: 2, md: 3 } }}>
+        <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, justifyContent: "space-between", alignItems: { xs: "stretch", sm: "center" }, gap: 2 }}>
+          <Typography fontWeight={800} sx={{ fontSize: { xs: "16px", md: "18px" } }}>Withdrawal History ({filteredRequests.length})</Typography>
+          <Box sx={{ display: "flex", gap: 1, alignItems: "center", width: { xs: "100%", sm: "auto" }, flexDirection: { xs: "row", sm: "row" } }}>
             <Tooltip title="Refresh list">
-              <IconButton onClick={() => { setCurrentPage(1); refetch(); }} sx={{ width: 44, height: 44, background: "linear-gradient(135deg,#33ac6f,#2a8e5b)", color: "#fff", borderRadius: "12px" }}>
+              <IconButton onClick={() => { setCurrentPage(1); refetch(); }} sx={{ width: { xs: 40, md: 44 }, height: { xs: 40, md: 44 }, background: "linear-gradient(135deg,#33ac6f,#2a8e5b)", color: "#fff", borderRadius: "12px", flexShrink: 0 }}>
                 {loading ? <CircularProgress size={18} sx={{ color: '#fff' }} /> : <Refresh fontSize="small" />}
               </IconButton>
             </Tooltip>
-            <Box sx={{ position: "relative", width: 360 }}>
+            <Box sx={{ position: "relative", width: { xs: "1", sm: 360 }, flex: { xs: 1, sm: "none" } }}>
               <Search sx={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "#64748B" }} />
-              <InputBase placeholder="Search..." value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} sx={{ width: "100%", bgcolor: "#fff", border: "1px solid #E2E8F0", borderRadius: 3, pl: 6, pr: 2, py: 1.1 }} />
+              <InputBase placeholder="Search..." value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} sx={{ width: "100%", bgcolor: "#fff", border: "1px solid #E2E8F0", borderRadius: 3, pl: 6, pr: 2, py: { xs: 1, md: 1.1 }, fontSize: { xs: "14px", md: "16px" } }} />
             </Box>
           </Box>
         </Box>
       </Paper>
 
-      <TableContainer component={Paper} sx={{ borderRadius: 3, overflow: "hidden" }}>
-        {loading ? <Box py={10} textAlign="center"><CircularProgress /></Box> : (
-          <Table>
-            <TableHead sx={{ bgcolor: "#F8FAFC" }}>
-              <TableRow>
-                {["REQUESTED AT", "SELLER", "METHOD", "AMOUNT", "STATUS", "REPORTS", "UNFINISHED", "ACTION"].map(h => (
-                  <TableCell
-                    key={h}
-                    align={h === "ACTION" ? "center" : "left"}
-                    sx={{
-                      fontWeight: 700,
-                      fontSize: 12,
-                      color: "#64748B",
-                      width: h === "ACTION" ? "180px" : "auto"
-                    }}
-                  >
-                    {h}
-                  </TableCell>
-                ))}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {paginatedRequests.map((req) => (
-                <TableRow key={req._id} hover>
-                  <TableCell>
-                    <Stack spacing={0.5}>
-                      <Typography sx={{ fontSize: 13, fontWeight: 700, color: "#1F2937" }}>
-                        {new Date(req.createdAt).toLocaleDateString(undefined, { 
-                          year: 'numeric', month: 'short', day: 'numeric' 
-                        })}
-                      </Typography>
-                      <Typography sx={{ fontSize: 11, color: "#64748B", fontWeight: 500 }}>
-                        {new Date(req.createdAt).toLocaleTimeString(undefined, {
-                          hour: '2-digit', minute: '2-digit', second: '2-digit'
-                        })}
-                      </Typography>
-                    </Stack>
-                  </TableCell>
-                  <TableCell>{req.email}</TableCell>
-                  <TableCell>{req.paymentMethod}</TableCell>
-                  <TableCell>
-                    <div className="flex flex-col">
-                      <span className="font-bold">{req.amount} {req.currency}</span>
-                      {(req as any).amountNGN && (
-                        <span className="text-xs text-gray-500 font-medium">
-                          ≈ ₦{(req as any).amountNGN.toLocaleString()}
-                        </span>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Box sx={{
-                      px: 2,
-                      py: 0.6,
-                      borderRadius: 2,
-                      fontSize: 13,
-                      fontWeight: 600,
-                      display: 'inline-block',
-                      bgcolor: (req.status === "pending" || req.status === "processing") ? "#FEF9C3" : (req.status === "success" || req.status === "approved" || req.status === "completed") ? "#DCFCE7" : "#FEE2E2",
-                      color: (req.status === "pending" || req.status === "processing") ? "#92400E" : (req.status === "success" || req.status === "approved" || req.status === "completed") ? "#166534" : "#991B1B"
-                    }}>
-                      {req.status}
-                    </Box>
-                  </TableCell>
-                  <TableCell>{req.sellerReportsCount}</TableCell>
-                  <TableCell>{req.unfinishedOrdersCount}</TableCell>
-                  <TableCell align="center">
-                    <Stack direction="row" spacing={1} justifyContent="center" alignItems="center">
-                      <IconButton
-                        size="small"
-                        onClick={() => setDetailsRequest(req)}
-                        sx={{ color: "#4F46E5" }}
-                      >
-                        <Visibility fontSize="small" />
-                      </IconButton>
-                      <Button
-                        variant="contained"
-                        size="small"
-                        onClick={() => handleReview(req)}
-                        disabled={actionLoading}
-                        sx={{
-                          bgcolor: "#0F172A",
-                          textTransform: "none",
-                          fontWeight: 600,
-                          borderRadius: 2,
-                          minWidth: "80px"
-                        }}
-                      >
-                        Review
-                      </Button>
-                    </Stack>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
-      </TableContainer>
+      {/* Table with Horizontal Scroll on Mobile */}
+      <Paper sx={{ borderRadius: { xs: 2, md: 3 }, overflow: "hidden" }}>
+        <Box sx={{ overflowX: "auto" }}>
+          {loading ? (
+            <Box py={10} textAlign="center">
+              <CircularProgress />
+            </Box>
+          ) : (
+            <TableContainer>
+              <Table sx={{ minWidth: { xs: 1000, md: "auto" } }}>
+                <TableHead sx={{ bgcolor: "#F8FAFC" }}>
+                  <TableRow>
+                    <TableCell sx={{ padding: "16px", fontWeight: 700, fontSize: "12px", color: "#64748B" }}>
+                      REQUESTED AT
+                    </TableCell>
+                    <TableCell sx={{ padding: "16px", fontWeight: 700, fontSize: "12px", color: "#64748B" }}>
+                      SELLER
+                    </TableCell>
+                    <TableCell sx={{ padding: "16px", fontWeight: 700, fontSize: "12px", color: "#64748B" }}>
+                      METHOD
+                    </TableCell>
+                    <TableCell sx={{ padding: "16px", fontWeight: 700, fontSize: "12px", color: "#64748B" }}>
+                      AMOUNT
+                    </TableCell>
+                    <TableCell sx={{ padding: "16px", fontWeight: 700, fontSize: "12px", color: "#64748B" }}>
+                      STATUS
+                    </TableCell>
+                    <TableCell align="center" sx={{ padding: "16px", fontWeight: 700, fontSize: "12px", color: "#64748B" }}>
+                      REPORTS
+                    </TableCell>
+                    <TableCell align="center" sx={{ padding: "16px", fontWeight: 700, fontSize: "12px", color: "#64748B" }}>
+                      UNFINISHED
+                    </TableCell>
+                    <TableCell align="center" sx={{ padding: "16px", fontWeight: 700, fontSize: "12px", color: "#64748B" }}>
+                      ACTION
+                    </TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {paginatedRequests.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={8} sx={{ padding: "40px 16px", textAlign: "center", color: "#64748B" }}>
+                        No withdrawal requests found
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    paginatedRequests.map((req) => (
+                      <TableRow key={req._id} hover sx={{ "&:hover": { bgcolor: "#F8FAFC" } }}>
+                        <TableCell sx={{ padding: "16px", fontSize: "13px" }}>
+                          <Stack spacing={0.5}>
+                            <Typography sx={{ fontSize: "13px", fontWeight: 700, color: "#1F2937" }}>
+                              {new Date(req.createdAt).toLocaleDateString(undefined, { 
+                                year: 'numeric', month: 'short', day: 'numeric' 
+                              })}
+                            </Typography>
+                            <Typography sx={{ fontSize: "11px", color: "#64748B", fontWeight: 500 }}>
+                              {new Date(req.createdAt).toLocaleTimeString(undefined, {
+                                hour: '2-digit', minute: '2-digit'
+                              })}
+                            </Typography>
+                          </Stack>
+                        </TableCell>
+                        <TableCell sx={{ padding: "16px", fontSize: "13px" }}>
+                          {req.email}
+                        </TableCell>
+                        <TableCell sx={{ padding: "16px", fontSize: "13px" }}>
+                          {req.paymentMethod}
+                        </TableCell>
+                        <TableCell sx={{ padding: "16px", fontSize: "13px" }}>
+                          <div className="flex flex-col">
+                            <span className="font-bold">{req.amount} {req.currency}</span>
+                            {(req as any).amountNGN && (
+                              <span className="text-xs text-gray-500 font-medium">
+                                ≈ ₦{(req as any).amountNGN.toLocaleString()}
+                              </span>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell sx={{ padding: "16px", fontSize: "13px" }}>
+                          <Box sx={{
+                            px: 2,
+                            py: 0.6,
+                            borderRadius: 2,
+                            fontSize: "13px",
+                            fontWeight: 600,
+                            display: 'inline-block',
+                            bgcolor: (req.status === "pending" || req.status === "processing") ? "#FEF9C3" : (req.status === "success" || req.status === "approved" || req.status === "completed") ? "#DCFCE7" : "#FEE2E2",
+                            color: (req.status === "pending" || req.status === "processing") ? "#92400E" : (req.status === "success" || req.status === "approved" || req.status === "completed") ? "#166534" : "#991B1B"
+                          }}>
+                            {req.status}
+                          </Box>
+                        </TableCell>
+                        <TableCell align="center" sx={{ padding: "16px", fontSize: "13px" }}>
+                          {req.sellerReportsCount}
+                        </TableCell>
+                        <TableCell align="center" sx={{ padding: "16px", fontSize: "13px" }}>
+                          {req.unfinishedOrdersCount}
+                        </TableCell>
+                        <TableCell align="center" sx={{ padding: "16px" }}>
+                          <Stack direction="row" spacing={1} justifyContent="center" alignItems="center">
+                            <IconButton
+                              size="small"
+                              onClick={() => setDetailsRequest(req)}
+                              sx={{ color: "#4F46E5" }}
+                            >
+                              <Visibility fontSize="small" />
+                            </IconButton>
+                            <Button
+                              variant="contained"
+                              size="small"
+                              onClick={() => handleReview(req)}
+                              disabled={actionLoading}
+                              sx={{
+                                bgcolor: "#0F172A",
+                                textTransform: "none",
+                                fontWeight: 600,
+                                borderRadius: 2,
+                                minWidth: "80px"
+                              }}
+                            >
+                              Review
+                            </Button>
+                          </Stack>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
+        </Box>
+      </Paper>
 
+      {/* Pagination */}
       {!loading && filteredRequests.length > 0 && (
-        <Box mt={4} display="flex" justifyContent="center">
+        <Box mt={4} display="flex" justifyContent="center" sx={{ overflow: "auto" }}>
           <Pagination 
             count={Math.ceil(filteredRequests.length / ITEMS_PER_PAGE)} 
             page={currentPage} 
-            onChange={(_, p) => setCurrentPage(p)} 
+            onChange={(_, p) => setCurrentPage(p)}
+            size={"small"}
+            sx={{ "& .MuiPagination-ul": { justifyContent: "center", flexWrap: { xs: "wrap", md: "nowrap" } } }}
           />
         </Box>
       )}
