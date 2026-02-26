@@ -26,11 +26,6 @@ export default function Footer({ theme = "dark" }: Props) {
   // Updated social links with your specific handles
   const socialLinks = [
     {
-      Icon: Facebook,
-      url: "https://www.facebook.com/share/18MhvCw17A/?mlbextld=wwXIfr",
-      label: "Facebook"
-    },
-    {
       Icon: Instagram,
       url: "https://www.instagram.com/acctempire",
       label: "Instagram"
@@ -49,6 +44,11 @@ export default function Footer({ theme = "dark" }: Props) {
       Icon: Youtube,
       url: "https://youtube.com/@acctempire",
       label: "YouTube"
+    },
+    {
+      Icon: Facebook,
+      url: "https://www.facebook.com/share/18MhvCw17A/?mlbextld=wwXIfr",
+      label: "Facebook"
     },
   ];
 
