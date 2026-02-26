@@ -80,7 +80,7 @@ interface Seller {
   countryCode?: string;
 }
 
-const BASE_URL = "http://localhost:3200";
+const BASE_URL = "https://tasha-vps-backend-2.onrender.com";
 const ADMIN_CHAT_API = `${BASE_URL}/api/adminchat`;
 const USER_API = `${BASE_URL}/api/user`;
 

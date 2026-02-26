@@ -21,7 +21,7 @@ export type NotificationPayload = {
 
 // --- Config & Helpers ---
 const API_BASE =
-  process.env.REACT_APP_API_URL?.replace(/\/$/, "") ?? "http://localhost:3200";
+  process.env.REACT_APP_API_URL?.replace(/\/$/, "") ?? "https://tasha-vps-backend-2.onrender.com";
 
 function getAuthHeaders(): Record<string, string> {
   const token = localStorage.getItem("token");

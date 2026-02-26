@@ -131,7 +131,7 @@ toast.success(message, {
 
 ### Manual Test API Call
 ```bash
-curl -X POST http://localhost:3200/api/notification/notify \
+curl -X POST https://tasha-vps-backend-2.onrender.com/api/notification/notify \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -d '{
@@ -145,7 +145,7 @@ curl -X POST http://localhost:3200/api/notification/notify \
 
 ⚠️ **Environment Variable:** Make sure `REACT_APP_API_URL` is set in your `.env` file:
 ```
-REACT_APP_API_URL=http://localhost:3200
+REACT_APP_API_URL=https://tasha-vps-backend-2.onrender.com
 ```
 
 ✅ **Token Required:** Notifications require the user to be logged in (token in localStorage)
