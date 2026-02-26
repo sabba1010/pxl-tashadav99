@@ -370,7 +370,7 @@ const MyPurchase: React.FC = () => {
 
   // Auto-reload disabled per user request
 
-  const getDeliveryTimeInMs = (p: Purchase) => {
+  const getDeliveryTimeInMs = (p: Purchase): number => {
     if (p.deliveryTime) {
       const match = p.deliveryTime.match(/(\d+)\s*(mins?|minutes?|h|hours?|d|days?)/i);
       if (match) {
@@ -381,7 +381,9 @@ const MyPurchase: React.FC = () => {
         if (unit.startsWith('d')) return num * 86400000;
       }
     }
-  return 3600000; // Default to 1 hour if not specified
+
+    // default fallback to 1 hour if unable to parse deliveryTime
+    return 3600000;
   };
 
   const getRemainingTime = (p: Purchase) => {
@@ -778,30 +780,30 @@ const MyPurchase: React.FC = () => {
                 <FaTimesIcon size={20} />
               </button>
               <div className="text-center mb-6 pt-4 flex flex-col items-center justify-center">
-                <RenderIcon icon={selected.icon} size={70} />
-                <h2 className="text-xl font-bold mt-4 text-[#0A1A3A]">{selected.title}</h2>
-                <p className="text-3xl font-black text-[#33ac6f] mt-2">${selected.price.toFixed(2)}</p>
+                                <RenderIcon icon={selected?.icon} size={70} />
+                        <h2 className="text-xl font-bold mt-4 text-[#0A1A3A]">{selected?.title}</h2>
+                        <p className="text-3xl font-black text-[#33ac6f] mt-2">${selected?.price.toFixed(2)}</p>
               </div>
               <div className="bg-gray-50 rounded-2xl p-4 space-y-3 border border-gray-100 mb-6 text-sm">
                 <div className="flex justify-between border-b pb-2">
                   <span className="text-gray-500">Order Number</span>
-                  <span className="font-bold">{selected.purchaseNumber}</span>
+                  <span className="font-bold">{selected?.purchaseNumber}</span>
                 </div>
                 <div className="flex justify-between border-b pb-2">
                   <span className="text-gray-500">Status</span>
-                  <span className={`font-bold ${selected.status === 'Completed' ? 'text-green-600' : 'text-amber-600'}`}>
-                    {selected.status}
+                  <span className={`font-bold ${selected?.status === 'Completed' ? 'text-green-600' : 'text-amber-600'}`}>
+                    {selected?.status}
                   </span>
                 </div>
                 <div className="pt-2">
                   <p className="text-gray-500 mb-1">Product Details</p>
                   <div className="bg-white p-3 rounded-lg border font-mono text-xs break-all">
-                    {selected.desc || "No additional details provided."}
+                    {selected?.desc || "No additional details provided."}
                   </div>
                 </div>
               </div>
 
-              {(selected.accountUsername || selected.accountPassword || selected.recoveryEmail || selected.recoveryEmailPassword || selected.previewLink) && (
+              {(selected?.accountUsername || selected?.accountPassword || selected?.recoveryEmail || selected?.recoveryEmailPassword || selected?.previewLink) && (
                 <div className="bg-blue-50 rounded-2xl p-4 space-y-3 border border-blue-100 mb-6 text-sm">
                   <div className="flex justify-between items-center border-b pb-3">
                     <span className="text-blue-900 font-bold flex items-center gap-2">
@@ -849,7 +851,7 @@ const MyPurchase: React.FC = () => {
               )}
 
               {/* Warning Notice and Login Button */}
-              {selected.accountUsername && selected.accountPassword && (
+              {selected?.accountUsername && selected?.accountPassword && (
                 <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-4 mb-6">
                   <div className="flex gap-3">
                     <div className="text-xl flex-shrink-0">⚠️</div>
@@ -859,10 +861,10 @@ const MyPurchase: React.FC = () => {
                         "Login now before the time expires to avoid future complaints."
                       </p>
                       <button
-                        onClick={() => window.open(getLoginUrl(selected.title), '_blank')}
+                        onClick={() => window.open(getLoginUrl(selected?.title || ''), '_blank')}
                         className="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 px-4 rounded-lg transition active:scale-95 text-sm"
                       >
-                        🔓 Login Now to {selected.title.split(' ')[0]}
+                        🔓 Login Now to {selected?.title.split(' ')[0]}
                       </button>
                     </div>
                   </div>
@@ -870,7 +872,7 @@ const MyPurchase: React.FC = () => {
               )}
 
               {/* Buyer Confirmation Button */}
-              {selected.status === "Pending" && (
+              {selected?.status === "Pending" && (
                 <button
                   onClick={() => handleUpdateStatus("completed", selected.sellerEmail)}
                   disabled={isUpdating}
@@ -963,7 +965,9 @@ const MyPurchase: React.FC = () => {
               // Mark as read in local state when closing
               setUnreadCounts(prev => {
                 const newMap = new Map(prev);
-                newMap.set(activeChatOrderId, 0);
+                if (activeChatOrderId) {
+                  newMap.set(activeChatOrderId, 0);
+                }
                 return newMap;
               });
             }}

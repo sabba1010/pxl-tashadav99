@@ -89,7 +89,7 @@ const Reports: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#FBFBFB] pb-20 font-sans">
       {/* Header */}
-      <div className="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-40">
+      {/* <div className="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-40">
         <div className="max-w-[1440px] mx-auto px-3 sm:px-6 py-3 sm:py-4 flex justify-between items-center">
           <div className="flex items-center gap-2 sm:gap-4">
             <button onClick={() => navigate(-1)} className="p-2 hover:bg-gray-100 rounded-lg transition-all flex-shrink-0"><ArrowLeft size={18} /></button>
@@ -99,9 +99,65 @@ const Reports: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
+      
 
       <div className="max-w-[1440px] mx-auto px-3 sm:px-6 pt-6 sm:pt-10">
+
+        {/* report summary and alert */}
+        <div className="mb-6 flex flex-col sm:flex-row gap-3">
+
+          {/* count card */}
+          <div
+            className={`flex-1 relative overflow-hidden rounded-2xl p-5 flex items-center gap-4 shadow-md ${
+              activeTab === 'received'
+                ? 'bg-gradient-to-br from-red-500 to-rose-600'
+                : 'bg-gradient-to-br from-blue-500 to-indigo-600'
+            }`}
+          >
+            {/* Background decorative circle */}
+            <div className="absolute -right-4 -top-4 w-24 h-24 rounded-full bg-white/10 pointer-events-none" />
+            <div className="absolute -right-2 -bottom-6 w-16 h-16 rounded-full bg-white/5 pointer-events-none" />
+
+            {/* Icon */}
+            <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center shadow-inner">
+              {activeTab === 'received'
+                ? <ShieldAlert size={22} className="text-white" />
+                : <Send size={20} className="text-white" />
+              }
+            </div>
+
+            {/* Text */}
+            <div className="z-10">
+              <p className="text-white text-[10px] font-bold uppercase tracking-widest leading-none mb-1">
+                {activeTab === 'received' ? 'Reports Against Me' : 'Reports Filed By Me'}
+              </p>
+              <p className="text-white text-4xl font-black leading-none">
+                {filteredReports.length}
+              </p>
+            </div>
+          </div>
+
+          {/* warning banner */}
+          <div className="flex-1 flex items-stretch bg-amber-50 border border-amber-200 rounded-2xl overflow-hidden shadow-sm">
+            {/* left accent bar */}
+            <div className="w-1.5 bg-gradient-to-b from-amber-400 to-orange-500 flex-shrink-0" />
+            <div className="flex flex-col justify-center gap-1 px-4 py-4">
+              <div className="flex items-center gap-2">
+                <span className="flex-shrink-0 w-7 h-7 rounded-lg bg-amber-100 flex items-center justify-center">
+                  <AlertTriangle size={15} className="text-amber-600" />
+                </span>
+                <p className="text-amber-900 font-black text-sm leading-snug">
+                  Account limit: <span className="text-orange-600">20 reports / month</span>
+                </p>
+              </div>
+              <p className="text-amber-700 text-xs font-medium pl-9 leading-snug">
+                Exceeding this will automatically block your account. Keep your ratings &amp; reputation healthy.
+              </p>
+            </div>
+          </div>
+
+        </div>
         
         {/* --- MAIN TAB SWITCHER --- */}
         <div className="flex gap-2 sm:gap-4 mb-6 sm:mb-8">
@@ -153,7 +209,6 @@ const Reports: React.FC = () => {
             </div>
           </div>
         </div>
-
         {/* Reports List */}
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-32"><Loader2 className="animate-spin text-[#d4a643] mb-4" size={48} /></div>
