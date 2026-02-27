@@ -151,6 +151,20 @@ import { useAuthHook } from "../../hook/useAuthHook";
 
 const ReferralProgram: React.FC = () => {
   const { data } = useAuthHook();
+
+  // route user to the correct dashboard based on their role
+  const dashboardRoute = React.useMemo(() => {
+    if (!data?.role) return "/dashboard";
+    switch (data.role) {
+      case "admin":
+        return "/admin-dashboard";
+      case "seller":
+        return "/seller-dashboard";
+      default:
+        return "/dashboard";
+    }
+  }, [data?.role]);
+
   const referralLink = `http://localhost:3000/register?ref=${data?.referralCode}`;
 
   const [copied, setCopied] = React.useState(false);
@@ -263,7 +277,7 @@ const ReferralProgram: React.FC = () => {
               "No self-referrals or fake accounts",
               "We reserve the right to cancel abusive referrals",
               "Follow all the website social media accounts",
-              "Post at least or repost 1 website video to qualify",
+              // "Post at least or repost 1 website video to qualify",
             ].map((rule, i) => (
               <li key={i} className="flex items-start gap-4">
                 <div className="mt-1.5">
@@ -278,7 +292,7 @@ const ReferralProgram: React.FC = () => {
         {/* CTA */}
         <div className="mt-20 text-center">
           <Link
-            to="/dashboard"
+            to={dashboardRoute}
             className="inline-flex items-center gap-4 px-12 py-6 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold text-xl rounded-2xl shadow-xl hover:shadow-2xl hover:from-emerald-500 hover:to-teal-500 transform hover:scale-105 transition-all duration-300"
           >
             Go to Dashboard
