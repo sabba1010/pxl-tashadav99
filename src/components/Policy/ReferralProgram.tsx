@@ -277,7 +277,8 @@ const ReferralProgram: React.FC = () => {
               "No self-referrals or fake accounts",
               "We reserve the right to cancel abusive referrals",
               "Follow all the website social media accounts",
-              // "Post at least or repost 1 website video to qualify",
+              "users must post or repost at least one official website video to qualify for referral bonus approval.",
+              "Users should DM admin support if their referral bonus has not yet been approved, so it can be reviewed and processed."
             ].map((rule, i) => (
               <li key={i} className="flex items-start gap-4">
                 <div className="mt-1.5">
@@ -290,12 +291,20 @@ const ReferralProgram: React.FC = () => {
         </div>
 
         {/* CTA */}
-        <div className="mt-20 text-center">
+        <div className="mt-20 text-center flex justify-center gap-6">
           <Link
             to={dashboardRoute}
             className="inline-flex items-center gap-4 px-12 py-6 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold text-xl rounded-2xl shadow-xl hover:shadow-2xl hover:from-emerald-500 hover:to-teal-500 transform hover:scale-105 transition-all duration-300"
           >
             Go to Dashboard
+            <ArrowRight className="w-7 h-7" />
+          </Link>
+
+          <Link
+            to="/seller-chat"
+            className="inline-flex items-center gap-4 px-12 py-6 bg-gray-700 text-white font-bold text-xl rounded-2xl shadow-lg hover:bg-gray-600 transform hover:scale-105 transition-all duration-300"
+          >
+            Admin Support
             <ArrowRight className="w-7 h-7" />
           </Link>
         </div>
