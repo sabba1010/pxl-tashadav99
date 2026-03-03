@@ -126,7 +126,7 @@
 //         }
 
 //         const response = await axios.get(
-//           `https://tasha-vps-backend-2.onrender.com/api/user/profile`,
+//           `http://localhost:3200/api/user/profile`,
 //           {
 //             headers: {
 //               Authorization: `Bearer ${token}`,
@@ -240,7 +240,7 @@
 //     setSavingPhone(true);
 //     try {
 //       const response = await axios.put(
-//         `https://tasha-vps-backend-2.onrender.com/api/user/update-phone`,
+//         `http://localhost:3200/api/user/update-phone`,
 //         {
 //           email: user?.email,
 //           phone: tempPhoneNumber.trim(),
@@ -590,7 +590,7 @@
 
 //     try {
 //       const response = await axios.put(
-//         `https://tasha-vps-backend-2.onrender.com/api/user/update-password`,
+//         `http://localhost:3200/api/user/update-password`,
 //         {
 //           email: user?.email,
 //           currentPassword,
@@ -1161,7 +1161,7 @@
 
 //     try {
 //       const response = await axios.put(
-//         `https://tasha-vps-backend-2.onrender.com/api/user/update-password`,
+//         `http://localhost:3200/api/user/update-password`,
 //         {
 //           email: user?.email,
 //           currentPassword,
@@ -1564,7 +1564,7 @@ const ProfileSection = () => {
       try {
         setLoading(true);
         // Fetch all users and find the current user by email
-        const response = await axios.get<any>(`https://tasha-vps-backend-2.onrender.com/api/user/getall`);
+        const response = await axios.get<any>(`http://localhost:3200/api/user/getall`);
         const allUsers = (response.data as any);
         
         // Find user by email
@@ -1634,7 +1634,7 @@ const ProfileSection = () => {
       }
 
       // Update user profile in the userCollection
-      const response = await axios.put<any>(`https://tasha-vps-backend-2.onrender.com/api/user/update-profile`, {
+      const response = await axios.put<any>(`http://localhost:3200/api/user/update-profile`, {
         email: user.email,
         name: formData.name,
         phone: formData.phone,
@@ -1651,7 +1651,7 @@ const ProfileSection = () => {
           try {
             for (const change of changes) {
               await axios.post(
-                `https://tasha-vps-backend-2.onrender.com/api/user/log-change`,
+                `http://localhost:3200/api/user/log-change`,
                 change
               );
               console.log('Logged change:', change);
@@ -1921,7 +1921,7 @@ const SecuritySection = () => {
 
     try {
       const response = await axios.put(
-        `https://tasha-vps-backend-2.onrender.com/api/user/update-password`,
+        `http://localhost:3200/api/user/update-password`,
         {
           email: user?.email,
           currentPassword,
@@ -1933,7 +1933,7 @@ const SecuritySection = () => {
         // Log the password change to admin dashboard
         try {
           await axios.post(
-            `https://tasha-vps-backend-2.onrender.com/api/user/log-change`,
+            `http://localhost:3200/api/user/log-change`,
             {
               userEmail: user?.email,
               fieldName: 'password',

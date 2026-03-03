@@ -27,7 +27,7 @@ import { useAuthHook } from "../../hook/useAuthHook";
 import { toast } from "sonner";
 import { formatToWAT } from "../../lib/timeUtils";
 
-const BASE_URL = "https://tasha-vps-backend-2.onrender.com";
+const BASE_URL = "http://localhost:3200";
 
 interface Order {
     _id: string;

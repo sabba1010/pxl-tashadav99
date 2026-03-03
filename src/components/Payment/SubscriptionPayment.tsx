@@ -77,7 +77,7 @@ const DeductAndCreditAction: React.FC<DeductAndCreditActionProps> = ({
 
     try {
       const response = await fetch(
-        `https://tasha-vps-backend-2.onrender.com/api/user/getall/${userId}`,
+        `http://localhost:3200/api/user/getall/${userId}`,
         {
           method: "POST",
           headers: {

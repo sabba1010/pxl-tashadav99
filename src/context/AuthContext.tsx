@@ -58,7 +58,7 @@
 //     const checkStatus = async () => {
 //       try {
 //         const res = await axios.get<StatusResponse>(
-//           `https://tasha-vps-backend-2.onrender.com/api/user/status?email=${encodeURIComponent(user.email)}`
+//           `http://localhost:3200/api/user/status?email=${encodeURIComponent(user.email)}`
 //         );
 
 //         if (cancelled) return;
@@ -112,7 +112,7 @@ import Cookies from "js-cookie";
 import axios from "axios";
 import { toast } from "sonner";
 
-const CHAT_API = "https://tasha-vps-backend-2.onrender.com/chat";
+const CHAT_API = "http://localhost:3200/chat";
 
 interface StatusResponse {
   success: boolean;
@@ -187,7 +187,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const checkStatus = async () => {
       try {
         const res = await axios.get<StatusResponse>(
-          `https://tasha-vps-backend-2.onrender.com/api/user/status?email=${encodeURIComponent(user.email)}`
+          `http://localhost:3200/api/user/status?email=${encodeURIComponent(user.email)}`
         );
 
         if (cancelled) return;
