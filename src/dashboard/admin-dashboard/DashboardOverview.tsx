@@ -230,29 +230,21 @@ const DashboardOverview: React.FC = () => {
       </div>
 
       {/* Main Financial Hub */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <MetricCard
           title="Admin Total Balance"
-          value={`$${displayMetrics.adminWalletBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+          value={`$${displayMetrics.availableAdminBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
           variant="balance"
-          subtitle="Total System Turnover"
+          subtitle="Available 20% Platform Commission"
           icon={<AccountBalanceWallet sx={{ color: "#059669", fontSize: 32 }} />}
           isLoading={loading}
         />
         <MetricCard
-          title="System Turnover"
+          title="Total Sales Volume"
           value={`$${displayMetrics.currentSystemTurnover.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-          variant="info"
-          subtitle="Total volume of completed sales"
-          icon={<TrendingUp sx={{ color: "#2563EB", fontSize: 32 }} />}
-          isLoading={loading}
-        />
-        <MetricCard
-          title="Available Platform Profit"
-          value={`$${displayMetrics.availableAdminBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
           variant="success"
-          subtitle="Current wallet platform profit"
-          icon={<AccountBalanceWallet sx={{ color: "#10B981", fontSize: 32 }} />}
+          subtitle="Total Buyer to Seller Volume (100%)"
+          icon={<TrendingUp sx={{ color: "#10B981", fontSize: 32 }} />}
           isLoading={loading}
         />
         <MetricCard
@@ -267,7 +259,7 @@ const DashboardOverview: React.FC = () => {
           title="Lifetime Platform Profit"
           value={`$${displayMetrics.lifetimeEarnings.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
           variant="profit"
-          subtitle="Total 20% commission earned"
+          subtitle="Total 20% commission earned since launch"
           icon={<TrendingUp sx={{ color: "#B45309", fontSize: 32 }} />}
           isLoading={loading}
         />
