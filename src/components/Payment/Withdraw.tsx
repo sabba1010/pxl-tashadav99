@@ -183,7 +183,7 @@ const WithdrawForm: React.FC = () => {
       return;
     }
 
-    if (!formData.accountNumber || !formData.bankCode || !formData.fullName) {
+    if (!formData.accountNumber || !formData.bankName || !formData.fullName) {
       setMessage({ text: "Bank account details are required", type: "error" });
       return;
     }
@@ -215,13 +215,13 @@ const WithdrawForm: React.FC = () => {
         amount: Number(amountNum), // Ensure number
         currency: "USD", // Force USD as per requirement
         accountNumber: formData.accountNumber,
-        bankCode: formData.bankCode,
+        bankCode: formData.bankCode || formData.bankName,
         fullName: formData.fullName,
         accountName: formData.fullName, // Add accountName alias for clarity
         phoneNumber: formData.phoneNumber || null,
         email: formData.email || null,
         note: formData.note || null,
-        bankName: formData.bankName || null,
+        bankName: formData.bankName,
       };
 
       const withdrawResponse = await fetch(
@@ -429,8 +429,8 @@ const WithdrawForm: React.FC = () => {
                   <p className="font-semibold text-gray-800 truncate">{savedBankAccount.accountNumber}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-600">Bank Name</p>
-                  <p className="font-semibold text-gray-800">{savedBankAccount.bankCode}</p>
+                  <p className="text-xs text-gray-600">Bank Code</p>
+                  <p className="font-semibold text-gray-800">{savedBankAccount.bankCode || "N/A"}</p>
                 </div>
               </div>
             </div>
@@ -453,8 +453,8 @@ const WithdrawForm: React.FC = () => {
               <label className="block font-medium mb-2">Bank Name *</label>
               <input
                 type="text"
-                name="bankCode"
-                value={formData.bankCode}
+                name="bankName"
+                value={formData.bankName}
                 onChange={handleChange}
                 placeholder="e.g. Access Bank"
                 className="w-full px-6 py-4 border-2 border-gray-300 rounded-xl focus:border-[#D4A017] transition"
@@ -479,17 +479,6 @@ const WithdrawForm: React.FC = () => {
 
           {paymentMethod === "localbank" && (
             <div className="mt-6">
-              <label className="block font-medium mb-2">Bank Name *</label>
-              <input
-                type="text"
-                name="bankName"
-                value={formData.bankName}
-                onChange={handleChange}
-                placeholder="e.g. First Bank of Nigeria"
-                className="w-full px-6 py-4 border-2 border-gray-300 rounded-xl focus:border-[#D4A017] transition"
-                required={paymentMethod === "localbank"}
-              />
-
               <button
                 type="button"
                 onClick={handleSaveBankAccount}
