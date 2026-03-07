@@ -126,14 +126,14 @@ export default function AnnouncementBar() {
                     }
                 `}
             </style>
-            <div className="max-w-7xl mx-auto flex items-start sm:items-center relative px-2 sm:px-8 overflow-hidden h-full">
+            <div className="max-w-7xl mx-auto flex items-center relative px-2 sm:px-8 overflow-hidden h-full py-1">
                 {/* FIXED TITLE SECTION */}
-                <div className="flex items-center gap-x-1 sm:gap-x-2 flex-shrink-0 z-10 pr-1 sm:pr-2 py-0.5">
+                <div className="flex items-center gap-x-1.5 sm:gap-x-3 flex-shrink-0 z-10">
                     <Megaphone className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-[#D4A643]" />
                     <span className="font-bold text-[#D4A643] text-xs sm:text-sm uppercase tracking-wider">
                         {currentAnnouncement.title}
                     </span>
-                    <span className="text-white/40 text-xs sm:text-sm px-1">·</span>
+                    <span className="text-white/40 text-xs sm:text-sm px-1.5 opacity-60">·</span>
                 </div>
 
                 {/* ADAPTIVE SECTION - ONLY SCROLLS IF OVERFLOWING */}
@@ -142,17 +142,17 @@ export default function AnnouncementBar() {
                     ref={containerRef}
                 >
                     <div
-                        className={`inline-flex items-center ${isOverflowing ? 'animate-marquee gap-x-8 sm:gap-x-16 whitespace-nowrap' : 'justify-center text-center'} min-w-full py-0.5`}
+                        className={`flex items-center ${isOverflowing ? 'animate-marquee gap-x-8 sm:gap-x-16 whitespace-nowrap' : 'justify-center'} min-w-full`}
                         ref={contentRef}
                     >
                         {/* Set 1 */}
-                        <span className="text-xs sm:text-sm text-white/90 leading-tight">
+                        <span className="text-xs sm:text-sm text-white/95 leading-normal text-center px-2">
                             {currentAnnouncement.message || currentAnnouncement.description}
                         </span>
 
                         {/* Set 2 for seamless loop - ONLY RENDER IF OVERFLOWING */}
                         {isOverflowing && (
-                            <span className="text-xs sm:text-sm text-white/90 leading-tight">
+                            <span className="text-xs sm:text-sm text-white/95 leading-normal text-center px-2">
                                 {currentAnnouncement.message || currentAnnouncement.description}
                             </span>
                         )}
@@ -160,17 +160,17 @@ export default function AnnouncementBar() {
                 </div>
 
                 {/* RIGHT SIDE (Link & Close) */}
-                <div className="flex items-center gap-1.5 sm:gap-4 flex-shrink-0 z-10 ml-2 py-0.5">
+                <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0 z-10 ml-2">
                     {/* FIXED LINK SECTION */}
                     {currentAnnouncement.link && (
-                        <div className="pl-1.5 sm:pl-4 border-l border-white/20">
+                        <div className="pl-2 sm:pl-4 border-l border-white/20">
                             <a
                                 href={currentAnnouncement.link}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1 sm:gap-1.5 rounded-full bg-white/10 px-2.5 py-0.5 text-[10px] sm:text-xs font-semibold text-white ring-1 ring-inset ring-white/20 hover:bg-white/20 transition-all flex-shrink-0"
+                                className="inline-flex items-center gap-1 sm:gap-1.5 rounded-full bg-white/10 px-3 py-0.5 text-[10px] sm:text-xs font-semibold text-white ring-1 ring-inset ring-white/20 hover:bg-white/20 transition-all flex-shrink-0"
                             >
-                                <span className="hidden sm:inline">Learn more</span>
+                                <span className={`${isOverflowing ? 'inline' : 'hidden sm:inline'}`}>Learn more</span>
                                 <ArrowRight className="h-3 w-3" />
                             </a>
                         </div>
