@@ -456,7 +456,7 @@ const WithdrawForm: React.FC = () => {
                 name="bankCode"
                 value={formData.bankCode}
                 onChange={handleChange}
-                placeholder="e.g. 044"
+                placeholder="e.g. Access Bank"
                 className="w-full px-6 py-4 border-2 border-gray-300 rounded-xl focus:border-[#D4A017] transition"
                 required
               />
@@ -510,7 +510,7 @@ const WithdrawForm: React.FC = () => {
               name="phoneNumber"
               value={formData.phoneNumber}
               onChange={handleChange}
-              placeholder="+880..."
+              placeholder="+234..."
               className="w-full px-6 py-4 border-2 border-gray-200 rounded-xl focus:border-[#D4A017] transition"
             />
           </div>
