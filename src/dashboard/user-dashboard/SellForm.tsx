@@ -121,7 +121,7 @@ const SellForm: React.FC = () => {
     const fetchPlatforms = async () => {
       try {
         const response = await axios.get<{ data: Platform[] }>(
-          "http://localhost:3200/icon-data"
+          "http://72.244.153.24:3200/icon-data"
         );
         const data = Array.isArray(response.data)
           ? response.data
@@ -160,7 +160,7 @@ const SellForm: React.FC = () => {
 
       try {
         const response = await axios.get<{ salesCredit: number }>(
-          `http://localhost:3200/product/credit?email=${encodeURIComponent(
+          `http://72.244.153.24:3200/product/credit?email=${encodeURIComponent(
             user.email
           )}`
         );
@@ -330,7 +330,7 @@ const SellForm: React.FC = () => {
 
       try {
         const response = await axios.post<SellResponse>(
-          "http://localhost:3200/product/sell",
+          "http://72.244.153.24:3200/product/sell",
           { products: accountsToSubmit }
         );
 
@@ -363,7 +363,7 @@ const SellForm: React.FC = () => {
 
       try {
         const response = await axios.post<SellResponse>(
-          "http://localhost:3200/product/sell",
+          "http://72.244.153.24:3200/product/sell",
           { products: [formData] }
         );
 

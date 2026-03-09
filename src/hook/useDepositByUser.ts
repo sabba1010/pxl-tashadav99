@@ -22,7 +22,7 @@ export interface Payment {
    ❌ NO hooks here
 ========================= */
 const fetchPaymentsByEmail = async (email: string): Promise<Payment[]> => {
-  const res = await axios.get<Payment[]>("http://localhost:3200/api/payments");
+  const res = await axios.get<Payment[]>("http://72.244.153.24:3200/api/payments");
 
   return res.data.filter((payment) => payment.customerEmail === email);
 };

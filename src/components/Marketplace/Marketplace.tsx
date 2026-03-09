@@ -81,7 +81,7 @@ interface Item {
 
 type SubcatState = Record<string, string[]>;
 
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:3200";
+const API_URL = process.env.REACT_APP_API_URL || "http://72.244.153.24:3200";
 
 const CATEGORY_MAP: Record<string, string[]> = {
   "Social Media": [
@@ -1294,7 +1294,7 @@ export default Marketplace;
 
 // type SubcatState = Record<string, string[]>;
 
-// const API_URL = process.env.REACT_APP_API_URL || "http://localhost:3200";
+// const API_URL = process.env.REACT_APP_API_URL || "http://72.244.153.24:3200";
 
 // const CATEGORY_MAP: Record<string, string[]> = {
 //   "Social Media": [

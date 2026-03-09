@@ -38,7 +38,7 @@ import AnnouncementBar from "./AnnouncementBar";
 const FaBreadSliceIcon = FaBreadSlice as unknown as React.ComponentType<any>;
 
 // API URL
-const API_URL = "http://localhost:3200/api/notification";
+const API_URL = "http://72.244.153.24:3200/api/notification";
 
 type NItem = {
   _id?: string;

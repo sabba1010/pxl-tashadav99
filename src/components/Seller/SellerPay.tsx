@@ -11,7 +11,7 @@ import { sendNotification } from "../../components/Notification/Notification";
 // Components
 import Loading from "../../components/Loading"; // ✅ আপনার কাস্টম লোডিং কম্পোনেন্ট
 
-const API_URL = "http://localhost:3200";
+const API_URL = "http://72.244.153.24:3200";
 
 const SellerPay = () => {
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);

@@ -38,7 +38,7 @@ const Post: React.FC = () => {
 
     try {
       const res = await axios.post(
-        "http://localhost:3200/api/notification/notify",
+        "http://72.244.153.24:3200/api/notification/notify",
         formData
       );
 

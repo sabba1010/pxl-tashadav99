@@ -46,7 +46,7 @@ const Login = () => {
 
     try {
       const res = await axios.post<{ success: any; user: any }>(
-        "http://localhost:3200/api/user/login",
+        "http://72.244.153.24:3200/api/user/login",
         {
           email,
           password,

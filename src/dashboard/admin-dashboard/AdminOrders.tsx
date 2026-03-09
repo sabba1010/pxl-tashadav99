@@ -27,7 +27,7 @@ import { useAuthHook } from "../../hook/useAuthHook";
 import { toast } from "sonner";
 import { formatToWAT } from "../../lib/timeUtils";
 
-const BASE_URL = "http://localhost:3200";
+const BASE_URL = "http://72.244.153.24:3200";
 
 interface Order {
     _id: string;

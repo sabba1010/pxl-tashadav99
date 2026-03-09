@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-const API_URL = "http://localhost:3200";
+const API_URL = "http://72.244.153.24:3200";
 
 type Msg = { text: string; type?: "success" | "error" | "info" } | null;
 

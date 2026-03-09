@@ -38,7 +38,7 @@ const ITEMS_PER_PAGE = 15;
 
 /* ====================== API FUNCTIONS ====================== */
 const fetchPayments = async (): Promise<Payment[]> => {
-  const response = await axios.get("http://localhost:3200/api/payments");
+  const response = await axios.get("http://72.244.153.24:3200/api/payments");
   return response.data as Payment[];
 };
 
