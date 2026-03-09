@@ -120,10 +120,10 @@ export default function Footer({ theme = "dark" }: Props) {
               <li className="flex items-start gap-3">
                 <Mail className="w-5 h-5 text-[#33ac6f] mt-0.5 flex-shrink-0" />
                 <a
-                  href="mailto:support@acctempire.com"
+                  href="mailto:help@acctempire.com"
                   className={`hover:text-[#33ac6f] ${isDark ? "text-gray-300" : "text-gray-600"}`}
                 >
-                  support@acctempire.com
+                  help@acctempire.com
                 </a>
               </li>
               {/* <li className="flex items-start gap-3">
