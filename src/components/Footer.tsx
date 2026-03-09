@@ -111,9 +111,8 @@ export default function Footer({ theme = "dark" }: Props) {
             </ul>  */}
           </div>
 
-
-
           {/* Contact Info */}
+          
           <div >
             <h3 className={sectionTitleClass}>Get in Touch</h3>
             <ul className="mt-6 space-y-4 text-sm">
