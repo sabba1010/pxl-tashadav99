@@ -27,7 +27,7 @@ const ReferralProgram: React.FC = () => {
     }
   }, [data?.role]);
 
-  const referralLink = `http://localhost:3000/register?ref=${data?.referralCode}`;
+  const referralLink = `https://acctempire.com/register?ref=${data?.referralCode}`;
 
   const [copied, setCopied] = React.useState(false);
 
