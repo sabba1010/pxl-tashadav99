@@ -8,7 +8,7 @@ import {
   Upload, RefreshCw, Wallet, Eye, EyeOff
 } from "lucide-react";
 
-const API_BASE_URL = "http://72.244.153.24:3200/api/user";
+const API_BASE_URL = "https://acctempire.com/api/api/user";
 
 // ────────────────────────────────────────────────
 // Types

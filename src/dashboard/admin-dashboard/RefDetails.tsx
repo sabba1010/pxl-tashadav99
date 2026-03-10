@@ -30,7 +30,7 @@ const RefDetails = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const res = await axios.get<UserType[]>("http://72.244.153.24:3200/api/user/getall");
+      const res = await axios.get<UserType[]>("https://acctempire.com/api/api/user/getall");
       const users = [...res.data].reverse();
       setAllUsers(users);
       setReferralUsers(users.filter((u) => u.referredBy));
@@ -102,7 +102,7 @@ const RefDetails = () => {
 
     setUpdatingId(userId);
     try {
-      await axios.patch("http://72.244.153.24:3200/api/user/admin/update-referral-status", {
+      await axios.patch("https://acctempire.com/api/api/user/admin/update-referral-status", {
         userId,
         status,
         rejectionReason: reason,

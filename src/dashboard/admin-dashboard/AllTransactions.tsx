@@ -32,7 +32,7 @@ const AllTransactions: React.FC = () => {
         setLoading(true);
         setError(null);
 
-        const response = await fetch("http://72.244.153.24:3200/api/payments");
+        const response = await fetch("https://acctempire.com/api/api/payments");
 
         if (!response.ok) {
           throw new Error(`Failed to fetch: ${response.status}`);

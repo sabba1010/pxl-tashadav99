@@ -46,7 +46,7 @@ const Payment: React.FC = () => {
             ngnToUsdRate?: number;
             depositRate?: number;
           };
-        }>("http://72.244.153.24:3200/api/settings");
+        }>("https://acctempire.com/api/api/settings");
         if (res.data.success) {
           setExchangeRate(res.data.settings.depositRate || res.data.settings.ngnToUsdRate || 1500);
         }
@@ -68,7 +68,7 @@ const Payment: React.FC = () => {
         toast.info("Verifying payment...");
 
         const res = await axios.get<ApiResponse>(
-          "http://72.244.153.24:3200/flutterwave/verify",
+          "https://acctempire.com/api/flutterwave/verify",
           { params: { tx_ref } }
         );
 
@@ -110,7 +110,7 @@ const Payment: React.FC = () => {
       setLoading("flw");
 
       const res = await axios.post<ApiResponse>(
-        "http://72.244.153.24:3200/flutterwave/create",
+        "https://acctempire.com/api/flutterwave/create",
         {
           amount: finalAmount,
           email: userEmail,
@@ -138,7 +138,7 @@ const Payment: React.FC = () => {
       setLoading("kora");
 
       const res = await axios.post<ApiResponse>(
-        "http://72.244.153.24:3200/korapay/create",
+        "https://acctempire.com/api/korapay/create",
         {
           amount: finalAmount,
           email: userEmail,

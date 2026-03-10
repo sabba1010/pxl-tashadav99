@@ -178,7 +178,7 @@ const RenderIcon = ({
     );
 };
 
-const API_URL = process.env.REACT_APP_API_URL || "http://72.244.153.24:3200";
+const API_URL = process.env.REACT_APP_API_URL || "https://acctempire.com/api";
 
 interface SellerReputation {
     sellerEmail: string;

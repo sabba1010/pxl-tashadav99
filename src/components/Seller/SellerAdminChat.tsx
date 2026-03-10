@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import io, { Socket } from 'socket.io-client';
 
 // ──────────────────────────────────────────────
-const BASE_URL = "http://72.244.153.24:3200";
+const BASE_URL = "https://acctempire.com/api";
 const ADMIN_CHAT_API = `${BASE_URL}/api/adminchat`;
 const SOCKET_URL = BASE_URL; // Assume backend has socket.io setup at same base
 

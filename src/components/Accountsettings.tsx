@@ -126,7 +126,7 @@
 //         }
 
 //         const response = await axios.get(
-//           `http://72.244.153.24:3200/api/user/profile`,
+//           `https://acctempire.com/api/api/user/profile`,
 //           {
 //             headers: {
 //               Authorization: `Bearer ${token}`,
@@ -240,7 +240,7 @@
 //     setSavingPhone(true);
 //     try {
 //       const response = await axios.put(
-//         `http://72.244.153.24:3200/api/user/update-phone`,
+//         `https://acctempire.com/api/api/user/update-phone`,
 //         {
 //           email: user?.email,
 //           phone: tempPhoneNumber.trim(),
@@ -590,7 +590,7 @@
 
 //     try {
 //       const response = await axios.put(
-//         `http://72.244.153.24:3200/api/user/update-password`,
+//         `https://acctempire.com/api/api/user/update-password`,
 //         {
 //           email: user?.email,
 //           currentPassword,
@@ -1161,7 +1161,7 @@
 
 //     try {
 //       const response = await axios.put(
-//         `http://72.244.153.24:3200/api/user/update-password`,
+//         `https://acctempire.com/api/api/user/update-password`,
 //         {
 //           email: user?.email,
 //           currentPassword,
@@ -1564,7 +1564,7 @@ const ProfileSection = () => {
       try {
         setLoading(true);
         // Fetch all users and find the current user by email
-        const response = await axios.get<any>(`http://72.244.153.24:3200/api/user/getall`);
+        const response = await axios.get<any>(`https://acctempire.com/api/api/user/getall`);
         const allUsers = (response.data as any);
         
         // Find user by email
@@ -1634,7 +1634,7 @@ const ProfileSection = () => {
       }
 
       // Update user profile in the userCollection
-      const response = await axios.put<any>(`http://72.244.153.24:3200/api/user/update-profile`, {
+      const response = await axios.put<any>(`https://acctempire.com/api/api/user/update-profile`, {
         email: user.email,
         name: formData.name,
         phone: formData.phone,
@@ -1651,7 +1651,7 @@ const ProfileSection = () => {
           try {
             for (const change of changes) {
               await axios.post(
-                `http://72.244.153.24:3200/api/user/log-change`,
+                `https://acctempire.com/api/api/user/log-change`,
                 change
               );
               console.log('Logged change:', change);
@@ -1921,7 +1921,7 @@ const SecuritySection = () => {
 
     try {
       const response = await axios.put(
-        `http://72.244.153.24:3200/api/user/update-password`,
+        `https://acctempire.com/api/api/user/update-password`,
         {
           email: user?.email,
           currentPassword,
@@ -1933,7 +1933,7 @@ const SecuritySection = () => {
         // Log the password change to admin dashboard
         try {
           await axios.post(
-            `http://72.244.153.24:3200/api/user/log-change`,
+            `https://acctempire.com/api/api/user/log-change`,
             {
               userEmail: user?.email,
               fieldName: 'password',

@@ -25,7 +25,7 @@ export const useAuthHook = () => {
 
       // axios generic diye type specify kora holo
       const res = await axios.get<User[]>(
-        "http://72.244.153.24:3200/api/user/getall"
+        "https://acctempire.com/api/api/user/getall"
       );
       const allUsers = res.data; // type ekhon User[]
 

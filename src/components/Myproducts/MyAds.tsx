@@ -69,7 +69,7 @@ const MyAds: React.FC = () => {
     setLoading(true);
     try {
       const res = await axios.get<Ad[]>(
-        `http://72.244.153.24:3200/product/all-sells?userEmail=${user.user?.email}`
+        `https://acctempire.com/api/product/all-sells?userEmail=${user.user?.email}`
       );
 
       const userAds = res.data.filter(
@@ -164,7 +164,7 @@ const MyAds: React.FC = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await axios.delete(`http://72.244.153.24:3200/product/delete/${id}`);
+          await axios.delete(`https://acctempire.com/api/product/delete/${id}`);
           setItems((prev) => prev.filter((it) => it._id !== id));
           toast.success("Ad deleted successfully");
         } catch (err) {
@@ -217,7 +217,7 @@ const MyAds: React.FC = () => {
       };
 
       await axios.patch(
-        `http://72.244.153.24:3200/product/update/${editingAd._id}`,
+        `https://acctempire.com/api/product/update/${editingAd._id}`,
         updateData
       );
 

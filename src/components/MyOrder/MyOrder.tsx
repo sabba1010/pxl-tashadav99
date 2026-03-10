@@ -287,7 +287,7 @@ const MyOrder: React.FC = () => {
   const loginUserData = useAuthHook();
   const sellerId = loginUserData.data?.email || localStorage.getItem("userEmail");
 
-  const BASE_URL = "http://72.244.153.24:3200";
+  const BASE_URL = "https://acctempire.com/api";
   const PURCHASE_API = `${BASE_URL}/purchase`;
   const CHAT_API = `${BASE_URL}/chat`;
   const USER_API = `${BASE_URL}/user`;

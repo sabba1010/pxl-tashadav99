@@ -62,7 +62,7 @@ const TestPayment: React.FC<TestPaymentProps> = ({ amount }) => {
           try {
             // Backend-এ verify করি
             const verifyRes = await fetch(
-              "http://72.244.153.24:3200/api/verify-payment",
+              "https://acctempire.com/api/api/verify-payment",
               {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -80,7 +80,7 @@ const TestPayment: React.FC<TestPaymentProps> = ({ amount }) => {
 
               // Balance update
               const balanceRes = await fetch(
-                "http://72.244.153.24:3200/api/update-balance",
+                "https://acctempire.com/api/api/update-balance",
                 {
                   method: "PATCH",
                   headers: { "Content-Type": "application/json" },

@@ -77,7 +77,7 @@ const DeductAndCreditAction: React.FC<DeductAndCreditActionProps> = ({
 
     try {
       const response = await fetch(
-        `http://72.244.153.24:3200/api/user/getall/${userId}`,
+        `https://acctempire.com/api/api/user/getall/${userId}`,
         {
           method: "POST",
           headers: {

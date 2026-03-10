@@ -21,7 +21,7 @@ export type NotificationPayload = {
 
 // --- Config & Helpers ---
 const API_BASE =
-  process.env.REACT_APP_API_URL?.replace(/\/$/, "") ?? "http://72.244.153.24:3200";
+  process.env.REACT_APP_API_URL?.replace(/\/$/, "") ?? "https://acctempire.com/api";
 
 function getAuthHeaders(): Record<string, string> {
   const token = localStorage.getItem("token");

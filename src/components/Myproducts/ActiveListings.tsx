@@ -15,7 +15,7 @@ type Ad = {
   userEmail?: string;
 };
 
-const API = "http://72.244.153.24:3200";
+const API = "https://acctempire.com/api";
 
 const ActiveListings: React.FC = () => {
   const { user } = useAuth();

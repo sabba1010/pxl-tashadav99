@@ -16,7 +16,7 @@ const Chat: React.FC = () => {
 
     const senderId = "buyer123"; 
     const receiverId = "seller456"; 
-    const API_URL = "http://72.244.153.24:3200/chat"; 
+    const API_URL = "https://acctempire.com/api/chat"; 
 
     const fetchChats = async () => {
         try {

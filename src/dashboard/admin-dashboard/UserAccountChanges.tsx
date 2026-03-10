@@ -34,7 +34,7 @@ interface AccountChange {
   ipAddress: string;
 }
 
-const BASE_URL = "http://72.244.153.24:3200";
+const BASE_URL = "https://acctempire.com/api";
 const ITEMS_PER_PAGE = 10;
 
 export default function UserAccountChanges() {

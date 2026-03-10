@@ -80,7 +80,7 @@ interface Seller {
   countryCode?: string;
 }
 
-const BASE_URL = "http://72.244.153.24:3200";
+const BASE_URL = "https://acctempire.com/api";
 const ADMIN_CHAT_API = `${BASE_URL}/api/adminchat`;
 const USER_API = `${BASE_URL}/api/user`;
 

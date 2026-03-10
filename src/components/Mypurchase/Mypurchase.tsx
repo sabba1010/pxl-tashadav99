@@ -331,7 +331,7 @@ const MyPurchase: React.FC = () => {
   const [isRatingModalOpen, setIsRatingModalOpen] = useState(false);
   const [ratingTargetOrder, setRatingTargetOrder] = useState<Purchase | null>(null);
 
-  const BASE_URL = "http://72.244.153.24:3200";
+  const BASE_URL = "https://acctempire.com/api";
   const PURCHASE_API = `${BASE_URL}/purchase`;
   const CHAT_API = `${BASE_URL}/chat`;
 
