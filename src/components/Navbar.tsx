@@ -1,4 +1,4 @@
-﻿import { Button } from "@mui/material";
+import { Button } from "@mui/material";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { FaBreadSlice, FaTrash } from "react-icons/fa";
 import { Link, NavLink, useNavigate, useLocation } from "react-router-dom";
@@ -37,8 +37,10 @@ import AnnouncementBar from "./AnnouncementBar";
 
 const FaBreadSliceIcon = FaBreadSlice as unknown as React.ComponentType<any>;
 
+import { API_BASE_URL } from "../config";
+
 // API URL
-const API_URL = "http://localhost:3200/api/notification";
+const API_URL = `${API_BASE_URL}/notification`;
 
 type NItem = {
   _id?: string;

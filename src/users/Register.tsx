@@ -229,6 +229,7 @@ import Cookies from "js-cookie";
 import { useAuth } from "../context/AuthContext";
 import countryCodes from "../assets/Country/CountryCodes.json";
 import countryFlags from "../assets/Country/country-flag.json";
+import { API_BASE_URL } from "../config";
 
 // --- TypeScript টাইপ ---
 interface RegisterResponse {
@@ -327,7 +328,7 @@ const Register = () => {
 
     try {
       const res = await axios.post<RegisterResponse>(
-        "http://localhost:3200/api/user/register",
+        `${API_BASE_URL}/user/register`,
         formData
       );
 

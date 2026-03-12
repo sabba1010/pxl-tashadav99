@@ -52,6 +52,7 @@ import { sendNotification } from "../Notification/Notification";
 import { useAuth } from "../../context/AuthContext";
 import { toast } from "sonner";
 import { useAuthHook } from "../../hook/useAuthHook";
+import { API_BASE_URL } from "../../config";
 
 const StarIcon = FaStar as React.ElementType;
 const ShoppingCartIcon = FaShoppingCart as React.ElementType;
@@ -81,7 +82,7 @@ interface Item {
 
 type SubcatState = Record<string, string[]>;
 
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:3200";
+const API_URL = API_BASE_URL;
 
 const CATEGORY_MAP: Record<string, string[]> = {
   "Social Media": [

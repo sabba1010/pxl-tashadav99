@@ -6,6 +6,7 @@
 // import ListingsManagement from './Listings/ListingsManagement';
 // import axios from 'axios';
 // import { toast } from 'sonner';
+import { API_BASE_URL } from '../config';
 
 // const AccountSettings = () => {
 //   const [activeTab, setActiveTab] = useState('profile');
@@ -126,7 +127,7 @@
 //         }
 
 //         const response = await axios.get(
-//           `http://localhost:3200/api/user/profile`,
+//           `${API_BASE_URL}/user/profile`,
 //           {
 //             headers: {
 //               Authorization: `Bearer ${token}`,
@@ -240,7 +241,7 @@
 //     setSavingPhone(true);
 //     try {
 //       const response = await axios.put(
-//         `http://localhost:3200/api/user/update-phone`,
+//         `${API_BASE_URL}/user/update-phone`,
 //         {
 //           email: user?.email,
 //           phone: tempPhoneNumber.trim(),
@@ -1921,7 +1922,7 @@ const SecuritySection = () => {
 
     try {
       const response = await axios.put(
-        `http://localhost:3200/api/user/update-password`,
+        `${API_BASE_URL}/user/update-password`,
         {
           email: user?.email,
           currentPassword,

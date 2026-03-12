@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { API_BASE_URL } from '../config';
 
 // 1. Message er structure define kora
 interface IMessage {
@@ -16,7 +17,7 @@ const Chat: React.FC = () => {
 
     const senderId = "buyer123"; 
     const receiverId = "seller456"; 
-    const API_URL = "http://localhost:3200/chat"; 
+    const API_URL = `${API_BASE_URL}/chat`; 
 
     const fetchChats = async () => {
         try {

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
+import { API_BASE_URL } from "../../config";
 
-const API_URL = "http://localhost:3200";
+const API_URL = API_BASE_URL;
 
 type Msg = { text: string; type?: "success" | "error" | "info" } | null;
 
@@ -21,7 +22,7 @@ const AdminSettings: React.FC = () => {
   useEffect(() => {
     const load = async () => {
       try {
-        const res = await fetch(`${API_URL}/api/settings`);
+        const res = await fetch(`${API_URL}/settings`);
         if (!res.ok) return;
         const data = await res.json();
         const s = data?.settings || {};
@@ -45,7 +46,7 @@ const AdminSettings: React.FC = () => {
     }
     setFeeLoading(true);
     try {
-      const res = await fetch(`${API_URL}/api/settings`, {
+      const res = await fetch(`${API_URL}/settings`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ registrationFee: Number(fee) }),
@@ -75,7 +76,7 @@ const AdminSettings: React.FC = () => {
     }
     setBuyerLoading(true);
     try {
-      const res = await fetch(`${API_URL}/api/settings`, {
+      const res = await fetch(`${API_URL}/settings`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ buyerDepositRate: Number(buyerDepositRate) }),
@@ -107,7 +108,7 @@ const AdminSettings: React.FC = () => {
     }
     setDepositLoading(true);
     try {
-      const res = await fetch(`${API_URL}/api/settings`, {
+      const res = await fetch(`${API_URL}/settings`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ depositRate: Number(depositRate) }),
@@ -137,7 +138,7 @@ const AdminSettings: React.FC = () => {
     }
     setWithdrawLoading(true);
     try {
-      const res = await fetch(`${API_URL}/api/settings`, {
+      const res = await fetch(`${API_URL}/settings`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ withdrawRate: Number(withdrawRate) }),

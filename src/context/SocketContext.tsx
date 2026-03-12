@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 import axios from 'axios';
 import { useAuth } from './AuthContext';
+import { API_BASE_URL, SOCKET_URL } from '../config';
 
 interface SocketContextType {
     socket: Socket | null;
@@ -31,7 +32,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const userId = user?.email;
 
     useEffect(() => {
-        const newSocket = io("http://localhost:3200"); // Adjust URL for production
+        const newSocket = io(SOCKET_URL); 
         setSocket(newSocket);
 
         newSocket.on('connect', () => {
@@ -76,7 +77,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     const fetchInitialCounts = async (uid: string) => {
         try {
-            const res = await axios.get<Record<string, number>>(`http://localhost:3200/chat/unread/counts/${uid}`);
+            const res = await axios.get<Record<string, number>>(`${API_BASE_URL}/chat/unread/counts/${uid}`);
             const counts = res.data; // Now correctly inferred as Record<string, number>
             const countMap = new Map<string, number>();
             Object.keys(counts).forEach(key => {
@@ -98,7 +99,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
         if (socket && userId) {
             // Also call API
-            axios.post(`http://localhost:3200/chat/mark-read`, { userId, orderId })
+            axios.post(`${API_BASE_URL}/chat/mark-read`, { userId, orderId })
                 .catch(err => console.error(err));
         }
     };

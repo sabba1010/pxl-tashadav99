@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../context/AuthContext";
+import { API_BASE_URL } from "../config";
 
 /* =========================
    Types
@@ -22,7 +23,7 @@ export interface Payment {
    ❌ NO hooks here
 ========================= */
 const fetchPaymentsByEmail = async (email: string): Promise<Payment[]> => {
-  const res = await axios.get<Payment[]>("http://localhost:3200/api/payments");
+  const res = await axios.get<Payment[]>(`${API_BASE_URL}/payments`);
 
   return res.data.filter((payment) => payment.customerEmail === email);
 };

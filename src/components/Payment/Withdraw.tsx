@@ -55,7 +55,7 @@ const WithdrawForm: React.FC = () => {
   useEffect(() => {
     const fetchRate = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/settings`);
+        const res = await fetch(`${API_BASE_URL}/settings`);
         const data = await res.json();
         if (data.success) {
           setWithdrawRate(data.settings.withdrawRate || 1400);
@@ -80,7 +80,7 @@ const WithdrawForm: React.FC = () => {
       if (!data?._id) return;
 
       try {
-        const response = await fetch(`${API_BASE_URL}/api/user/get-bank-account/${data._id}`);
+        const response = await fetch(`${API_BASE_URL}/user/get-bank-account/${data._id}`);
         const result = await response.json();
 
         if (result.success && result.bankDetails) {
@@ -131,7 +131,7 @@ const WithdrawForm: React.FC = () => {
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/user/save-bank-account`, {
+      const response = await fetch(`${API_BASE_URL}/user/save-bank-account`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -260,7 +260,7 @@ const WithdrawForm: React.FC = () => {
         // Save bank account for local bank method
         if (paymentMethod === "localbank" && formData.bankName) {
           try {
-            await fetch(`${API_BASE_URL}/api/user/save-bank-account`, {
+            await fetch(`${API_BASE_URL}/user/save-bank-account`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({

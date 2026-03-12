@@ -2,6 +2,7 @@
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
 import { useQuery } from "@tanstack/react-query";
+import { API_BASE_URL } from "../config";
 
 export interface User {
   _id: string;
@@ -25,7 +26,7 @@ export const useAuthHook = () => {
 
       // axios generic diye type specify kora holo
       const res = await axios.get<User[]>(
-        "http://localhost:3200/api/user/getall"
+        `${API_BASE_URL}/user/getall`
       );
       const allUsers = res.data; // type ekhon User[]
 

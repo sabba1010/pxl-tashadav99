@@ -6,6 +6,7 @@ import { FaChevronRight, FaCreditCard } from "react-icons/fa";
 import { toast } from "sonner";
 import axios from "axios";
 import { useAuthHook } from "../../hook/useAuthHook";
+import { API_BASE_URL } from "../../config";
 
 // ================= TYPES =================
 interface ApiResponse {
@@ -46,7 +47,7 @@ const Payment: React.FC = () => {
             ngnToUsdRate?: number;
             depositRate?: number;
           };
-        }>("http://localhost:3200/api/settings");
+        }>(`${API_BASE_URL}/api/settings`);
         if (res.data.success) {
           setExchangeRate(res.data.settings.depositRate || res.data.settings.ngnToUsdRate || 1500);
         }
@@ -68,7 +69,7 @@ const Payment: React.FC = () => {
         toast.info("Verifying payment...");
 
         const res = await axios.get<ApiResponse>(
-          "http://localhost:3200/flutterwave/verify",
+          `${API_BASE_URL}/flutterwave/verify`,
           { params: { tx_ref } }
         );
 
@@ -110,7 +111,7 @@ const Payment: React.FC = () => {
       setLoading("flw");
 
       const res = await axios.post<ApiResponse>(
-        "http://localhost:3200/flutterwave/create",
+        `${API_BASE_URL}/flutterwave/create`,
         {
           amount: finalAmount,
           email: userEmail,
@@ -138,7 +139,7 @@ const Payment: React.FC = () => {
       setLoading("kora");
 
       const res = await axios.post<ApiResponse>(
-        "http://localhost:3200/korapay/create",
+        `${API_BASE_URL}/korapay/create`,
         {
           amount: finalAmount,
           email: userEmail,
@@ -148,12 +149,41 @@ const Payment: React.FC = () => {
       if (res.data.checkoutUrl) {
         window.location.href = res.data.checkoutUrl;
       }
-    } catch {
-      toast.error("Korapay payment failed");
     } finally {
       setLoading(null);
     }
   };
+
+  // ================= VERIFY KORAPAY =================
+  useEffect(() => {
+    const reference = searchParams.get("reference");
+    if (!reference || loading === "verifying") return;
+
+    const verifyKora = async () => {
+      try {
+        setLoading("verifying");
+        toast.info("Verifying Korapay payment...");
+
+        const res = await axios.get<ApiResponse>(
+          `${API_BASE_URL}/korapay/verify`,
+          { params: { reference } }
+        );
+
+        if (res.data.success) {
+          toast.success("Korapay Payment successful!");
+          navigate("/payment", { replace: true });
+        } else {
+          toast.error(res.data.message || "Korapay Verification failed");
+        }
+      } catch (err) {
+        toast.error("Korapay verification failed");
+      } finally {
+        setLoading(null);
+      }
+    };
+
+    verifyKora();
+  }, [searchParams, navigate]);
 
   // ================= VERIFY SCREEN =================
   if (loading === "verifying") {

@@ -111,8 +111,9 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import Cookies from "js-cookie";
 import axios from "axios";
 import { toast } from "sonner";
+import { API_BASE_URL } from "../config";
 
-const CHAT_API = "http://localhost:3200/chat";
+const CHAT_API = `${API_BASE_URL}/chat`;
 
 interface StatusResponse {
   success: boolean;
@@ -187,7 +188,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const checkStatus = async () => {
       try {
         const res = await axios.get<StatusResponse>(
-          `http://localhost:3200/api/user/status?email=${encodeURIComponent(user.email)}`
+          `${API_BASE_URL}/user/status?email=${encodeURIComponent(user.email)}`
         );
 
         if (cancelled) return;
