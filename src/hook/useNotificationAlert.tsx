@@ -52,7 +52,7 @@ export const useNotificationAlert = (options: NotificationAlertOptions = {}) => 
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const API_BASE =
-    (typeof process !== "undefined" && process.env.REACT_APP_API_URL?.replace(/\/$/, "")) ?? "https://acctempire.com/api";
+    (typeof process !== "undefined" && process.env.REACT_APP_API_URL?.replace(/\/$/, "")) ?? "http://localhost:3200";
 
   const fetchNotifications = useCallback(async () => {
     try {

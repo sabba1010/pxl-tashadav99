@@ -121,7 +121,7 @@ const SellForm: React.FC = () => {
     const fetchPlatforms = async () => {
       try {
         const response = await axios.get<{ data: Platform[] }>(
-          "https://acctempire.com/api/icon-data"
+          "http://localhost:3200/icon-data"
         );
         const data = Array.isArray(response.data)
           ? response.data
@@ -160,7 +160,7 @@ const SellForm: React.FC = () => {
 
       try {
         const response = await axios.get<{ salesCredit: number }>(
-          `https://acctempire.com/api/product/credit?email=${encodeURIComponent(
+          `http://localhost:3200/product/credit?email=${encodeURIComponent(
             user.email
           )}`
         );
@@ -330,7 +330,7 @@ const SellForm: React.FC = () => {
 
       try {
         const response = await axios.post<SellResponse>(
-          "https://acctempire.com/api/product/sell",
+          "http://localhost:3200/product/sell",
           { products: accountsToSubmit }
         );
 
@@ -363,7 +363,7 @@ const SellForm: React.FC = () => {
 
       try {
         const response = await axios.post<SellResponse>(
-          "https://acctempire.com/api/product/sell",
+          "http://localhost:3200/product/sell",
           { products: [formData] }
         );
 

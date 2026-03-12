@@ -23,7 +23,7 @@ const UserActivityStatus: React.FC<UserActivityStatusProps> = ({ userId, showTex
     // Initial fetch if socket doesn't have it yet
     React.useEffect(() => {
         if (!userStatus && userId) {
-            axios.get<StatusResponse>(`https://acctempire.com/api/chat/status/${userId}`)
+            axios.get<StatusResponse>(`http://localhost:3200/chat/status/${userId}`)
                 .then(res => {
                     const data = res.data;
                     setFetchedStatus({

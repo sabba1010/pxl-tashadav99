@@ -15,7 +15,7 @@ type Ad = {
   userEmail?: string;
 };
 
-const API = "https://acctempire.com/api";
+const API = "http://localhost:3200";
 
 const ActiveListings: React.FC = () => {
   const { user } = useAuth();

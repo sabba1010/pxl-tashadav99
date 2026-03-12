@@ -16,7 +16,7 @@ const SellerManagement = () => {
   const [sellers, setSellers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const API_BASE_URL = "https://acctempire.com/api";
+  const API_BASE_URL = "http://localhost:3200";
 
   useEffect(() => {
     fetchSellers();

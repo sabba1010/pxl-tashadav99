@@ -41,7 +41,7 @@ interface CartItem {
   previewLink?: string;
 }
 
-const API_URL = "https://acctempire.com/api";
+const API_URL = "http://localhost:3200";
 
 const RenderIcon = ({
   icon,
