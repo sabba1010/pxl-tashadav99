@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import axios from "axios";
+import Loading from "../Loading";
+import { API_BASE_URL } from "../../config";
 import { useAuthHook } from "../../hook/useAuthHook";
 import { toast } from "sonner";
 import RatingModal from "../Rating/RatingModal";
@@ -331,7 +332,7 @@ const MyPurchase: React.FC = () => {
   const [isRatingModalOpen, setIsRatingModalOpen] = useState(false);
   const [ratingTargetOrder, setRatingTargetOrder] = useState<Purchase | null>(null);
 
-  const BASE_URL = "http://localhost:3200";
+  const BASE_URL = API_BASE_URL;
   const PURCHASE_API = `${BASE_URL}/purchase`;
   const CHAT_API = `${BASE_URL}/chat`;
 

@@ -1,4 +1,5 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { API_BASE_URL } from "../../config";
 import axios from "axios";
 import React, { useMemo, useState } from "react";
 import {
@@ -38,7 +39,7 @@ const ITEMS_PER_PAGE = 15;
 
 /* ====================== API FUNCTIONS ====================== */
 const fetchPayments = async (): Promise<Payment[]> => {
-  const response = await axios.get("http://localhost:3200/api/payments");
+  const response = await axios.get(`${API_BASE_URL}/payments`);
   return response.data as Payment[];
 };
 

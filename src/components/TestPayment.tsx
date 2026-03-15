@@ -6,6 +6,7 @@ import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { API_BASE_URL } from "../config";
 import { useDepositByUser } from "../hook/useDepositByUser";
 
 interface TestPaymentProps {
@@ -62,7 +63,7 @@ const TestPayment: React.FC<TestPaymentProps> = ({ amount }) => {
           try {
             // Backend-এ verify করি
             const verifyRes = await fetch(
-              "http://localhost:3200/api/verify-payment",
+              `${API_BASE_URL}/verify-payment`,
               {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -80,7 +81,7 @@ const TestPayment: React.FC<TestPaymentProps> = ({ amount }) => {
 
               // Balance update
               const balanceRes = await fetch(
-                "http://localhost:3200/api/update-balance",
+                `${API_BASE_URL}/update-balance`,
                 {
                   method: "PATCH",
                   headers: { "Content-Type": "application/json" },

@@ -1,4 +1,5 @@
 import axios from "axios";
+import { API_BASE_URL } from "../../config";
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Loading from "../Loading";
@@ -15,7 +16,7 @@ type Ad = {
   userEmail?: string;
 };
 
-const API = "http://localhost:3200";
+const API = API_BASE_URL;
 
 const ActiveListings: React.FC = () => {
   const { user } = useAuth();
@@ -26,8 +27,8 @@ const ActiveListings: React.FC = () => {
     window.scrollTo(0, 0);
     setLoading(true);
     try {
-      const res = await axios.get<Ad[]>(`${API}/product/all-sells?userEmail=${user?.email}`);
-      const userAds = res.data.filter((ad: any) => ad.isVisible !== false);
+        const response = await axios.get<Ad[]>(`${API}/product/all-sells?userEmail=${user?.email}`);
+      const userAds = response.data.filter((ad: any) => ad.isVisible !== false);
       setItems(userAds);
     } catch (err) {
       console.error(err);

@@ -1,4 +1,5 @@
 // src/services/notification.ts
+import { API_BASE_URL } from "../../config";
 
 // --- Types ---
 export type TargetAudience = "all" | "buyers" | "sellers";
@@ -20,8 +21,9 @@ export type NotificationPayload = {
 };
 
 // --- Config & Helpers ---
+const API_VERSION = "v1"; // Or whatever versioning you use
 const API_BASE =
-  process.env.REACT_APP_API_URL?.replace(/\/$/, "") ?? "http://localhost:3200";
+  process.env.REACT_APP_API_URL?.replace(/\/$/, "") ?? API_BASE_URL.replace("/api", "");
 
 function getAuthHeaders(): Record<string, string> {
   const token = localStorage.getItem("token");

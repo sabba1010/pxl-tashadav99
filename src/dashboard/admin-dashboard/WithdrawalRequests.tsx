@@ -7,6 +7,7 @@ import {
   FormControl, Select, MenuItem, TextField, IconButton, Tooltip, Stack
 } from "@mui/material";
 import { Search, Close, Refresh, Visibility } from "@mui/icons-material";
+import { API_BASE_URL } from "../../config";
 
 /* ================= TYPES ================= */
 interface WithdrawalRequest {
@@ -174,9 +175,9 @@ const WithdrawalRequests: React.FC = () => {
 
   const fetchWithdrawalsData = async (): Promise<WithdrawalRequest[]> => {
     const [wRes, pRes, rRes] = await Promise.all([
-      fetch("http://localhost:3200/withdraw/getall"),
-      fetch("http://localhost:3200/purchase/getall"),
-      fetch("http://localhost:3200/purchase/report/getall")
+      fetch(`${API_BASE_URL}/withdraw/getall`),
+      fetch(`${API_BASE_URL}/purchase/getall`),
+      fetch(`${API_BASE_URL}/purchase/report/getall`)
     ]);
     const withdrawData = await wRes.json();
     const purchases = await pRes.json();
@@ -200,8 +201,8 @@ const WithdrawalRequests: React.FC = () => {
   const fetchDetailsForEmail = useCallback(async (email: string) => {
     try {
       const [pRes, rRes] = await Promise.all([
-        fetch("http://localhost:3200/purchase/getall"),
-        fetch("http://localhost:3200/purchase/report/getall")
+        fetch(`${API_BASE_URL}/purchase/getall`),
+        fetch(`${API_BASE_URL}/purchase/report/getall`)
       ]);
       const purchases = pRes.ok ? await pRes.json() : [];
       const reports = rRes.ok ? await rRes.json() : [];
@@ -221,7 +222,7 @@ const WithdrawalRequests: React.FC = () => {
   const handleReview = async (req: WithdrawalRequest) => {
     setActionLoading(true);
     try {
-      const userRes = await fetch("http://localhost:3200/api/user/getall");
+      const userRes = await fetch(`${API_BASE_URL}/user/getall`);
       const userData = await userRes.json();
       const users = Array.isArray(userData) ? userData : (userData.users || []);
       const seller = users.find((u: any) => u.email.toLowerCase() === req.email.toLowerCase());
@@ -426,7 +427,7 @@ const WithdrawalRequests: React.FC = () => {
             setActionLoading(true);
             try {
               const endpoint = status === "approved" ? "approve" : "decline";
-              const res = await fetch(`http://localhost:3200/withdraw/${endpoint}/${id}`, {
+              const res = await fetch(`${API_BASE_URL}/withdraw/${endpoint}/${id}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: status === "declined" ? JSON.stringify({ reason }) : null
@@ -683,7 +684,7 @@ export default WithdrawalRequests;
 //   const handleReview = async (req: WithdrawalRequest) => {
 //     setActionLoading(true);
 //     try {
-//       const userRes = await fetch("http://localhost:3200/api/user/getall");
+//       const userRes = await fetch(`${API_BASE_URL}/user/getall`);
 //       const userData = await userRes.json();
 //       const users = Array.isArray(userData) ? userData : (userData.users || []);
 //       const seller = users.find((u: any) => u.email.toLowerCase() === req.email.toLowerCase());

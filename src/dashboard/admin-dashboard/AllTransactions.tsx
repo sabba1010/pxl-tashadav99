@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useEffect } from "react";
+import { API_BASE_URL } from "../../config";
 
 interface PaymentTransaction {
   id: string; // _id from MongoDB
@@ -32,7 +33,7 @@ const AllTransactions: React.FC = () => {
         setLoading(true);
         setError(null);
 
-        const response = await fetch("http://localhost:3200/api/payments");
+        const response = await fetch(`${API_BASE_URL}/payments`);
 
         if (!response.ok) {
           throw new Error(`Failed to fetch: ${response.status}`);

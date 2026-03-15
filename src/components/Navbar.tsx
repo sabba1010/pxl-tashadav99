@@ -34,10 +34,11 @@ import {
   Tag
 } from "lucide-react";
 import AnnouncementBar from "./AnnouncementBar";
+import { API_BASE_URL } from "../config";
 
 const FaBreadSliceIcon = FaBreadSlice as unknown as React.ComponentType<any>;
 
-import { API_BASE_URL } from "../config";
+
 
 // API URL
 const API_URL = `${API_BASE_URL}/notification`;

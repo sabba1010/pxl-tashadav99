@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import { toast } from "sonner";
+import { API_BASE_URL } from "../../config";
 import {
   Search,
   X,
@@ -13,7 +14,7 @@ import Swal from "sweetalert2";
 import { useQuery } from "@tanstack/react-query";
 
 // API URL
-const API_BASE = "http://localhost:3200/purchase";
+const API_BASE = `${API_BASE_URL}/purchase`;
 
 // TypeScript Interfaces
 interface IReport {

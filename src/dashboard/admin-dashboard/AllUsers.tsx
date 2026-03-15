@@ -8,6 +8,7 @@ import {
 } from "@mui/material";
 import { Refresh, Visibility, Close, FiberManualRecord, CheckCircle, Cancel, ShoppingBag, CalendarMonth, Phone, Chat, Send } from "@mui/icons-material";
 import { toast } from "sonner";
+import { API_BASE_URL } from "../../config";
 
 /* ====================== TYPES ====================== */
 interface User {
@@ -30,8 +31,8 @@ interface IMessage {
 }
 
 const ITEMS_PER_PAGE = 10;
-const BASE_URL = "http://localhost:3200";
-const ADMIN_CHAT_API = `${BASE_URL}/api/adminchat`;
+const BASE_URL = API_BASE_URL;
+const ADMIN_CHAT_API = `${BASE_URL}/adminchat`;
 
 const AllUsers: React.FC = () => {
   const queryClient = useQueryClient();
@@ -54,7 +55,7 @@ const AllUsers: React.FC = () => {
   const { data: users = [], isLoading: isUsersLoading } = useQuery<User[]>({
     queryKey: ["all-users"],
     queryFn: async () => {
-      const res = await axios.get(`${BASE_URL}/api/user/getall`);
+      const res = await axios.get(`${BASE_URL}/user/getall`);
       return res.data as User[];
     },
     refetchInterval: 5000,
@@ -74,7 +75,7 @@ const AllUsers: React.FC = () => {
   const handleStatusChange = async (userId: string, newStatus: string) => {
     try {
       const statusToSend = newStatus.toLowerCase();
-      await axios.patch(`${BASE_URL}/api/user/update-status/${userId}`, { status: statusToSend });
+      await axios.patch(`${BASE_URL}/user/update-status/${userId}`, { status: statusToSend });
       queryClient.invalidateQueries({ queryKey: ["all-users"] });
     } catch (err) {
       console.error("Status update failed", err);
@@ -122,7 +123,7 @@ const AllUsers: React.FC = () => {
     try {
       const [pur, pay] = await Promise.all([
         axios.get(`${BASE_URL}/purchase/getall`),
-        axios.get(`${BASE_URL}/api/payments`)
+        axios.get(`${BASE_URL}/payments`)
       ]);
 
       // Optional: also sort purchases & payments newest first

@@ -1,6 +1,8 @@
 import React, { useMemo, useState, useEffect } from "react";
 import axios from "axios";
-import { X, Trash2 } from "lucide-react";
+import { X as XIcon, Trash2 as TrashIcon } from "lucide-react";
+import { toast } from "react-hot-toast";
+import { API_BASE_URL } from "../../config";
 import StarIcon from "@mui/icons-material/Star";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
 import SearchIcon from "@mui/icons-material/Search";
@@ -65,7 +67,7 @@ const RatingsReputationPanel: React.FC = () => {
   const fetchAdminData = async () => {
     setLoading(true);
     try {
-      const response = await axios.get<{ success: boolean, data: any[] }>("http://localhost:3200/reputation/summary");
+      const response = await axios.get<{ success: boolean, data: any[] }>(`${API_BASE_URL}/reputation/summary`);
       if (response.data.success) {
         const mappedSellers: Seller[] = response.data.data.map(item => ({
           id: item.sellerEmail,
@@ -118,7 +120,7 @@ const RatingsReputationPanel: React.FC = () => {
   const handleDeleteReview = async (ratingId: string) => {
     if (window.confirm("Are you sure you want to delete this review?")) {
       try {
-        await axios.delete(`http://localhost:3200/rating/delete/${ratingId}`);
+        await axios.delete(`${API_BASE_URL}/rating/delete/${ratingId}`);
         fetchAdminData(); // লিস্ট রিফ্রেশ করা
         setSelectedSeller(null);
       } catch (err) {
@@ -287,7 +289,7 @@ const RatingsReputationPanel: React.FC = () => {
       <Dialog open={!!selectedSeller} onClose={() => setSelectedSeller(null)} fullWidth maxWidth="md">
         <DialogTitle sx={{ fontWeight: 800, borderBottom: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           Feedback Analysis: {selectedSeller?.email}
-          <IconButton onClick={() => setSelectedSeller(null)}><X /></IconButton>
+          <IconButton onClick={() => setSelectedSeller(null)}><XIcon /></IconButton>
         </DialogTitle>
         <DialogContent sx={{ mt: 2 }}>
           {selectedSeller?.recentReviews
@@ -300,7 +302,7 @@ const RatingsReputationPanel: React.FC = () => {
                 <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                   <Typography variant="caption" color="#94A3B8">{r.date}</Typography>
                   <IconButton size="small" color="error" onClick={() => handleDeleteReview(r.id)}>
-                    <Trash2 size={16} />
+                    <TrashIcon size={16} />
                   </IconButton>
                 </Box>
               </Box>

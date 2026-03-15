@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createAnnouncement, AnnouncementPayload, deleteNotification } from '../../components/Notification/Notification';
-import { toast } from 'react-hot-toast';
+import { toast } from "react-hot-toast";
+import { API_BASE_URL } from "../../config";
 import { useQuery } from "@tanstack/react-query";
 import { FaTrash } from 'react-icons/fa';
 
@@ -56,8 +57,8 @@ const SentNotification = () => {
 
     // Fetch all notifications using React Query
     const fetchNotificationsData = async (): Promise<Notification[]> => {
-        const API_BASE = process.env.REACT_APP_API_URL?.replace(/\/$/, "") ?? "http://localhost:3200";
-        const response = await fetch(`${API_BASE}/api/notification/getall`, {
+        const API_BASE = API_BASE_URL;
+        const response = await fetch(`${API_BASE}/notification/getall`, {
             headers: {
                 Authorization: `Bearer ${localStorage.getItem("token")}`,
             },

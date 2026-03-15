@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import axios from "axios";
+import { API_BASE_URL } from "../../config";
 import toast, { Toaster } from 'react-hot-toast';
 
 interface User {
@@ -16,8 +17,6 @@ const SellerManagement = () => {
   const [sellers, setSellers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const API_BASE_URL = "http://localhost:3200";
-
   useEffect(() => {
     fetchSellers();
   }, []);
@@ -25,7 +24,7 @@ const SellerManagement = () => {
   const fetchSellers = async () => {
     try {
       setLoading(true);
-      const response = await axios.get<User[]>(`${API_BASE_URL}/api/user/getall`);
+      const response = await axios.get<User[]>(`${API_BASE_URL}/user/getall`);
       // ডাটাবেজ থেকে শুধুমাত্র সেলারদের ফিল্টার করা
       const sellerList = response.data.filter((user) => user.role === 'seller');
       setSellers(sellerList);
@@ -39,7 +38,7 @@ const SellerManagement = () => {
   const handleStatusChange = async (id: string, newStatus: string) => {
     const tid = toast.loading("Updating status...");
     try {
-      await axios.patch(`${API_BASE_URL}/api/user/update-status/${id}`, { status: newStatus });
+      await axios.patch(`${API_BASE_URL}/user/update-status/${id}`, { status: newStatus });
       
       // লোকাল স্টেট আপডেট
       setSellers(prev => prev.map(s => s._id === id ? { ...s, status: newStatus as 'active' | 'blocked' } : s));

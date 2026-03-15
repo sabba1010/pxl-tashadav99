@@ -5,6 +5,7 @@ import { Loader2, CheckCircle, AlertCircle } from "lucide-react";
 import { Button } from "@mui/material";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
+import { API_BASE_URL } from "../../config";
 
 const MySwal = Swal; // Allows <></> inside html if needed
 
@@ -77,7 +78,7 @@ const DeductAndCreditAction: React.FC<DeductAndCreditActionProps> = ({
 
     try {
       const response = await fetch(
-        `http://localhost:3200/api/user/getall/${userId}`,
+        `${API_BASE_URL}/user/getall/${userId}`,
         {
           method: "POST",
           headers: {

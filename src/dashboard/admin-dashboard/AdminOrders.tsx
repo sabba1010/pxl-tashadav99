@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
+import { API_BASE_URL } from "../../config";
 import {
     Table,
     TableBody,
@@ -27,7 +28,7 @@ import { useAuthHook } from "../../hook/useAuthHook";
 import { toast } from "sonner";
 import { formatToWAT } from "../../lib/timeUtils";
 
-const BASE_URL = "http://localhost:3200";
+const BASE_URL = API_BASE_URL;
 
 interface Order {
     _id: string;

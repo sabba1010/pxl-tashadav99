@@ -1565,7 +1565,7 @@ const ProfileSection = () => {
       try {
         setLoading(true);
         // Fetch all users and find the current user by email
-        const response = await axios.get<any>(`http://localhost:3200/api/user/getall`);
+        const response = await axios.get<any>(`${API_BASE_URL}/user/getall`);
         const allUsers = (response.data as any);
         
         // Find user by email
@@ -1635,7 +1635,7 @@ const ProfileSection = () => {
       }
 
       // Update user profile in the userCollection
-      const response = await axios.put<any>(`http://localhost:3200/api/user/update-profile`, {
+      const response = await axios.put<any>(`${API_BASE_URL}/user/update-profile`, {
         email: user.email,
         name: formData.name,
         phone: formData.phone,
@@ -1652,7 +1652,7 @@ const ProfileSection = () => {
           try {
             for (const change of changes) {
               await axios.post(
-                `http://localhost:3200/api/user/log-change`,
+                `${API_BASE_URL}/user/log-change`,
                 change
               );
               console.log('Logged change:', change);
@@ -1934,7 +1934,7 @@ const SecuritySection = () => {
         // Log the password change to admin dashboard
         try {
           await axios.post(
-            `http://localhost:3200/api/user/log-change`,
+            `${API_BASE_URL}/user/log-change`,
             {
               userEmail: user?.email,
               fieldName: 'password',

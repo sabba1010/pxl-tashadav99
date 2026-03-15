@@ -6,9 +6,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import io, { Socket } from 'socket.io-client';
 
 // ──────────────────────────────────────────────
-const BASE_URL = "http://localhost:3200";
-const ADMIN_CHAT_API = `${BASE_URL}/api/adminchat`;
-const SOCKET_URL = BASE_URL; // Assume backend has socket.io setup at same base
+import { API_BASE_URL } from "../../config";
+const BASE_URL = API_BASE_URL;
+const ADMIN_CHAT_API = `${BASE_URL}/adminchat`;
+const SOCKET_URL = BASE_URL.replace("/api", ""); // Base host for socket.io
 
 interface Message {
   _id?: string;

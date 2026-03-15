@@ -1,4 +1,5 @@
 import { useEffect, useCallback, useRef, ReactNode } from "react";
+import { API_BASE_URL } from "../config";
 import { toast } from "react-hot-toast";
 
 interface NotificationAlertOptions {
@@ -45,20 +46,20 @@ const playNotificationSound = () => {
   }
 };
 
+
 export const useNotificationAlert = (options: NotificationAlertOptions = {}) => {
   const { pollInterval = 3000, userEmail } = options;
   const lastNotificationIdRef = useRef<string | null>(null);
   const lastNotificationTimeRef = useRef<number>(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const API_BASE =
-    (typeof process !== "undefined" && process.env.REACT_APP_API_URL?.replace(/\/$/, "")) ?? "http://localhost:3200";
+  const API_BASE = API_BASE_URL;
 
   const fetchNotifications = useCallback(async () => {
     try {
       const endpoint = userEmail
-        ? `${API_BASE}/api/notification/user/${userEmail}`
-        : `${API_BASE}/api/notification/getall`;
+        ? `${API_BASE}/notification/user/${userEmail}`
+        : `${API_BASE}/notification/getall`;
 
       const response = await fetch(endpoint, {
         headers: {

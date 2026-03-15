@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { toast } from "sonner";
+import { API_BASE_URL } from "../../config";
 
 interface PostFormData {
   title: string;
@@ -38,7 +39,7 @@ const Post: React.FC = () => {
 
     try {
       const res = await axios.post(
-        "http://localhost:3200/api/notification/notify",
+        `${API_BASE_URL}/notification/notify`,
         formData
       );
 

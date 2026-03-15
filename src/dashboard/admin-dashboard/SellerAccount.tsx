@@ -1,5 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
+import { API_BASE_URL } from "../../config";
 import React, { useMemo, useState, useEffect, useRef } from "react";
 import {
   Box,
@@ -80,9 +81,9 @@ interface Seller {
   countryCode?: string;
 }
 
-const BASE_URL = "http://localhost:3200";
-const ADMIN_CHAT_API = `${BASE_URL}/api/adminchat`;
-const USER_API = `${BASE_URL}/api/user`;
+const BASE_URL = API_BASE_URL;
+const ADMIN_CHAT_API = `${BASE_URL}/adminchat`;
+const USER_API = `${BASE_URL}/user`;
 
 const ITEMS_PER_PAGE = 10;
 

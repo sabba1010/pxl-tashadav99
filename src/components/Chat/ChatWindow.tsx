@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
+import Loading from "../Loading";
+import { API_BASE_URL } from "../../config";
 import axios from "axios";
 import { useSocket } from "../../context/SocketContext";
 import NotificationBadge from "../NotificationBadge";
@@ -36,7 +38,8 @@ interface ChatWindowProps {
     productTitle?: string;
 }
 
-const BASE_URL = "http://localhost:3200";
+const BASE_URL = API_BASE_URL;
+const SOCKET_URL = BASE_URL.replace("/api", "");
 const CHAT_API = `${BASE_URL}/chat`;
 
 const formatChatTime = (dateString?: string) => {

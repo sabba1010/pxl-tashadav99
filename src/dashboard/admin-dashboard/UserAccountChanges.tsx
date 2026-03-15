@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { API_BASE_URL } from "../../config";
 import {
   Box,
   Paper,
@@ -34,7 +35,7 @@ interface AccountChange {
   ipAddress: string;
 }
 
-const BASE_URL = "http://localhost:3200";
+const BASE_URL = API_BASE_URL;
 const ITEMS_PER_PAGE = 10;
 
 export default function UserAccountChanges() {

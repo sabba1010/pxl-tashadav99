@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { toast } from "sonner";
+import { API_BASE_URL } from "../../config";
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useAuthHook } from '../../hook/useAuthHook';
@@ -106,10 +108,10 @@ const DashboardSeller: React.FC = () => {
       setLoading(true);
       try {
         const [prodRes, purchaseRes, ratingsRes, referralRes] = await Promise.all([
-          axios.get<any[]>("http://localhost:3200/product/all-sells"),
-          axios.get<any[]>("http://localhost:3200/purchase/getall", { params: { email: user.email, role: 'seller' } }),
-          axios.get<any>(`http://localhost:3200/rating/seller/${user.email}`),
-          axios.get<any>("http://localhost:3200/referral/stats", { params: { email: user.email } }),
+          axios.get<any[]>(`${API_BASE_URL}/product/all-sells`),
+          axios.get<any[]>(`${API_BASE_URL}/purchase/getall`, { params: { email: user.email, role: 'seller' } }),
+          axios.get<any>(`${API_BASE_URL}/rating/seller/${user.email}`),
+          axios.get<any>(`${API_BASE_URL}/referral/stats`, { params: { email: user.email } }),
         ]);
 
         const myProducts = (prodRes.data || []).filter((p: any) => p.userEmail === user.email);
@@ -243,7 +245,7 @@ const DashboardSeller: React.FC = () => {
   useEffect(() => {
     const fetchReports = async () => {
       try {
-        const res = await axios.get("http://localhost:3200/purchase/report/getall");
+        const res = await axios.get(`${API_BASE_URL}/purchase/report/getall`);
         if (res.data && Array.isArray(res.data)) {
           const userReports = res.data.filter((report: any) =>
             report.sellerEmail === user?.email || report.reportedToEmail === user?.email

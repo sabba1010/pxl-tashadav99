@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, AlertTriangle, Clock, CheckCircle2, Search, Loader2, ShieldAlert, Send, Package } from 'lucide-react';
+import { ArrowLeft, AlertTriangle, Clock, CheckCircle2, Search, Loader2, ShieldAlert, Send, Package, ChevronDown, CheckCircle, XCircle, MessageSquare, Download, Calendar, Filter } from 'lucide-react';
+import { API_BASE_URL } from "../../config";
 import { useAuth } from '../../context/AuthContext';
 
 const Reports: React.FC = () => {
@@ -22,7 +23,7 @@ const Reports: React.FC = () => {
       try {
         setIsLoading(true);
         // আপনার ব্যাকএন্ড এন্ডপয়েন্ট অনুযায়ী সব রিপোর্ট আনা হচ্ছে
-        const response = await fetch('http://localhost:3200/purchase/report/getall');
+        const response = await fetch(`${API_BASE_URL}/purchase/report/getall`);
         if (!response.ok) throw new Error('Failed to fetch reports');
         
         const data = await response.json();
@@ -288,7 +289,7 @@ export default Reports;
 //     const fetchReports = async () => {
 //       try {
 //         setIsLoading(true);
-//         const response = await fetch('http://localhost:3200/purchase/report/getall');
+//         const response = await fetch(`${API_BASE_URL}/purchase/report/getall`);
 //         if (!response.ok) throw new Error('Failed to fetch reports');
         
 //         const data = await response.json();

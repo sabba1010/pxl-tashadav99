@@ -9,7 +9,8 @@ import {
   X,
 } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { API_BASE_URL } from "../../config";
 import Swal from "sweetalert2";
 import { useAuth } from "../../context/AuthContext";
 import Loading from "../Loading";
@@ -69,7 +70,7 @@ const MyAds: React.FC = () => {
     setLoading(true);
     try {
       const res = await axios.get<Ad[]>(
-        `http://localhost:3200/product/all-sells?userEmail=${user.user?.email}`
+        `${API_BASE_URL}/product/all-sells?userEmail=${user.user?.email}`
       );
 
       const userAds = res.data.filter(
@@ -164,7 +165,7 @@ const MyAds: React.FC = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await axios.delete(`http://localhost:3200/product/delete/${id}`);
+          await axios.delete(`${API_BASE_URL}/product/delete/${id}`);
           setItems((prev) => prev.filter((it) => it._id !== id));
           toast.success("Ad deleted successfully");
         } catch (err) {
@@ -217,7 +218,7 @@ const MyAds: React.FC = () => {
       };
 
       await axios.patch(
-        `http://localhost:3200/product/update/${editingAd._id}`,
+        `${API_BASE_URL}/product/update/${editingAd._id}`,
         updateData
       );
 

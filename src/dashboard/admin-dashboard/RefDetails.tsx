@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Search, RotateCcw, CheckCircle, Clock, XCircle, Info, MessageCircle, Mail, ExternalLink } from "lucide-react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { API_BASE_URL } from "../../config";
 import Swal from "sweetalert2";
 
 /* ================= TYPES ================= */
@@ -30,7 +32,7 @@ const RefDetails = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const res = await axios.get<UserType[]>("http://localhost:3200/api/user/getall");
+      const res = await axios.get<UserType[]>(`${API_BASE_URL}/user/getall`);
       const users = [...res.data].reverse();
       setAllUsers(users);
       setReferralUsers(users.filter((u) => u.referredBy));
@@ -102,7 +104,7 @@ const RefDetails = () => {
 
     setUpdatingId(userId);
     try {
-      await axios.patch("http://localhost:3200/api/user/admin/update-referral-status", {
+      await axios.patch(`${API_BASE_URL}/user/admin/update-referral-status`, {
         userId,
         status,
         rejectionReason: reason,

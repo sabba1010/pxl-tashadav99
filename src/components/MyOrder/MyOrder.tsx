@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { Link } from "react-router-dom";
+import Loading from "../Loading";
+import { API_BASE_URL } from "../../config";
 import axios from "axios";
 import { useAuthHook } from "../../hook/useAuthHook";
 import { toast } from "sonner";
@@ -287,7 +289,7 @@ const MyOrder: React.FC = () => {
   const loginUserData = useAuthHook();
   const sellerId = loginUserData.data?.email || localStorage.getItem("userEmail");
 
-  const BASE_URL = "http://localhost:3200";
+  const BASE_URL = API_BASE_URL;
   const PURCHASE_API = `${BASE_URL}/purchase`;
   const CHAT_API = `${BASE_URL}/chat`;
   const USER_API = `${BASE_URL}/user`;

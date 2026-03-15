@@ -73,7 +73,7 @@
 //     try {
 //       // <RegisterResponse> দিয়ে TypeScript এরর ফিক্স করা হয়েছে
 //       const res = await axios.post<RegisterResponse>(
-//         "http://localhost:3200/api/user/register",
+//         `${API_BASE_URL}/user/register`,
 //         formData
 //       );
 

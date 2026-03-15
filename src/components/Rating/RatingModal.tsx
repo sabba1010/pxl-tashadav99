@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { FaTimes, FaStar } from "react-icons/fa";
 import { toast } from "sonner";
 import axios from "axios";
+import { API_BASE_URL } from "../../config";
 
 const FaTimesIcon = FaTimes as any;
 const FaStarIcon = FaStar as any;
@@ -30,7 +31,7 @@ const RatingModal: React.FC<RatingModalProps> = ({
   const [message, setMessage] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const BASE_URL = "http://localhost:3200";
+  const BASE_URL = API_BASE_URL;
   const RATING_API = `${BASE_URL}/rating`;
 
   const handleSubmitRating = async (e: React.FormEvent) => {

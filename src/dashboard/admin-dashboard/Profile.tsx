@@ -2,13 +2,14 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import axios from "axios";
+import { API_BASE_URL } from "../../config";
 import { useAuth } from "../../context/AuthContext";
 import {
   ShieldCheck, ShieldX, Clock, LogOut, UserCog, Key, Mail, Phone, Calendar, MapPin,
   Upload, RefreshCw, Wallet, Eye, EyeOff
 } from "lucide-react";
 
-const API_BASE_URL = "http://localhost:3200/api/user";
+const API_URL = `${API_BASE_URL}/user`;
 
 // ────────────────────────────────────────────────
 // Types

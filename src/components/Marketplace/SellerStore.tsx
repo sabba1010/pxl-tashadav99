@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useNavigate, useParams, Link } from "react-router-dom";
 import {
     FaStar,
     FaArrowLeft,
@@ -48,7 +48,7 @@ import { toast } from "sonner";
 import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
 import { IconType } from "react-icons";
-import { useNavigate } from "react-router-dom";
+import { API_BASE_URL } from "../../config";
 import { sendNotification } from "../Notification/Notification";
 import { useAuthHook } from "../../hook/useAuthHook";
 
@@ -178,7 +178,7 @@ const RenderIcon = ({
     );
 };
 
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:3200";
+const API_URL = API_BASE_URL;
 
 interface SellerReputation {
     sellerEmail: string;

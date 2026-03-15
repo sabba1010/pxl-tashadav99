@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import axios from "axios";
+import { API_BASE_URL } from "../../config";
 
 interface UserData {
   name: string;
@@ -42,7 +43,7 @@ export default function KoraPayment({
       setLoading(true);
 
       const response = await axios.post(
-        "http://localhost:3200/korapay/create",
+        `${API_BASE_URL}/korapay/create`,
         { amount, user, currency },
         { headers: { "Content-Type": "application/json" } }
       );

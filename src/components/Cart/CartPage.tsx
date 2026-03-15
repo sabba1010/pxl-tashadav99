@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { API_BASE_URL } from "../../config";
 import {
   FaTrash,
   FaArrowLeft,
@@ -41,7 +42,7 @@ interface CartItem {
   previewLink?: string;
 }
 
-const API_URL = "http://localhost:3200";
+const API_URL = API_BASE_URL;
 
 const RenderIcon = ({
   icon,

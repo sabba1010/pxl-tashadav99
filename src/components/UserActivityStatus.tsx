@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import axios from 'axios';
 import { useSocket } from '../context/SocketContext';
 import { getRelativeTimeWAT } from '../lib/timeUtils';
+import { API_BASE_URL } from '../config';
 
 interface UserActivityStatusProps {
     userId: string;
@@ -23,7 +24,7 @@ const UserActivityStatus: React.FC<UserActivityStatusProps> = ({ userId, showTex
     // Initial fetch if socket doesn't have it yet
     React.useEffect(() => {
         if (!userStatus && userId) {
-            axios.get<StatusResponse>(`http://localhost:3200/chat/status/${userId}`)
+            axios.get<StatusResponse>(`${API_BASE_URL}/chat/status/${userId}`)
                 .then(res => {
                     const data = res.data;
                     setFetchedStatus({
