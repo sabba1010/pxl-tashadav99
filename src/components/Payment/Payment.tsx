@@ -75,6 +75,7 @@ const Payment: React.FC = () => {
 
         if (res.data.success) {
           toast.success("Payment successful! Balance added.");
+          loginUserData.refetch(); // ✅ Refresh balance immediately
           navigate("/payment", { replace: true });
         } else {
           toast.error(res.data.message || "Verification failed");
@@ -171,6 +172,7 @@ const Payment: React.FC = () => {
 
         if (res.data.success) {
           toast.success("Korapay Payment successful!");
+          loginUserData.refetch(); // ✅ Refresh balance immediately
           navigate("/payment", { replace: true });
         } else {
           toast.error(res.data.message || "Korapay Verification failed");
