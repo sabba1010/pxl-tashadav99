@@ -591,7 +591,7 @@ import { API_BASE_URL } from '../config';
 
 //     try {
 //       const response = await axios.put(
-//         `http://localhost:3200/api/user/update-password`,
+//         `https://acctempire.com/api/api/user/update-password`,
 //         {
 //           email: user?.email,
 //           currentPassword,
@@ -1162,7 +1162,7 @@ import { API_BASE_URL } from '../config';
 
 //     try {
 //       const response = await axios.put(
-//         `http://localhost:3200/api/user/update-password`,
+//         `https://acctempire.com/api/api/user/update-password`,
 //         {
 //           email: user?.email,
 //           currentPassword,

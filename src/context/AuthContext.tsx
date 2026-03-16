@@ -58,7 +58,7 @@
 //     const checkStatus = async () => {
 //       try {
 //         const res = await axios.get<StatusResponse>(
-//           `http://localhost:3200/api/user/status?email=${encodeURIComponent(user.email)}`
+//           `https://acctempire.com/api/api/user/status?email=${encodeURIComponent(user.email)}`
 //         );
 
 //         if (cancelled) return;

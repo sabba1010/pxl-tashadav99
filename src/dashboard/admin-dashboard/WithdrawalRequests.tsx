@@ -635,9 +635,9 @@ export default WithdrawalRequests;
 //    */
 //   const fetchWithdrawalsData = async (): Promise<WithdrawalRequest[]> => {
 //     const [wRes, pRes, rRes] = await Promise.all([
-//       fetch("http://localhost:3200/withdraw/getall"),
-//       fetch("http://localhost:3200/purchase/getall"),
-//       fetch("http://localhost:3200/purchase/report/getall")
+//       fetch("https://acctempire.com/api/withdraw/getall"),
+//       fetch("https://acctempire.com/api/purchase/getall"),
+//       fetch("https://acctempire.com/api/purchase/report/getall")
 //     ]);
 //     const withdrawData = await wRes.json();
 //     const purchases = await pRes.json();
@@ -661,8 +661,8 @@ export default WithdrawalRequests;
 //   const fetchDetailsForEmail = useCallback(async (email: string) => {
 //     try {
 //       const [pRes, rRes] = await Promise.all([
-//         fetch("http://localhost:3200/purchase/getall"),
-//         fetch("http://localhost:3200/purchase/report/getall")
+//         fetch("https://acctempire.com/api/purchase/getall"),
+//         fetch("https://acctempire.com/api/purchase/report/getall")
 //       ]);
 //       const purchases = pRes.ok ? await pRes.json() : [];
 //       const reports = rRes.ok ? await rRes.json() : [];
@@ -821,7 +821,7 @@ export default WithdrawalRequests;
 //         setActionLoading(true);
 //         try {
 //           const endpoint = status === "approved" ? "approve" : "decline";
-//           const res = await fetch(`http://localhost:3200/withdraw/${endpoint}/${id}`, {
+//           const res = await fetch(`https://acctempire.com/api/withdraw/${endpoint}/${id}`, {
 //             method: "PUT",
 //             headers: { "Content-Type": "application/json" },
 //             body: status === "declined" ? JSON.stringify({ reason }) : null
