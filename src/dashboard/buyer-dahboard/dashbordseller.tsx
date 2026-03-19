@@ -109,13 +109,18 @@ const DashboardSeller: React.FC = () => {
       try {
         const [prodRes, purchaseRes, ratingsRes, referralRes] = await Promise.all([
           axios.get<any[]>(`${API_BASE_URL}/product/all-sells`),
-          axios.get<any[]>(`${API_BASE_URL}/purchase/getall`, { params: { email: user.email, role: 'seller' } }),
+          axios.get<any[]>(`${API_BASE_URL}/purchase/getall`),
           axios.get<any>(`${API_BASE_URL}/rating/seller/${user.email}`),
           axios.get<any>(`${API_BASE_URL}/referral/stats`, { params: { email: user.email } }),
         ]);
 
-        const myProducts = (prodRes.data || []).filter((p: any) => p.userEmail === user.email);
-        const sales = purchaseRes.data || [];
+        const myProducts = (prodRes.data || []).filter((p: any) => 
+          p.userEmail?.toLowerCase() === user.email?.toLowerCase()
+        );
+        const allPurchases = purchaseRes.data || [];
+        const sales = allPurchases.filter((p: any) => 
+          p.sellerEmail?.toLowerCase() === user.email?.toLowerCase()
+        );
         const ratingsData = ratingsRes.data || {};
 
         const earned = sales
