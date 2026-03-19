@@ -34,6 +34,7 @@ import MyOrder from "../components/MyOrder/MyOrder";
 import Plan from "../pages/plan/Plan";
 
 import PrivacyPolicy from "../components/Policy/PrivacyPolicy";
+import ReferralDashboard from "../components/Referral/ReferralDashboard";
 import ReferralProgram from "../components/Policy/ReferralProgram";
 import RefundPolicy from "../components/Policy/RefundPolicy";
 import TermsOfService from "../components/Policy/TermsOfService";
@@ -98,7 +99,11 @@ const Routes = createBrowserRouter([
       },
       {
         path: "/referral",
-        element: <ReferralProgram />,
+        element: (
+          <PrivateRoute>
+            <ReferralDashboard />
+          </PrivateRoute>
+        ),
       },
       {
         path: "/why-choose-us",

@@ -5,8 +5,12 @@ import {
   ArrowUpward,
   History,
   Remove,
-  TrendingUp
+  TrendingUp,
+  Share,
+  ContentCopy,
+  CardGiftcard
 } from "@mui/icons-material";
+import { useNavigate } from "react-router-dom";
 
 import {
   Avatar,
@@ -45,6 +49,7 @@ const COLORS = {
 };
 
 const Buyer: React.FC = () => {
+  const navigate = useNavigate();
   const [currentTab, setCurrentTab] = React.useState(0);
 
   const walletBalance = {
@@ -307,6 +312,56 @@ const Buyer: React.FC = () => {
                 <Avatar sx={{ bgcolor: COLORS.black }}>
                   <ArrowUpward sx={{ color: COLORS.white }} />
                 </Avatar>
+              </Box>
+            </Paper>
+
+            {/* REFERRAL CARD */}
+            <Paper
+              elevation={2}
+              className="p-6 rounded-2xl flex flex-col justify-between"
+              sx={{
+                backgroundColor: COLORS.blue,
+                color: COLORS.white,
+                gridColumn: { lg: "span 2" }
+              }}
+            >
+              <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+                <Box display="flex" alignItems="center" gap={2}>
+                  <Avatar sx={{ bgcolor: COLORS.gold, color: COLORS.black }}>
+                    <CardGiftcard />
+                  </Avatar>
+                  <Box>
+                    <Typography fontWeight="bold">Refer & Earn</Typography>
+                    <Typography variant="caption" sx={{ opacity: 0.8 }}>Get $5 for every friend you invite</Typography>
+                  </Box>
+                </Box>
+                <Button 
+                  size="small" 
+                  variant="contained" 
+                  onClick={() => navigate("/referral")}
+                  sx={{ 
+                    bgcolor: COLORS.gold, 
+                    color: COLORS.black,
+                    fontWeight: "bold",
+                    ":hover": { bgcolor: "#c59a3d" }
+                  }}
+                >
+                  View Dashboard
+                </Button>
+              </Box>
+              <Box 
+                sx={{ 
+                  bgcolor: "rgba(255,255,255,0.1)", 
+                  p: 2, 
+                  borderRadius: 2,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  border: "1px dashed rgba(212, 166, 67, 0.5)"
+                }}
+              >
+                <Typography variant="body2" sx={{ fontOpacity: 0.7 }}>Your code awaits in the dashboard</Typography>
+                <Share sx={{ color: COLORS.gold, fontSize: 20 }} />
               </Box>
             </Paper>
           </Box>

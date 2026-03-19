@@ -504,7 +504,7 @@ export default function Navbar() {
                             <span className="text-sm font-semibold">Seller Dashboard</span>
                           </Link>
                         )}
-                        {(loginUser?.role === "seller" || loginUser?.role === "admin") && (
+                        {loginUser && (
                           <Link to="/referral" onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 transition text-gray-700 hover:text-gray-900">
                             <Users size={18} className="text-gray-400" />
                             <span className="text-sm font-semibold">Referral</span>
