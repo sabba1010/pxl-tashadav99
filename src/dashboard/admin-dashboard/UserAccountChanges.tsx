@@ -53,7 +53,7 @@ export default function UserAccountChanges() {
     try {
       setLoading(true);
       const response = await axios.get<{ success: boolean; changes: AccountChange[] }>(
-        `${BASE_URL}/api/user/all-changes/admin/list?limit=500`
+        `${BASE_URL}/user/all-changes/admin/list?limit=500`
       );
 
       if (response.data.success) {

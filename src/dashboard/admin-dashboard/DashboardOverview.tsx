@@ -97,12 +97,12 @@ const DashboardOverview: React.FC = () => {
    */
   const fetchDashboardData = async (): Promise<AdminMetrics> => {
     const [uRes, prRes, puRes, payRes, wRes, finRes] = await Promise.all([
-      axios.get(`${BASE_URL}/api/user/getall`).catch(() => ({ data: [] })),
+      axios.get(`${BASE_URL}/user/getall`).catch(() => ({ data: [] })),
       axios.get(`${BASE_URL}/product/all-sells`).catch(() => ({ data: [] })),
       axios.get(`${BASE_URL}/purchase/getall`).catch(() => ({ data: [] })),
-      axios.get(`${BASE_URL}/api/payments`).catch(() => ({ data: [] })),
+      axios.get(`${BASE_URL}/payments`).catch(() => ({ data: [] })),
       axios.get(`${BASE_URL}/withdraw/getall`).catch(() => ({ data: [] })),
-      axios.get(`${BASE_URL}/api/admin/financial-metrics`).catch(() => ({ data: { metrics: {} } })),
+      axios.get(`${BASE_URL}/admin/financial-metrics`).catch(() => ({ data: { metrics: {} } })),
     ]);
 
     const users = (Array.isArray(uRes.data) ? uRes.data : []) as any[];

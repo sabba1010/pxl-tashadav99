@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import axios from "axios";
 import { toast } from "sonner";
 import { API_BASE_URL } from "../../config";
 import {
@@ -48,7 +49,7 @@ const ReportAdmin: React.FC = () => {
 
   const fetchReportsData = async (): Promise<IReport[]> => {
     const res = await axios.get<IReport[]>(`${API_BASE}/report/getall`);
-    const usersRes = await axios.get<any>(`${API_BASE.replace('/purchase', '')}/api/user/getall`);
+    const usersRes = await axios.get<any>(`${API_BASE_URL}/user/getall`);
     const users: any[] = Array.isArray(usersRes.data) ? usersRes.data : usersRes.data?.users || [];
 
     const phoneMap = new Map<string, string>();

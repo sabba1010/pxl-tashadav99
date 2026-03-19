@@ -135,7 +135,7 @@ const Profile: React.FC = () => {
     if (!user?._id) return;
     setLoading(true);
     try {
-      const res = await axios.get<AdminProfile>(`${API_BASE_URL}/getall/${user._id}`);
+      const res = await axios.get<AdminProfile>(`${API_BASE_URL}/user/getall/${user._id}`);
       if (res.data) {
         setProfile(res.data);
         setEditForm({
@@ -168,7 +168,7 @@ const Profile: React.FC = () => {
   const handleEditSave = async () => {
     if (!profile) return;
     try {
-      const response = await axios.put<UpdateResponse>(`${API_BASE_URL}/update-profile`, {
+      const response = await axios.put<UpdateResponse>(`${API_BASE_URL}/user/update-profile`, {
         _id: profile._id,
         email: profile.email,
         name: editForm.name.trim(),
@@ -202,7 +202,7 @@ const Profile: React.FC = () => {
     if (passwordForm.new !== passwordForm.confirm) return toast.error("Passwords do not match");
     if (passwordForm.new.length < 6) return toast.error("Password must be at least 6 characters");
     try {
-      const response = await axios.put<UpdateResponse>(`${API_BASE_URL}/update-password`, {
+      const response = await axios.put<UpdateResponse>(`${API_BASE_URL}/user/update-password`, {
         _id: profile?._id,
         email: profile?.email,
         currentPassword: passwordForm.current,

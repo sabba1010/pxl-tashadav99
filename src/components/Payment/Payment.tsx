@@ -47,7 +47,7 @@ const Payment: React.FC = () => {
             ngnToUsdRate?: number;
             depositRate?: number;
           };
-        }>(`${API_BASE_URL}/api/settings`);
+        }>(`${API_BASE_URL}/settings`);
         if (res.data.success) {
           setExchangeRate(res.data.settings.depositRate || res.data.settings.ngnToUsdRate || 1500);
         }
