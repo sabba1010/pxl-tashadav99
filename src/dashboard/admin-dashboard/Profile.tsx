@@ -302,6 +302,7 @@ const Profile: React.FC = () => {
             </div>
 
             {/* Financial Information */}
++            {/* 
             <div className="md:col-span-2">
               <SectionTitle icon={<Wallet size={20} />}>Financial Information</SectionTitle>
               <div className="space-y-1 bg-gray-50 rounded-xl p-5 border border-gray-100 shadow-sm">
@@ -310,6 +311,8 @@ const Profile: React.FC = () => {
                 <DetailItem label="Subscribed Plan" value={profile.subscribedPlan} />
               </div>
             </div>
++            */}
+
           </div>
 
           {/* Permissions */}
@@ -416,6 +419,7 @@ const Profile: React.FC = () => {
                   onChange={(e) => setEditForm({ ...editForm, country: e.target.value })}
                 />
               </div>
+              {/* 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Balance</label>
                 <input
@@ -442,6 +446,8 @@ const Profile: React.FC = () => {
                   onChange={(e) => setEditForm({ ...editForm, subscribedPlan: e.target.value })}
                 />
               </div>
+              */}
+
             </div>
             <div className="flex gap-4 mt-8">
               <button
