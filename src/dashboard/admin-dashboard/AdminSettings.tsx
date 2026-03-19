@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { toast } from "sonner";
 import { API_BASE_URL } from "../../config";
 
 const API_URL = API_BASE_URL;
+
 
 type Msg = { text: string; type?: "success" | "error" | "info" } | null;
 
@@ -22,9 +25,8 @@ const AdminSettings: React.FC = () => {
   useEffect(() => {
     const load = async () => {
       try {
-        const res = await fetch(`${API_URL}/settings`);
-        if (!res.ok) return;
-        const data = await res.json();
+        const res = await axios.get<{ success: boolean; settings: any }>(`${API_URL}/settings`);
+        const data = res.data;
         const s = data?.settings || {};
         setFee(s.registrationFee ?? 15);
         setBuyerDepositRate(s.buyerDepositRate ?? 0);
@@ -34,6 +36,7 @@ const AdminSettings: React.FC = () => {
         console.error(err);
       }
     };
+
     load();
   }, []);
 
@@ -46,20 +49,19 @@ const AdminSettings: React.FC = () => {
     }
     setFeeLoading(true);
     try {
-      const res = await fetch(`${API_URL}/settings`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ registrationFee: Number(fee) }),
-      });
-      const data = await res.json();
+      const res = await axios.post<{ success: boolean; settings: any; message?: string }>(`${API_URL}/settings`, { registrationFee: Number(fee) });
+      const data = res.data;
       if (data.success) {
+        toast.success("Registration fee saved");
         setFeeMessage({ text: `Registration fee saved`, type: "success" });
         const s = data.settings || {};
         setFee(s.registrationFee ?? Number(fee));
       } else {
+        toast.error(data.message || "Save failed");
         setFeeMessage({ text: data.message || "Save failed", type: "error" });
       }
     } catch (err) {
+
       console.error(err);
       setFeeMessage({ text: "Network error. Try again.", type: "error" });
     } finally {
@@ -108,20 +110,19 @@ const AdminSettings: React.FC = () => {
     }
     setDepositLoading(true);
     try {
-      const res = await fetch(`${API_URL}/settings`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ depositRate: Number(depositRate) }),
-      });
-      const data = await res.json();
+      const res = await axios.post<{ success: boolean; settings: any; message?: string }>(`${API_URL}/settings`, { depositRate: Number(depositRate) });
+      const data = res.data;
       if (data.success) {
+        toast.success("Deposit rate saved");
         setDepositMessage({ text: `Deposit rate saved`, type: "success" });
         const s = data.settings || {};
         setDepositRate(s.depositRate ?? Number(depositRate));
       } else {
+        toast.error(data.message || "Save failed");
         setDepositMessage({ text: data.message || "Save failed", type: "error" });
       }
     } catch (err) {
+
       console.error(err);
       setDepositMessage({ text: "Network error. Try again.", type: "error" });
     } finally {
@@ -138,20 +139,19 @@ const AdminSettings: React.FC = () => {
     }
     setWithdrawLoading(true);
     try {
-      const res = await fetch(`${API_URL}/settings`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ withdrawRate: Number(withdrawRate) }),
-      });
-      const data = await res.json();
+      const res = await axios.post<{ success: boolean; settings: any; message?: string }>(`${API_URL}/settings`, { withdrawRate: Number(withdrawRate) });
+      const data = res.data;
       if (data.success) {
+        toast.success("Withdrawal rate saved");
         setWithdrawMessage({ text: `Withdrawal rate saved`, type: "success" });
         const s = data.settings || {};
         setWithdrawRate(s.withdrawRate ?? Number(withdrawRate));
       } else {
+        toast.error(data.message || "Save failed");
         setWithdrawMessage({ text: data.message || "Save failed", type: "error" });
       }
     } catch (err) {
+
       console.error(err);
       setWithdrawMessage({ text: "Network error. Try again.", type: "error" });
     } finally {

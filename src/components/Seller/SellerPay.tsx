@@ -42,7 +42,7 @@ const SellerPay = () => {
     let mounted = true;
     const fetchFee = async () => {
       try {
-        const res = await fetch(`${API_URL}/api/settings`);
+        const res = await fetch(`${API_URL}/settings`);
         const data = await res.json();
         const fee = data?.settings?.registrationFee;
         if (mounted && fee !== undefined && !isNaN(Number(fee))) {
@@ -110,7 +110,7 @@ const SellerPay = () => {
 
     try {
       // API Call
-      const res = await fetch(`${API_URL}/api/user/become-seller`, {
+      const res = await fetch(`${API_URL}/user/become-seller`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

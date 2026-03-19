@@ -226,6 +226,7 @@ const WithdrawForm: React.FC = () => {
 
       const withdrawResponse = await fetch(
         `${API_BASE_URL}/withdraw/post`,
+
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
