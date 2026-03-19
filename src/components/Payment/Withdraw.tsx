@@ -10,6 +10,7 @@ import { useAuth } from "../../context/AuthContext";
 import { toast } from "sonner";
 import { useAuthHook } from "../../hook/useAuthHook";
 import { API_BASE_URL } from "../../config";
+import { useSettings } from "../../hook/useSettings";
 
 // react-icons v5+ TypeScript fix
 const CreditCardIcon = FaCreditCard as React.ElementType;
@@ -49,23 +50,8 @@ const WithdrawForm: React.FC = () => {
     bankName: "",
   });
 
-  const [withdrawRate, setWithdrawRate] = useState(1400);
-
-  // Fetch withdraw rate
-  useEffect(() => {
-    const fetchRate = async () => {
-      try {
-        const res = await fetch(`${API_BASE_URL}/settings`);
-        const data = await res.json();
-        if (data.success) {
-          setWithdrawRate(data.settings.withdrawRate || 1400);
-        }
-      } catch (err) {
-        console.error("Failed to fetch withdraw rate", err);
-      }
-    };
-    fetchRate();
-  }, []);
+  const { settings } = useSettings();
+  const withdrawRate = settings.withdrawRate;
 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{

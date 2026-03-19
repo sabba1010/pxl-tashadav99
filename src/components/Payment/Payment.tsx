@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import axios from "axios";
 import { useAuthHook } from "../../hook/useAuthHook";
 import { API_BASE_URL } from "../../config";
+import { useSettings } from "../../hook/useSettings";
 
 // ================= TYPES =================
 interface ApiResponse {
@@ -26,7 +27,8 @@ const Payment: React.FC = () => {
   const [loading, setLoading] = useState<
     "flw" | "kora" | "verifying" | null
   >(null);
-  const [exchangeRate, setExchangeRate] = useState(1500);
+  const { settings } = useSettings();
+  const exchangeRate = settings.depositRate;
 
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -36,27 +38,6 @@ const Payment: React.FC = () => {
   const userEmail = loginUserData?.data?.email;
 
   const quickAmounts = [10, 25, 50, 100];
-
-  // ================= FETCH SETTINGS =================
-  useEffect(() => {
-    const fetchRate = async () => {
-      try {
-        const res = await axios.get<{
-          success: boolean;
-          settings: {
-            ngnToUsdRate?: number;
-            depositRate?: number;
-          };
-        }>(`${API_BASE_URL}/settings`);
-        if (res.data.success) {
-          setExchangeRate(res.data.settings.depositRate || res.data.settings.ngnToUsdRate || 1500);
-        }
-      } catch (err) {
-        console.error("Failed to fetch exchange rate", err);
-      }
-    };
-    fetchRate();
-  }, []);
 
   // ================= VERIFY FLUTTERWAVE =================
   useEffect(() => {
