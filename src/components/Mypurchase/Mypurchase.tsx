@@ -2,6 +2,7 @@ import React, { useMemo, useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import Loading from "../Loading";
 import { API_BASE_URL } from "../../config";
+import axios from "axios";
 import { useAuthHook } from "../../hook/useAuthHook";
 import { toast } from "sonner";
 import RatingModal from "../Rating/RatingModal";
@@ -104,12 +105,14 @@ const inferPlatform = (name: string): PlatformType => {
   return "other";
 };
 
-const formatDate = (d: string) => {
-  if (!d) return "N/A";
-  return formatToWAT(d, {
-    month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: true
+const formatDate = (d: string) =>
+  new Date(d).toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   });
-};
 
 const timeAgo = (dateString?: string) => {
   return getRelativeTimeWAT(dateString);
@@ -145,7 +148,7 @@ const RenderIcon = ({ icon, size = 40 }: { icon?: string; size?: number }) => {
   );
 };
 
-const TABS = ["All", "Pending", "Completed", "Cancelled"] as const;
+const TABS = ["All", "Pending", "Completed", "Cancelled", "Reported"] as const;
 type Tab = (typeof TABS)[number];
 
 const STORAGE_KEY = 'lastReadIds';
@@ -157,6 +160,7 @@ const MyPurchase: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
   const [now, setNow] = useState(Date.now());
+  const [reports, setReports] = useState<any[]>([]);
   const autoCompletedRef = useRef<Set<string>>(new Set());
 
   const loginUserData = useAuthHook();
@@ -401,9 +405,15 @@ const MyPurchase: React.FC = () => {
     if (!buyerId) return;
     try {
       setIsLoading(true);
-      const res = await axios.get<RawPurchaseItem[]>(`${PURCHASE_API}/getall?email=${buyerId}&role=buyer`);
+      console.log("Fetching ALL purchases to filter on frontend (like Orders page)...");
+      const res = await axios.get<RawPurchaseItem[]>(`${PURCHASE_API}/getall`);
+      
+      const myPurchases = res.data.filter(item => 
+        item.buyerEmail?.toLowerCase() === buyerId?.toLowerCase()
+      );
+      console.log("Found purchases for user:", myPurchases.length);
 
-      const enrichedData = await Promise.all(res.data.map(async (item) => {
+      const enrichedData = await Promise.all(myPurchases.map(async (item) => {
         if (item.productId) {
           try {
             const productRes = await axios.get<any>(`${BASE_URL}/product/${item.productId}`);
@@ -458,8 +468,19 @@ const MyPurchase: React.FC = () => {
     }
   };
 
+  const fetchReports = async () => {
+    if (!buyerId) return;
+    try {
+      const res = await axios.get<any[]>(`${PURCHASE_API}/my-reports?email=${buyerId}`);
+      setReports(res.data);
+    } catch (err) {
+      console.error("Failed to fetch reports:", err);
+    }
+  };
+
   useEffect(() => {
     fetchPurchases();
+    fetchReports();
   }, [buyerId]);
 
   const handleUpdateStatus = async (status: string, sellerEmail: string, orderId?: string) => {
@@ -559,8 +580,12 @@ const MyPurchase: React.FC = () => {
 
   const filtered = useMemo(() => {
     if (activeTab === "All") return purchases;
+    if (activeTab === "Reported") {
+      const reportedIds = new Set(reports.map(r => r.orderId));
+      return purchases.filter(p => reportedIds.has(p.id));
+    }
     return purchases.filter((p) => p.status === activeTab);
-  }, [activeTab, purchases]);
+  }, [activeTab, purchases, reports]);
 
   const paginated = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
@@ -667,17 +692,17 @@ const MyPurchase: React.FC = () => {
                   <div className="flex gap-4 items-start">
                     <RenderIcon icon={p.icon} size={40} />
                     <div>
-                      <h3 className="font-bold text-[#0A1A3A] text-sm sm:text-base leading-tight">{p.title}</h3>
+                      <h3 className="font-bold text-[#0A1A3A] text-sm sm:text-base leading-tight">
+                        {p.title}
+                      </h3>
                       <div className="flex items-center gap-2 mt-1">
-                        <span className="text-xs text-gray-400 font-medium">Seller: {maskEmail(p.sellerEmail)}</span>
-                        <div className="flex items-center gap-1 bg-white px-2 py-0.5 rounded-full border shadow-sm">
-                          <UserActivityStatus userId={p.sellerEmail} />
-                        </div>
+                        <span className="text-xs text-gray-400 font-medium">
+                          Seller: {maskEmail(p.sellerEmail)}
+                        </span>
+                        <UserActivityStatus userId={p.sellerEmail} />
                       </div>
                       {lastMessageTimes[p.id] && (
-                        <p className="text-[10px] text-gray-500 mt-0.5 ml-0.5 flex items-center gap-1">
-                          <FaClockIcon size={8} />  Last msg {timeAgo(lastMessageTimes[p.id])}
-                        </p>
+                        <p className="text-[10px] text-gray-500 mt-0.5">{timeAgo(lastMessageTimes[p.id])}</p>
                       )}
                       <div className="flex flex-wrap items-center gap-2 mt-2">
                         <span className={`text-[10px] px-2 py-0.5 rounded-full border font-bold ${p.status === 'Completed' ? 'bg-green-50 text-green-600 border-green-100' :
@@ -689,6 +714,11 @@ const MyPurchase: React.FC = () => {
                         {p.status === "Pending" && (
                           <span className="text-[10px] text-blue-600 font-bold flex items-center gap-1">
                             <FaClockIcon size={10} /> {getRemainingTime(p)}
+                          </span>
+                        )}
+                        {reports.some(r => r.orderId === p.id) && (
+                          <span className="text-[10px] bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-bold flex items-center gap-1">
+                            ⚠️ Reported
                           </span>
                         )}
                       </div>
