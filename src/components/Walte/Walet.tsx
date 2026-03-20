@@ -101,7 +101,7 @@ export default function Wallet(): React.ReactElement {
   const onlineDeposits: Tx[] = payments.map((tx) => ({
     id: tx._id,
     type: "deposit",
-    amount: Number(tx.amountUSD ?? tx.amount) || 0,
+    amount: Number(tx.amountUSD || (tx.amount / (tx.appliedRate || 1)) || tx.amount || 0),
     status:
       tx.status === "successful"
         ? "completed"

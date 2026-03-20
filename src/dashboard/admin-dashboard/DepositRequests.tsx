@@ -28,6 +28,7 @@ interface Payment {
   amount: number;
   amountUSD?: number;
   amountNGN?: number;
+  appliedRate?: number;
   currency: string;
   status: string;
   customerEmail: string;
@@ -188,7 +189,9 @@ const DepositRequests: React.FC = () => {
                       <TableCell sx={{ color: "#4B5563" }}>{new Date(p.createdAt).toLocaleString()}</TableCell>
                       <TableCell sx={{ fontFamily: "monospace", color: "#6B7280" }}>{String(p.transactionId)}</TableCell>
                       <TableCell sx={{ fontWeight: 700 }}>
-                        <Typography variant="body2" sx={{ fontWeight: 700 }}>{formatCurrency(p.amountUSD ?? p.amount)}</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 700 }}>
+                          {formatCurrency(p.amountUSD ?? (p.amount / (p.appliedRate || 1)))}
+                        </Typography>
                         {p.amountNGN && (
                           <Typography variant="caption" sx={{ color: "text.secondary" }}>
                             {new Intl.NumberFormat("en-NG", { style: "currency", currency: "NGN" }).format(p.amountNGN)}

@@ -118,7 +118,10 @@ const DashboardOverview: React.FC = () => {
     const totalBuyerDeposits = payments.reduce((acc: number, p: any) => {
       const status = p.status?.toLowerCase();
       if (["successful", "completed"].includes(status) || p.credited) {
-        return acc + Number(p.amount || 0);
+        // Source of truth: amountUSD. Fallback to calculating from NGN/Rate or legacy amount.
+        // For Korapay/Flutterwave, 'amount' is often NGN, so we MUST use amountUSD or convert.
+        const depositVal = Number(p.amountUSD || (Number(p.amount) / (p.appliedRate || 1)) || p.amount || 0);
+        return acc + depositVal;
       }
       return acc;
     }, 0);
@@ -130,7 +133,7 @@ const DashboardOverview: React.FC = () => {
     withdraws.forEach((w: any) => {
       const statusLower = w.status?.toLowerCase() || "";
       if (["approved", "success", "completed"].includes(statusLower)) {
-        const amount = Number(w.amount || 0);
+        const amount = Number(w.amountUSD || w.amount || 0);
         const uid = (w.userId || w.sellerId)?.toString();
 
         if (!uid) {

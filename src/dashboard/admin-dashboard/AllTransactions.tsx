@@ -46,7 +46,7 @@ const AllTransactions: React.FC = () => {
           (item: any) => ({
             id: item._id,
             transactionId: item.transactionId,
-            amountUSD: parseFloat(item.amount),
+            amountUSD: item.amountUSD || (Number(item.amount) / (item.appliedRate || 1)) || 0,
             currency: item.currency || "USD",
             status: item.status,
             credited: item.credited,

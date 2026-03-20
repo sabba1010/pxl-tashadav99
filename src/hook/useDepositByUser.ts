@@ -9,12 +9,15 @@ import { API_BASE_URL } from "../config";
 export interface Payment {
   _id: string;
   transactionId: string;
+  tx_ref?: string;
   amount: number;
   amountUSD?: number;
   amountNGN?: number;
+  appliedRate?: number;
   currency: string;
   status: string;
   customerEmail: string;
+  credited?: boolean;
   createdAt: string;
 }
 
