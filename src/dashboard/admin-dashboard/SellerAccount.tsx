@@ -24,6 +24,7 @@ import {
   FormControl,
   Button,
   Tooltip,
+  Badge,
 } from "@mui/material";
 import {
   Refresh,
@@ -137,6 +138,18 @@ const SellerAccount: React.FC = () => {
     refetchInterval: 5000,
   });
 
+  // 4. Fetch Unread Counts
+  const { data: unreadCounts } = useQuery<Record<string, number>>({
+    queryKey: ["unread-counts-sellers"],
+    queryFn: async () => {
+      const res = await axios.get<Record<string, number>>(`${ADMIN_CHAT_API}/unread-counts`);
+      return res.data;
+    },
+    refetchInterval: 5000,
+  });
+
+  const getUnreadCount = (email: string) => (unreadCounts ? unreadCounts[email] : 0);
+
   /* ====================== PAGINATION & FILTERING ====================== */
   const filteredSellers = useMemo(() => {
     return sellers.filter(
@@ -208,7 +221,16 @@ const SellerAccount: React.FC = () => {
   useEffect(() => {
     if (chatOpen && selectedSeller) {
       fetchChat();
-      const interval = setInterval(fetchChat, 4000);
+      const markAsRead = () => {
+        axios.post(`${ADMIN_CHAT_API}/mark-read-admin`, { userEmail: selectedSeller.email })
+          .then(() => queryClient.invalidateQueries({ queryKey: ["unread-counts-sellers"] }))
+          .catch(err => console.error("Mark read error:", err));
+      };
+      markAsRead();
+      const interval = setInterval(() => {
+        fetchChat();
+        markAsRead();
+      }, 4000);
       return () => clearInterval(interval);
     }
   }, [chatOpen, selectedSeller?.email]);
@@ -446,7 +468,9 @@ const SellerAccount: React.FC = () => {
                           }}
                           sx={{ color: "#6366F1", bgcolor: "#EEF2FF" }}
                         >
-                          <Chat fontSize="small" />
+                          <Badge badgeContent={getUnreadCount(s.email)} color="error">
+                            <Chat fontSize="small" />
+                          </Badge>
                         </IconButton>
                         <IconButton
                           onClick={() => {

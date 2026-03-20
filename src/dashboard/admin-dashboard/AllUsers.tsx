@@ -4,7 +4,7 @@ import React, { useMemo, useState, useEffect, useRef } from "react";
 import {
   Box, Paper, InputBase, IconButton, Pagination, Typography,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-  CircularProgress, Avatar, Modal, Tabs, Tab, Select, MenuItem, FormControl, Chip, TextField
+  CircularProgress, Avatar, Modal, Tabs, Tab, Select, MenuItem, FormControl, Chip, TextField, Badge
 } from "@mui/material";
 import { Refresh, Visibility, Close, FiberManualRecord, CheckCircle, Cancel, ShoppingBag, CalendarMonth, Phone, Chat, Send } from "@mui/icons-material";
 import { toast } from "sonner";
@@ -70,6 +70,18 @@ const AllUsers: React.FC = () => {
     },
     refetchInterval: 5000,
   });
+  
+  // 3. Fetch Unread Counts
+  const { data: unreadCounts } = useQuery<Record<string, number>>({
+    queryKey: ["unread-counts"],
+    queryFn: async () => {
+      const res = await axios.get<Record<string, number>>(`${ADMIN_CHAT_API}/unread-counts`);
+      return res.data;
+    },
+    refetchInterval: 5000,
+  });
+
+  const getUnreadCount = (email: string) => (unreadCounts ? unreadCounts[email] : 0);
 
   /* ====================== ACTIONS ====================== */
   const handleStatusChange = async (userId: string, newStatus: string) => {
@@ -182,7 +194,20 @@ const AllUsers: React.FC = () => {
   useEffect(() => {
     if (chatOpen && selectedUser) {
       fetchChat();
-      const interval = setInterval(fetchChat, 4000);
+
+      const markAsRead = () => {
+        axios.post(`${ADMIN_CHAT_API}/mark-read-admin`, { userEmail: selectedUser.email })
+          .then(() => queryClient.invalidateQueries({ queryKey: ["unread-counts"] }))
+          .catch(err => console.error("Mark read error:", err));
+      };
+
+      markAsRead();
+
+      const interval = setInterval(() => {
+        fetchChat();
+        markAsRead();
+      }, 4000);
+
       return () => clearInterval(interval);
     }
   }, [chatOpen, selectedUser?.email]);
@@ -320,10 +345,16 @@ const AllUsers: React.FC = () => {
                             setSelectedUser(u);
                             setChatOpen(true);
                             shouldScrollRef.current = true;
+                            // Mark as read when opening chat
+                            axios.post(`${ADMIN_CHAT_API}/mark-read-admin`, { userEmail: u.email })
+                              .then(() => queryClient.invalidateQueries({ queryKey: ["unread-counts"] }))
+                              .catch(err => console.error("Mark read error:", err));
                           }}
                           sx={{ color: "#6366F1" }}
                         >
-                          <Chat fontSize="small" />
+                          <Badge badgeContent={getUnreadCount(u.email)} color="error">
+                            <Chat fontSize="small" />
+                          </Badge>
                         </IconButton>
                       </Box>
                     </TableCell>
