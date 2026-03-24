@@ -149,6 +149,11 @@ const DetailsModal: React.FC<{ request: WithdrawalRequest | null; onClose: () =>
             <Typography sx={{ fontSize: 12, fontWeight: 700, color: "#64748B", mb: 0.5 }}>SELLER</Typography>
             <Typography sx={{ fontSize: 14, color: "#1F2937", fontWeight: 600 }}>{request.fullName}</Typography>
             <Typography sx={{ fontSize: 13, color: "#64748B" }}>{request.email}</Typography>
+            {request.phoneNumber && (
+              <Typography sx={{ fontSize: 13, color: "#047857", fontWeight: 600, mt: 0.5 }}>
+                WhatsApp: {request.phoneNumber}
+              </Typography>
+            )}
           </Box>
           <Box sx={{ bgcolor: "#F8FAFC", p: 2, borderRadius: 2 }}>
             <Typography sx={{ fontSize: 12, fontWeight: 700, color: "#64748B", mb: 1.5 }}>BANK ACCOUNT DETAILS</Typography>

@@ -22,6 +22,7 @@ interface AdminProfile {
   status?: string;
   profilePicture: string | null;
   phone: string;
+  dialCode?: string;
   countryCode?: string;
   createdAt: string;
   lastLogin?: string;
@@ -267,7 +268,22 @@ const Profile: React.FC = () => {
               <SectionTitle icon={<UserCog size={20} />}>Personal Information</SectionTitle>
               <div className="space-y-1 bg-gray-50 rounded-xl p-5 border border-gray-100 shadow-sm">
                 <DetailItem icon={<Mail size={18} />} label="Email" value={profile.email} highlight />
-                <DetailItem icon={<Phone size={18} />} label="Phone" value={profile.phone ? `${profile.countryCode || ""}${profile.phone}` : null} />
+                <DetailItem 
+                  icon={<Phone size={18} />} 
+                  label="Phone" 
+                  value={
+                    <div className="flex items-center gap-2">
+                       {profile.countryCode && (
+                        <img 
+                          src={`https://flagcdn.com/w20/${profile.countryCode.toLowerCase()}.png`}
+                          alt={profile.countryCode}
+                          className="w-5 h-auto rounded-sm"
+                        />
+                      )}
+                      <span>{profile.dialCode || ""}{profile.phone}</span>
+                    </div>
+                  } 
+                />
                 <DetailItem icon={<Calendar size={18} />} label="Date of Birth" value={profile.dob} />
                 <DetailItem icon={<MapPin size={18} />} label="Address" value={profile.address} />
                 <DetailItem icon={<MapPin size={18} />} label="Location" value={profile.city && profile.state && profile.country ? `${profile.city}, ${profile.state}, ${profile.country}` : null} />

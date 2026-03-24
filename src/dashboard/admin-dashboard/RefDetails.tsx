@@ -13,6 +13,8 @@ type UserType = {
   _id: string;
   email: string;
   phone?: string;
+  dialCode?: string;
+  countryCode?: string;
   role?: string;
   createdAt?: string;
   referralCode?: string;
@@ -53,6 +55,8 @@ const RefDetails = () => {
     return {
       email: ref?.email || "N/A",
       phone: ref?.phone || "",
+      dialCode: ref?.dialCode || "",
+      countryCode: ref?.countryCode || "",
       referralCount: count
     };
   };
@@ -62,13 +66,14 @@ const RefDetails = () => {
     window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${email}`, "_blank");
   };
 
-  const openWhatsApp = (phone: string) => {
+  const openWhatsApp = (dialCode: string, phone: string) => {
     if (!phone || phone === "N/A") {
       toast.error("Phone number not available");
       return;
     }
-    const cleanPhone = phone.replace(/\D/g, "");
-    window.open(`https://wa.me/${cleanPhone}`, "_blank");
+    const cleanDial = dialCode.replace("+", "");
+    const cleanPhone = phone.replace(/^0/, "").replace(/\D/g, "");
+    window.open(`https://wa.me/${cleanDial}${cleanPhone}`, "_blank");
   };
 
   const updateStatus = async (userId: string, status: ReferralStatus) => {
@@ -223,10 +228,18 @@ const RefDetails = () => {
                           <ExternalLink size={10} className="opacity-0 group-hover:opacity-100 transition-opacity" />
                         </button>
                         <button
-                          onClick={() => openWhatsApp(inviter.phone)}
+                          onClick={() => openWhatsApp(inviter.dialCode, inviter.phone)}
                           className="flex items-center gap-1.5 text-xs text-green-600 font-semibold hover:bg-green-50 px-1 rounded transition-colors"
                         >
-                          <MessageCircle size={13} /> {inviter.phone || "N/A"}
+                          <MessageCircle size={13} />
+                          {inviter.countryCode && (
+                            <img 
+                              src={`https://flagcdn.com/w16/${inviter.countryCode.toLowerCase()}.png`}
+                              alt={inviter.countryCode}
+                              className="w-4 h-auto rounded-sm mr-1"
+                            />
+                          )}
+                          {inviter.dialCode} {inviter.phone || "N/A"}
                         </button>
                         <div className="mt-1 flex flex-wrap gap-1">
                           <span className="text-[10px] text-blue-500 font-mono font-bold bg-blue-50 px-1.5 py-0.5 rounded uppercase border border-blue-100">CODE: {user.referredBy}</span>
@@ -247,10 +260,18 @@ const RefDetails = () => {
                           <ExternalLink size={10} className="opacity-0 group-hover:opacity-100 transition-opacity" />
                         </button>
                         <button
-                          onClick={() => openWhatsApp(user.phone || "")}
+                          onClick={() => openWhatsApp(user.dialCode || "", user.phone || "")}
                           className="flex items-center gap-1.5 text-xs text-green-600 font-semibold hover:bg-green-50 px-1 rounded transition-colors"
                         >
-                          <MessageCircle size={13} /> {user.phone || "N/A"}
+                          <MessageCircle size={13} />
+                          {user.countryCode && (
+                            <img 
+                              src={`https://flagcdn.com/w16/${user.countryCode.toLowerCase()}.png`}
+                              alt={user.countryCode}
+                              className="w-4 h-auto rounded-sm mr-1"
+                            />
+                          )}
+                          {user.dialCode} {user.phone || "N/A"}
                         </button>
                         <div className="mt-1 flex gap-1.5 items-center">
                           <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${user.role === 'seller'

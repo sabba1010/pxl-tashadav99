@@ -8,6 +8,8 @@ interface User {
   name: string;
   email: string;
   phone: string;
+  dialCode?: string;
+  countryCode?: string;
   role: string;
   balance: number;
   status?: 'active' | 'blocked';
@@ -84,7 +86,24 @@ const SellerManagement = () => {
                 <td className="px-6 py-5">
                   <div className="font-extrabold text-gray-900 text-lg">{seller.name || "N/A"}</div>
                   <div className="text-sm text-blue-600 font-medium">{seller.email}</div>
-                  <div className="text-xs text-green-600 font-bold mt-1">WhatsApp: {seller.phone}</div>
+                  <div className="text-xs font-bold mt-1 flex items-center gap-1.5">
+                    {seller.countryCode && (
+                      <img 
+                        src={`https://flagcdn.com/w20/${seller.countryCode.toLowerCase()}.png`}
+                        alt={seller.countryCode}
+                        className="w-5 h-auto rounded-sm"
+                      />
+                    )}
+                    <span className="text-green-600">WhatsApp: </span>
+                    <a 
+                      href={`https://wa.me/${(seller.dialCode || "").replace("+", "")}${seller.phone.replace(/^0/, "")}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-green-600 hover:underline"
+                    >
+                      {seller.dialCode ? `${seller.dialCode} ` : ""}{seller.phone}
+                    </a>
+                  </div>
                 </td>
                 <td className="px-6 py-5">
                   <div className="flex items-center">

@@ -73,13 +73,14 @@ interface Seller {
   name: string;
   email: string;
   phone?: string;
+  dialCode?: string;
+  countryCode?: string;
   balance: number;
   salesCredit?: number;
   subscribedPlan?: string;
   status?: string;
   accountCreationDate?: string;
   role?: string;
-  countryCode?: string;
 }
 
 const BASE_URL = API_BASE_URL;
@@ -259,31 +260,16 @@ const SellerAccount: React.FC = () => {
     return `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(email)}&su=${subject}&body=${body}`;
   };
 
-  const getWhatsAppLink = (phone?: string) => {
+  const getWhatsAppLink = (dialCode?: string, phone?: string) => {
     if (!phone || phone.trim() === "") return null;
-    let cleaned = phone.replace(/\D/g, "");
-    if (cleaned.length > 12 && cleaned.startsWith("00")) cleaned = cleaned.substring(2);
-    if ((cleaned.length === 10 || cleaned.length === 11) && (cleaned.startsWith("0") || cleaned.startsWith("1"))) {
-      cleaned = "880" + (cleaned.startsWith("0") ? cleaned.substring(1) : cleaned);
-    } else if (cleaned.length === 10 && !cleaned.startsWith("0") && !cleaned.startsWith("8")) {
-      cleaned = "1" + cleaned;
-    } else if (cleaned.startsWith("800") || cleaned.startsWith("888") || cleaned.startsWith("877")) {
-      if (cleaned.length === 10) cleaned = "1" + cleaned;
-    }
-    if (cleaned.length < 10 || cleaned.length > 15) return null;
-    return `https://wa.me/${cleaned}`;
+    const cleanDial = (dialCode || "").replace("+", "");
+    const cleanPhone = phone.replace(/^0/, "").replace(/\D/g, "");
+    return `https://wa.me/${cleanDial}${cleanPhone}`;
   };
 
-  const formatPhoneDisplay = (phone?: string) => {
+  const formatPhoneDisplay = (dialCode?: string, phone?: string) => {
     if (!phone) return "No phone";
-    const cleaned = phone.replace(/\D/g, "");
-    if (cleaned.startsWith("880") && cleaned.length === 13) {
-      return `+880 ${cleaned.slice(3, 6)} ${cleaned.slice(6, 9)} ${cleaned.slice(9)}`;
-    }
-    if (cleaned.startsWith("1") && cleaned.length === 11) {
-      return `+1 (${cleaned.slice(1, 4)}) ${cleaned.slice(4, 7)}-${cleaned.slice(7)}`;
-    }
-    return phone;
+    return `${dialCode || ""} ${phone}`;
   };
 
   const formatJoinDate = (dateStr?: string) => {
@@ -410,22 +396,32 @@ const SellerAccount: React.FC = () => {
                       <Stack direction="row" spacing={1} alignItems="center">
                         {s.phone ? (
                           <>
-                            <Typography variant="body2" color="textSecondary">
-                              {formatPhoneDisplay(s.phone)}
-                            </Typography>
-                            {waLink && (
-                              <Tooltip title="Chat on WhatsApp">
-                                <IconButton
-                                  size="small"
-                                  href={waLink}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  sx={{ color: "#25D366" }}
-                                >
-                                  <WhatsAppIcon fontSize="small" />
-                                </IconButton>
-                              </Tooltip>
+                            {s.countryCode && (
+                              <img 
+                                src={`https://flagcdn.com/w20/${s.countryCode.toLowerCase()}.png`}
+                                alt={s.countryCode}
+                                className="w-5 h-auto rounded-sm"
+                              />
                             )}
+                            <Typography variant="body2" color="textSecondary">
+                              {formatPhoneDisplay(s.dialCode, s.phone)}
+                            </Typography>
+                            {(() => {
+                              const waLink = getWhatsAppLink(s.dialCode, s.phone);
+                              return waLink && (
+                                <Tooltip title="Chat on WhatsApp">
+                                  <IconButton
+                                    size="small"
+                                    href={waLink}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    sx={{ color: "#25D366" }}
+                                  >
+                                    <WhatsAppIcon fontSize="small" />
+                                  </IconButton>
+                                </Tooltip>
+                              );
+                            })()}
                           </>
                         ) : (
                           <Typography variant="body2" color="text.secondary">

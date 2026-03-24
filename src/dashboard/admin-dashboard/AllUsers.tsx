@@ -16,6 +16,8 @@ interface User {
   name: string;
   email: string;
   phone?: string;
+  dialCode?: string;
+  countryCode?: string;
   role: string;
   balance: number;
   status?: string;
@@ -290,9 +292,31 @@ const AllUsers: React.FC = () => {
                     </TableCell>
 
                     <TableCell>
-                      <Typography variant="body2" sx={{ color: "#475569", display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                        <Phone sx={{ fontSize: 14, color: "#64748b" }} /> {u.phone ? <Typography component="a" href={`https://wa.me/${u.phone}`}>{u.phone}</Typography> : "N/A"}
-                      </Typography>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        {u.countryCode && (
+                          <Box 
+                            component="img"
+                            src={`https://flagcdn.com/w20/${u.countryCode.toLowerCase()}.png`}
+                            alt={u.countryCode}
+                            sx={{ width: 20, height: 'auto', borderRadius: '2px', border: '1px solid #e2e8f0' }}
+                          />
+                        )}
+                        <Typography variant="body2" sx={{ color: "#475569", display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <Phone sx={{ fontSize: 14, color: "#64748b" }} /> 
+                          {u.phone ? (
+                            <Typography 
+                              component="a" 
+                              href={`https://wa.me/${(u.dialCode || "").replace("+", "")}${u.phone.replace(/^0/, "")}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              sx={{ textDecoration: 'none', color: '#10b981', fontWeight: 600, '&:hover': { textDecoration: 'underline' } }}
+                            >
+                              {u.dialCode && <span>{u.dialCode} </span>}
+                              {u.phone}
+                            </Typography>
+                          ) : "N/A"}
+                        </Typography>
+                      </Box>
                     </TableCell>
 
                     <TableCell>
