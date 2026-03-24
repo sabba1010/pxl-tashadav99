@@ -125,11 +125,14 @@ const Payment: React.FC = () => {
         {
           amount: finalAmount,
           email: userEmail,
+          name: loginUserData?.data?.name || "Customer",
         }
       );
 
       if (res.data.checkoutUrl) {
         window.location.href = res.data.checkoutUrl;
+      } else if (res.data.message) {
+        toast.error(`Kora Error: ${res.data.message}`);
       }
     } finally {
       setLoading(null);

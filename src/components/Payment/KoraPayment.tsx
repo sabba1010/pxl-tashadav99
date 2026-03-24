@@ -44,7 +44,12 @@ export default function KoraPayment({
 
       const response = await axios.post(
         `${API_BASE_URL}/korapay/create`,
-        { amount, user, currency },
+        {
+          amount,
+          email: user?.email,
+          name: user?.name || "Customer",
+          currency,
+        },
         { headers: { "Content-Type": "application/json" } }
       );
 
