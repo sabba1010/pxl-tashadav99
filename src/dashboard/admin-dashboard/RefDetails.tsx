@@ -49,9 +49,22 @@ const RefDetails = () => {
     fetchData();
   }, []);
 
-  const getReferrerInfo = (code?: string) => {
-    const ref = allUsers.find((u) => u.referralCode === code);
-    const count = allUsers.filter((u) => u.referredBy === code).length;
+  const getReferrerInfo = (codeOrUrl?: string) => {
+    if (!codeOrUrl) return { email: "N/A", phone: "", dialCode: "", countryCode: "", referralCount: 0 };
+    
+    // Extract code from URL if present
+    let cleanCode = codeOrUrl;
+    if (codeOrUrl.includes("ref=")) {
+      cleanCode = codeOrUrl.split("ref=")[1].split("&")[0];
+    }
+
+    const ref = allUsers.find((u) => u.referralCode === cleanCode);
+    
+    // For counting, it's safer to check if referredBy *includes* the code
+    const count = allUsers.filter((u) => 
+      u.referredBy === cleanCode || u.referredBy?.includes(`ref=${cleanCode}`)
+    ).length;
+
     return {
       email: ref?.email || "N/A",
       phone: ref?.phone || "",
@@ -66,14 +79,26 @@ const RefDetails = () => {
     window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${email}`, "_blank");
   };
 
-  const openWhatsApp = (dialCode: string, phone: string) => {
-    if (!phone || phone === "N/A") {
-      toast.error("Phone number not available");
-      return;
-    }
-    const cleanDial = dialCode.replace("+", "");
+  const formatPhoneDisplay = (dialCode?: string, phone?: string) => {
+    if (!phone) return "No phone";
+    const cleanPhone = phone.startsWith("+") ? phone.substring(1) : phone;
+    return `${dialCode || ""} ${cleanPhone}`;
+  };
+
+  const getWhatsAppLink = (dialCode?: string, phone?: string) => {
+    if (!phone || phone.trim() === "" || phone === "N/A") return null;
+    const cleanDial = (dialCode || "").replace("+", "");
     const cleanPhone = phone.replace(/^0/, "").replace(/\D/g, "");
-    window.open(`https://wa.me/${cleanDial}${cleanPhone}`, "_blank");
+    return `https://wa.me/${cleanDial}${cleanPhone}`;
+  };
+
+  const openWhatsApp = (dialCode: string, phone: string) => {
+    const link = getWhatsAppLink(dialCode, phone);
+    if (link) {
+      window.open(link, "_blank");
+    } else {
+      toast.error("Phone number not available");
+    }
   };
 
   const updateStatus = async (userId: string, status: ReferralStatus) => {
@@ -227,20 +252,27 @@ const RefDetails = () => {
                           {inviter.email}
                           <ExternalLink size={10} className="opacity-0 group-hover:opacity-100 transition-opacity" />
                         </button>
-                        <button
-                          onClick={() => openWhatsApp(inviter.dialCode, inviter.phone)}
-                          className="flex items-center gap-1.5 text-xs text-green-600 font-semibold hover:bg-green-50 px-1 rounded transition-colors"
-                        >
-                          <MessageCircle size={13} />
+                        <div className="flex items-center gap-2 mt-1">
                           {inviter.countryCode && (
                             <img 
-                              src={`https://flagcdn.com/w16/${inviter.countryCode.toLowerCase()}.png`}
+                              src={`https://flagcdn.com/w20/${inviter.countryCode.toLowerCase()}.png`}
                               alt={inviter.countryCode}
-                              className="w-4 h-auto rounded-sm mr-1"
+                              className="w-5 h-auto rounded-sm"
                             />
                           )}
-                          {inviter.dialCode} {inviter.phone || "N/A"}
-                        </button>
+                          <span className="text-xs text-gray-600 font-semibold">
+                            {formatPhoneDisplay(inviter.dialCode, inviter.phone)}
+                          </span>
+                          {getWhatsAppLink(inviter.dialCode, inviter.phone) && (
+                            <button
+                              onClick={() => openWhatsApp(inviter.dialCode, inviter.phone)}
+                              className="p-1 hover:bg-green-50 rounded-full transition-colors text-green-600"
+                              title="Chat on WhatsApp"
+                            >
+                              <MessageCircle size={14} />
+                            </button>
+                          )}
+                        </div>
                         <div className="mt-1 flex flex-wrap gap-1">
                           <span className="text-[10px] text-blue-500 font-mono font-bold bg-blue-50 px-1.5 py-0.5 rounded uppercase border border-blue-100">CODE: {user.referredBy}</span>
                           <span className="text-[10px] text-purple-600 font-bold bg-purple-50 px-1.5 py-0.5 rounded border border-purple-100">REFS: {inviter.referralCount}</span>
@@ -259,20 +291,27 @@ const RefDetails = () => {
                           {user.email}
                           <ExternalLink size={10} className="opacity-0 group-hover:opacity-100 transition-opacity" />
                         </button>
-                        <button
-                          onClick={() => openWhatsApp(user.dialCode || "", user.phone || "")}
-                          className="flex items-center gap-1.5 text-xs text-green-600 font-semibold hover:bg-green-50 px-1 rounded transition-colors"
-                        >
-                          <MessageCircle size={13} />
+                        <div className="flex items-center gap-2 mt-1">
                           {user.countryCode && (
                             <img 
-                              src={`https://flagcdn.com/w16/${user.countryCode.toLowerCase()}.png`}
+                              src={`https://flagcdn.com/w20/${user.countryCode.toLowerCase()}.png`}
                               alt={user.countryCode}
-                              className="w-4 h-auto rounded-sm mr-1"
+                              className="w-5 h-auto rounded-sm"
                             />
                           )}
-                          {user.dialCode} {user.phone || "N/A"}
-                        </button>
+                          <span className="text-xs text-gray-600 font-semibold">
+                            {formatPhoneDisplay(user.dialCode, user.phone)}
+                          </span>
+                          {getWhatsAppLink(user.dialCode, user.phone) && (
+                            <button
+                              onClick={() => openWhatsApp(user.dialCode || "", user.phone || "")}
+                              className="p-1 hover:bg-green-50 rounded-full transition-colors text-green-600"
+                              title="Chat on WhatsApp"
+                            >
+                              <MessageCircle size={14} />
+                            </button>
+                          )}
+                        </div>
                         <div className="mt-1 flex gap-1.5 items-center">
                           <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${user.role === 'seller'
                               ? 'bg-orange-50 text-orange-600 border-orange-100'
