@@ -250,14 +250,14 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                                     {msg.imageUrl && (
                                         <div className="mb-2 relative group">
                                             <img
-                                                src={msg.imageUrl.startsWith('http') ? msg.imageUrl : `${BASE_URL}${msg.imageUrl}`}
+                                                src={msg.imageUrl.startsWith('http') ? msg.imageUrl : `${SOCKET_URL}${msg.imageUrl}`}
                                                 alt="attachment"
                                                 className="rounded-lg max-w-full max-h-[220px] object-contain border border-black/5 mx-auto cursor-pointer"
-                                                onClick={() => setPreviewImage(msg.imageUrl!.startsWith('http') ? msg.imageUrl! : `${BASE_URL}${msg.imageUrl!}`)}
+                                                onClick={() => setPreviewImage(msg.imageUrl!.startsWith('http') ? msg.imageUrl! : `${SOCKET_URL}${msg.imageUrl!}`)}
                                                 onError={(e) => (e.currentTarget.style.display = 'none')}
                                             />
                                             <a
-                                                href={msg.imageUrl.startsWith('http') ? msg.imageUrl : `${BASE_URL}${msg.imageUrl}`}
+                                                href={msg.imageUrl.startsWith('http') ? msg.imageUrl : `${SOCKET_URL}${msg.imageUrl}`}
                                                 download
                                                 target="_blank"
                                                 rel="noreferrer"
