@@ -18,6 +18,7 @@ import { useAuth } from "../context/AuthContext";
 import countryCodes from "../assets/Country/CountryCodes.json";
 import countryFlags from "../assets/Country/country-flag.json";
 import { API_BASE_URL } from "../config";
+import headerlogo from "../assets/headerlogo.png";
 
 // --- TypeScript টাইপ ---
 interface RegisterResponse {
@@ -166,10 +167,8 @@ const Register = () => {
           <motion.div initial={{ opacity: 0, x: -80 }} animate={{ opacity: 1, x: 0 }} className="hidden lg:block">
             <div className="relative">
               <div className="flex items-center gap-4 mb-12">
-                <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-pink-600 rounded-2xl flex items-center justify-center shadow-2xl">
-                  <Sparkles className="w-9 h-9 text-white" />
-                </div>
-                <span className="text-5xl font-black text-white">AAcctEmpire</span>
+                <img src={headerlogo} alt="AcctEmpire" className="h-24 w-auto object-contain" />
+                <span className="text-5xl font-black text-white">AcctEmpire</span>
               </div>
               <h1 className="text-7xl font-black leading-tight text-white">
                 Connect. Trade. <br /> <span className="text-orange-500">Transform</span> <br /> Your Influence

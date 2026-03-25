@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
 import { API_BASE_URL } from "../config";
+import headerlogo from "../assets/headerlogo.png";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -91,11 +92,9 @@ const Login = () => {
           {/* LEFT HERO */}
           <div className="hidden lg:block">
             <div className="flex items-center gap-5 mb-12">
-              <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-pink-600 rounded-2xl flex items-center justify-center">
-                <Sparkles className="w-9 h-9 text-white" />
-              </div>
+              <img src={headerlogo} alt="AcctEmpire" className="h-24 w-auto object-contain" />
               <span className="text-5xl font-black text-white">
-                AAcctEmpire
+                AcctEmpire
               </span>
             </div>
 
