@@ -20,7 +20,18 @@ const ResetPassword = () => {
   useEffect(() => {
     const verifyToken = async () => {
       try {
-        const res = await axios.get<{ success: boolean; message: string }>(`${API_BASE_URL}/user/verify-reset-token/${token}`);
+        let url = `${API_BASE_URL}/user/verify-reset-token/${token}`;
+        let res;
+        try {
+          res = await axios.get<{ success: boolean; message: string }>(url);
+        } catch (err: any) {
+          if (err.response?.status === 404 && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+            url = `http://localhost:3200/api/user/verify-reset-token/${token}`;
+            res = await axios.get<{ success: boolean; message: string }>(url);
+          } else {
+            throw err;
+          }
+        }
         if (res.data.success) {
           setValidToken(true);
         }
@@ -47,10 +58,24 @@ const ResetPassword = () => {
 
     setLoading(true);
     try {
-      const res = await axios.post<{ success: boolean; message: string }>(`${API_BASE_URL}/user/reset-password`, {
-        token,
-        newPassword: password,
-      });
+      let url = `${API_BASE_URL}/user/reset-password`;
+      let res;
+      try {
+        res = await axios.post<{ success: boolean; message: string }>(url, {
+          token,
+          newPassword: password,
+        });
+      } catch (err: any) {
+        if (err.response?.status === 404 && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+          url = `http://localhost:3200/api/user/reset-password`;
+          res = await axios.post<{ success: boolean; message: string }>(url, {
+            token,
+            newPassword: password,
+          });
+        } else {
+          throw err;
+        }
+      }
       if (res.data.success) {
         toast.success("Password reset successful! Please login.");
         setTimeout(() => navigate("/login"), 2000);

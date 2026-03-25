@@ -21,7 +21,21 @@ const ForgotPassword = () => {
 
     setLoading(true);
     try {
-      const res = await axios.post<{ success: boolean; message: string }>(`${API_BASE_URL}/user/forgot-password`, { email });
+      let url = `${API_BASE_URL}/user/forgot-password`;
+      let res;
+      
+      try {
+        res = await axios.post<{ success: boolean; message: string }>(url, { email });
+      } catch (err: any) {
+        // If we are on localhost and the live API gives 404, fallback to local backend
+        if (err.response?.status === 404 && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+          url = `http://localhost:3200/api/user/forgot-password`;
+          res = await axios.post<{ success: boolean; message: string }>(url, { email });
+        } else {
+          throw err;
+        }
+      }
+
       if (res.data.success) {
         setSubmitted(true);
         toast.success("Reset link sent successfully!");
