@@ -152,6 +152,14 @@ const Login = () => {
                       {showPassword ? <EyeOff /> : <Eye />}
                     </button>
                   </div>
+                  <div className="flex justify-end mt-2">
+                    <Link
+                      to="/forgot-password"
+                      className="text-sm text-orange-400 hover:text-orange-500 transition-colors"
+                    >
+                      Forgot Password?
+                    </Link>
+                  </div>
                 </div>
 
                 {/* SUBMIT */}

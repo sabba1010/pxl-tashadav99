@@ -5,6 +5,8 @@ import Home from "../pages/home/Home";
 import Layout from "../layout/Layout";
 import Login from "../users/Login";
 import Register from "../users/Register";
+import ForgotPassword from "../users/ForgotPassword";
+import ResetPassword from "../users/ResetPassword";
 
 import AdminAdmins from "../dashboard/admin-dashboard/AdminAdmins";
 import AllUsers from "../dashboard/admin-dashboard/AllUsers";
@@ -217,6 +219,14 @@ const Routes = createBrowserRouter([
       {
         path: "/register",
         element: <Register />,
+      },
+      {
+        path: "/forgot-password",
+        element: <ForgotPassword />,
+      },
+      {
+        path: "/reset-password/:token",
+        element: <ResetPassword />,
       },
       {
         path: "/mysells",
