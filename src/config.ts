@@ -2,8 +2,8 @@
 const isDevelopment = process.env.NODE_ENV === "development";
 
 export const API_BASE_URL = isDevelopment
-  ? "http://localhost:3200/api" // Local backend
-  : "https://acctempire.com/api"; // Live production
+  ? "https://acctempire.com/api/api"
+  : "https://acctempire.com/api/api";
 
 export const FLUTTERWAVE_BACKEND_URL = `${API_BASE_URL}/flutterwave`;
 export const KORAPAY_BACKEND_URL = `${API_BASE_URL}/korapay`;
