@@ -27,7 +27,8 @@ import {
   Typography,
   Chip,
   Avatar,
-  Stack
+  Stack,
+  Divider
 } from "@mui/material";
 import {
   Close,
@@ -49,8 +50,10 @@ interface Listing {
   name: string;
   description: string;
   price: string;
-  email: string;
-  password: string;
+  username?: string; // Main account username/handle
+  accountPass?: string; // Main account password
+  email?: string; // Recovery email
+  password?: string; // Recovery email password
   userEmail: string;
   status: string;
   previewLink?: string;
@@ -441,16 +444,41 @@ const TotalListings: React.FC = () => {
               </Box>
 
               <Paper variant="outlined" sx={{ p: 2, bgcolor: "#F8FAFC" }}>
-                <Typography variant="subtitle2" gutterBottom>Credentials</Typography>
-                <Box display="grid" gap={1}>
-                  <Box display="flex" justifyContent="space-between">
-                    <Typography variant="caption" color="textSecondary">Email:</Typography>
-                    <Typography variant="body2" fontWeight={500}>{selected.email}</Typography>
+                <Typography variant="subtitle2" gutterBottom fontWeight={700}>Credentials</Typography>
+                <Box display="grid" gap={1.5}>
+                  {/* Main Credentials */}
+                  <Box display="flex" justifyContent="space-between" alignItems="center">
+                    <Typography variant="caption" color="textSecondary">Login/Username:</Typography>
+                    <Typography variant="body2" fontWeight={600} sx={{ bgcolor: "#F1F5F9", px: 1, py: 0.5, borderRadius: 1 }}>
+                      {selected.username || "N/A"}
+                    </Typography>
                   </Box>
-                  <Box display="flex" justifyContent="space-between">
+                  <Box display="flex" justifyContent="space-between" alignItems="center">
                     <Typography variant="caption" color="textSecondary">Password:</Typography>
-                    <Typography variant="body2" fontFamily="monospace">{selected.password}</Typography>
+                    <Typography variant="body2" fontFamily="monospace" sx={{ bgcolor: "#F1F5F9", px: 1, py: 0.5, borderRadius: 1 }}>
+                      {selected.accountPass || "N/A"}
+                    </Typography>
                   </Box>
+
+                  {/* Recovery Info (Optional) */}
+                  {(selected.email || selected.password) && (
+                    <>
+                      <Divider sx={{ my: 0.5 }} />
+                      <Typography variant="caption" color="primary" fontWeight={700}>RECOVERY INFO</Typography>
+                      {selected.email && (
+                        <Box display="flex" justifyContent="space-between" alignItems="center">
+                          <Typography variant="caption" color="textSecondary">Recovery Email:</Typography>
+                          <Typography variant="body2" fontWeight={500}>{selected.email}</Typography>
+                        </Box>
+                      )}
+                      {selected.password && (
+                        <Box display="flex" justifyContent="space-between" alignItems="center">
+                          <Typography variant="caption" color="textSecondary">Recovery Password:</Typography>
+                          <Typography variant="body2" fontFamily="monospace">{selected.password}</Typography>
+                        </Box>
+                      )}
+                    </>
+                  )}
                 </Box>
               </Paper>
 

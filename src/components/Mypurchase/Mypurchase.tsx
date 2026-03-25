@@ -866,6 +866,18 @@ const MyPurchase: React.FC = () => {
                           <span className="font-mono bg-white p-2 rounded border text-xs break-all max-w-[150px]">{selected.accountPassword}</span>
                         </div>
                       )}
+                      {selected.recoveryEmail && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Recovery Email</span>
+                          <span className="font-mono bg-white p-2 rounded border text-xs break-all max-w-[150px]">{selected.recoveryEmail}</span>
+                        </div>
+                      )}
+                      {selected.recoveryEmailPassword && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Recovery Password</span>
+                          <span className="font-mono bg-white p-2 rounded border text-xs break-all max-w-[150px]">{selected.recoveryEmailPassword}</span>
+                        </div>
+                      )}
                       {selected.desc && (
                         <div className="flex justify-between items-start gap-2">
                           <span className="text-gray-600">Additional Info</span>
