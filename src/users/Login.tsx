@@ -11,31 +11,35 @@ import { API_BASE_URL } from "../config";
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
-  // Fixed initial state type for password (was boolean, should be string)
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, setUser } = useAuth();
 
   // Clear any residual page content on login page load
   useEffect(() => {
     // Reset page state
-    document.documentElement.style.opacity = '1';
-    document.body.style.opacity = '1';
-    document.body.style.overflow = 'auto';
-    document.body.style.backgroundColor = '#111827';
-    
+    document.documentElement.style.opacity = "1";
+    document.body.style.opacity = "1";
+    document.body.style.overflow = "auto";
+    document.body.style.backgroundColor = "#111827";
+
     // Reset root element
-    const root = document.getElementById('root');
+    const root = document.getElementById("root");
     if (root) {
-      root.style.opacity = '1';
-      root.style.backgroundColor = 'transparent';
+      root.style.opacity = "1";
+      root.style.backgroundColor = "transparent";
     }
   }, []);
 
-  if (user) {
-    toast.info("You are already logged in");
-    navigate("/marketplace");
-  }
+  // Redirect if already logged in (but not during the login process itself)
+  useEffect(() => {
+    // If the component already sees a user on mount/render, and it's not from our current submit
+    if (user) {
+      // Only show info toast if we didn't just log in (check if we are on the login page)
+      // Actually, just navigate quietly to avoid redundant toasts
+      navigate("/marketplace");
+    }
+  }, [user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,13 +70,12 @@ const Login = () => {
           path: "/",
         });
 
+        // Update auth state directly
+        setUser(res.data.user);
         toast.success("Login successful");
 
-        // ---------------------------------------------------------
-        // CHANGE: Redirect to /marketplace instead of /
-        // ---------------------------------------------------------
+        // Navigate to marketplace
         navigate("/marketplace");
-        window.location.reload();
       } else {
         toast.error("Invalid credentials");
       }
@@ -83,10 +86,9 @@ const Login = () => {
 
   return (
     <div className="min-h-screen w-full bg-[#111827] relative overflow-hidden">
-      {/* BACKGROUND & DESIGN KEPT SAME */}
       <div className="flex max-w-7xl mx-auto px-6 min-h-screen items-center justify-center">
         <div className="grid lg:grid-cols-2 gap-16 items-center w-full">
-          {/* LEFT HERO (unchanged design) */}
+          {/* LEFT HERO */}
           <div className="hidden lg:block">
             <div className="flex items-center gap-5 mb-12">
               <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-pink-600 rounded-2xl flex items-center justify-center">
@@ -125,7 +127,7 @@ const Login = () => {
                     <Mail className="absolute left-5 top-1/2 -translate-y-1/2 text-orange-400" />
                     <input
                       type="email"
-                      className="w-full pl-14 py-5 bg-gray-900 border border-gray-700 rounded-2xl text-white"
+                      className="w-full pl-14 py-5 bg-gray-900 border border-gray-700 rounded-2xl text-white outline-none focus:border-orange-500 transition"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                     />
@@ -139,7 +141,7 @@ const Login = () => {
                     <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-orange-400" />
                     <input
                       type={showPassword ? "text" : "password"}
-                      className="w-full pl-14 pr-14 py-5 bg-gray-900 border border-gray-700 rounded-2xl text-white"
+                      className="w-full pl-14 pr-14 py-5 bg-gray-900 border border-gray-700 rounded-2xl text-white outline-none focus:border-orange-500 transition"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                     />
@@ -156,7 +158,7 @@ const Login = () => {
                 {/* SUBMIT */}
                 <button
                   type="submit"
-                  className="w-full bg-gradient-to-r from-orange-500 to-pink-600 text-white font-bold py-5 rounded-2xl"
+                  className="w-full bg-gradient-to-r from-orange-500 to-pink-600 text-white font-bold py-5 rounded-2xl active:scale-95 transition"
                 >
                   <span className="flex justify-center items-center gap-2">
                     <LogIn className="w-5 h-5" /> Enter Dashboard
