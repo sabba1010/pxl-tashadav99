@@ -434,7 +434,18 @@ const AllUsers: React.FC = () => {
                   {(tabValue === 0 ? historyData.purchases : historyData.payments).map((item, i) => (
                     <TableRow key={i}>
                       <TableCell>{item.productName || item.tx_ref || "N/A"}</TableCell>
-                      <TableCell sx={{ fontWeight: 700 }}>${(item.price || item.amount || 0).toFixed(2)}</TableCell>
+                      <TableCell sx={{ fontWeight: 700 }}>
+                        <Box>
+                          <Typography variant="body2" sx={{ fontWeight: 700 }}>
+                            ${(item.amountUSD || (item.amount / (item.appliedRate || 1)) || item.price || 0).toFixed(2)}
+                          </Typography>
+                          {item.amountNGN && (
+                            <Typography variant="caption" sx={{ color: "text.secondary", display: 'block' }}>
+                              ₦{Number(item.amountNGN).toLocaleString()}
+                            </Typography>
+                          )}
+                        </Box>
+                      </TableCell>
                       <TableCell>
                         <Chip
                           label={item.status}
