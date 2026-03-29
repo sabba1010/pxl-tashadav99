@@ -171,7 +171,7 @@ const DepositRequests: React.FC = () => {
               {paginated.length > 0 ? (
                 paginated.map((p) => {
                   const isFlutterwave = p.tx_ref?.toLowerCase().startsWith("flw");
-                  const platformName = isFlutterwave ? "Flutterwave" : "Korta Pay";
+                  const platformName = isFlutterwave ? "Flutterwave" : "Korapay";
 
                   return (
                     <TableRow key={p._id} hover sx={{ "&:hover": { background: "rgba(51,172,111,0.03)" } }}>
