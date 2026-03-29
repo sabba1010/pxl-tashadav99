@@ -210,7 +210,11 @@ const Routes = createBrowserRouter([
       },
       {
         path: "/wallet",
-        element: <Walet />,
+        element: (
+          <PrivateRoute>
+            <Walet />
+          </PrivateRoute>
+        ),
       },
       {
         path: "/report",
