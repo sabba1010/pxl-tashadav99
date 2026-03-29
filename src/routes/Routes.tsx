@@ -109,35 +109,67 @@ const Routes = createBrowserRouter([
       },
       {
         path: "/why-choose-us",
-        element: <WhyChooseUs />,
+        element: (
+          <PrivateRoute>
+            <WhyChooseUs />
+          </PrivateRoute>
+        ),
       },
       {
         path: "/cart",
-        element: <CartPage />
+        element: (
+          <PrivateRoute>
+            <CartPage />
+          </PrivateRoute>
+        )
       },
       {
         path: "/refund",
-        element: <RefundPolicy />,
+        element: (
+          <PrivateRoute>
+            <RefundPolicy />
+          </PrivateRoute>
+        ),
       },
       {
         path: "/privacy",
-        element: <PrivacyPolicy />,
+        element: (
+          <PrivateRoute>
+            <PrivacyPolicy />
+          </PrivateRoute>
+        ),
       },
       {
         path: "/plans",
-        element: <Plan />,
+        element: (
+          <PrivateRoute>
+            <Plan />
+          </PrivateRoute>
+        ),
       },
       {
         path: "/withdraw",
-        element: <PaymentForm />,
+        element: (
+          <PrivateRoute>
+            <PaymentForm />
+          </PrivateRoute>
+        ),
       },
       {
         path: "/seller-pay",
-        element: <SellerPay />,
+        element: (
+          <PrivateRoute>
+            <SellerPay />
+          </PrivateRoute>
+        ),
       },
       {
         path: "report-seller",
-        element: <MyReport />,
+        element: (
+          <PrivateRoute>
+            <MyReport />
+          </PrivateRoute>
+        ),
       },
       {
         path: "/login",
@@ -218,7 +250,11 @@ const Routes = createBrowserRouter([
       },
       {
         path: "/report",
-        element: <Report />,
+        element: (
+          <PrivateRoute>
+            <Report />
+          </PrivateRoute>
+        ),
       },
       {
         path: "/register",
@@ -234,19 +270,35 @@ const Routes = createBrowserRouter([
       },
       {
         path: "/mysells",
-        element: <Mysells />,
+        element: (
+          <PrivateRoute>
+            <Mysells />
+          </PrivateRoute>
+        ),
       },
       {
         path: "add-product",
-        element: <BuyerAddProduct />,
+        element: (
+          <PrivateRoute>
+            <BuyerAddProduct />
+          </PrivateRoute>
+        ),
       },
       {
         path: "/sell-your-account",
-        element: <AddAccountCredentials />,
+        element: (
+          <PrivateRoute>
+            <AddAccountCredentials />
+          </PrivateRoute>
+        ),
       },
       {
         path: "/review",
-        element: <Review />,
+        element: (
+          <PrivateRoute>
+            <Review />
+          </PrivateRoute>
+        ),
       },
       {
         path: "/selling-form",
@@ -258,39 +310,75 @@ const Routes = createBrowserRouter([
       },
       {
         path: "buyer-dashboard",
-        element: <Buyer />,
+        element: (
+          <PrivateRoute>
+            <Buyer />
+          </PrivateRoute>
+        ),
       },
       {
         path: "/payment",
-        element: <Payment />,
+        element: (
+          <PrivateRoute>
+            <Payment />
+          </PrivateRoute>
+        ),
       },
       {
         path: "/post-data",
-        element: <Post />,
+        element: (
+          <PrivateRoute>
+            <Post />
+          </PrivateRoute>
+        ),
       },
       {
         path: "/test",
-        element: <Test />,
+        element: (
+          <PrivateRoute>
+            <Test />
+          </PrivateRoute>
+        ),
       },
       {
         path: "/terms",
-        element: <TermsOfService />,
+        element: (
+          <PrivateRoute>
+            <TermsOfService />
+          </PrivateRoute>
+        ),
       },
       {
         path: "/cookie-policy",
-        element: <CookiePolicy />,
+        element: (
+          <PrivateRoute>
+            <CookiePolicy />
+          </PrivateRoute>
+        ),
       },
       {
         path: "/seller-dashboard",
-        element: <DashboardSeller />,
+        element: (
+          <PrivateRoute>
+            <DashboardSeller />
+          </PrivateRoute>
+        ),
       },
       {
         path: "/account-settings",
-        element: <AccountSettings />,
+        element: (
+          <PrivateRoute>
+            <AccountSettings />
+          </PrivateRoute>
+        ),
       },
       {
         path: "/store/:email",
-        element: <SellerStore />,
+        element: (
+          <PrivateRoute>
+            <SellerStore />
+          </PrivateRoute>
+        ),
       },
       {
         path: "*",
