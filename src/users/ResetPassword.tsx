@@ -26,7 +26,7 @@ const ResetPassword = () => {
           res = await axios.get<{ success: boolean; message: string }>(url);
         } catch (err: any) {
           if (err.response?.status === 404 && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
-            url = `http://localhost:3200/api/user/verify-reset-token/${token}`;
+            url = `https://acctempire.com/api/api/user/verify-reset-token/${token}`;
             res = await axios.get<{ success: boolean; message: string }>(url);
           } else {
             throw err;
@@ -67,7 +67,7 @@ const ResetPassword = () => {
         });
       } catch (err: any) {
         if (err.response?.status === 404 && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
-          url = `http://localhost:3200/api/user/reset-password`;
+          url = `https://acctempire.com/api/api/user/reset-password`;
           res = await axios.post<{ success: boolean; message: string }>(url, {
             token,
             newPassword: password,
@@ -117,7 +117,7 @@ const ResetPassword = () => {
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-orange-500/10 blur-[120px] rounded-full" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-pink-600/10 blur-[120px] rounded-full" />
 
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-lg"

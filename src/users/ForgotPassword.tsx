@@ -23,13 +23,13 @@ const ForgotPassword = () => {
     try {
       let url = `${API_BASE_URL}/user/forgot-password`;
       let res;
-      
+
       try {
         res = await axios.post<{ success: boolean; message: string }>(url, { email });
       } catch (err: any) {
         // If we are on localhost and the live API gives 404, fallback to local backend
         if (err.response?.status === 404 && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
-          url = `http://localhost:3200/api/user/forgot-password`;
+          url = `https://acctempire.com/api/api/user/forgot-password`;
           res = await axios.post<{ success: boolean; message: string }>(url, { email });
         } else {
           throw err;
@@ -50,7 +50,7 @@ const ForgotPassword = () => {
   if (submitted) {
     return (
       <div className="min-h-screen w-full bg-[#111827] flex items-center justify-center px-6">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           className="bg-black/40 backdrop-blur-xl border border-gray-700 rounded-3xl p-10 max-w-lg w-full text-center"
@@ -60,7 +60,7 @@ const ForgotPassword = () => {
           </div>
           <h2 className="text-3xl font-black text-white mb-4">Check Your Email</h2>
           <p className="text-gray-400 mb-8">
-            We've sent a password reset link to <span className="text-white font-semibold">{email}</span>. 
+            We've sent a password reset link to <span className="text-white font-semibold">{email}</span>.
             Please check your inbox and follow the instructions.
           </p>
           <Link to="/login" className="inline-block w-full bg-orange-500 text-white font-bold py-4 rounded-2xl transition hover:bg-orange-600">
@@ -77,7 +77,7 @@ const ForgotPassword = () => {
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-orange-500/10 blur-[120px] rounded-full" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-pink-600/10 blur-[120px] rounded-full" />
 
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-lg"
