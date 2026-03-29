@@ -117,6 +117,7 @@ const Login = () => {
                   Sign up free
                 </Link>
               </p>
+              
 
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* EMAIL */}
