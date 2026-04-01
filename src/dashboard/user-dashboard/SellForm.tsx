@@ -180,6 +180,11 @@ const SellForm: React.FC = () => {
     fetchSalesCredit();
   }, [user?.email]);
 
+  // Handle scroll to top on step change
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [step]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
@@ -271,7 +276,6 @@ const SellForm: React.FC = () => {
     setSavedAccounts(updatedAccounts);
     localStorage.setItem("sellformSavedAccounts", JSON.stringify(updatedAccounts));
 
-    // Clear only Step 1 fields (Account Access Details), keep Step 0 fields (Sell Your Account)
     setFormData({
       ...formData,
       username: "",
@@ -282,6 +286,7 @@ const SellForm: React.FC = () => {
       additionalInfo: "",
     });
 
+    window.scrollTo({ top: 0, behavior: "smooth" });
     toast.success("Account details saved! You can add another one.");
   };
 
