@@ -178,8 +178,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Clear user state immediately
     setUser(null);
     
-    // Redirect to login page
-    window.location.href = "/login";
+    // Redirect to login page immediately using replace to prevent back-navigation to protected state
+    window.location.replace("/login?logout=success");
   };
 
   // Periodically check backend for status changes (auto-logout if blocked)

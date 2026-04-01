@@ -105,31 +105,9 @@ export default function Navbar() {
   const CHARCOAL = "#111111";
   const CLEAN_WHITE = "#FFFFFF";
 
-  const handelLougt = () => {
-    // Immediately fade entire page to prevent any content visibility
-    document.documentElement.style.opacity = '0';
-    document.documentElement.style.transition = 'opacity 0.1s ease-out';
-    document.body.style.opacity = '0';
-    document.body.style.transition = 'opacity 0.1s ease-out';
-    document.body.style.overflow = 'hidden';
-
-    // Clear all DOM content
-    const root = document.getElementById('root');
-    if (root) {
-      root.innerHTML = '';
-      root.style.opacity = '0';
-      root.style.backgroundColor = '#fff';
-    }
-
-    // Call logout to clear all auth data
+  const handleLogout = () => {
+    // Call logout to clear all auth data and redirect
     user.logout();
-
-    // Don't show toast since page is clearing
-    // Redirect immediately with hard reload to ensure clean session
-    setTimeout(() => {
-      window.location.href = "/login?session=cleared";
-      window.location.reload();
-    }, 150);
   };
 
   const handleSellProduct = () => {
@@ -550,7 +528,7 @@ export default function Navbar() {
                       </div>
 
                       <div className="p-2 border-t border-gray-100 bg-gray-50/50">
-                        <button onClick={handelLougt} className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-red-600 hover:bg-red-50 transition font-semibold text-sm">
+                        <button onClick={handleLogout} className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-red-600 hover:bg-red-50 transition font-semibold text-sm">
                           <LogOut size={16} />
                           Log out
                         </button>

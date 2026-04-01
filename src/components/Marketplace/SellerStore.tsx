@@ -27,7 +27,8 @@ import {
     FaSearch,
     FaEye,
     FaShoppingCart,
-    FaTimes
+    FaTimes,
+    FaExternalLinkAlt
 } from "react-icons/fa";
 import {
     SiNetflix,
@@ -60,6 +61,7 @@ const SearchIcon = FaSearch as any;
 const PlusIcon = FaPlus as any;
 const CheckIcon = FaCheck as any;
 const ArrowLeftIcon = FaArrowLeft as any;
+const ExternalLinkIcon = FaExternalLinkAlt as any;
 const ShoppingBagIcon = FaShoppingBag as any;
 const ShieldAltIcon = FaShieldAlt as any;
 const CalendarAltIcon = FaCalendarAlt as any;
@@ -396,6 +398,16 @@ const ProductModal: React.FC<{
                             {isAdded ? "In Cart" : "Add to Cart"}
                         </button>
                     </div>
+                    {item.previewLink && (
+                        <a
+                            href={item.previewLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-full py-3 mt-4 rounded-xl font-bold text-white bg-blue-600 hover:bg-blue-700 transition flex items-center justify-center gap-2 shadow-sm"
+                        >
+                            <ExternalLinkIcon size={16} /> Preview Product
+                        </a>
+                    )}
                 </div>
             </div>
         </>

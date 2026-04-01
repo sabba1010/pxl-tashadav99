@@ -5,6 +5,7 @@ import Footer from "../components/Footer";
 import Loading from "../components/Loading";
 import NotificationListener from "../components/NotificationListener";
 import { useAuthHook } from "../hook/useAuthHook";
+import ScrollToTop from "../components/ScrollToTop";
 
 const Layout = () => {
   const navigation = useNavigation();
@@ -13,6 +14,7 @@ const Layout = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <ScrollToTop />
       {/* Notification Alert System with Sound */}
       {user && user.email && <NotificationListener userEmail={user.email} pollInterval={3000} />}
       

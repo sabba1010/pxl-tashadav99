@@ -279,6 +279,13 @@ const MyOrder: React.FC = () => {
   const [activeTab, setActiveTab] = useState<Tab>("All");
   const [selected, setSelected] = useState<Order | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
+
+  useEffect(() => {
+    if (selected) {
+      window.scrollTo(0, 0);
+    }
+  }, [selected]);
+
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
   const [buyerNames, setBuyerNames] = useState<Record<string, string>>({});
@@ -299,14 +306,20 @@ const MyOrder: React.FC = () => {
   const [activeChatBuyerEmail, setActiveChatBuyerEmail] = useState<string | null>(null);
   const [activeChatOrderId, setActiveChatOrderId] = useState<string | null>(null);
   const [activeChatProductTitle, setActiveChatProductTitle] = useState<string>("");
-
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [reportTargetOrder, setReportTargetOrder] = useState<Order | null>(null);
   const [reportReason, setReportReason] = useState(SELLER_REPORT_REASONS[0]);
   const [reportMessage, setReportMessage] = useState("");
   const [isSubmittingReport, setIsSubmittingReport] = useState(false);
-
   const [currentPage, setCurrentPage] = useState(1);
+  const [showAccountDetails, setShowAccountDetails] = useState(false);
+
+  useEffect(() => {
+    if (selected || isReportModalOpen) {
+      window.scrollTo(0, 0);
+    }
+  }, [selected, isReportModalOpen]);
+
   const itemsPerPage = 40;
 
   const [lastMessageTimes, setLastMessageTimes] = useState<Record<string, string | undefined>>({});

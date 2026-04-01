@@ -336,6 +336,12 @@ const MyPurchase: React.FC = () => {
   const [isRatingModalOpen, setIsRatingModalOpen] = useState(false);
   const [ratingTargetOrder, setRatingTargetOrder] = useState<Purchase | null>(null);
 
+  useEffect(() => {
+    if (selected || isReportModalOpen || isRatingModalOpen || isChatOpen) {
+      window.scrollTo(0, 0);
+    }
+  }, [selected, isReportModalOpen, isRatingModalOpen, isChatOpen]);
+
   const BASE_URL = API_BASE_URL;
   const PURCHASE_API = `${BASE_URL}/purchase`;
   const CHAT_API = `${BASE_URL}/chat`;
@@ -876,6 +882,19 @@ const MyPurchase: React.FC = () => {
                         <div className="flex justify-between">
                           <span className="text-gray-600">Recovery Password</span>
                           <span className="font-mono bg-white p-2 rounded border text-xs break-all max-w-[150px]">{selected.recoveryEmailPassword}</span>
+                        </div>
+                      )}
+                      {selected.previewLink && (
+                        <div className="flex justify-between items-center bg-white p-2 rounded border">
+                          <span className="text-gray-600">Preview Link</span>
+                          <a
+                            href={selected.previewLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 font-bold hover:underline truncate ml-2 text-xs"
+                          >
+                            View Preview
+                          </a>
                         </div>
                       )}
                       {selected.desc && (
