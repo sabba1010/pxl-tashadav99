@@ -63,9 +63,9 @@ interface IPurchase {
   _id: string;
   productName: string;
   sellerEmail: string;
-  amount: number;
+  price: number;
   status: string;
-  createdAt?: string;
+  purchaseDate?: string;
 }
 
 interface Seller {
@@ -790,13 +790,13 @@ const SellerAccount: React.FC = () => {
                               </TableCell>
                               <TableCell align="right">
                                 <Typography variant="body2" color="#10B981" fontWeight={600}>
-                                  ${Number(pur.amount || 0).toFixed(2)}
+                                  ${Number(pur.price || 0).toFixed(2)}
                                 </Typography>
                               </TableCell>
                               <TableCell align="right">
                                 <Typography variant="caption" color="text.secondary">
-                                  {pur.createdAt
-                                    ? new Date(pur.createdAt).toLocaleDateString("en-US", {
+                                  {pur.purchaseDate
+                                    ? new Date(pur.purchaseDate).toLocaleDateString("en-US", {
                                       year: "numeric",
                                       month: "short",
                                       day: "numeric",
