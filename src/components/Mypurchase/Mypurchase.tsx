@@ -679,7 +679,7 @@ const MyPurchase: React.FC = () => {
             ) : filtered.length === 0 ? (
               <div className="text-center py-20">
                 <p className="text-gray-500 mb-4">No purchases found.</p>
-                <Link to="/" className="bg-[#33ac6f] text-white px-6 py-2 rounded-full text-sm font-bold">
+                <Link to="/marketplace" className="bg-[#33ac6f] text-white px-6 py-2 rounded-full text-sm font-bold">
                   Browse Shop
                 </Link>
               </div>
