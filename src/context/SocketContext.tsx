@@ -77,17 +77,35 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     const fetchInitialCounts = async (uid: string) => {
         try {
-            const res = await axios.get<Record<string, number>>(`${API_BASE_URL}/chat/unread/counts/${uid}`);
-            const counts = res.data; // Now correctly inferred as Record<string, number>
-            const countMap = new Map<string, number>();
-            Object.keys(counts).forEach(key => {
-                countMap.set(key, counts[key]);
-            });
-            setUnreadCounts(countMap);
+            // Derived purely from top-bar notifications logic
+            const res = await axios.get(`${API_BASE_URL}/notification/getall?userId=${uid}`);
+            const notifications = res.data;
+            
+            if (Array.isArray(notifications)) {
+                const countMap = new Map<string, number>();
+                notifications.forEach((n: any) => {
+                    const isUnread = n.userEmail === uid ? !n.read : !n.readBy?.includes(uid);
+                    if (n.type === 'chat' && isUnread && n.relatedId) {
+                        const current = countMap.get(n.relatedId) || 0;
+                        countMap.set(n.relatedId, current + 1);
+                    }
+                });
+                setUnreadCounts(countMap);
+            }
         } catch (error) {
-            console.error("Failed to fetch unread counts", error);
+            console.error("Failed to fetch unread counts from notifications", error);
         }
     };
+
+    useEffect(() => {
+        if (!userId) return;
+        fetchInitialCounts(userId);
+        // Sync identically with Navbar's 8-second polling
+        const intervalId = setInterval(() => {
+            fetchInitialCounts(userId);
+        }, 8000);
+        return () => clearInterval(intervalId);
+    }, [userId]);
 
     const markOrderRead = (orderId: string) => {
         // Optimistic update
