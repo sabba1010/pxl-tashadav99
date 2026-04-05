@@ -444,7 +444,7 @@ export default function Navbar() {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
                       transition={{ duration: 0.2 }}
-                      className="fixed left-4 right-4 top-20 md:absolute md:right-0 md:top-full md:left-auto md:mt-3 md:w-80 bg-white/95 backdrop-blur-xl border border-white/20 rounded-2xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] overflow-hidden z-50 ring-1 ring-black/5"
+                      className="fixed left-4 right-4 top-20 md:absolute md:right-0 md:top-full md:left-auto md:mt-3 md:w-80 bg-white/95 backdrop-blur-xl border border-white/20 rounded-2xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] overflow-hidden z-50 ring-1 ring-black/5 flex flex-col max-h-[calc(100vh-140px)]"
                     >
                       <div className="p-5 border-b border-gray-100 bg-gray-50/50">
                         <div className="flex items-center gap-3 mb-4">
@@ -469,7 +469,7 @@ export default function Navbar() {
                         </div>
                       </div>
 
-                      <div className="p-2 space-y-1">
+                      <div className="p-2 space-y-1 overflow-y-auto no-scrollbar flex-1">
                         {loginUser?.role === "admin" && (
                           <Link to="/admin-dashboard" onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 transition text-gray-700 hover:text-gray-900">
                             <LayoutDashboard size={18} className="text-gray-400" />
