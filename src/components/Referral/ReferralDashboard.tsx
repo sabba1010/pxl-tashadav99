@@ -150,16 +150,16 @@ const ReferralDashboard: React.FC = () => {
                      {/* Link Box */}
                      <div className="space-y-3">
                        <label className="text-xs font-black uppercase tracking-widest text-[#d4a643]">Your Referral Link</label>
-                       <div className="flex items-center gap-2 p-1 bg-white/10 rounded-2xl border border-white/20 backdrop-blur-sm">
+                       <div className="flex flex-col sm:flex-row items-center gap-2 p-1 bg-white/10 rounded-2xl border border-white/20 backdrop-blur-sm">
                          <input 
                            type="text" 
                            value={stats.referralLink} 
                            readOnly 
-                           className="flex-1 bg-transparent px-2 py-3 sm:px-4 text-xs sm:text-sm font-mono truncate outline-none"
+                           className="w-full flex-1 bg-transparent px-2 py-3 sm:px-4 text-xs sm:text-sm font-mono truncate outline-none"
                          />
                          <button 
                            onClick={() => copyToClipboard(stats.referralLink, 'Link')}
-                           className="bg-[#d4a643] hover:bg-white hover:text-black text-black px-4 py-3 sm:px-6 rounded-xl font-black uppercase text-[10px] sm:text-xs transition-all flex items-center gap-2 flex-shrink-0"
+                           className="w-full sm:w-auto bg-[#d4a643] hover:bg-white hover:text-black text-black px-4 py-3 sm:px-6 rounded-xl font-black uppercase text-[10px] sm:text-xs transition-all flex items-center justify-center gap-2 flex-shrink-0"
                          >
                            <Copy size={14} /> Copy
                          </button>
@@ -169,16 +169,16 @@ const ReferralDashboard: React.FC = () => {
                      {/* Code Box */}
                      <div className="space-y-3">
                        <label className="text-xs font-black uppercase tracking-widest text-[#d4a643]">Referral Code</label>
-                       <div className="flex items-center gap-2 p-1 bg-white/10 rounded-2xl border border-white/20 backdrop-blur-sm">
+                       <div className="flex flex-col sm:flex-row items-center gap-2 p-1 bg-white/10 rounded-2xl border border-white/20 backdrop-blur-sm">
                          <input 
                            type="text" 
                            value={stats.referralCode} 
                            readOnly 
-                           className="flex-1 bg-transparent px-2 py-3 sm:px-4 text-lg sm:text-2xl font-black tracking-normal sm:tracking-widest text-center truncate outline-none"
+                           className="w-full flex-1 bg-transparent px-2 py-3 sm:px-4 text-lg sm:text-2xl font-black tracking-normal sm:tracking-widest text-center truncate outline-none"
                          />
                          <button 
                            onClick={() => copyToClipboard(stats.referralCode, 'Code')}
-                           className="bg-[#d4a643] hover:bg-white hover:text-black text-black px-4 py-3 sm:px-6 rounded-xl font-black uppercase text-[10px] sm:text-xs transition-all flex items-center gap-2 flex-shrink-0"
+                           className="w-full sm:w-auto bg-[#d4a643] hover:bg-white hover:text-black text-black px-4 py-3 sm:px-6 rounded-xl font-black uppercase text-[10px] sm:text-xs transition-all flex items-center justify-center gap-2 flex-shrink-0"
                          >
                            <Copy size={14} /> Copy
                          </button>
