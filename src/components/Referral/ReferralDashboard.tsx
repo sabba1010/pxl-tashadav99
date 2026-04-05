@@ -140,10 +140,10 @@ const ReferralDashboard: React.FC = () => {
           {/* Invitation Side */}
           <div className="lg:col-span-12">
             <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
-               <div className="p-8 sm:p-12 bg-[#0A1A3A] text-white relative overflow-hidden">
+               <div className="p-5 sm:p-12 bg-[#0A1A3A] text-white relative overflow-hidden">
                  <div className="absolute -right-20 -bottom-20 w-80 h-80 bg-white/5 rounded-full" />
                  <div className="relative z-10">
-                   <h2 className="text-3xl sm:text-4xl font-black italic mb-4">Start Sharing Now!</h2>
+                   <h2 className="text-2xl sm:text-4xl font-black italic mb-4">Start Sharing Now!</h2>
                    <p className="text-white/70 max-w-2xl text-lg mb-10">Copy your unique referral link below and share it with your network. When they join and start trading, you both get rewarded!</p>
                    
                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -155,11 +155,11 @@ const ReferralDashboard: React.FC = () => {
                            type="text" 
                            value={stats.referralLink} 
                            readOnly 
-                           className="flex-1 bg-transparent px-4 py-3 text-sm font-mono truncate outline-none"
+                           className="flex-1 bg-transparent px-2 py-3 sm:px-4 text-xs sm:text-sm font-mono truncate outline-none"
                          />
                          <button 
                            onClick={() => copyToClipboard(stats.referralLink, 'Link')}
-                           className="bg-[#d4a643] hover:bg-white hover:text-black text-black px-6 py-3 rounded-xl font-black uppercase text-xs transition-all flex items-center gap-2"
+                           className="bg-[#d4a643] hover:bg-white hover:text-black text-black px-4 py-3 sm:px-6 rounded-xl font-black uppercase text-[10px] sm:text-xs transition-all flex items-center gap-2 flex-shrink-0"
                          >
                            <Copy size={14} /> Copy
                          </button>
@@ -174,11 +174,11 @@ const ReferralDashboard: React.FC = () => {
                            type="text" 
                            value={stats.referralCode} 
                            readOnly 
-                           className="flex-1 bg-transparent px-4 py-3 text-2xl font-black tracking-widest text-center truncate outline-none"
+                           className="flex-1 bg-transparent px-2 py-3 sm:px-4 text-lg sm:text-2xl font-black tracking-normal sm:tracking-widest text-center truncate outline-none"
                          />
                          <button 
                            onClick={() => copyToClipboard(stats.referralCode, 'Code')}
-                           className="bg-[#d4a643] hover:bg-white hover:text-black text-black px-6 py-3 rounded-xl font-black uppercase text-xs transition-all flex items-center gap-2"
+                           className="bg-[#d4a643] hover:bg-white hover:text-black text-black px-4 py-3 sm:px-6 rounded-xl font-black uppercase text-[10px] sm:text-xs transition-all flex items-center gap-2 flex-shrink-0"
                          >
                            <Copy size={14} /> Copy
                          </button>
@@ -189,9 +189,9 @@ const ReferralDashboard: React.FC = () => {
                </div>
 
                {/* History Section */}
-               <div className="p-8 sm:p-10">
+               <div className="p-5 sm:p-10">
                  <div className="flex items-center justify-between mb-8">
-                   <h3 className="text-xl font-black text-[#0A1A3A] uppercase italic">Referral History</h3>
+                   <h3 className="text-lg sm:text-xl font-black text-[#0A1A3A] uppercase italic">Referral History</h3>
                    <span className="text-xs font-bold text-gray-400 bg-gray-100 px-3 py-1 rounded-full">{stats.referralList.length} Referrals Found</span>
                  </div>
 

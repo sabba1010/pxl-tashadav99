@@ -444,7 +444,7 @@ export default function Navbar() {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
                       transition={{ duration: 0.2 }}
-                      className="fixed left-4 right-4 top-20 md:absolute md:right-0 md:top-full md:left-auto md:mt-3 md:w-80 bg-white/95 backdrop-blur-xl border border-white/20 rounded-2xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] overflow-hidden z-50 ring-1 ring-black/5 flex flex-col max-h-[calc(100vh-140px)]"
+                      className="fixed left-4 right-4 top-20 md:absolute md:right-0 md:top-full md:left-auto md:mt-3 md:w-80 bg-white/95 backdrop-blur-xl border border-white/20 rounded-2xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] overflow-hidden z-[70] ring-1 ring-black/5 flex flex-col max-h-[calc(100vh-200px)] pb-2"
                     >
                       <div className="p-5 border-b border-gray-100 bg-gray-50/50">
                         <div className="flex items-center gap-3 mb-4">
@@ -528,7 +528,7 @@ export default function Navbar() {
                       </div>
 
                       <div className="p-2 border-t border-gray-100 bg-gray-50/50">
-                        <button onClick={handleLogout} className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-red-600 hover:bg-red-50 transition font-semibold text-sm">
+                        <button onClick={handleLogout} className="w-full flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl bg-red-50 text-red-700 hover:bg-red-100 transition-all duration-300 font-bold text-sm border border-red-100 shadow-sm">
                           <LogOut size={16} />
                           Log out
                         </button>
