@@ -298,7 +298,7 @@ const CartPage: React.FC = () => {
         {/* Breadcrumb & Title */}
         <div className="mb-6 md:mb-10">
           <Link
-            to="/"
+            to="/marketplace"
             className="inline-flex items-center gap-2 text-gray-400 hover:text-[#D4A017] transition-all mb-4 group"
           >
             <ArrowLeftIcon
@@ -333,7 +333,7 @@ const CartPage: React.FC = () => {
               Add items to your cart to see them here.
             </p>
             <Link
-              to="/"
+              to="/marketplace"
               className="inline-block bg-[#0A1D37] text-white px-8 py-3 md:px-10 md:py-4 rounded-xl md:rounded-2xl font-bold hover:bg-[#D4A017] transition-all shadow-lg shadow-blue-100 text-sm md:text-base"
             >
               Explore Products

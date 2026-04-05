@@ -71,7 +71,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
     const messagesContainerRef = useRef<HTMLDivElement>(null);
     const shouldAutoScrollRef = useRef(true);
 
-    const { socket } = useSocket();
+    const { socket, markOrderRead } = useSocket();
 
     // Determine partner info
     const isSeller = currentUserEmail === sellerEmail;
@@ -117,7 +117,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
 
             // Mark as read if not readOnly and user is receiving
             if (!readOnly) {
-                await axios.post(`${CHAT_API}/mark-read`, { userId: currentUserEmail, orderId });
+                markOrderRead(orderId);
             }
         } catch (err) {
             console.error("Chat fetch error:", err);
@@ -139,6 +139,9 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
             const handleMsg = (newMsg: any) => {
                 if (newMsg.orderId === orderId) {
                     setMessages(prev => [...prev, newMsg]);
+                    if (!readOnly && newMsg.senderId !== currentUserEmail) {
+                        markOrderRead(orderId);
+                    }
                     if (messagesContainerRef.current) {
                         const container = messagesContainerRef.current;
                         const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 150;
@@ -180,6 +183,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
             if (textareaRef.current) {
                 textareaRef.current.style.height = "auto";
             }
+            markOrderRead(orderId);
             fetchChat();
         } catch (err) {
             console.error("Failed to send message", err);

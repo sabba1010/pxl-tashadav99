@@ -325,20 +325,9 @@ const MyOrder: React.FC = () => {
   const [lastMessageTimes, setLastMessageTimes] = useState<Record<string, string | undefined>>({});
   const [lastSeenMap, setLastSeenMap] = useState<Record<string, string | null>>({}); // Keeping for specific logic if needed, or replace with Context
 
-  const { socket, onlineUsers } = useSocket();
-
-  const [unreadCounts, setUnreadCounts] = useState(new Map<string, number>());
-  const [fetchedOrders, setFetchedOrders] = useState(new Set<string>());
-  const [lastReadIds, setLastReadIds] = useState<Record<string, string | undefined>>({});
+  const { socket, onlineUsers, unreadCounts, markOrderRead } = useSocket();
 
 
-  // Load lastReadIds from localStorage
-  useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      setLastReadIds(JSON.parse(stored));
-    }
-  }, []);
 
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 1000);
@@ -447,6 +436,7 @@ const MyOrder: React.FC = () => {
   // Removed sendChat as logic moved to ChatWindow
 
   const handleOpenChat = (order: Order) => {
+    markOrderRead(order.id);
     setActiveChatBuyerEmail(order.buyerEmail);
     setActiveChatOrderId(order.id);
     setActiveChatProductTitle(order.title);
@@ -521,19 +511,10 @@ const MyOrder: React.FC = () => {
           [newMsg.orderId]: newMsg.createdAt || new Date().toISOString(),
         }));
 
-        if (newMsg.senderId !== sellerId && (newMsg.orderId !== activeChatOrderId)) {
-          setUnreadCounts(prev => {
-            const newMap = new Map(prev);
-            const count = newMap.get(newMsg.orderId) || 0;
-            newMap.set(newMsg.orderId, count + 1);
-            return newMap;
-          });
-        } else if (newMsg.orderId === activeChatOrderId && newMsg._id) {
-          setLastReadIds(prev => {
-            const updated = { ...prev, [newMsg.orderId]: newMsg._id };
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-            return updated;
-          });
+        if (newMsg.senderId !== sellerId) {
+          if (newMsg.orderId === activeChatOrderId) {
+            markOrderRead(newMsg.orderId);
+          }
         }
       };
 
@@ -545,56 +526,6 @@ const MyOrder: React.FC = () => {
     }
   }, [socket, sellerId, activeChatOrderId]);
 
-  useEffect(() => {
-    const fetchInitialData = async () => {
-      if (sellerId) {
-        for (const order of paginatedOrders) {
-          if (!fetchedOrders.has(order.id)) {
-            try {
-              const res = await axios.get<IMessage[]>(`${CHAT_API}/history/${sellerId}/${order.buyerEmail}`, {
-                params: { orderId: order.id },
-              });
-              const messages = res.data;
-              if (messages.length > 0) {
-                const last = messages[messages.length - 1];
-                setLastMessageTimes(prev => ({
-                  ...prev,
-                  [order.id]: last.createdAt,
-                }));
-
-                const lastReadId = lastReadIds[order.id];
-                let unread = 0;
-                if (lastReadId) {
-                  const lastReadIndex = messages.findIndex(m => m._id === lastReadId);
-                  if (lastReadIndex > -1) {
-                    unread = messages.slice(lastReadIndex + 1).filter(m => m.senderId !== sellerId).length;
-                  } else {
-                    unread = messages.filter(m => m.senderId !== sellerId).length;
-                  }
-                } else {
-                  unread = messages.filter(m => m.senderId !== sellerId).length;
-                }
-                setUnreadCounts(prev => {
-                  const newMap = new Map(prev);
-                  newMap.set(order.id, unread);
-                  return newMap;
-                });
-              }
-              setFetchedOrders(prev => {
-                const newSet = new Set(prev);
-                newSet.add(order.id);
-                return newSet;
-              });
-            } catch (err) {
-              console.error(`Failed to fetch chat for order ${order.id}`, err);
-            }
-          }
-        }
-      }
-    };
-
-    fetchInitialData();
-  }, [paginatedOrders, sellerId, fetchedOrders, lastReadIds]);
 
   return (
     <>
@@ -891,14 +822,11 @@ const MyOrder: React.FC = () => {
             sellerEmail={sellerId || ""}
             currentUserEmail={sellerId || ""}
             onClose={() => {
+              if (activeChatOrderId) {
+                markOrderRead(activeChatOrderId);
+              }
               setActiveChatBuyerEmail(null);
               setActiveChatOrderId(null);
-              // Mark as read in local state when closing
-              setUnreadCounts(prev => {
-                const newMap = new Map(prev);
-                newMap.set(activeChatOrderId, 0);
-                return newMap;
-              });
             }}
             productTitle={activeChatProductTitle}
           />
