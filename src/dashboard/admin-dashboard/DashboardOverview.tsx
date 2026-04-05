@@ -238,7 +238,7 @@ const DashboardOverview: React.FC = () => {
           title="Admin Total Balance"
           value={`$${displayMetrics.availableAdminBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
           variant="balance"
-          subtitle="Available 20% Platform Commission"
+          subtitle="Available Total Funds (Sales + Volume)"
           icon={<AccountBalanceWallet sx={{ color: "#059669", fontSize: 32 }} />}
           isLoading={loading}
         />
@@ -246,7 +246,7 @@ const DashboardOverview: React.FC = () => {
           title="Total Sales Volume"
           value={`$${displayMetrics.currentSystemTurnover.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
           variant="success"
-          subtitle="Total Buyer to Seller Volume (100%)"
+          subtitle="Total Platform Earnings (Fees + Commissions)"
           icon={<TrendingUp sx={{ color: "#10B981", fontSize: 32 }} />}
           isLoading={loading}
         />
