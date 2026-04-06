@@ -305,101 +305,105 @@ const TotalListings: React.FC = () => {
       </Paper>
 
       {/* Table */}
-      <TableContainer component={Paper} elevation={0} sx={{ borderRadius: 2, border: "1px solid #E2E8F0" }}>
-        <Table>
-          <TableHead sx={{ bgcolor: "#F8FAFC" }}>
-            <TableRow>
-              <TableCell sx={{ fontWeight: 600, color: "#64748B", fontSize: "12px" }}>LISTING INFO</TableCell>
-              <TableCell sx={{ fontWeight: 600, color: "#64748B", fontSize: "12px" }}>SELLER</TableCell>
-              <TableCell sx={{ fontWeight: 600, color: "#64748B", fontSize: "12px" }}>PRICE</TableCell>
-              <TableCell sx={{ fontWeight: 600, color: "#64748B", fontSize: "12px" }}>STATUS</TableCell>
-              <TableCell sx={{ fontWeight: 600, color: "#64748B", fontSize: "12px" }}>LINKS</TableCell>
-              <TableCell align="right" sx={{ fontWeight: 600, color: "#64748B", fontSize: "12px" }}>ACTIONS</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {paginated.map((row) => (
-              <TableRow key={row._id} hover sx={{ '&:hover': { bgcolor: "#F8FAFC" } }}>
-                <TableCell>
-                  <Box display="flex" alignItems="center" gap={2}>
-                    <Avatar
-                      variant="rounded"
-                      src={row.categoryIcon}
-                      alt={row.name}
-                      sx={{ width: 40, height: 40 }} // Adjusted size for better visibility
-                    >
-                      {/* Fallback to generic icon if no categoryIcon */}
-                      {!row.categoryIcon && <Description fontSize="small" />}
-                    </Avatar>
-                    <Box>
-                      <Typography variant="body2" fontWeight={600} color="#1E293B">
-                        {row.name}
+      <Paper elevation={0} sx={{ borderRadius: { xs: 2, md: 3 }, border: "1px solid #E2E8F0", overflow: "hidden" }}>
+        <Box sx={{ overflowX: "auto" }}>
+          <TableContainer>
+            <Table sx={{ minWidth: { xs: 1000, md: "auto" } }}>
+              <TableHead sx={{ bgcolor: "#F8FAFC" }}>
+                <TableRow>
+                  <TableCell sx={{ fontWeight: 600, color: "#64748B", fontSize: "12px", whiteSpace: "nowrap" }}>LISTING INFO</TableCell>
+                  <TableCell sx={{ fontWeight: 600, color: "#64748B", fontSize: "12px", whiteSpace: "nowrap" }}>SELLER</TableCell>
+                  <TableCell sx={{ fontWeight: 600, color: "#64748B", fontSize: "12px", whiteSpace: "nowrap" }}>PRICE</TableCell>
+                  <TableCell sx={{ fontWeight: 600, color: "#64748B", fontSize: "12px", whiteSpace: "nowrap" }}>STATUS</TableCell>
+                  <TableCell sx={{ fontWeight: 600, color: "#64748B", fontSize: "12px", whiteSpace: "nowrap" }}>LINKS</TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 600, color: "#64748B", fontSize: "12px", whiteSpace: "nowrap" }}>ACTIONS</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {paginated.map((row) => (
+                  <TableRow key={row._id} hover sx={{ '&:hover': { bgcolor: "#F8FAFC" } }}>
+                    <TableCell>
+                      <Box display="flex" alignItems="center" gap={2}>
+                        <Avatar
+                          variant="rounded"
+                          src={row.categoryIcon}
+                          alt={row.name}
+                          sx={{ width: 40, height: 40 }} // Adjusted size for better visibility
+                        >
+                          {/* Fallback to generic icon if no categoryIcon */}
+                          {!row.categoryIcon && <Description fontSize="small" />}
+                        </Avatar>
+                        <Box sx={{ minWidth: 150 }}>
+                          <Typography variant="body2" fontWeight={600} color="#1E293B">
+                            {row.name}
+                          </Typography>
+                          <Typography variant="caption" color="textSecondary">
+                            ID: {row._id.slice(-6).toUpperCase()}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </TableCell>
+                    <TableCell>
+                      <Box display="flex" alignItems="center" gap={1} sx={{ minWidth: 150 }}>
+                        <Person sx={{ fontSize: 16, color: "#94A3B8" }} />
+                        <Typography variant="body2" color="#475569">
+                          {getDisplayName(row.userEmail)}
+                        </Typography>
+                      </Box>
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="body2" fontWeight={700} color="#1E293B">
+                        ${parseFloat(row.price).toFixed(2)}
                       </Typography>
-                      <Typography variant="caption" color="textSecondary">
-                        ID: {row._id.slice(-6).toUpperCase()}
-                      </Typography>
-                    </Box>
-                  </Box>
-                </TableCell>
-                <TableCell>
-                  <Box display="flex" alignItems="center" gap={1}>
-                    <Person sx={{ fontSize: 16, color: "#94A3B8" }} />
-                    <Typography variant="body2" color="#475569">
-                      {getDisplayName(row.userEmail)}
-                    </Typography>
-                  </Box>
-                </TableCell>
-                <TableCell>
-                  <Typography variant="body2" fontWeight={700} color="#1E293B">
-                    ${parseFloat(row.price).toFixed(2)}
-                  </Typography>
-                </TableCell>
-                <TableCell>
-                  {renderStatus(row.status)}
-                </TableCell>
-                <TableCell>
-                  {row.previewLink ? (
-                    <Button
-                      size="small"
-                      startIcon={<LinkIcon />}
-                      href={row.previewLink}
-                      target="_blank"
-                      sx={{ textTransform: "none", fontSize: "12px", color: "#3B82F6" }}
-                    >
-                      Preview
-                    </Button>
-                  ) : "-"}
-                </TableCell>
-                <TableCell align="right">
-                  <Stack direction="row" spacing={1} justifyContent="flex-end">
-                    <IconButton
-                      size="small"
-                      onClick={() => { setSelected(row); setOpenView(true); }}
-                      sx={{ color: "#64748B" }}
-                    >
-                      <Visibility fontSize="small" />
-                    </IconButton>
-                    <IconButton
-                      size="small"
-                      onClick={() => { setSelected(row); setNewStatus(row.status); setOpenEdit(true); }}
-                      sx={{ color: "#3B82F6" }}
-                    >
-                      <Edit fontSize="small" />
-                    </IconButton>
-                  </Stack>
-                </TableCell>
-              </TableRow>
-            ))}
-            {paginated.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={6} align="center" sx={{ py: 6 }}>
-                  <Typography color="textSecondary">No listings found</Typography>
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
+                    </TableCell>
+                    <TableCell>
+                      {renderStatus(row.status)}
+                    </TableCell>
+                    <TableCell>
+                      {row.previewLink ? (
+                        <Button
+                          size="small"
+                          startIcon={<LinkIcon />}
+                          href={row.previewLink}
+                          target="_blank"
+                          sx={{ textTransform: "none", fontSize: "12px", color: "#3B82F6", whiteSpace: "nowrap" }}
+                        >
+                          Preview
+                        </Button>
+                      ) : "-"}
+                    </TableCell>
+                    <TableCell align="right">
+                      <Stack direction="row" spacing={1} justifyContent="flex-end">
+                        <IconButton
+                          size="small"
+                          onClick={() => { setSelected(row); setOpenView(true); }}
+                          sx={{ color: "#64748B" }}
+                        >
+                          <Visibility fontSize="small" />
+                        </IconButton>
+                        <IconButton
+                          size="small"
+                          onClick={() => { setSelected(row); setNewStatus(row.status); setOpenEdit(true); }}
+                          sx={{ color: "#3B82F6" }}
+                        >
+                          <Edit fontSize="small" />
+                        </IconButton>
+                      </Stack>
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {paginated.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={6} align="center" sx={{ py: 6 }}>
+                      <Typography color="textSecondary">No listings found</Typography>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Box>
+      </Paper>
 
       {/* Pagination */}
       <Box mt={4} display="flex" justifyContent="center">
