@@ -10,6 +10,15 @@ import "./index.css";
 import reportWebVitals from "./reportWebVitals";
 import Routes from "./routes/Routes";
 
+// Disable all console outputs globally
+if (process.env.NODE_ENV === "production" || true) {
+  console.log = () => {};
+  console.info = () => {};
+  console.warn = () => {};
+  console.error = () => {};
+  console.debug = () => {};
+}
+
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
 );
