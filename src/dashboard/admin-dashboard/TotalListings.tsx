@@ -304,8 +304,8 @@ const TotalListings: React.FC = () => {
         </Box>
       </Paper>
 
-      {/* Table */}
-      <Paper elevation={0} sx={{ borderRadius: { xs: 2, md: 3 }, border: "1px solid #E2E8F0", overflow: "hidden" }}>
+      {/* Desktop Table View */}
+      <Paper elevation={0} sx={{ borderRadius: { xs: 2, md: 3 }, border: "1px solid #E2E8F0", overflow: "hidden", display: { xs: 'none', md: 'block' } }}>
         <Box sx={{ overflowX: "auto" }}>
           <TableContainer>
             <Table sx={{ minWidth: { xs: 1000, md: "auto" } }}>
@@ -328,9 +328,8 @@ const TotalListings: React.FC = () => {
                           variant="rounded"
                           src={row.categoryIcon}
                           alt={row.name}
-                          sx={{ width: 40, height: 40 }} // Adjusted size for better visibility
+                          sx={{ width: 40, height: 40 }}
                         >
-                          {/* Fallback to generic icon if no categoryIcon */}
                           {!row.categoryIcon && <Description fontSize="small" />}
                         </Avatar>
                         <Box sx={{ minWidth: 150 }}>
@@ -404,6 +403,65 @@ const TotalListings: React.FC = () => {
           </TableContainer>
         </Box>
       </Paper>
+
+      {/* Mobile Card View */}
+      <Box sx={{ display: { xs: 'flex', md: 'none' }, flexDirection: 'column', gap: 2 }}>
+        {paginated.length === 0 ? (
+          <Paper sx={{ p: 4, textAlign: 'center', borderRadius: 2 }} elevation={0} variant="outlined">
+            <Typography color="textSecondary">No listings found</Typography>
+          </Paper>
+        ) : (
+          paginated.map((row) => (
+            <Paper key={`mobile-${row._id}`} elevation={0} sx={{ p: 2, borderRadius: 2, border: "1px solid #E2E8F0" }}>
+              <Box display="flex" justifyContent="space-between" mb={2}>
+                <Box display="flex" gap={1.5} alignItems="center">
+                  <Avatar variant="rounded" src={row.categoryIcon} sx={{ width: 40, height: 40 }}>
+                    {!row.categoryIcon && <Description fontSize="small" />}
+                  </Avatar>
+                  <Box>
+                    <Typography variant="body2" fontWeight={700} color="#1E293B">
+                      {row.name}
+                    </Typography>
+                    <Typography variant="caption" color="textSecondary">
+                      ID: {row._id.slice(-6).toUpperCase()}
+                    </Typography>
+                  </Box>
+                </Box>
+                <Box textAlign="right">
+                  <Typography variant="body2" fontWeight={800} color="#1E293B">
+                    ${parseFloat(row.price).toFixed(2)}
+                  </Typography>
+                  <Box mt={0.5}>{renderStatus(row.status)}</Box>
+                </Box>
+              </Box>
+              
+              <Divider sx={{ my: 1.5 }} />
+              
+              <Box display="flex" justifyContent="space-between" alignItems="center">
+                <Box display="flex" alignItems="center" gap={1}>
+                  <Person sx={{ fontSize: 16, color: "#94A3B8" }} />
+                  <Typography variant="body2" color="#475569">
+                    {getDisplayName(row.userEmail)}
+                  </Typography>
+                </Box>
+                <Stack direction="row" spacing={1}>
+                  {row.previewLink && (
+                    <IconButton size="small" href={row.previewLink} target="_blank" sx={{ color: "#3B82F6", bgcolor: "#EFF6FF" }}>
+                      <LinkIcon fontSize="small" />
+                    </IconButton>
+                  )}
+                  <IconButton size="small" onClick={() => { setSelected(row); setOpenView(true); }} sx={{ color: "#64748B", bgcolor: "#F1F5F9" }}>
+                    <Visibility fontSize="small" />
+                  </IconButton>
+                  <IconButton size="small" onClick={() => { setSelected(row); setNewStatus(row.status); setOpenEdit(true); }} sx={{ color: "#3B82F6", bgcolor: "#EFF6FF" }}>
+                    <Edit fontSize="small" />
+                  </IconButton>
+                </Stack>
+              </Box>
+            </Paper>
+          ))
+        )}
+      </Box>
 
       {/* Pagination */}
       <Box mt={4} display="flex" justifyContent="center">
