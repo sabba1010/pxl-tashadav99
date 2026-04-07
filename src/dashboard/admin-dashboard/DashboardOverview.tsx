@@ -246,7 +246,7 @@ const DashboardOverview: React.FC = () => {
           title="Total Sales Volume"
           value={`$${displayMetrics.currentSystemTurnover.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
           variant="success"
-          subtitle="Total Platform Earnings (Fees + Commissions)"
+          subtitle="Total Platform Sales (Adjusted 80%)"
           icon={<TrendingUp sx={{ color: "#10B981", fontSize: 32 }} />}
           isLoading={loading}
         />
