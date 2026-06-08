@@ -693,6 +693,14 @@ const Marketplace: React.FC = () => {
             previewLink: p.previewLink,
           }));
         setItems(mapped);
+        const params = new URLSearchParams(window.location.search);
+        const prodId = params.get("productId");
+        if (prodId) {
+          const found = mapped.find(item => item.id === prodId);
+          if (found) {
+            setSelectedItem(found);
+          }
+        }
       } catch (err) {
         console.error("Failed to load products", err);
         toast.error("Failed to load marketplace");

@@ -86,7 +86,7 @@ import { API_BASE_URL } from '../config';
 //         const response = await import('../assets/Country/CountryCodes.json');
 //         const codes = response.default || [];
 //         setCountryCodes(codes);
-        
+
 //         // Initialize with Nigeria as default country
 //         const defaultCountry = codes.find((c: any) => c.code === 'NG');
 //         if (defaultCountry) {
@@ -110,7 +110,7 @@ import { API_BASE_URL } from '../config';
 //       try {
 //         setLoading(true);
 //         const token = localStorage.getItem('token');
-        
+
 //         if (!token) {
 //           console.warn('No token found, skipping profile fetch');
 //           if (user?.email) {
@@ -169,7 +169,7 @@ import { API_BASE_URL } from '../config';
 //         }
 //       } catch (error: any) {
 //         console.error('Failed to fetch user data:', error.message);
-        
+
 //         // Fallback to auth context user data
 //         if (user?.email) {
 //           console.log('Using fallback data from auth context');
@@ -183,7 +183,7 @@ import { API_BASE_URL } from '../config';
 //           setUserData(fallbackData);
 //           setPhoneNumber((user as any)?.phone || '');
 //           setTempPhoneNumber((user as any)?.phone || '');
-          
+
 //           if ((user as any)?.countryCode && countryCodes.length > 0) {
 //             const country = countryCodes.find(
 //               (c: any) => c.dial_code === (user as any)?.countryCode
@@ -205,7 +205,7 @@ import { API_BASE_URL } from '../config';
 //             setSelectedCountry(defaultCountry);
 //             setTempCountry(defaultCountry);
 //           }
-          
+
 //           console.log('Using fallback user data from auth context');
 //         } else {
 //           console.error('No user data available');
@@ -1567,9 +1567,9 @@ const ProfileSection = () => {
         // Fetch all users and find the current user by email
         const response = await axios.get<any>(`${API_BASE_URL}/user/getall`);
         const allUsers = (response.data as any);
-        
+
         // Find user by email
-        const currentUser = Array.isArray(allUsers) 
+        const currentUser = Array.isArray(allUsers)
           ? allUsers.find((u: any) => u.email === user.email)
           : null;
 
@@ -1613,7 +1613,7 @@ const ProfileSection = () => {
 
     try {
       setSaving(true);
-      
+
       // Track changes for each field
       const fieldsToTrack = ['phone', 'country', 'state', 'city', 'address', 'dob'];
       const changes = [];
@@ -1622,7 +1622,7 @@ const ProfileSection = () => {
         // Use empty string as default for comparison if profileData is null
         const oldValue = profileData?.[field] ?? '';
         const newValue = formData[field] ?? '';
-        
+
         if (oldValue !== newValue) {
           changes.push({
             userEmail: user.email,
@@ -1845,11 +1845,11 @@ const ProfileSection = () => {
           </div>
 
           <div className="flex justify-end pt-2 sm:pt-4">
-            <button 
+            <button
               onClick={handleSave}
               disabled={saving}
-              className="text-white px-4 sm:px-8 py-2.5 sm:py-3 rounded-lg font-semibold transition shadow-sm text-sm sm:text-base disabled:opacity-50" 
-              style={{ backgroundColor: '#d4a643' }} 
+              className="text-white px-4 sm:px-8 py-2.5 sm:py-3 rounded-lg font-semibold transition shadow-sm text-sm sm:text-base disabled:opacity-50"
+              style={{ backgroundColor: '#d4a643' }}
               onMouseEnter={(e) => !saving && ((e.target as HTMLButtonElement).style.backgroundColor = '#c4952f')}
               onMouseLeave={(e) => !saving && ((e.target as HTMLButtonElement).style.backgroundColor = '#d4a643')}
             >
@@ -2095,11 +2095,11 @@ const NotificationsSection = () => {
 
       const myNotifs = Array.isArray(res)
         ? res.filter((n: any) => {
-            const isDirect = n.userEmail === user?.email;
-            const isAll = n.target === "all";
-            const isRoleMatch = userRole && n.target === `${userRole}s`;
-            return isDirect || isAll || isRoleMatch;
-          })
+          const isDirect = n.userEmail === user?.email;
+          const isAll = n.target === "all";
+          const isRoleMatch = userRole && n.target === `${userRole}s`;
+          return isDirect || isAll || isRoleMatch;
+        })
         : [];
 
       const sortedNotifs = myNotifs.sort(
@@ -2162,11 +2162,10 @@ const NotificationsSection = () => {
         <button
           onClick={handleRefresh}
           disabled={refreshing}
-          className={`px-3 sm:px-4 py-2 rounded-lg font-semibold transition flex items-center gap-2 text-sm sm:text-base whitespace-nowrap flex-shrink-0 min-h-10 sm:min-h-auto ${
-            refreshing
-              ? 'bg-gray-200 text-gray-600 cursor-not-allowed'
-              : 'text-white hover:opacity-90'
-          }`}
+          className={`px-3 sm:px-4 py-2 rounded-lg font-semibold transition flex items-center gap-2 text-sm sm:text-base whitespace-nowrap flex-shrink-0 min-h-10 sm:min-h-auto ${refreshing
+            ? 'bg-gray-200 text-gray-600 cursor-not-allowed'
+            : 'text-white hover:opacity-90'
+            }`}
           style={!refreshing ? { backgroundColor: '#d4a643' } : {}}
         >
           <svg
@@ -2192,11 +2191,10 @@ const NotificationsSection = () => {
           {notifications.map((notification, idx) => (
             <div
               key={notification._id || idx}
-              className={`p-3 sm:p-5 rounded-lg sm:rounded-xl border-l-4 hover:shadow-lg transition-all ${
-                notification.read
-                  ? 'bg-gray-50 border-l-gray-300'
-                  : 'bg-blue-50 border-l-blue-600'
-              }`}
+              className={`p-3 sm:p-5 rounded-lg sm:rounded-xl border-l-4 hover:shadow-lg transition-all ${notification.read
+                ? 'bg-gray-50 border-l-gray-300'
+                : 'bg-blue-50 border-l-blue-600'
+                }`}
             >
               <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-3">
                 <div className="flex-1 min-w-0">
@@ -2223,14 +2221,14 @@ const NotificationsSection = () => {
                         notification.type === 'warning'
                           ? '#FEF3C7'
                           : notification.type === 'alert'
-                          ? '#FEE2E2'
-                          : '#DBEAFE',
+                            ? '#FEE2E2'
+                            : '#DBEAFE',
                       color:
                         notification.type === 'warning'
                           ? '#92400E'
                           : notification.type === 'alert'
-                          ? '#991B1B'
-                          : '#1E40AF',
+                            ? '#991B1B'
+                            : '#1E40AF',
                     }}
                   >
                     {notification.type}

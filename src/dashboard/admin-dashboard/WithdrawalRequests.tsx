@@ -22,7 +22,7 @@ interface WithdrawalRequest {
   email: string;
   note: string;
   status: string;
-  createdAt: string; 
+  createdAt: string;
   updatedAt: string;
   approvedAt?: string;
   adminNote?: string;
@@ -160,7 +160,7 @@ const DetailsModal: React.FC<{ request: WithdrawalRequest | null; onClose: () =>
             <Typography sx={{ fontSize: 13 }}><strong>Method:</strong> {request.paymentMethod}</Typography>
             <Typography sx={{ fontSize: 13 }}><strong>Account:</strong> {request.accountNumber}</Typography>
             <Typography sx={{ fontSize: 13 }}><strong>Bank Name:</strong> {request.bankName || "N/A"}</Typography>
-           
+
             <Typography sx={{ fontSize: 13, mt: 1, color: "#047857", fontWeight: 700 }}>
               <strong>NGN Payout:</strong> ₦{((request as any).amountNGN || Math.round(Number(request.amount) * 1400)).toLocaleString()}
             </Typography>
@@ -245,8 +245,8 @@ const WithdrawalRequests: React.FC = () => {
   /* ================= SORTING: NEWEST FIRST ================= */
   const filteredRequests = useMemo(() => {
     return requests
-      .filter(r => 
-        r.email.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      .filter(r =>
+        r.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
         r.status.toLowerCase().includes(searchTerm.toLowerCase())
       )
       // Newest First (Descending order by createdAt)
@@ -326,8 +326,8 @@ const WithdrawalRequests: React.FC = () => {
                         <TableCell sx={{ padding: "16px", fontSize: "13px" }}>
                           <Stack spacing={0.5}>
                             <Typography sx={{ fontSize: "13px", fontWeight: 700, color: "#1F2937" }}>
-                              {new Date(req.createdAt).toLocaleDateString(undefined, { 
-                                year: 'numeric', month: 'short', day: 'numeric' 
+                              {new Date(req.createdAt).toLocaleDateString(undefined, {
+                                year: 'numeric', month: 'short', day: 'numeric'
                               })}
                             </Typography>
                             <Typography sx={{ fontSize: "11px", color: "#64748B", fontWeight: 500 }}>
@@ -412,9 +412,9 @@ const WithdrawalRequests: React.FC = () => {
       {/* Pagination */}
       {!loading && filteredRequests.length > 0 && (
         <Box mt={4} display="flex" justifyContent="center" sx={{ overflow: "auto" }}>
-          <Pagination 
-            count={Math.ceil(filteredRequests.length / ITEMS_PER_PAGE)} 
-            page={currentPage} 
+          <Pagination
+            count={Math.ceil(filteredRequests.length / ITEMS_PER_PAGE)}
+            page={currentPage}
             onChange={(_, p) => setCurrentPage(p)}
             size={"small"}
             sx={{ "& .MuiPagination-ul": { justifyContent: "center", flexWrap: { xs: "wrap", md: "nowrap" } } }}
@@ -423,11 +423,11 @@ const WithdrawalRequests: React.FC = () => {
       )}
 
       {selectedRequest && (
-        <WithdrawalModal 
-          request={selectedRequest} 
-          sellerBalance={sellerBalance} 
-          onClose={() => setSelectedRequest(null)} 
-          updating={actionLoading} 
+        <WithdrawalModal
+          request={selectedRequest}
+          sellerBalance={sellerBalance}
+          onClose={() => setSelectedRequest(null)}
+          updating={actionLoading}
           onUpdateStatus={async (id, status, reason) => {
             setActionLoading(true);
             try {
@@ -451,7 +451,7 @@ const WithdrawalRequests: React.FC = () => {
             } finally {
               setActionLoading(false);
             }
-          }} 
+          }}
         />
       )}
 

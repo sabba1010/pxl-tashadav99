@@ -159,25 +159,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = () => {
     try {
       if (user?.email) {
-        axios.post(`${CHAT_API}/status`, { userId: user.email, status: 'offline' }).catch(() => {});
+        axios.post(`${CHAT_API}/status`, { userId: user.email, status: 'offline' }).catch(() => { });
       }
-    } catch (e) {}
-    
+    } catch (e) { }
+
     // Clear all authentication data
     Cookies.remove("aAcctEmpire_2XLD");
-    
+
     // Clear all storage
     localStorage.clear();
     sessionStorage.clear();
-    
+
     // Clear all cookies
     document.cookie.split(";").forEach((c) => {
       document.cookie = c.replace(/^ +/, "").replace(/=.*/, `=;expires=${new Date().toUTCString()};path=/`);
     });
-    
+
     // Clear user state immediately
     setUser(null);
-    
+
     // Redirect to login page immediately using replace to prevent back-navigation to protected state
     window.location.replace("/login?logout=success");
   };
