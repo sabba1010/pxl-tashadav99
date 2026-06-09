@@ -15,7 +15,6 @@ import {
   FaFacebookF,
   FaInstagram,
   FaTwitter,
-  
   FaLock,
   FaShoppingCart,
   FaTimes,
