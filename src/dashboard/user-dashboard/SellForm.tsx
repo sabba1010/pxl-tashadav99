@@ -210,8 +210,6 @@ const SellForm: React.FC = () => {
   const validateStep0 = () => {
     const newErrors: Record<string, string> = {};
     
-    if (!formData.category) newErrors.category = "Platform is required";
-    
     // Account Title validation - must include account age/years
     if (!formData.name.trim()) {
       newErrors.name = "Account title is required";
@@ -485,7 +483,6 @@ const SellForm: React.FC = () => {
                 value={getSelectedPlatform()}
                 onChange={handleCategoryChange}
                 loading={loadingPlatforms}
-                disableClearable={!!formData.category}
                 renderOption={(props, option) => (
                   <Box
                     component="li"
@@ -506,7 +503,6 @@ const SellForm: React.FC = () => {
                   <TextField
                     {...params}
                     label="Platform / Category"
-                    required
                     error={!!errors.category}
                     helperText={errors.category}
                     InputProps={{

@@ -29,7 +29,7 @@ const ForgotPassword = () => {
       } catch (err: any) {
         // If we are on localhost and the live API gives 404, fallback to local backend
         if (err.response?.status === 404 && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
-          url = `https://acctempire.com/api/api/user/forgot-password`;
+          url = `http://localhost:3200/api/user/forgot-password`;
           res = await axios.post<{ success: boolean; message: string }>(url, { email });
         } else {
           throw err;
