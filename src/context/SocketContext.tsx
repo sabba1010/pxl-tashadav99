@@ -77,23 +77,18 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     const fetchInitialCounts = async (uid: string) => {
         try {
-            // Derived purely from top-bar notifications logic
-            const res = await axios.get(`${API_BASE_URL}/notification/getall?userId=${uid}`);
-            const notifications = res.data;
+            const res = await axios.get(`${API_BASE_URL}/chat/unread/counts/${uid}`);
+            const countsObj = res.data;
             
-            if (Array.isArray(notifications)) {
-                const countMap = new Map<string, number>();
-                notifications.forEach((n: any) => {
-                    const isUnread = n.userEmail === uid ? !n.read : !n.readBy?.includes(uid);
-                    if (n.type === 'chat' && isUnread && n.relatedId) {
-                        const current = countMap.get(n.relatedId) || 0;
-                        countMap.set(n.relatedId, current + 1);
-                    }
+            const countMap = new Map<string, number>();
+            if (countsObj && typeof countsObj === 'object') {
+                Object.entries(countsObj).forEach(([orderId, count]) => {
+                    countMap.set(orderId, count as number);
                 });
-                setUnreadCounts(countMap);
             }
+            setUnreadCounts(countMap);
         } catch (error) {
-            console.error("Failed to fetch unread counts from notifications", error);
+            console.error("Failed to fetch unread counts from chat API", error);
         }
     };
 

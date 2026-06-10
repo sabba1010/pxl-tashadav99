@@ -56,7 +56,7 @@ export default function AnnouncementBar() {
 
                     const isAll = n.target === "all";
                     const isRoleMatch = userRole && n.target === `${userRole}s`;
-                    const isDirect = n.userEmail === currentUserEmail;
+                    const isDirect = n.userEmail?.toLowerCase() === currentUserEmail?.toLowerCase();
 
                     return isAll || isRoleMatch || isDirect;
                 });

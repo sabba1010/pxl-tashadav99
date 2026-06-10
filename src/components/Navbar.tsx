@@ -146,8 +146,8 @@ export default function Navbar() {
 
       // 1. Frontend update
       setNotifications(prev => prev.map(n => {
-        if (n.userEmail === currentUserEmail) return { ...n, read: true };
-        return { ...n, readBy: [...(n.readBy || []), currentUserEmail as string] };
+        if (n.userEmail?.toLowerCase() === currentUserEmail?.toLowerCase()) return { ...n, read: true };
+        return { ...n, readBy: [...(n.readBy || []), (currentUserEmail as string).toLowerCase()] };
       }));
 
       // 2. Backend sync
@@ -187,8 +187,8 @@ export default function Navbar() {
   }, [currentUserEmail, fetchNotifications]);
 
   const unreadCount = notifications.filter((n) => {
-    if (n.userEmail === currentUserEmail) return !n.read;
-    return !n.readBy?.includes(currentUserEmail || "");
+    if (n.userEmail?.toLowerCase() === currentUserEmail?.toLowerCase()) return !n.read;
+    return !n.readBy?.map(e => e.toLowerCase()).includes(currentUserEmail?.toLowerCase() || "");
   }).length;
 
   return (
@@ -316,7 +316,9 @@ export default function Navbar() {
                           <div className="p-2 space-y-2">
                             {notifications.map((n) => {
                               const senderName = n.senderId?.split("@")[0];
-                              const isRead = n.userEmail === currentUserEmail ? n.read : n.readBy?.includes(currentUserEmail || "");
+                              const isRead = n.userEmail?.toLowerCase() === currentUserEmail?.toLowerCase() 
+                                ? n.read 
+                                : n.readBy?.map(e => e.toLowerCase()).includes(currentUserEmail?.toLowerCase() || "");
 
                               return (
                                 <motion.div
