@@ -26,7 +26,7 @@ const ResetPassword = () => {
           res = await axios.get<{ success: boolean; message: string }>(url);
         } catch (err: any) {
           if (err.response?.status === 404 && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
-            url = `http://localhost:3200/api/user/verify-reset-token/${token}`;
+            url = `https://acctempire.com/api/api/user/verify-reset-token/${token}`;
             res = await axios.get<{ success: boolean; message: string }>(url);
           } else {
             throw err;
@@ -67,7 +67,7 @@ const ResetPassword = () => {
         });
       } catch (err: any) {
         if (err.response?.status === 404 && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
-          url = `http://localhost:3200/api/user/reset-password`;
+          url = `https://acctempire.com/api/api/user/reset-password`;
           res = await axios.post<{ success: boolean; message: string }>(url, {
             token,
             newPassword: password,
